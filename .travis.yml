@@ -1,0 +1,38 @@
+language: cpp
+os: linux
+dist: trusty
+sudo: false
+
+matrix:
+  include:
+    - env: CXX_COMPILER=clang++-6.0 CXX=g++-7
+      addons: { apt: { packages: ["clang-6.0", "g++-7", "libboost-test-dev"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-6.0"] } }
+
+    - env: CXX_COMPILER=clang++-7 CXX=g++-7
+      addons: { apt: { packages: ["clang-7", "g++-7", "libboost-test-dev"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty"] } }
+
+    - env: CXX_COMPILER=g++-7
+      addons: { apt: { packages: ["g++-7", "libboost-test-dev"], sources: ["ubuntu-toolchain-r-test"] } }
+
+    - env: CXX_COMPILER=g++-8
+      addons: { apt: { packages: ["g++-8", "libboost-test-dev"], sources: ["ubuntu-toolchain-r-test"] } }
+   
+before_script:
+- |
+  cd ${TRAVIS_BUILD_DIR}
+  mkdir build && cd build
+  cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
+ 
+script: 
+- |
+  cmake --build .
+  ctest
+
+after_success:
+- |
+  if [[ "${CXX_COMPILER}" == "g++-7" ]]; then
+    bash <(curl -s https://codecov.io/bash)
+  fi
+
+notifications:
+  email: false
