@@ -29,39 +29,29 @@ For power users, bit-twiddling syntax will make the code even more expressive an
     {
         constexpr auto N = 100;
 
-        // represent all numbers [0, N)
     #if USE_INT_SET
-        xstd::int_set<N> numbers;   // N / 8 bytes of storage on the stack
-        numbers.fill();
+        using set_type = xstd::int_set<N>;  // storage: N / 8 bytes on the stack
     #else
-        std::set<int> numbers;      // typically: 48 bytes on the stack + 32 * N bytes on the heap
-        for (auto i = 2; i < N; ++i) {
-            numbers.insert(i);
-        }
+        using set_type = std::set<int>;     // storage: 48 bytes on the stack + 32 * N bytes on the heap
     #endif
 
-        // find all primes below N
-        auto primes = numbers;
-    #if USE_INT_SET
-        // 0 and 1 are not primes by definition
-        primes.erase({0, 1});
-    #else
-        // std::set does not have an erase(initializer_list) overload
-        primes.erase(0);
-        primes.erase(1);
-    #endif
-        // sieve of Eratosthenes
+        // find all primes below N: sieve of Eratosthenes
+        set_type primes;
+        for (auto i = 2; i < N; ++i) {
+            primes.insert(i);
+        }
         for (auto p : primes) {
             if (p * p >= N) break;
             for (auto n = p * p; n < N; n += p) {
                 primes.erase(n);
             }
         }
+
+        // print solution
         std::copy(primes.begin(), primes.end(), std::experimental::make_ostream_joiner(std::cout, ','));
         std::cout << '\n';
 
-        // find all twin primes below N
-        // STL-style iterator twiddling using std::adjacent_find
+        // find all twin primes below N: STL-style iterator twiddling
         for (auto it = primes.begin(); it != primes.end() && std::next(it) != primes.end(); ) {
             it = std::adjacent_find(it, primes.end(), [](auto p, auto q) {
                 return q - p == 2;
@@ -74,8 +64,7 @@ For power users, bit-twiddling syntax will make the code even more expressive an
         std::cout << '\n';
 
     #if USE_INT_SET
-        // find all twin primes below N
-        // bitwise and + right-shift, fed into member for_each
+        // find all twin primes below N: bit-twiddling power-up
         (primes & primes >> 2).for_each([&](auto p) {
             std::cout << p << ',' << (p + 2) << '\n';
         });
@@ -86,7 +75,7 @@ For power users, bit-twiddling syntax will make the code even more expressive an
 Requirements
 ------------
 
-This header-only library is continuously being tested with the following conforming [C++17](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4659.pdf) compilers:
+This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++17](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4659.pdf) compilers:
 
 | Platform | Compiler | Versions | Build |
 | :------- | :------- | :------- | :---- |
