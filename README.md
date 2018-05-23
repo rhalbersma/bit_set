@@ -15,7 +15,7 @@ The code below demonstrates how an `int_set` is a drop-in replacement for `std::
 
 For power users, bit-twiddling syntax will make the code even more expressive and performant. Both the `int_set` iterators and its member function `for_each` call platform dependent intrinsics to lookup the first or last 1-bit. Similar intrinsics are called for counting the number of elements in an `int_set`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/0ZWgJ8JqYTX8upKO)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/K8FTb2tiwVSR8d24)
 
     #include "xstd/int_set.hpp"
     #include <algorithm>
@@ -23,18 +23,17 @@ For power users, bit-twiddling syntax will make the code even more expressive an
     #include <experimental/iterator>
     #include <set>
 
+    constexpr auto N = 100;
+
     #define USE_INT_SET 1
-
-    int main()
-    {
-        constexpr auto N = 100;
-
     #if USE_INT_SET
         using set_type = xstd::int_set<N>;  // storage: N / 8 bytes on the stack
     #else
         using set_type = std::set<int>;     // storage: 48 bytes on the stack + 32 * N bytes on the heap
     #endif
 
+    int main()
+    {
         // find all primes below N: sieve of Eratosthenes
         set_type primes;
         for (auto i = 2; i < N; ++i) {
@@ -99,7 +98,7 @@ Frequently Asked Questions
 **Q**: I'm no fool, but a C++ programmer, how do I break things?   
 **A**: If you insist, it is possible to use `int_set` iterators incorrectly by relying on too many implicit conversions.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/cF1RGdVqe7M8uXWx)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/5otXg8qsIs663oC3)
 
     #include "xstd/int_set.hpp"
     #include <algorithm>
@@ -108,6 +107,12 @@ Frequently Asked Questions
     #include <set>
 
     #define USE_INT_SET 1
+    #if USE_INT_SET
+        constexpr auto N = 32;
+        using set_type = xstd::int_set<N>;
+    #else
+        using set_type = std::set<int>;
+    #endif
 
     class Int
     {
@@ -119,13 +124,6 @@ Frequently Asked Questions
 
     int main()
     {
-    #if USE_INT_SET
-        constexpr auto N = 32;
-        using set_type = xstd::int_set<N>;
-    #else
-        using set_type = std::set<int>;
-    #endif
-
         auto primes = set_type { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };
         std::set<Int> s;
 
