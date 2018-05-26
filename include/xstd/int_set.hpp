@@ -331,9 +331,9 @@ class int_set
         UIntType m_data[std::max(num_blocks, 1)]{};    // zero-initializated by default
 public:
         using key_type               = int;
-        using key_compare            = std::less<>;
+        using key_compare            = std::less<key_type>;
         using value_type             = int;
-        using value_compare          = std::less<>;
+        using value_compare          = std::less<value_type>;
         using pointer                = proxy_iterator;
         using const_pointer          = proxy_iterator;
         using reference              = proxy_reference;
@@ -351,8 +351,6 @@ public:
 
         template<class InputIterator>
         constexpr int_set(InputIterator first, InputIterator last) // Throws: Nothing.
-        :
-                m_data{}
         {
                 insert(first, last);
         }
@@ -505,7 +503,7 @@ public:
                 return std::move(fun);
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto full() const noexcept
+        [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto full() const noexcept
         {
                 if constexpr (excess_bits == 0) {
                         if constexpr (num_blocks == 0) {
@@ -515,7 +513,7 @@ public:
                         } else if constexpr (num_blocks == 2) {
                                 return m_data[0] == ones && m_data[1] == ones;
                         } else if constexpr (num_blocks >= 3) {
-                                return std::all_of(std::begin(m_data), std::end(m_data), [](auto const block) {
+                                return std::all_of(std::cbegin(m_data), std::cend(m_data), [](auto const block) {
                                         return block == ones;
                                 });
                         }
@@ -527,7 +525,7 @@ public:
                         } else {
                                 static_assert(num_blocks >= 3);
                                 return
-                                        std::all_of(std::begin(m_data), std::prev(std::end(m_data)), [](auto const block) {
+                                        std::all_of(std::cbegin(m_data), std::prev(std::cend(m_data)), [](auto const block) {
                                                 return block == ones;
                                         }) && m_data[num_blocks - 1] == sane;
                                 ;
@@ -535,7 +533,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto empty() const noexcept
+        [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty() const noexcept
         {
                 if constexpr (num_blocks == 0) {
                         return true;
@@ -544,13 +542,13 @@ public:
                 } else if constexpr (num_blocks == 2) {
                         return m_data[0] == zero && m_data[1] == zero;
                 } else if constexpr (num_blocks >= 3) {
-                        return std::all_of(std::begin(m_data), std::end(m_data), [](auto const block) {
+                        return std::all_of(std::cbegin(m_data), std::cend(m_data), [](auto const block) {
                                 return block == zero;
                         });
                 }
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto count() const noexcept
+        XSTD_PP_CONSTEXPR_INTRINSIC auto size() const noexcept
         {
                 if constexpr (num_blocks == 0) {
                         return 0;
@@ -559,13 +557,13 @@ public:
                 } else if constexpr (num_blocks == 2) {
                         return detail::popcount(m_data[0]) + detail::popcount(m_data[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        return std::accumulate(std::begin(m_data), std::end(m_data), 0, [](auto const sum, auto const block) {
+                        return std::accumulate(std::cbegin(m_data), std::cend(m_data), 0, [](auto const sum, auto const block) {
                                 return sum + detail::popcount(block);
                         });
                 }
         }
 
-        constexpr static auto max_size() noexcept { return N; }
+        constexpr auto max_size() const noexcept { return N; }
         constexpr static auto capacity() noexcept { return num_bits; }
 
         constexpr auto& insert(value_type const n) // Throws: Nothing.
@@ -614,15 +612,15 @@ public:
                 assert(full());
         }
 
-        constexpr auto& erase(value_type const n) // Throws: Nothing.
+        constexpr auto& erase(key_type const& x) // Throws: Nothing.
         {
-                assert(0 <= n); assert(n < N);
+                assert(0 <= x); assert(x < N);
                 if constexpr (num_blocks == 1) {
-                        m_data[0] &= ~bit1(n);
+                        m_data[0] &= ~bit1(x);
                 } else {
-                        m_data[which(n)] &= ~bit1(where(n));
+                        m_data[which(x)] &= ~bit1(where(x));
                 }
-                assert(!contains(n));
+                assert(!contains(x));
                 return *this;
         }
 
@@ -685,7 +683,7 @@ public:
                         m_data[0] = ~m_data[0];
                         m_data[1] = ~m_data[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto&& block : m_data) {
+                        for (auto& block : m_data) {
                                 block = ~block;
                         }
                 }
@@ -693,14 +691,33 @@ public:
                 return *this;
         }
 
-        constexpr auto contains(value_type const n) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
         {
-                assert(0 <= n); assert(n < N);
+                assert(0 <= x); assert(x < N);
                 if constexpr (num_blocks == 1) {
-                        return (m_data[0] & bit1(n)) != zero;
+                        return (m_data[0] & bit1(x)) != zero;
                 } else {
-                        return (m_data[which(n)] & bit1(where(n))) != zero;
+                        return (m_data[which(x)] & bit1(where(x))) != zero;
                 }
+        }
+
+        constexpr auto find(key_type const& x) // Throws: Nothing.
+        {
+                assert(0 <= x); assert(x < N);
+                return contains(x) ? iterator{data(), x} : end();
+        }
+
+        constexpr auto find(key_type const& x) const // Throws: Nothing.
+        {
+                assert(0 <= x); assert(x < N);
+                return contains(x) ? const_iterator{data(), x} : cend();
+        }
+
+        constexpr auto count(key_type const& x) const // Throws: Nothing.
+                -> size_type
+        {
+                assert(0 <= x); assert(x < N);
+                return contains(x);
         }
 
         constexpr auto& operator&=(int_set const& other [[maybe_unused]]) noexcept
@@ -775,7 +792,7 @@ public:
                         auto const L_shift = n % block_size;
 
                         if (L_shift == 0) {
-                                std::copy_backward(std::begin(m_data), std::prev(std::end(m_data), n_block), std::end(m_data));
+                                std::copy_backward(std::cbegin(m_data), std::prev(std::cend(m_data), n_block), std::end(m_data));
                         } else {
                                 auto const R_shift = block_size - L_shift;
 
@@ -805,7 +822,7 @@ public:
                         auto const R_shift = n % block_size;
 
                         if (R_shift == 0) {
-                                std::copy_n(std::next(std::begin(m_data), n_block), num_blocks - n_block, std::begin(m_data));
+                                std::copy_n(std::next(std::cbegin(m_data), n_block), num_blocks - n_block, std::begin(m_data));
                         } else {
                                 auto const L_shift = block_size - R_shift;
 
@@ -1124,8 +1141,8 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(int_set<N, UIntType> const& lhs [[ma
                 return tied(lhs) == tied(rhs);
         } else if constexpr (num_blocks >= 3) {
                 return std::equal(
-                        std::begin(lhs.m_data), std::end(lhs.m_data),
-                        std::begin(rhs.m_data), std::end(rhs.m_data)
+                        std::cbegin(lhs.m_data), std::cend(lhs.m_data),
+                        std::cbegin(rhs.m_data), std::cend(rhs.m_data)
                 );
         }
 }
@@ -1151,8 +1168,8 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(int_set<N, UIntType> const& lhs [[may
                 return tied(lhs) < tied(rhs);
         } else if constexpr (num_blocks >= 3) {
                 return std::lexicographical_compare(
-                        std::rbegin(lhs.m_data), std::rend(lhs.m_data),
-                        std::rbegin(rhs.m_data), std::rend(rhs.m_data)
+                        std::crbegin(lhs.m_data), std::crend(lhs.m_data),
+                        std::crbegin(rhs.m_data), std::crend(rhs.m_data)
                 );
         }
 }
@@ -1173,86 +1190,6 @@ template<int N, class UIntType>
 XSTD_PP_CONSTEXPR_ALGORITHM auto operator<=(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
 {
         return !(rhs < lhs);
-}
-
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
-{
-        constexpr static auto num_blocks = int_set<N, UIntType>::num_blocks;
-        constexpr static auto zero [[maybe_unused]] = int_set<N, UIntType>::zero;
-        if constexpr (num_blocks == 0) {
-                return true;
-        } else if constexpr (num_blocks == 1) {
-                return (lhs.m_data[0] & ~rhs.m_data[0]) == zero;
-        } else if constexpr (num_blocks == 2) {
-                return
-                        (lhs.m_data[0] & ~rhs.m_data[0]) == zero &&
-                        (lhs.m_data[1] & ~rhs.m_data[1]) == zero
-                ;
-        } else if constexpr (num_blocks >= 3) {
-                return std::equal(
-                        std::begin(lhs.m_data), std::end(lhs.m_data),
-                        std::begin(rhs.m_data), std::end(rhs.m_data),
-                        [](auto const wL, auto const wR) {
-                                return (wL & ~wR) == zero;
-                        }
-                );
-        }
-}
-
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_superset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
-{
-        return is_subset_of(rhs, lhs);
-}
-
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_subset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
-{
-        return is_subset_of(lhs, rhs) && !is_subset_of(rhs, lhs);
-}
-
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_superset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
-{
-        return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
-}
-
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
-{
-        constexpr static auto num_blocks = int_set<N, UIntType>::num_blocks;
-        constexpr static auto zero [[maybe_unused]] = int_set<N, UIntType>::zero;
-        if constexpr (num_blocks == 0) {
-                return false;
-        } else if constexpr (num_blocks == 1) {
-                return (lhs.m_data[0] & rhs.m_data[0]) != zero;
-        } else if constexpr (num_blocks == 2) {
-                return
-                        (lhs.m_data[0] & rhs.m_data[0]) != zero ||
-                        (lhs.m_data[1] & rhs.m_data[1]) != zero
-                ;
-        } else if constexpr (num_blocks >= 3) {
-                return !std::equal(
-                        std::begin(lhs.m_data), std::end(lhs.m_data),
-                        std::begin(rhs.m_data), std::end(rhs.m_data),
-                        [](auto const wL, auto const wR) {
-                                return (wL & wR) == zero;
-                        }
-                );
-        }
-}
-
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto disjoint(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
-{
-        return !intersects(lhs, rhs);
-}
-
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_SWAP auto swap(int_set<N, UIntType>& lhs, int_set<N, UIntType>& rhs) noexcept(noexcept(lhs.swap(rhs)))
-{
-        lhs.swap(rhs);
 }
 
 template<int N, class UIntType>
@@ -1297,6 +1234,86 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator>>(int_set<N, UIntType> const& lhs, int
 {
         assert(0 <= n); assert(n < N);
         auto nrv{lhs}; nrv >>= n; return nrv;
+}
+
+template<int N, class UIntType>
+XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
+{
+        constexpr static auto num_blocks = int_set<N, UIntType>::num_blocks;
+        constexpr static auto zero [[maybe_unused]] = int_set<N, UIntType>::zero;
+        if constexpr (num_blocks == 0) {
+                return true;
+        } else if constexpr (num_blocks == 1) {
+                return (lhs.m_data[0] & ~rhs.m_data[0]) == zero;
+        } else if constexpr (num_blocks == 2) {
+                return
+                        (lhs.m_data[0] & ~rhs.m_data[0]) == zero &&
+                        (lhs.m_data[1] & ~rhs.m_data[1]) == zero
+                ;
+        } else if constexpr (num_blocks >= 3) {
+                return std::equal(
+                        std::cbegin(lhs.m_data), std::cend(lhs.m_data),
+                        std::cbegin(rhs.m_data), std::cend(rhs.m_data),
+                        [](auto const wL, auto const wR) {
+                                return (wL & ~wR) == zero;
+                        }
+                );
+        }
+}
+
+template<int N, class UIntType>
+XSTD_PP_CONSTEXPR_ALGORITHM auto is_superset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+{
+        return is_subset_of(rhs, lhs);
+}
+
+template<int N, class UIntType>
+XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_subset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+{
+        return is_subset_of(lhs, rhs) && !is_subset_of(rhs, lhs);
+}
+
+template<int N, class UIntType>
+XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_superset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+{
+        return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
+}
+
+template<int N, class UIntType>
+XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
+{
+        constexpr static auto num_blocks = int_set<N, UIntType>::num_blocks;
+        constexpr static auto zero [[maybe_unused]] = int_set<N, UIntType>::zero;
+        if constexpr (num_blocks == 0) {
+                return false;
+        } else if constexpr (num_blocks == 1) {
+                return (lhs.m_data[0] & rhs.m_data[0]) != zero;
+        } else if constexpr (num_blocks == 2) {
+                return
+                        (lhs.m_data[0] & rhs.m_data[0]) != zero ||
+                        (lhs.m_data[1] & rhs.m_data[1]) != zero
+                ;
+        } else if constexpr (num_blocks >= 3) {
+                return !std::equal(
+                        std::cbegin(lhs.m_data), std::cend(lhs.m_data),
+                        std::cbegin(rhs.m_data), std::cend(rhs.m_data),
+                        [](auto const wL, auto const wR) {
+                                return (wL & wR) == zero;
+                        }
+                );
+        }
+}
+
+template<int N, class UIntType>
+XSTD_PP_CONSTEXPR_ALGORITHM auto disjoint(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+{
+        return !intersects(lhs, rhs);
+}
+
+template<int N, class UIntType>
+XSTD_PP_CONSTEXPR_SWAP auto swap(int_set<N, UIntType>& lhs, int_set<N, UIntType>& rhs) noexcept(noexcept(lhs.swap(rhs)))
+{
+        lhs.swap(rhs);
 }
 
 template<int N, class UIntType>
@@ -1384,10 +1401,17 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto crend(int_set<N, UIntType> const& is)
 }
 
 template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto empty(int_set<N, UIntType> const& is)
+[[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(int_set<N, UIntType> const& is)
         -> decltype(is.empty())
 {
         return is.empty();
+}
+
+template<int N, class UIntType>
+XSTD_PP_CONSTEXPR_ALGORITHM auto size(int_set<N, UIntType> const& is)
+        -> decltype(is.size())
+{
+        return is.size();
 }
 
 }       // namespace xstd

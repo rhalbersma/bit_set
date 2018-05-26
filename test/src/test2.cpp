@@ -5,8 +5,7 @@
 
 #include <bitset>                               // bitset
 #include <xstd/int_set.hpp>                     // int_set
-#include <legacy/bitset.hpp>                    // bitset
-#include <legacy/int_set.hpp>                   // int_set
+#include <legacy.hpp>                           // bitset, int_set
 #include <exhaustive.hpp>                       // all_values, all_singleton_sets, all_singleton_set_pairs,
                                                 // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
 #include <primitive.hpp>                        // constructor, mem_assign, const_reference, const_iterator, mem_all_of, mem_any_of, me_none_of,
@@ -108,6 +107,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
         });
         all_doubleton_ilists<T>([](auto ilist2) {
                 mem_erase{}(T{}, ilist2);
+        });
+
+        all_values<T>([](auto const& x) {
+                all_singleton_sets<T>([&](auto& i1){
+                        mem_find{}(i1, x);
+                });
+                all_singleton_sets<T>([&](auto const& i1){
+                        mem_find{}(i1, x);
+                });
+        });
+
+        all_values<T>([](auto const& x) {
+                all_singleton_sets<T>([&](auto const& i1){
+                        mem_count{}(i1, x);
+                });
         });
 
         all_singleton_set_pairs<T>(fn_swap{});

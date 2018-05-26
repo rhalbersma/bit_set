@@ -93,11 +93,11 @@ constexpr static auto has_reverse_for_each_v<IntSet, UnaryFunction, std::void_t<
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_static_max_size_v = false;
+constexpr static auto has_max_size_v = false;
 
 template<class IntSet>
-constexpr static auto has_static_max_size_v<IntSet, std::void_t<decltype(
-        IntSet::max_size()
+constexpr static auto has_max_size_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>().max_size()
 )>> = true;
 
 template<class IntSet, class = void>
@@ -170,6 +170,22 @@ constexpr static auto has_ilist_erase_v = false;
 template<class IntSet, class ValueType>
 constexpr static auto has_ilist_erase_v<IntSet, ValueType, std::void_t<decltype(
         std::declval<IntSet>().erase(std::declval<std::initializer_list<ValueType>>())
+)>> = true;
+
+template<class IntSet, class KeyType, class = void>
+constexpr static auto has_find_v = false;
+
+template<class IntSet, class KeyType>
+constexpr static auto has_find_v<IntSet, KeyType, std::void_t<decltype(
+        std::declval<IntSet>().find(std::declval<KeyType>())
+)>> = true;
+
+template<class IntSet, class KeyType, class = void>
+constexpr static auto has_count_v = false;
+
+template<class IntSet, class KeyType>
+constexpr static auto has_count_v<IntSet, KeyType, std::void_t<decltype(
+        std::declval<IntSet>().count(std::declval<KeyType>())
 )>> = true;
 
 }       // namespace tti

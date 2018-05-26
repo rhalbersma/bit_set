@@ -4,12 +4,12 @@
 [![](https://tokei.rs/b1/github/rhalbersma/int_set)](https://github.com/rhalbersma/int_set)
 
 Rebooting the `std::bitset` franchise
--------------------------------------
+=====================================
 
 An `int_set<N>` is a modern reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `int_set`s are array-backed sets of integers that are compact and fast: they do less (i.e. they don't do bounds-checking, and they don't throw exceptions) and offer more (e.g. iterators to seamlessly interact with the rest of the Standard Library). This enables you to do your bit-twiddling with familiar syntax, typically leading to cleaner, more expressive code.
 
 Hello World
------------
+===========
 
 The code below demonstrates how an `int_set` is a drop-in replacement for `std::set<int>` for generating all primes less than a compile time number. With an `int_set`, the usual STL-style iterator code remains valid with the same semantics but with much better performance through higher data parallelism.
 
@@ -71,8 +71,71 @@ For power users, bit-twiddling syntax will make the code even more expressive an
     #endif
     }
 
+The class template `int_set`
+============================
+
+The `int_set<N>` interface is equivalent to the full `set<int>` interface, plus the bitwise operators (`&=`, `|=`, `^=`, `<<=`, `>>=`, `~`, `&`, `|`, `^`, `<<`, `>>`) from `bitset<N>`.
+
+Syntactic differences with `bitset` expressions
+-----------------------------------------------
+
+Most of the `bitset` interface has a direct syntactic translation in `int_set`, with only minor semantic differences.
+
+| Expression for `bitset<N>` | Expression for `int_set<N>` | Semantic difference for `int_set<N>` |
+| :------------------------- | :-------------------------- | :----------------------------------- |
+| `bs.set()`                 | `is.fill()`                 | does not return `*this`       |
+| `bs.set(pos)`              | `is.insert(pos)`            | does not `throw out_of_range` |
+| `bs.set(pos, val)`         | `val ? is.insert(pos) : is.erase(pos)` | does not `throw out_of_range` |
+| `bs.reset()`               | `is.clear()`                | does not return `*this`       |
+| `bs.reset(pos)`            | `is.erase(pos)`             | does not `throw out_of_range` |
+| `bs.count()`               | `is.size()`                 | `size_type` is signed         |
+| `bs.size()`                | `is.max_size()`             | `size_type` is signed         |
+| `bs.test(pos)`             | `is.contains(pos)`          | does not `throw out_of_range` |
+| `bs.all()`                 | `is.full()`                 | |
+| `bs.any()`                 | `!is.empty()`               | |
+| `bs.none()`                | `is.empty()`                | |
+| `bs[pos]`                  | `is.contains(pos)`          | |
+| `bs[pos] = val`            | `val ? is.insert(pos) : is.erase(pos)` | |
+| `std::hash(bs)`            | `xstd::uhash<H>(is)`        | [N3980: Types don't know #](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html) |
+
+The differences are in the return type of `set()` and `reset()`, the exception safety of member functions taking a position value as argument, and the signedness of the `size_type`. For argument values outside the interval `[0, N)`, the behavior for the `int_set` member functions `insert`, `erase` and `contains` is undefined.
+
+Semantic differences with `bitset` expressions
+---------------------------------------------------------------------
+
+The bitwise operators in `int_set` have identical syntax and *almost* the same semantics as in `bitset`.
+
+| Expression for `bitset<N>` | Expression for `int_set<N>` | Notes for `int_set<N>`        |
+| :------------------------- | :-------------------------- | :---------------------------- |
+| `bs <<= pos`               | `is <<= pos`                | does not `throw out_of_range` |
+| `bs >>= pos`               | `is >>= pos`                | does not `throw out_of_range` |
+| `bs << pos`                | `is << pos`                 | does not `throw out_of_range` |
+| `bs >> pos`                | `is >> pos`                 | does not `throw out_of_range` |
+
+The only difference is that the bitwise-shift operators don't throw exceptions in `int_set`. For argument values outside the interval `[0, N)`, the behavior for the `int_set` bitwise-shift operators is undefined.
+
+Functionality from `bitset` that is not in `int_set`
+----------------------------------------------------
+
+  - **Constructors**: No construction from `unsigned long long`, `std::string` or `char const*`.
+  - **Conversion**: No conversion to `unsigned long`, `unsigned long long` and `std::string`.
+  - **I/O**: No overloaded I/O streaming through overloaded `operator>>` and `operator<<`.
+
+Data parallel algorithms on sorted ranges
+-----------------------------------------
+
+| Expression for `int_set<N>` | Expression for `set<int>` |
+| :-------------------------- | :------------------------ |
+| `is_subset_of(a, b)` | `includes(a.begin(), a.end(), b.begin(), b.end())` |
+| `auto c = a & b` | `set<int> c; set_intersection` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
+| `auto c = a | b` | `set<int> c; set_union` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
+| `auto c = a ^ b` | `set<int> c; set_symmetric_difference(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
+| `auto c = a - b` | `set<int> c; set_difference` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
+| `auto b = a << pos` | `set<int> b; transform(a.begin(), a.end(), inserter(b, b.end()), [=](auto x) { return x + pos; })` |
+| `auto b = a >> pos` | `set<int> b; transform(a.begin(), a.end(), inserter(b, b.end()), [=](auto x) { return x - pos; })` |
+
 Frequently Asked Questions
---------------------------
+==========================
 
 **Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?   
 **A**: Using proxy iterators, which hold a pointer and an offset.
@@ -136,7 +199,7 @@ Frequently Asked Questions
     }
 
 Requirements
-------------
+============
 
 This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++17](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4659.pdf) compilers:
 
@@ -146,7 +209,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Windows  | Visual Studio  |                    15.7 | [![Build status](https://ci.appveyor.com/api/projects/status/pn0u2i8mcfp4d9un?svg=true)](https://ci.appveyor.com/project/rhalbersma/int-set) |
 
 License
--------
+=======
 
 Copyright Rein Halbersma 2014-2018.   
 Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/users/license.html).   

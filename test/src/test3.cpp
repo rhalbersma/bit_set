@@ -5,8 +5,7 @@
 
 #include <bitset>                               // bitset
 #include <xstd/int_set.hpp>                     // int_set
-#include <legacy/bitset.hpp>                    // bitset
-#include <legacy/int_set.hpp>                   // int_set
+#include <legacy.hpp>                           // bitset, int_set
 #include <exhaustive.hpp>                       // all_singleton_set_triples
 #include <primitive.hpp>                        // op_bitand, op_bitor, op_xor
 #include <boost/mpl/vector.hpp>                 // vector
