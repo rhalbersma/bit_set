@@ -130,7 +130,7 @@ Data parallel algorithms on sorted ranges
 | :-------------------------- | :------------------------ |
 | `is_subset_of(a, b)` | `includes(a.begin(), a.end(), b.begin(), b.end())` |
 | `auto c = a & b` | `set<int> c; set_intersection` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
-| `auto c = a | b` | `set<int> c; set_union` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
+| <code>auto c = b &#124; b</code> | `set<int> c; set_union` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
 | `auto c = a ^ b` | `set<int> c; set_symmetric_difference(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
 | `auto c = a - b` | `set<int> c; set_difference` &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; `(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
 | `auto b = a << pos` | `set<int> b; transform(a.begin(), a.end(), inserter(b, b.end()), [=](auto x) { return x + pos; })` |
