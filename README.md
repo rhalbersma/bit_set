@@ -77,9 +77,9 @@ Documentation
 =============
 
 The interface for the class template `xstd::int_set<N>` consist of four major pieces:
-  1. the full interface of the [class template `std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
-  2. bitwise operators `&=`, `|=`, `^=`, `<<=`, `>>=`, `~`, `&`, `|`, `^`, `<<`, `>>` from the [class template `std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset);
-  3. non-member functions `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in the [class template `boost::dynamic_bitset<Block, Allocator>`](https://www.boost.org/doc/libs/1_67_0/libs/dynamic_bitset/dynamic_bitset.html);
+  1. the full interface of the class template [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
+  2. bitwise operators `&=`, `|=`, `^=`, `<<=`, `>>=`, `~`, `&`, `|`, `^`, `<<`, `>>` from the class template [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset);
+  3. non-member functions `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in the class template [`boost::dynamic_bitset<Block, Allocator>`](https://www.boost.org/doc/libs/1_67_0/libs/dynamic_bitset/dynamic_bitset.html);
   4. member functions `all_of`, `any_of`, `none_of`, `accumulate`, `foreach`, and `reverse_foreach` that provide performance-optimized versions of the equivalent non-member algorithms from `<algorithm>` and `<numeric>`.
 
 The main difference between `set<int>` and `int_set<N>` is that an `int_set<N>` has a statically (i.e. at compile-time) defined maximum size of `N`. Inserting values outside the interval `[0, N)` into an `int_set<N>` is **undefined behavior**.
