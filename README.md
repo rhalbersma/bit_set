@@ -128,13 +128,13 @@ Data parallel algorithms on sorted ranges
 
 | Expression for `int_set<N>` | Expression for `set<int>` |
 | :-------------------------- | :------------------------ |
-| `is_subset_of(a, b)` | `includes(a.begin(), a.end(), b.begin(), b.end())` |
-| `auto c = a & b`     | `set<int> c;` <br> `set_intersection(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
-| <code>auto c = b &#124; b</code> | `set<int> c;` <br> `set_union(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
-| `auto c = a ^ b`     | `set<int> c;` <br> `set_symmetric_difference(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
-| `auto c = a - b`     | `set<int> c;` <br> `set_difference(a.begin(), a.end(), b.begin(), b.end(), inserter(c, c.end()))` |
-| `auto b = a << pos`  | `set<int> b;` <br> `transform(a.begin(), a.end(), inserter(b, b.end()), [=](auto x) { return x + pos; })` |
-| `auto b = a >> pos`  | `set<int> b;` <br> `transform(a.begin(), a.end(), inserter(b, b.end()), [=](auto x) { return x - pos; })` |
+| `is_subset_of(a, b)` | `includes(begin(a), end(a), begin(b), end(b))` |
+| `auto c = a & b`     | `set<int> c;` <br> `set_intersection(begin(a), end(a), begin(b), end(b), inserter(c, end(c)))` |
+| <code>auto c = b &#124; b</code> | `set<int> c;` <br> `set_union(begin(a), end(a), begin(b), end(b), inserter(c, end(c)))` |
+| `auto c = a ^ b`     | `set<int> c;` <br> `set_symmetric_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)))` |
+| `auto c = a - b`     | `set<int> c;` <br> `set_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)))` |
+| `auto b = a << n`    | `set<int> b;` <br> `transform(begin(a), end(a), inserter(b, end(b)), [=](int x){ return x + n; })` |
+| `auto b = a >> n`    | `set<int> b;` <br> `transform(begin(a), end(a), inserter(b, end(b)), [=](int x){ return x - n; })` |
 
 Frequently Asked Questions
 ==========================
