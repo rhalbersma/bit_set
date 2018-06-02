@@ -939,7 +939,7 @@ struct op_at
 struct mem_find
 {
         template<class IntSet, class KeyType>
-        auto operator()(IntSet& is, KeyType const& x) const
+        auto operator()(IntSet& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
         {
                 if constexpr (tti::has_find_v<IntSet, KeyType>) {
                         BOOST_CHECK(is.find(x) == std::find(is.cbegin(), is.cend(), x));
@@ -947,7 +947,7 @@ struct mem_find
         }
 
         template<class IntSet, class KeyType>
-        auto operator()(IntSet const& is, KeyType const& x) const
+        auto operator()(IntSet const& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
         {
                 if constexpr (tti::has_find_v<IntSet, KeyType>) {
                         BOOST_CHECK(is.find(x) == std::find(is.cbegin(), is.cend(), x));
@@ -958,7 +958,7 @@ struct mem_find
 struct mem_count
 {
         template<class IntSet, class KeyType>
-        auto operator()(IntSet const& is, KeyType const& x) const
+        auto operator()(IntSet const& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
         {
                 if constexpr (tti::has_count_v<IntSet, KeyType>) {
                         BOOST_CHECK(is.count(x) == std::count(is.cbegin(), is.cend(), x));
