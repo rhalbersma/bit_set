@@ -174,12 +174,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
         all_singleton_sets<T>(op_xor{});
         all_singleton_sets<T>(op_minus{});
 
+        all_cardinality_sets<T>(fn_is_subset_of{});
         all_singleton_sets<T>(fn_is_subset_of{});
+        all_cardinality_sets<T>(fn_is_superset_of{});
         all_singleton_sets<T>(fn_is_superset_of{});
+        all_cardinality_sets<T>(fn_is_proper_subset_of{});
         all_singleton_sets<T>(fn_is_proper_subset_of{});
+        all_cardinality_sets<T>(fn_is_proper_superset_of{});
         all_singleton_sets<T>(fn_is_proper_superset_of{});
 
+        all_cardinality_sets<T>(fn_intersects{});
         all_singleton_sets<T>(fn_intersects{});
+        all_cardinality_sets<T>(fn_disjoint{});
         all_singleton_sets<T>(fn_disjoint{});
 }
 
