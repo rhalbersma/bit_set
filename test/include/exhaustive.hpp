@@ -69,7 +69,7 @@ auto all_singleton_sets(UnaryFunction fun)
 
         for (auto i = SizeType{0}; i < N; ++i) {
                 IntSet tmp;
-                auto i1 = set(tmp, i);
+                auto i1 = insert(tmp, i);
                 fun(i1);
         }
 }
@@ -113,7 +113,7 @@ auto all_doubleton_sets(UnaryFunction fun)
         for (auto j = SizeType{1}; j < N; ++j) {
                 for (auto i = SizeType{0}; i < j; ++i) {
                         IntSet tmp;
-                        auto ij2 = set(set(tmp, i), j);
+                        auto ij2 = insert(insert(tmp, i), j);
                         fun(ij2);
                 }
         }
@@ -127,10 +127,10 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 
         for (auto i = SizeType{0}; i < N; ++i) {
                 IntSet tmp1;
-                auto i1 = set(tmp1, i);
+                auto i1 = insert(tmp1, i);
                 for (auto j = SizeType{0}; j < N; ++j) {
                         IntSet tmp2;
-                        auto j1 = set(tmp2, j);
+                        auto j1 = insert(tmp2, j);
                         fun(i1, j1);
                 }
         }
@@ -146,13 +146,13 @@ auto all_singleton_set_triples(TernaryFunction fun)
 
         for (auto i = SizeType{0}; i < N; ++i) {
                 IntSet tmp1;
-                auto i1 = set(tmp1, i);
+                auto i1 = insert(tmp1, i);
                 for (auto j = SizeType{0}; j < N; ++j) {
                         IntSet tmp2;
-                        auto j1 = set(tmp2, j);
+                        auto j1 = insert(tmp2, j);
                         for (auto k = SizeType{0}; k < N; ++k) {
                                 IntSet tmp3;
-                                auto k1 = set(tmp3, k);
+                                auto k1 = insert(tmp3, k);
                                 fun(i1, j1, k1);
                         }
                 }

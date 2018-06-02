@@ -12,12 +12,12 @@
 namespace xstd {
 namespace tti {
 
-template<class IntSet, class = void>
-constexpr static auto has_op_minus_assign_v = false;
+template<class IntSet, class InputIterator, class = void>
+constexpr static auto has_range_assign_v = false;
 
-template<class IntSet>
-constexpr static auto has_op_minus_assign_v<IntSet, std::void_t<decltype(
-        std::declval<IntSet>() -= std::declval<IntSet>()
+template<class IntSet, class InputIterator>
+constexpr static auto has_range_assign_v<IntSet, InputIterator, std::void_t<decltype(
+        std::declval<IntSet>().assign(std::declval<InputIterator>(), std::declval<InputIterator>())
 )>> = true;
 
 template<class IntSet, class = void>
@@ -45,6 +45,14 @@ constexpr static auto has_back_v<IntSet, std::void_t<decltype(
 )>> = true;
 
 template<class IntSet, class UnaryPredicate, class = void>
+constexpr static auto has_all_of_v = false;
+
+template<class IntSet, class UnaryPredicate>
+constexpr static auto has_all_of_v<IntSet, UnaryPredicate, std::void_t<decltype(
+        std::declval<IntSet>().all_of(std::declval<UnaryPredicate>())
+)>> = true;
+
+template<class IntSet, class UnaryPredicate, class = void>
 constexpr static auto has_any_of_v = false;
 
 template<class IntSet, class UnaryPredicate>
@@ -58,14 +66,6 @@ constexpr static auto has_none_of_v = false;
 template<class IntSet, class UnaryPredicate>
 constexpr static auto has_none_of_v<IntSet, UnaryPredicate, std::void_t<decltype(
         std::declval<IntSet>().none_of(std::declval<UnaryPredicate>())
-)>> = true;
-
-template<class IntSet, class UnaryPredicate, class = void>
-constexpr static auto has_all_of_v = false;
-
-template<class IntSet, class UnaryPredicate>
-constexpr static auto has_all_of_v<IntSet, UnaryPredicate, std::void_t<decltype(
-        std::declval<IntSet>().all_of(std::declval<UnaryPredicate>())
 )>> = true;
 
 template<class IntSet, class T, class BinaryOperation, class = void>
@@ -101,11 +101,11 @@ constexpr static auto has_max_size_v<IntSet, std::void_t<decltype(
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_static_capacity_v = false;
+constexpr static auto has_empty_v = false;
 
 template<class IntSet>
-constexpr static auto has_static_capacity_v<IntSet, std::void_t<decltype(
-        IntSet::capacity()
+constexpr static auto has_empty_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>().empty()
 )>> = true;
 
 template<class IntSet, class = void>
@@ -114,22 +114,6 @@ constexpr static auto has_full_v = false;
 template<class IntSet>
 constexpr static auto has_full_v<IntSet, std::void_t<decltype(
         std::declval<IntSet>().full()
-)>> = true;
-
-template<class IntSet, class = void>
-constexpr static auto has_empty_v = false;
-
-template<class IntSet>
-constexpr static auto has_empty_v<IntSet, std::void_t<decltype(
-        std::declval<IntSet>().empty()
-)>> = true;
-
-template<class IntSet, class InputIterator, class = void>
-constexpr static auto has_range_assign_v = false;
-
-template<class IntSet, class InputIterator>
-constexpr static auto has_range_assign_v<IntSet, InputIterator, std::void_t<decltype(
-        std::declval<IntSet>().assign(std::declval<InputIterator>(), std::declval<InputIterator>())
 )>> = true;
 
 template<class IntSet, class ValueType, class = void>
@@ -186,6 +170,14 @@ constexpr static auto has_count_v = false;
 template<class IntSet, class KeyType>
 constexpr static auto has_count_v<IntSet, KeyType, std::void_t<decltype(
         std::declval<IntSet>().count(std::declval<KeyType>())
+)>> = true;
+
+template<class IntSet, class = void>
+constexpr static auto has_op_minus_assign_v = false;
+
+template<class IntSet>
+constexpr static auto has_op_minus_assign_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>() -= std::declval<IntSet>()
 )>> = true;
 
 }       // namespace tti

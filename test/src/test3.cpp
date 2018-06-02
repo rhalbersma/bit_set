@@ -7,7 +7,9 @@
 #include <xstd/int_set.hpp>                     // int_set
 #include <legacy.hpp>                           // bitset, int_set
 #include <exhaustive.hpp>                       // all_singleton_set_triples
-#include <primitive.hpp>                        // op_bitand, op_bitor, op_xor
+#include <primitive.hpp>                        // op_equal_to, op_less, op_greater, op_greater_equal, op_less_equal
+                                                // fn_is_subset_of, fn_is_superset_of, fn_is_proper_subset_of, fn_is_proper_superset_of
+                                                // op_bitand, op_bitor, op_xor
 #include <boost/mpl/vector.hpp>                 // vector
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
@@ -25,7 +27,21 @@ using SetTypes = boost::mpl::vector
 ,       int_set<64, uint32_t>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ExhaustivelyTestAssociativityAndDistributivity, T, SetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, SetTypes)
+{
+        all_singleton_set_triples<T>(op_equal_to{});
+        all_singleton_set_triples<T>(op_less{});
+        all_singleton_set_triples<T>(op_greater{});
+        all_singleton_set_triples<T>(op_greater_equal{});
+        all_singleton_set_triples<T>(op_less_equal{});
+
+        all_singleton_set_triples<T>(fn_is_subset_of{});
+        all_singleton_set_triples<T>(fn_is_superset_of{});
+        all_singleton_set_triples<T>(fn_is_proper_subset_of{});
+        all_singleton_set_triples<T>(fn_is_proper_superset_of{});
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(AssociativityAndDistributivity, T, SetTypes)
 {
         all_singleton_set_triples<T>(op_bitand{});
         all_singleton_set_triples<T>(op_bitor{});

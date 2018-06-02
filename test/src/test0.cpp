@@ -6,7 +6,7 @@
 #include <bitset>                               // bitset
 #include <xstd/int_set.hpp>                     // int_set
 #include <legacy.hpp>                           // bitset, int_set
-#include <primitive.hpp>                        // constructor, mem_capacity, fn_test
+#include <primitive.hpp>                        // constructor
 #include <boost/mpl/vector.hpp>                 // vector
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
@@ -41,8 +41,6 @@ using SetTypes = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
 {
         constructor<T>{}();
-        mem_capacity<T>{}();
-        fn_test{}(T{});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

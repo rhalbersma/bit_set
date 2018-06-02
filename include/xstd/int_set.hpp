@@ -303,8 +303,8 @@ class int_set;
 
 template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM auto operator==  (int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
 template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM auto operator<   (int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
-template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
-template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM auto intersects  (int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
+template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM bool is_subset_of(int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
+template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM bool intersects  (int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
 
 template<int N, class UIntType = std::size_t>
 class int_set
@@ -406,7 +406,7 @@ public:
         XSTD_PP_CONSTEXPR_INTRINSIC auto any_of(UnaryPredicate pred [[maybe_unused]]) const
         {
                 if constexpr (num_blocks == 1) {
-                        for (auto block = m_data[0]; block != zero; /* update inside loop */) {
+                        for (auto block = m_data[0]; block; /* update inside loop */) {
                                 auto const first = detail::bsfnz(block);
                                 if (pred(first)) {
                                         return true;
@@ -415,7 +415,7 @@ public:
                         }
                 } else if constexpr (num_blocks >= 2) {
                         for (auto i = 0, offset = 0; i < num_blocks; ++i, offset += block_size) {
-                                for (auto block = m_data[i]; block != zero; /* update inside loop */) {
+                                for (auto block = m_data[i]; block; /* update inside loop */) {
                                         auto const first = detail::bsfnz(block);
                                         if (pred(offset + first)) {
                                                 return true;
@@ -444,14 +444,14 @@ public:
         {
                 auto result = std::move(init);
                 if constexpr (num_blocks == 1) {
-                        for (auto block = m_data[0]; block != zero; /* update inside loop */) {
+                        for (auto block = m_data[0]; block; /* update inside loop */) {
                                 auto const first = detail::bsfnz(block);
                                 result = op(result, first);
                                 block ^= bit1(first);
                         }
                 } else if constexpr (num_blocks >= 2) {
                         for (auto i = 0, offset = 0; i < num_blocks; ++i, offset += block_size) {
-                                for (auto block = m_data[i]; block != zero; /* update inside loop */) {
+                                for (auto block = m_data[i]; block; /* update inside loop */) {
                                         auto const first = detail::bsfnz(block);
                                         result = op(result, offset + first);
                                         block ^= bit1(first);
@@ -465,14 +465,14 @@ public:
         XSTD_PP_CONSTEXPR_INTRINSIC auto for_each(UnaryFunction fun) const
         {
                 if constexpr (num_blocks == 1) {
-                        for (auto block = m_data[0]; block != zero; /* update inside loop */) {
+                        for (auto block = m_data[0]; block; /* update inside loop */) {
                                 auto const first = detail::bsfnz(block);
                                 fun(first);
                                 block ^= bit1(first);
                         }
                 } else if constexpr (num_blocks >= 2) {
                         for (auto i = 0, offset = 0; i < num_blocks; ++i, offset += block_size) {
-                                for (auto block = m_data[i]; block != zero; /* update inside loop */) {
+                                for (auto block = m_data[i]; block; /* update inside loop */) {
                                         auto const first = detail::bsfnz(block);
                                         fun(offset + first);
                                         block ^= bit1(first);
@@ -486,14 +486,14 @@ public:
         XSTD_PP_CONSTEXPR_INTRINSIC auto reverse_for_each(UnaryFunction fun) const
         {
                 if constexpr (num_blocks == 1) {
-                        for (auto block = m_data[0]; block != zero; /* update inside loop */) {
+                        for (auto block = m_data[0]; block; /* update inside loop */) {
                                 auto const last = detail::bsrnz(block);
                                 fun(last);
                                 block ^= bit1(last);
                         }
                 } else if constexpr (num_blocks >= 2) {
                         for (auto i = num_blocks - 1, offset = (num_blocks - 1) * block_size; i >= 0; --i, offset -= block_size) {
-                                for (auto block = m_data[i]; block != zero; /* update inside loop */) {
+                                for (auto block = m_data[i]; block; /* update inside loop */) {
                                         auto const last = detail::bsrnz(block);
                                         fun(offset + last);
                                         block ^= bit1(last);
@@ -501,6 +501,22 @@ public:
                         }
                 }
                 return std::move(fun);
+        }
+
+        [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty() const noexcept
+                -> bool
+        {
+                if constexpr (num_blocks == 0) {
+                        return true;
+                } else if constexpr (num_blocks == 1) {
+                        return !m_data[0];
+                } else if constexpr (num_blocks == 2) {
+                        return !m_data[0] && !m_data[1];
+                } else if constexpr (num_blocks >= 3) {
+                        return std::none_of(std::cbegin(m_data), std::cend(m_data), [](auto const block) -> bool {
+                                return block;
+                        });
+                }
         }
 
         [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto full() const noexcept
@@ -533,21 +549,6 @@ public:
                 }
         }
 
-        [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty() const noexcept
-        {
-                if constexpr (num_blocks == 0) {
-                        return true;
-                } else if constexpr (num_blocks == 1) {
-                        return m_data[0] == zero;
-                } else if constexpr (num_blocks == 2) {
-                        return m_data[0] == zero && m_data[1] == zero;
-                } else if constexpr (num_blocks >= 3) {
-                        return std::all_of(std::cbegin(m_data), std::cend(m_data), [](auto const block) {
-                                return block == zero;
-                        });
-                }
-        }
-
         XSTD_PP_CONSTEXPR_INTRINSIC auto size() const noexcept
         {
                 if constexpr (num_blocks == 0) {
@@ -563,8 +564,10 @@ public:
                 }
         }
 
-        constexpr auto max_size() const noexcept { return N; }
-        constexpr static auto capacity() noexcept { return num_bits; }
+        constexpr auto max_size() const noexcept
+        {
+                return N;
+        }
 
         constexpr auto& insert(value_type const n) // Throws: Nothing.
         {
@@ -664,7 +667,7 @@ public:
                 assert(empty());
         }
 
-        constexpr auto& toggle(value_type const n) // Throws: Nothing.
+        constexpr auto& replace(value_type const n) // Throws: Nothing.
         {
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_blocks == 1) {
@@ -675,7 +678,7 @@ public:
                 return *this;
         }
 
-        constexpr auto& toggle() noexcept
+        constexpr auto complement() noexcept
         {
                 if constexpr (num_blocks == 1) {
                         m_data[0] = ~m_data[0];
@@ -688,16 +691,16 @@ public:
                         }
                 }
                 sanitize_back();
-                return *this;
         }
 
         [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
+                -> bool
         {
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_blocks == 1) {
-                        return (m_data[0] & bit1(x)) != zero;
+                        return m_data[0] & bit1(x);
                 } else {
-                        return (m_data[which(x)] & bit1(where(x))) != zero;
+                        return m_data[which(x)] & bit1(where(x));
                 }
         }
 
@@ -842,7 +845,7 @@ public:
         template<class HashAlgorithm>
         friend constexpr auto hash_append(HashAlgorithm& h, int_set const& is) noexcept
         {
-                h(is.data(), is.capacity() / std::numeric_limits<unsigned char>::digits);
+                h(is.data(), num_bits / std::numeric_limits<unsigned char>::digits);
         }
 
 private:
@@ -896,7 +899,7 @@ private:
                 } else if constexpr (num_blocks >= 2) {
                         auto offset = 0;
                         for (auto i = 0; i < num_blocks; ++i, offset += block_size) {
-                                if (auto const block = m_data[i]; block != zero) {
+                                if (auto const block = m_data[i]; block) {
                                         offset += detail::ctznz(block);
                                         break;
                                 }
@@ -912,14 +915,14 @@ private:
                         return detail::bsfnz(m_data[0]);
                 } else if constexpr (num_blocks == 2) {
                         return
-                                (m_data[0] != zero) ?
+                                m_data[0] ?
                                 detail::bsfnz(m_data[0]) :
                                 detail::bsfnz(m_data[1]) + block_size
                         ;
                 } else {
                         auto offset = 0;
                         for (auto i = 0; i < num_blocks - 1; ++i, offset += block_size) {
-                                if (auto const block = m_data[i]; block != zero) {
+                                if (auto const block = m_data[i]; block) {
                                         return offset + detail::ctznz(block);
                                 }
                         }
@@ -934,14 +937,14 @@ private:
                         return detail::bsrnz(m_data[0]);
                 } else if constexpr (num_blocks == 2) {
                         return
-                                (m_data[1] != zero) ?
+                                m_data[1] ?
                                 detail::bsrnz(m_data[1]) + block_size :
                                 detail::bsrnz(m_data[0])
                         ;
                 } else {
                         auto offset = num_bits - 1;
                         for (auto i = num_blocks - 1; i > 0; --i, offset -= block_size) {
-                                if (auto const block = m_data[i]; block != zero) {
+                                if (auto const block = m_data[i]; block) {
                                         return offset - detail::clznz(block);
                                 }
                         }
@@ -1069,7 +1072,7 @@ private:
                         assert(m_value < N);
                         if (++m_value == num_bits) { return; }
                         if constexpr (num_blocks == 1) {
-                                if (auto const block = *m_block >> m_value; block != zero) {
+                                if (auto const block = *m_block >> m_value; block) {
                                         m_value += detail::ctznz(block);
                                         return;
                                 }
@@ -1077,7 +1080,7 @@ private:
                         } else if constexpr (num_blocks >= 2) {
                                 auto i = which(m_value);
                                 if (auto const offset = where(m_value); offset != 0) {
-                                        if (auto const block = m_block[i] >> offset; block != zero) {
+                                        if (auto const block = m_block[i] >> offset; block) {
                                                 m_value += detail::ctznz(block);
                                                 return;
                                         }
@@ -1085,7 +1088,7 @@ private:
                                         m_value += block_size - offset;
                                 }
                                 for (/* initialized before loop */; i < num_blocks; ++i, m_value += block_size) {
-                                        if (auto const block = m_block[i]; block != zero) {
+                                        if (auto const block = m_block[i]; block) {
                                                 m_value += detail::ctznz(block);
                                                 return;
                                         }
@@ -1103,7 +1106,7 @@ private:
                         } else if constexpr (num_blocks >= 2) {
                                 auto i = which(m_value);
                                 if (auto const offset = where(m_value); offset != block_size - 1) {
-                                        if (auto const block = m_block[i] << (block_size - 1 - offset); block != zero) {
+                                        if (auto const block = m_block[i] << (block_size - 1 - offset); block) {
                                                 m_value -= detail::clznz(block);
                                                 return;
                                         }
@@ -1111,7 +1114,7 @@ private:
                                         m_value -= offset + 1;
                                 }
                                 for (/* initialized before loop */; i >= 0; --i, m_value -= block_size) {
-                                        if (auto const block = m_block[i]; block != zero) {
+                                        if (auto const block = m_block[i]; block) {
                                                 m_value -= detail::clznz(block);
                                                 return;
                                         }
@@ -1122,8 +1125,8 @@ private:
 
         friend XSTD_PP_CONSTEXPR_ALGORITHM auto operator==  <>(int_set const& /* lhs */, int_set const& /* rhs */) noexcept;
         friend XSTD_PP_CONSTEXPR_ALGORITHM auto operator<   <>(int_set const& /* lhs */, int_set const& /* rhs */) noexcept;
-        friend XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of<>(int_set const& /* lhs */, int_set const& /* rhs */) noexcept;
-        friend XSTD_PP_CONSTEXPR_ALGORITHM auto intersects  <>(int_set const& /* lhs */, int_set const& /* rhs */) noexcept;
+        friend XSTD_PP_CONSTEXPR_ALGORITHM bool is_subset_of<>(int_set const& /* lhs */, int_set const& /* rhs */) noexcept;
+        friend XSTD_PP_CONSTEXPR_ALGORITHM bool intersects  <>(int_set const& /* lhs */, int_set const& /* rhs */) noexcept;
 };
 
 template<int N, class UIntType>
@@ -1195,7 +1198,7 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator<=(int_set<N, UIntType> const& lhs, int
 template<int N, class UIntType>
 constexpr auto operator~(int_set<N, UIntType> const& lhs) noexcept
 {
-        auto nrv{lhs}; nrv.toggle(); return nrv;
+        auto nrv{lhs}; nrv.complement(); return nrv;
 }
 
 template<int N, class UIntType>
@@ -1238,24 +1241,24 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator>>(int_set<N, UIntType> const& lhs, int
 
 template<int N, class UIntType>
 XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
+        -> bool
 {
         constexpr static auto num_blocks = int_set<N, UIntType>::num_blocks;
-        constexpr static auto zero [[maybe_unused]] = int_set<N, UIntType>::zero;
         if constexpr (num_blocks == 0) {
                 return true;
         } else if constexpr (num_blocks == 1) {
-                return (lhs.m_data[0] & ~rhs.m_data[0]) == zero;
+                return !(lhs.m_data[0] & ~rhs.m_data[0]);
         } else if constexpr (num_blocks == 2) {
                 return
-                        (lhs.m_data[0] & ~rhs.m_data[0]) == zero &&
-                        (lhs.m_data[1] & ~rhs.m_data[1]) == zero
+                        !(lhs.m_data[0] & ~rhs.m_data[0]) &&
+                        !(lhs.m_data[1] & ~rhs.m_data[1])
                 ;
         } else if constexpr (num_blocks >= 3) {
                 return std::equal(
                         std::cbegin(lhs.m_data), std::cend(lhs.m_data),
                         std::cbegin(rhs.m_data), std::cend(rhs.m_data),
-                        [](auto const wL, auto const wR) {
-                                return (wL & ~wR) == zero;
+                        [](auto const wL, auto const wR) -> bool {
+                                return !(wL & ~wR);
                         }
                 );
         }
@@ -1281,24 +1284,24 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_superset_of(int_set<N, UIntType> cons
 
 template<int N, class UIntType>
 XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
+        -> bool
 {
         constexpr static auto num_blocks = int_set<N, UIntType>::num_blocks;
-        constexpr static auto zero [[maybe_unused]] = int_set<N, UIntType>::zero;
         if constexpr (num_blocks == 0) {
                 return false;
         } else if constexpr (num_blocks == 1) {
-                return (lhs.m_data[0] & rhs.m_data[0]) != zero;
+                return lhs.m_data[0] & rhs.m_data[0];
         } else if constexpr (num_blocks == 2) {
                 return
-                        (lhs.m_data[0] & rhs.m_data[0]) != zero ||
-                        (lhs.m_data[1] & rhs.m_data[1]) != zero
+                        (lhs.m_data[0] & rhs.m_data[0]) ||
+                        (lhs.m_data[1] & rhs.m_data[1])
                 ;
         } else if constexpr (num_blocks >= 3) {
                 return !std::equal(
                         std::cbegin(lhs.m_data), std::cend(lhs.m_data),
                         std::cbegin(rhs.m_data), std::cend(rhs.m_data),
-                        [](auto const wL, auto const wR) {
-                                return (wL & wR) == zero;
+                        [](auto const wL, auto const wR) -> bool {
+                                return !(wL & wR);
                         }
                 );
         }

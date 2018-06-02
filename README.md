@@ -93,9 +93,11 @@ Most `bitset` expressions have a direct translation to equivalent `int_set` expr
 | :------------------------- | :------------------------------------- | :-------------------------------------------------- |
 | `bs.set()`                 | `is.fill()`                            | does not return `*this`                             |
 | `bs.set(pos)`              | `is.insert(pos)`                       | does not do bounds-checking or throw `out_of_range` |
-| `bs.set(pos, val)`         | `val ? is.insert(pos) : is.erase(pos)` | does not throw `out_of_range`                       |
+| `bs.set(pos, val)`         | `val ? is.insert(pos) : is.erase(pos)` | does not do bounds-checking or throw `out_of_range` |
 | `bs.reset()`               | `is.clear()`                           | does not return `*this`                             |
 | `bs.reset(pos)`            | `is.erase(pos)`                        | does not do bounds-checking or throw `out_of_range` |
+| `bs.flip()`                | `is.complement()`                      | does not return `*this`                             |
+| `bs.flip(pos)`             | `is.replace(pos)`                      | does not do bounds-checking or throw `out_of_range` |
 | `bs.count()`               | `is.size()`                            | `size_type` is signed                               |
 | `bs.size()`                | `is.max_size()`                        | `size_type` is signed                               |
 | `bs.test(pos)`             | `is.contains(pos)`                     | does not do bounds-checking or throw `out_of_range` |
@@ -106,7 +108,7 @@ Most `bitset` expressions have a direct translation to equivalent `int_set` expr
 | `bs[pos] = val`            | `val ? is.insert(pos) : is.erase(pos)` | |
 | `std::hash(bs)`            | `xstd::uhash<H>(is)`                   | [N3980: Types don't know #](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html) |
 
-The semantic differences are that `int_set` has a signed integral `size_type`, has a `void` return type for its members `fill()` and `clear()`, and does not do bounds-checking for its members `insert`, `erase` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this behavior is undefined.
+The semantic differences are that `int_set` has a signed integral `size_type`, has a `void` return type for its members `fill()`, `clear()` and `complement()`, and does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this behavior is undefined.
 
 Semantic differences with bitwise-shift operators
 -------------------------------------------------
@@ -144,7 +146,7 @@ Many of the bitwise operators for `int_set` are equivalent to algorithms on sort
 | `auto c = a ^ b;`                 | `set<int> c;` <br> `set_symmetric_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
 | `auto c = a - b;`                 | `set<int> c;` <br> `set_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
 | `auto b = a << n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x){ return x + n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x){ return x < N; });` |
-| `auto b = a >> n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x){ return x - n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x){ return x >= 0; });` |
+| `auto b = a >> n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x){ return x - n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x){ return 0 <= x; });` |
 
 The difference with iterator-based algorithms on general sorted ranges is that the bitwise operators from `int_set` provide **composable** and **data-parallel** versions of these algorithms. For the upcoming [Range TS](http://en.cppreference.com/w/cpp/experimental/ranges), these algorithms can also be formulated in a composable way, but without the data-parallellism that `int_set` provides.
 
