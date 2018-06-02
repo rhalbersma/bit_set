@@ -373,10 +373,10 @@ public:
                 return *this;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()         noexcept { return       iterator{data(), find_first()}; }
-        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()   const noexcept { return const_iterator{data(), find_first()}; }
-        constexpr                   auto end()           noexcept { return       iterator{data(), num_bits}; }
-        constexpr                   auto end()     const noexcept { return const_iterator{data(), num_bits}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()         noexcept { return       iterator{*data(), find_first()}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()   const noexcept { return const_iterator{*data(), find_first()}; }
+        constexpr                   auto end()           noexcept { return       iterator{*data(), num_bits}; }
+        constexpr                   auto end()     const noexcept { return const_iterator{*data(), num_bits}; }
 
         constexpr                   auto rbegin()        noexcept { return       reverse_iterator{end()}; }
         constexpr                   auto rbegin()  const noexcept { return const_reverse_iterator{end()}; }
@@ -464,7 +464,7 @@ public:
         template<class UnaryFunction>
         XSTD_PP_CONSTEXPR_INTRINSIC auto for_each(UnaryFunction fun) const
         {
-                if constexpr (num_blocks == 1) {
+               if constexpr (num_blocks == 1) {
                         for (auto block = m_data[0]; block; /* update inside loop */) {
                                 auto const first = detail::bsfnz(block);
                                 fun(first);
@@ -585,7 +585,7 @@ public:
                 -> iterator
         {
                 insert(n);
-                return { data(), n };
+                return { *data(), n };
         }
 
         template<class InputIterator>
@@ -707,13 +707,13 @@ public:
         constexpr auto find(key_type const& x) // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
-                return contains(x) ? iterator{data(), x} : end();
+                return contains(x) ? iterator{*data(), x} : end();
         }
 
         constexpr auto find(key_type const& x) const // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
-                return contains(x) ? const_iterator{data(), x} : cend();
+                return contains(x) ? const_iterator{*data(), x} : cend();
         }
 
         constexpr auto count(key_type const& x) const // Throws: Nothing.
@@ -954,11 +954,6 @@ private:
 
         class proxy_reference
         {
-                constexpr auto assert_invariants() const noexcept
-                {
-                        assert(0 <= m_value); assert(m_value < N);
-                }
-
                 block_type const& m_block;
                 value_type const m_value;
         public:
@@ -975,7 +970,7 @@ private:
                         m_block{b},
                         m_value{v}
                 {
-                        assert_invariants();
+                        assert(0 <= m_value); assert(m_value < N);
                 }
 
                 proxy_reference& operator=(value_type const) = delete;
@@ -1002,24 +997,18 @@ private:
                 using iterator_category = std::bidirectional_iterator_tag;
 
         private:
-                constexpr auto assert_invariants() const noexcept
-                {
-                        assert(m_block != nullptr);
-                        assert(0 <= m_value); assert(m_value < N || m_value == num_bits);
-                }
-
                 block_type const* m_block;
                 value_type m_value;
 
         public:
                 proxy_iterator() = default;
 
-                constexpr proxy_iterator(block_type const* b, value_type const v) // Throws: Nothing.
+                constexpr proxy_iterator(block_type const& b, value_type const v) // Throws: Nothing.
                 :
-                        m_block{b},
+                        m_block{&b},
                         m_value{v}
                 {
-                        assert_invariants();
+                        assert(0 <= m_value); assert(m_value < N || m_value == num_bits);
                 }
 
                 constexpr auto operator*() const // Throws: Nothing.
