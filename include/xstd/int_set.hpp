@@ -534,12 +534,12 @@ public:
                                 });
                         }
                 } else {
+                        static_assert(num_blocks >= 1);
                         if constexpr (num_blocks == 1) {
                                 return m_data[0] == sane;
                         } else if constexpr (num_blocks == 2) {
                                 return m_data[0] == ones && m_data[1] == sane;
-                        } else {
-                                static_assert(num_blocks >= 3);
+                        } else if constexpr (num_blocks >= 3) {
                                 return
                                         std::all_of(std::cbegin(m_data), std::prev(std::cend(m_data)), [](auto const block) {
                                                 return block == ones;
@@ -574,7 +574,7 @@ public:
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_blocks == 1) {
                         m_data[0] |= bit1(n);
-                } else {
+                } else if constexpr (num_blocks >= 2) {
                         m_data[which(n)] |= bit1(where(n));
                 }
                 assert(contains(n));
@@ -620,7 +620,7 @@ public:
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_blocks == 1) {
                         m_data[0] &= ~bit1(x);
-                } else {
+                } else if constexpr (num_blocks >= 2) {
                         m_data[which(x)] &= ~bit1(where(x));
                 }
                 assert(!contains(x));
@@ -672,36 +672,21 @@ public:
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_blocks == 1) {
                         m_data[0] ^= bit1(n);
-                } else {
+                } else if constexpr (num_blocks >= 2) {
                         m_data[which(n)] ^= bit1(where(n));
                 }
                 return *this;
         }
 
-        constexpr auto complement() noexcept
-        {
-                if constexpr (num_blocks == 1) {
-                        m_data[0] = ~m_data[0];
-                } else if constexpr (num_blocks == 2) {
-                        m_data[0] = ~m_data[0];
-                        m_data[1] = ~m_data[1];
-                } else if constexpr (num_blocks >= 3) {
-                        for (auto& block : m_data) {
-                                block = ~block;
-                        }
-                }
-                sanitize_back();
-        }
-
         [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
-                -> bool
         {
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_blocks == 1) {
-                        return m_data[0] & bit1(x);
-                } else {
-                        return m_data[which(x)] & bit1(where(x));
+                        if (m_data[0] & bit1(x)) { return true; }
+                } else if constexpr (num_blocks >= 2) {
+                        if (m_data[which(x)] & bit1(where(x))) { return true ; }
                 }
+                return false;
         }
 
         constexpr auto find(key_type const& x) // Throws: Nothing.
@@ -721,6 +706,22 @@ public:
         {
                 assert(0 <= x); assert(x < N);
                 return contains(x);
+        }
+
+        constexpr auto& complement() noexcept
+        {
+                if constexpr (num_blocks == 1) {
+                        m_data[0] = ~m_data[0];
+                } else if constexpr (num_blocks == 2) {
+                        m_data[0] = ~m_data[0];
+                        m_data[1] = ~m_data[1];
+                } else if constexpr (num_blocks >= 3) {
+                        for (auto& block : m_data) {
+                                block = ~block;
+                        }
+                }
+                sanitize_back();
+                return *this;
         }
 
         constexpr auto& operator&=(int_set const& other [[maybe_unused]]) noexcept
@@ -813,7 +814,7 @@ public:
                 return *this;
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto& operator>>=(size_type const n) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_ALGORITHM auto& operator>>=(size_type const n [[maybe_unused]]) // Throws: Nothing.
         {
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_blocks == 1) {
@@ -855,20 +856,21 @@ private:
 
         constexpr static auto bit1(value_type const n) // Throws: Nothing.
         {
+                static_assert(num_blocks >= 1);
                 assert(0 <= n); assert(n < block_size);
                 return static_cast<block_type>(1) << n;
         }
 
         constexpr static auto which(value_type const n) // Throws: Nothing.
         {
-                static_assert(num_blocks != 1);
+                static_assert(num_blocks >= 2);
                 assert(0 <= n); assert(n < num_bits);
                 return n / block_size;
         }
 
         constexpr static auto where(value_type const n) // Throws: Nothing.
         {
-                static_assert(num_blocks != 1);
+                static_assert(num_blocks >= 2);
                 assert(0 <= n); assert(n < num_bits);
                 return n % block_size;
         }
@@ -876,12 +878,8 @@ private:
         constexpr auto sanitize_back() noexcept
         {
                 if constexpr (excess_bits != 0) {
-                        if constexpr (num_blocks == 1) {
-                                m_data[0] &= sane;
-                        } else {
-                                static_assert(num_blocks >= 2);
-                                m_data[num_blocks - 1] &= sane;
-                        }
+                        static_assert(num_blocks >= 1);
+                        m_data[num_blocks - 1] &= sane;
                 }
         }
 
@@ -1233,7 +1231,7 @@ template<int N, class UIntType>
 XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
         -> bool
 {
-        constexpr static auto num_blocks = int_set<N, UIntType>::num_blocks;
+        constexpr auto num_blocks = int_set<N, UIntType>::num_blocks;
         if constexpr (num_blocks == 0) {
                 return true;
         } else if constexpr (num_blocks == 1) {
@@ -1247,7 +1245,9 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& lhs [[
                 return std::equal(
                         std::cbegin(lhs.m_data), std::cend(lhs.m_data),
                         std::cbegin(rhs.m_data), std::cend(rhs.m_data),
-                        [](auto const wL, auto const wR) -> bool {
+                        [](auto const wL, auto const wR)
+                                -> bool
+                        {
                                 return !(wL & ~wR);
                         }
                 );
@@ -1276,7 +1276,7 @@ template<int N, class UIntType>
 XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
         -> bool
 {
-        constexpr static auto num_blocks = int_set<N, UIntType>::num_blocks;
+        constexpr auto num_blocks = int_set<N, UIntType>::num_blocks;
         if constexpr (num_blocks == 0) {
                 return false;
         } else if constexpr (num_blocks == 1) {
@@ -1290,7 +1290,9 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, UIntType> const& lhs [[ma
                 return !std::equal(
                         std::cbegin(lhs.m_data), std::cend(lhs.m_data),
                         std::cbegin(rhs.m_data), std::cend(rhs.m_data),
-                        [](auto const wL, auto const wR) -> bool {
+                        [](auto const wL, auto const wR)
+                                -> bool
+                        {
                                 return !(wL & wR);
                         }
                 );
