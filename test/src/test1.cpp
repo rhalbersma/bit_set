@@ -75,19 +75,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
         all_cardinality_sets<T>(mem_back{});
         all_singleton_sets<T>(mem_back{});
 
-        all_cardinality_sets<T>([](auto const& in) {
-                mem_accumulate{}(in, 0);
-        });
-        all_singleton_sets<T>([](auto const& i1) {
-                mem_accumulate{}(i1, 0);
-        });
-
-        all_cardinality_sets<T>(mem_for_each{});
-        all_singleton_sets<T>(mem_for_each{});
-
-        all_cardinality_sets<T>(mem_reverse_for_each{});
-        all_singleton_sets<T>(mem_reverse_for_each{});
-
         all_cardinality_sets<T>(fn_fill{});
         all_singleton_sets<T>(fn_fill{});
         all_cardinality_sets<T>(fn_insert{});

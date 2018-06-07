@@ -44,54 +44,6 @@ constexpr static auto has_back_v<IntSet, std::void_t<decltype(
         std::declval<IntSet>().back()
 )>> = true;
 
-template<class IntSet, class UnaryPredicate, class = void>
-constexpr static auto has_all_of_v = false;
-
-template<class IntSet, class UnaryPredicate>
-constexpr static auto has_all_of_v<IntSet, UnaryPredicate, std::void_t<decltype(
-        std::declval<IntSet>().all_of(std::declval<UnaryPredicate>())
-)>> = true;
-
-template<class IntSet, class UnaryPredicate, class = void>
-constexpr static auto has_any_of_v = false;
-
-template<class IntSet, class UnaryPredicate>
-constexpr static auto has_any_of_v<IntSet, UnaryPredicate, std::void_t<decltype(
-        std::declval<IntSet>().any_of(std::declval<UnaryPredicate>())
-)>> = true;
-
-template<class IntSet, class UnaryPredicate, class = void>
-constexpr static auto has_none_of_v = false;
-
-template<class IntSet, class UnaryPredicate>
-constexpr static auto has_none_of_v<IntSet, UnaryPredicate, std::void_t<decltype(
-        std::declval<IntSet>().none_of(std::declval<UnaryPredicate>())
-)>> = true;
-
-template<class IntSet, class T, class BinaryOperation, class = void>
-constexpr static auto has_accumulate_v = false;
-
-template<class IntSet, class T, class BinaryOperation>
-constexpr static auto has_accumulate_v<IntSet, T, BinaryOperation, std::void_t<decltype(
-        std::declval<IntSet>().accumulate(std::declval<T>(), std::declval<BinaryOperation>())
-)>> = true;
-
-template<class IntSet, class UnaryFunction, class = void>
-constexpr static auto has_for_each_v = false;
-
-template<class IntSet, class UnaryFunction>
-constexpr static auto has_for_each_v<IntSet, UnaryFunction, std::void_t<decltype(
-        std::declval<IntSet>().for_each(std::declval<UnaryFunction>())
-)>> = true;
-
-template<class IntSet, class UnaryFunction, class = void>
-constexpr static auto has_reverse_for_each_v = false;
-
-template<class IntSet, class UnaryFunction>
-constexpr static auto has_reverse_for_each_v<IntSet, UnaryFunction, std::void_t<decltype(
-        std::declval<IntSet>().reverse_for_each(std::declval<UnaryFunction>())
-)>> = true;
-
 template<class IntSet, class = void>
 constexpr static auto has_max_size_v = false;
 

@@ -373,10 +373,10 @@ public:
                 return *this;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()         noexcept { return       iterator{data(), find_first()}; }
-        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()   const noexcept { return const_iterator{data(), find_first()}; }
-        constexpr                   auto end()           noexcept { return       iterator{data(), num_bits}; }
-        constexpr                   auto end()     const noexcept { return const_iterator{data(), num_bits}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()         noexcept { return       iterator{this, find_first()}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()   const noexcept { return const_iterator{this, find_first()}; }
+        constexpr                   auto end()           noexcept { return       iterator{this, N}; }
+        constexpr                   auto end()     const noexcept { return const_iterator{this, N}; }
 
         constexpr                   auto rbegin()        noexcept { return       reverse_iterator{end()}; }
         constexpr                   auto rbegin()  const noexcept { return const_reverse_iterator{end()}; }
@@ -392,115 +392,14 @@ public:
                 -> const_reference
         {
                 assert(!empty());
-                return { *data(), find_front() };
+                return { *this, find_front() };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC auto back() const // Throws: Nothing.
                 -> const_reference
         {
                 assert(!empty());
-                return { *data(), find_back() };
-        }
-
-        template<class UnaryPredicate>
-        XSTD_PP_CONSTEXPR_INTRINSIC auto any_of(UnaryPredicate pred [[maybe_unused]]) const
-        {
-                if constexpr (num_blocks == 1) {
-                        for (auto block = m_data[0]; block; /* update inside loop */) {
-                                auto const first = detail::bsfnz(block);
-                                if (pred(first)) {
-                                        return true;
-                                }
-                                block ^= bit1(first);
-                        }
-                } else if constexpr (num_blocks >= 2) {
-                        for (auto i = 0, offset = 0; i < num_blocks; ++i, offset += block_size) {
-                                for (auto block = m_data[i]; block; /* update inside loop */) {
-                                        auto const first = detail::bsfnz(block);
-                                        if (pred(offset + first)) {
-                                                return true;
-                                        }
-                                        block ^= bit1(first);
-                                }
-                        }
-                }
-                return false;
-        }
-
-        template<class UnaryPredicate>
-        XSTD_PP_CONSTEXPR_INTRINSIC auto none_of(UnaryPredicate pred [[maybe_unused]]) const
-        {
-                return !any_of(pred);
-        }
-
-        template<class UnaryPredicate>
-        XSTD_PP_CONSTEXPR_INTRINSIC auto all_of(UnaryPredicate pred [[maybe_unused]]) const
-        {
-                return !any_of(std::not_fn(pred));
-        }
-
-        template<class T, class BinaryOperation = std::plus<>>
-        XSTD_PP_CONSTEXPR_INTRINSIC auto accumulate(T init, BinaryOperation op [[maybe_unused]] = BinaryOperation{}) const
-        {
-                auto result = std::move(init);
-                if constexpr (num_blocks == 1) {
-                        for (auto block = m_data[0]; block; /* update inside loop */) {
-                                auto const first = detail::bsfnz(block);
-                                result = op(result, first);
-                                block ^= bit1(first);
-                        }
-                } else if constexpr (num_blocks >= 2) {
-                        for (auto i = 0, offset = 0; i < num_blocks; ++i, offset += block_size) {
-                                for (auto block = m_data[i]; block; /* update inside loop */) {
-                                        auto const first = detail::bsfnz(block);
-                                        result = op(result, offset + first);
-                                        block ^= bit1(first);
-                                }
-                        }
-                }
-                return result;
-        }
-
-        template<class UnaryFunction>
-        XSTD_PP_CONSTEXPR_INTRINSIC auto for_each(UnaryFunction fun) const
-        {
-                if constexpr (num_blocks == 1) {
-                        for (auto block = m_data[0]; block; /* update inside loop */) {
-                                auto const first = detail::bsfnz(block);
-                                fun(first);
-                                block ^= bit1(first);
-                        }
-                } else if constexpr (num_blocks >= 2) {
-                        for (auto i = 0, offset = 0; i < num_blocks; ++i, offset += block_size) {
-                                for (auto block = m_data[i]; block; /* update inside loop */) {
-                                        auto const first = detail::bsfnz(block);
-                                        fun(offset + first);
-                                        block ^= bit1(first);
-                                }
-                        }
-                }
-                return std::move(fun);
-        }
-
-        template<class UnaryFunction>
-        XSTD_PP_CONSTEXPR_INTRINSIC auto reverse_for_each(UnaryFunction fun) const
-        {
-                if constexpr (num_blocks == 1) {
-                        for (auto block = m_data[0]; block; /* update inside loop */) {
-                                auto const last = detail::bsrnz(block);
-                                fun(last);
-                                block ^= bit1(last);
-                        }
-                } else if constexpr (num_blocks >= 2) {
-                        for (auto i = num_blocks - 1, offset = (num_blocks - 1) * block_size; i >= 0; --i, offset -= block_size) {
-                                for (auto block = m_data[i]; block; /* update inside loop */) {
-                                        auto const last = detail::bsrnz(block);
-                                        fun(offset + last);
-                                        block ^= bit1(last);
-                                }
-                        }
-                }
-                return std::move(fun);
+                return { *this, find_back() };
         }
 
         [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty() const noexcept
@@ -585,7 +484,7 @@ public:
                 -> iterator
         {
                 insert(n);
-                return { data(), n };
+                return { this, n };
         }
 
         template<class InputIterator>
@@ -601,7 +500,7 @@ public:
                 insert(ilist.begin(), ilist.end());
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto fill() noexcept
+        XSTD_PP_CONSTEXPR_ALGORITHM auto& fill() noexcept
         {
                 if constexpr (num_blocks == 1) {
                         m_data[0] = ones;
@@ -613,6 +512,7 @@ public:
                 }
                 sanitize_back();
                 assert(full());
+                return *this;
         }
 
         constexpr auto& erase(key_type const& x) // Throws: Nothing.
@@ -654,7 +554,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto clear() noexcept
+        XSTD_PP_CONSTEXPR_ALGORITHM auto& clear() noexcept
         {
                 if constexpr (num_blocks == 1) {
                         m_data[0] = zero;
@@ -665,6 +565,7 @@ public:
                         std::fill_n(std::begin(m_data), num_blocks, zero);
                 }
                 assert(empty());
+                return *this;
         }
 
         constexpr auto& replace(value_type const n) // Throws: Nothing.
@@ -692,13 +593,13 @@ public:
         constexpr auto find(key_type const& x) // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
-                return contains(x) ? iterator{data(), x} : end();
+                return contains(x) ? iterator{this, x} : end();
         }
 
         constexpr auto find(key_type const& x) const // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
-                return contains(x) ? const_iterator{data(), x} : cend();
+                return contains(x) ? const_iterator{this, x} : cend();
         }
 
         constexpr auto count(key_type const& x) const // Throws: Nothing.
@@ -864,14 +765,14 @@ private:
         constexpr static auto which(value_type const n) // Throws: Nothing.
         {
                 static_assert(num_blocks >= 2);
-                assert(0 <= n); assert(n < num_bits);
+                assert(0 <= n); assert(n < N);
                 return n / block_size;
         }
 
         constexpr static auto where(value_type const n) // Throws: Nothing.
         {
                 static_assert(num_blocks >= 2);
-                assert(0 <= n); assert(n < num_bits);
+                assert(0 <= n); assert(n < N);
                 return n % block_size;
         }
 
@@ -886,24 +787,6 @@ private:
         constexpr auto const* data() const noexcept
         {
                 return m_data;
-        }
-
-        XSTD_PP_CONSTEXPR_INTRINSIC auto find_first() const noexcept
-        {
-                if constexpr (num_blocks == 0) {
-                        return 0;
-                } else if constexpr (num_blocks == 1) {
-                        return detail::bsf(m_data[0]);
-                } else if constexpr (num_blocks >= 2) {
-                        auto offset = 0;
-                        for (auto i = 0; i < num_blocks; ++i, offset += block_size) {
-                                if (auto const block = m_data[i]; block) {
-                                        offset += detail::ctznz(block);
-                                        break;
-                                }
-                        }
-                        return offset;
-                }
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC auto find_front() const // Throws: Nothing.
@@ -950,9 +833,76 @@ private:
                 }
         }
 
+        XSTD_PP_CONSTEXPR_INTRINSIC auto find_first() const noexcept
+        {
+                if constexpr (num_blocks == 1) {
+                        if (m_data[0]) {
+                                return detail::ctznz(m_data[0]);
+                        }
+                } else if constexpr (num_blocks >= 2) {
+                        auto offset = 0;
+                        for (auto i = 0; i < num_blocks; ++i, offset += block_size) {
+                                if (auto const block = m_data[i]; block) {
+                                        return offset + detail::ctznz(block);
+                                }
+                        }
+                }
+                return N;
+        }
+
+        XSTD_PP_CONSTEXPR_INTRINSIC auto find_next(int n) const // Throws: Nothing.
+        {
+                assert(0 <= n); assert(n < N);
+                if (++n == N) { return N; }
+                if constexpr (num_blocks == 1) {
+                        if (auto const block = m_data[0] >> n; block) {
+                                return n + detail::ctznz(block);
+                        }
+                } else if constexpr (num_blocks >= 2) {
+                        auto i = which(n);
+                        if (auto const offset = where(n); offset != 0) {
+                                if (auto const block = m_data[i] >> offset; block) {
+                                        return n + detail::ctznz(block);
+                                }
+                                ++i;
+                                n += block_size - offset;
+                        }
+                        for (/* initialized before loop */; i < num_blocks; ++i, n += block_size) {
+                                if (auto const block = m_data[i]; block) {
+                                        return n + detail::ctznz(block);
+                                }
+                        }
+                }
+                return N;
+        }
+
+        XSTD_PP_CONSTEXPR_INTRINSIC auto find_prev(int n) const // Throws: Nothing.
+        {
+                assert(0 < n); assert(n <= N);
+                --n;
+                if constexpr (num_blocks == 1) {
+                        return n - detail::clznz(m_data[0] << (block_size - 1 - n));
+                } else if constexpr (num_blocks >= 2) {
+                        auto i = which(n);
+                        if (auto const offset = where(n); offset != block_size - 1) {
+                                if (auto const block = m_data[i] << (block_size - 1 - offset); block) {
+                                        return n - detail::clznz(block);
+                                }
+                                --i;
+                                n -= offset + 1;
+                        }
+                        for (/* initialized before loop */; i >= 0; --i, n -= block_size) {
+                                if (auto const block = m_data[i]; block) {
+                                        return n - detail::clznz(block);
+                                }
+                        }
+                }
+                return n;
+        }
+
         class proxy_reference
         {
-                block_type const& m_block;
+                int_set const& m_is;
                 value_type const m_value;
         public:
                 ~proxy_reference() = default;
@@ -963,9 +913,9 @@ private:
 
                 proxy_reference() = delete;
 
-                constexpr proxy_reference(block_type const& b, value_type const v) noexcept
+                constexpr proxy_reference(int_set const& is, value_type const v) noexcept
                 :
-                        m_block{b},
+                        m_is{is},
                         m_value{v}
                 {
                         assert(0 <= m_value); assert(m_value < N);
@@ -981,7 +931,7 @@ private:
                 constexpr auto operator&() const noexcept
                         -> proxy_iterator
                 {
-                        return { &m_block, m_value };
+                        return { &m_is, m_value };
                 }
         };
 
@@ -995,33 +945,32 @@ private:
                 using iterator_category = std::bidirectional_iterator_tag;
 
         private:
-                block_type const* m_block;
+                int_set const* m_is;
                 value_type m_value;
 
         public:
                 proxy_iterator() = default;
 
-                constexpr proxy_iterator(block_type const* b, value_type const v) // Throws: Nothing.
+                constexpr proxy_iterator(int_set const* is, value_type const v) // Throws: Nothing.
                 :
-                        m_block{b},
+                        m_is{is},
                         m_value{v}
                 {
-                        assert(m_block != nullptr);
-                        assert(0 <= m_value); assert(m_value < N || m_value == num_bits);
+                        assert(0 <= m_value); assert(m_value <= N);
                 }
 
                 constexpr auto operator*() const // Throws: Nothing.
                         -> proxy_reference
                 {
                         assert(0 <= m_value); assert(m_value < N);
-                        return { *m_block, m_value };
+                        return { *m_is, m_value };
                 }
 
                 XSTD_PP_CONSTEXPR_INTRINSIC auto& operator++() // Throws: Nothing.
                 {
                         assert(0 <= m_value); assert(m_value < N);
-                        increment();
-                        assert(0 < m_value); assert(m_value < N || m_value == num_bits);
+                        m_value = m_is->find_next(m_value); 
+                        assert(0 < m_value); assert(m_value <= N);
                         return *this;
                 }
 
@@ -1032,8 +981,8 @@ private:
 
                 XSTD_PP_CONSTEXPR_INTRINSIC auto& operator--() // Throws:Nothing.
                 {
-                        assert(0 < m_value); assert(m_value < N || m_value == num_bits);
-                        decrement();
+                        assert(0 < m_value); assert(m_value <= N);
+                        m_value = m_is->find_prev(m_value);
                         assert(0 <= m_value); assert(m_value < N);
                         return *this;
                 }
@@ -1045,69 +994,13 @@ private:
 
                 friend constexpr auto operator==(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
                 {
-                        assert(lhs.m_block == rhs.m_block);
+                        assert(lhs.m_is == rhs.m_is);
                         return lhs.m_value == rhs.m_value;
                 }
 
                 friend constexpr auto operator!=(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
                 {
                         return !(lhs == rhs);
-                }
-
-        private:
-                XSTD_PP_CONSTEXPR_INTRINSIC auto increment() // Throws: Nothing.
-                {
-                        assert(m_value < N);
-                        if (++m_value == num_bits) { return; }
-                        if constexpr (num_blocks == 1) {
-                                if (auto const block = *m_block >> m_value; block) {
-                                        m_value += detail::ctznz(block);
-                                        return;
-                                }
-                                m_value = block_size;
-                        } else if constexpr (num_blocks >= 2) {
-                                auto i = which(m_value);
-                                if (auto const offset = where(m_value); offset != 0) {
-                                        if (auto const block = m_block[i] >> offset; block) {
-                                                m_value += detail::ctznz(block);
-                                                return;
-                                        }
-                                        ++i;
-                                        m_value += block_size - offset;
-                                }
-                                for (/* initialized before loop */; i < num_blocks; ++i, m_value += block_size) {
-                                        if (auto const block = m_block[i]; block) {
-                                                m_value += detail::ctznz(block);
-                                                return;
-                                        }
-                                }
-                        }
-                        assert(m_value == num_bits);
-                }
-
-                XSTD_PP_CONSTEXPR_INTRINSIC auto decrement() // Throws: Nothing.
-                {
-                        assert(0 < m_value);
-                        --m_value;
-                        if constexpr (num_blocks == 1) {
-                                m_value -= detail::clznz(*m_block << (block_size - 1 - m_value));
-                        } else if constexpr (num_blocks >= 2) {
-                                auto i = which(m_value);
-                                if (auto const offset = where(m_value); offset != block_size - 1) {
-                                        if (auto const block = m_block[i] << (block_size - 1 - offset); block) {
-                                                m_value -= detail::clznz(block);
-                                                return;
-                                        }
-                                        --i;
-                                        m_value -= offset + 1;
-                                }
-                                for (/* initialized before loop */; i >= 0; --i, m_value -= block_size) {
-                                        if (auto const block = m_block[i]; block) {
-                                                m_value -= detail::clznz(block);
-                                                return;
-                                        }
-                                }
-                        }
                 }
         };
 

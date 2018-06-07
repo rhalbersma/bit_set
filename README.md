@@ -13,9 +13,9 @@ Hello World
 
 The code below demonstrates how an `int_set` is a drop-in replacement for `std::set<int>` for generating all primes less than a compile time number. With an `int_set`, the usual STL-style iterator code remains valid with the same semantics but with much better performance through higher data parallelism.
 
-For power users, bit-twiddling syntax will make the code even more expressive and performant. Both the `int_set` iterators and its member function `for_each` call platform dependent intrinsics to lookup the first or last 1-bit. Similar intrinsics are called for counting the number of elements in an `int_set`.
+For power users, bit-twiddling syntax will make the code even more expressive and performant. The `int_set` iterators inside the range-for call platform dependent intrinsics to lookup the first or last 1-bit. Similar intrinsics are called for counting the number of elements in an `int_set`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/jFP5iv9MVoXJYpKH)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/fp9UbnAPCENV82UJ)
 
 ```cpp
 #include "xstd/int_set.hpp"
@@ -65,9 +65,9 @@ int main()
 
 #if USE_INT_SET
     // find all twin primes below N: bit-twiddling power-up
-    (primes & primes >> 2).for_each([&](auto p) {
-        std::cout << p << ',' << (p + 2) << '\n';
-    });
+    for (auto twin : primes & primes >> 2) {
+        std::cout << twin << ',' << (twin + 2) << '\n';
+    }
     std::cout << '\n';
 #endif
 }
@@ -76,11 +76,10 @@ int main()
 Documentation
 =============
 
-The interface for the class template `xstd::int_set<N>` consist of four major pieces:
+The interface for the class template `xstd::int_set<N>` consist of three major pieces:
   1. the full interface of the class template [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
   2. bitwise operators `&=`, `|=`, `^=`, `<<=`, `>>=`, `~`, `&`, `|`, `^`, `<<`, `>>` from the class template [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset);
   3. non-member functions `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in the class template [`boost::dynamic_bitset<Block, Allocator>`](https://www.boost.org/doc/libs/1_67_0/libs/dynamic_bitset/dynamic_bitset.html);
-  4. member functions `all_of`, `any_of`, `none_of`, `accumulate`, `foreach`, and `reverse_foreach` that provide performance-optimized versions of the equivalent non-member algorithms from `<algorithm>` and `<numeric>`.
 
 The main difference between `set<int>` and `int_set<N>` is that an `int_set<N>` has a statically (i.e. at compile-time) defined maximum size of `N`. Inserting values outside the interval `[0, N)` into an `int_set<N>` is **undefined behavior**.
 
@@ -91,12 +90,12 @@ Most `bitset` expressions have a direct translation to equivalent `int_set` expr
 
 | Expression for `bitset<N>` | Expression for `int_set<N>`            | Semantics for `int_set<N>`                          |
 | :------------------------- | :------------------------------------- | :-------------------------------------------------- |
-| `bs.set()`                 | `is.fill()`                            | does not return `*this`                             |
+| `bs.set()`                 | `is.fill()`                            | |
 | `bs.set(pos)`              | `is.insert(pos)`                       | does not do bounds-checking or throw `out_of_range` |
 | `bs.set(pos, val)`         | `val ? is.insert(pos) : is.erase(pos)` | does not do bounds-checking or throw `out_of_range` |
-| `bs.reset()`               | `is.clear()`                           | does not return `*this`                             |
+| `bs.reset()`               | `is.clear()`                           | |
 | `bs.reset(pos)`            | `is.erase(pos)`                        | does not do bounds-checking or throw `out_of_range` |
-| `bs.flip()`                | `is.complement()`                      | does not return `*this`                             |
+| `bs.flip()`                | `is.complement()`                      | |
 | `bs.flip(pos)`             | `is.replace(pos)`                      | does not do bounds-checking or throw `out_of_range` |
 | `bs.count()`               | `is.size()`                            | `size_type` is signed                               |
 | `bs.size()`                | `is.max_size()`                        | `size_type` is signed                               |
@@ -108,7 +107,7 @@ Most `bitset` expressions have a direct translation to equivalent `int_set` expr
 | `bs[pos] = val`            | `val ? is.insert(pos) : is.erase(pos)` | |
 | `std::hash(bs)`            | `xstd::uhash<H>(is)`                   | [N3980: Types don't know #](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html) |
 
-The semantic differences are that `int_set` has a signed integral `size_type`, has a `void` return type for its members `fill()`, `clear()` and `complement()`, and does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this behavior is undefined.
+The semantic differences are that `int_set` has a signed integral `size_type` and does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this behavior is undefined.
 
 Semantic differences with bitwise-shift operators
 -------------------------------------------------
@@ -177,7 +176,7 @@ Frequently Asked Questions
 **Q**: I'm no fool, but a C++ programmer, how do I break things?   
 **A**: If you insist, it is possible to use `int_set` iterators incorrectly by relying on too many implicit conversions.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/c9As9dfOjwLiHX7c)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/1hD8lFDPveVbFdJx)
 
 ```cpp
 #include "xstd/int_set.hpp"
@@ -209,7 +208,7 @@ int main()
 
     // at most one user-defined conversion allowed
     // xstd::int_set::reference -> int -> Int is an error
-    // std::set::reference == int -> Int is OK
+    // std::set::reference == int& -> int -> Int is OK
     std::copy(primes.begin(), primes.end(), std::inserter(s, s.end()));
 
     std::copy(s.begin(), s.end(), std::experimental::make_ostream_joiner(std::cout, ','));

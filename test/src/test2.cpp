@@ -53,33 +53,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
         all_doubleton_sets<T>(const_reference{});
         all_doubleton_sets<T>(const_iterator{});
 
-        all_values<T>([](auto const pos) {
-                all_singleton_sets<T>([&](auto const& i1) {
-                        mem_any_of{}(i1, [&](auto const elem) {
-                                return elem == pos;
-                        });
-                });
-        });
-
-        all_values<T>([](auto const pos) {
-                all_singleton_sets<T>([&](auto const& i1) {
-                        mem_none_of{}(i1, [&](auto const elem) {
-                                return elem == pos;
-                        });
-                });
-        });
-
-        all_values<T>([](auto const pos) {
-                all_singleton_sets<T>([&](auto const& i1) {
-                        mem_all_of{}(i1, [&](auto const elem) {
-                                return elem == pos;
-                        });
-                });
-        });
-
-        all_doubleton_sets<T>(mem_for_each{});
-        all_doubleton_sets<T>(mem_reverse_for_each{});
-
         all_singleton_set_pairs<T>(op_bitand_assign{});
         all_singleton_set_pairs<T>(op_bitor_assign{});
         all_singleton_set_pairs<T>(op_xor_assign{});

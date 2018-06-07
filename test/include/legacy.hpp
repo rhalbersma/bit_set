@@ -24,8 +24,7 @@ auto& fill(std::bitset<N>& bs) noexcept
 template<int N, class UIntType>
 auto& fill(int_set<N, UIntType>& is) noexcept
 {
-        is.fill();
-        return is;
+        return is.fill();
 }
 
 template<std::size_t N>
@@ -50,8 +49,7 @@ auto& clear(std::bitset<N>& bs) noexcept
 template<int N, class UIntType>
 auto& clear(int_set<N, UIntType>& is) noexcept
 {
-        is.clear();
-        return is;
+        return is.clear();
 }
 
 template<std::size_t N>
@@ -76,8 +74,7 @@ auto& complement(std::bitset<N>& bs) noexcept
 template<int N, class UIntType>
 auto& complement(int_set<N, UIntType>& is) noexcept
 {
-        is.complement();
-        return is;
+        return is.complement();
 }
 
 template<std::size_t N>
