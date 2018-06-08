@@ -361,16 +361,10 @@ public:
                 int_set(ilist.begin(), ilist.end())
         {}
 
-        template<class InputIterator>
-        auto assign(InputIterator first, InputIterator last) // Throws: Nothing.
-        {
-                clear();
-                insert(first, last);
-        }
-
         auto& operator=(std::initializer_list<value_type> ilist) // Throws: Nothing.
         {
-                assign(ilist.begin(), ilist.end());
+                clear();
+                insert(ilist.begin(), ilist.end());
                 return *this;
         }
 

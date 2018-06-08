@@ -7,7 +7,7 @@
 #include <xstd/int_set.hpp>                     // int_set
 #include <legacy.hpp>                           // bitset, int_set
 #include <exhaustive.hpp>                       // all_values, all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets
-#include <primitive.hpp>                        // constructor, mem_assign, const_reference, const_iterator, mem_front, mem_back,
+#include <primitive.hpp>                        // constructor, const_reference, const_iterator, mem_front, mem_back,
                                                 // mem_accumulate, mem_for_each, mem_reverse_for_each,
                                                 // fn_fill, fn_insert, mem_insert, fn_clear, fn_erase, mem_erase,
                                                 // op_compl, fn_complement, fn_replace, fn_size, fn_max_size,
@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_SUITE(Linear)
 
 using namespace xstd;
 
-using SetTypes = boost::mpl::vector
+using BitSetTypes = boost::mpl::vector
 <       std::bitset<  0>
 ,       std::bitset< 32>
 ,       std::bitset< 64>
@@ -47,33 +47,13 @@ using SetTypes = boost::mpl::vector
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
 {
-        all_singleton_arrays<T>([](auto const& a1) {
-                constructor<T>{}(a1.begin(), a1.end());
-        });
-        all_singleton_ilists<T>([](auto ilist1) {
-                constructor<T>{}(ilist1);
-        });
-
-        all_singleton_arrays<T>([](auto const& a1) {
-                mem_assign{}(~T{}, a1.begin(), a1.end());
-        });
-        all_singleton_ilists<T>([](auto ilist1) {
-                mem_assign{}(~T{}, ilist1);
-        });
-
         all_cardinality_sets<T>(const_reference{});
         all_singleton_sets<T>(const_reference{});
 
         all_cardinality_sets<T>(const_iterator{});
         all_singleton_sets<T>(const_iterator{});
-
-        all_cardinality_sets<T>(mem_front{});
-        all_singleton_sets<T>(mem_front{});
-
-        all_cardinality_sets<T>(mem_back{});
-        all_singleton_sets<T>(mem_back{});
 
         all_cardinality_sets<T>(fn_fill{});
         all_singleton_sets<T>(fn_fill{});
@@ -84,12 +64,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
                 fn_insert{}(T{}, pos, true);
                 fn_insert{}(~T{}, pos, false);
         });
-        all_singleton_arrays<T>([](auto const& a1) {
-                mem_insert{}(T{}, a1.begin(), a1.end());
-        });
-        all_singleton_ilists<T>([](auto ilist1) {
-                mem_insert{}(T{}, ilist1);
-        });
 
         all_cardinality_sets<T>(fn_clear{});
         all_singleton_sets<T>(fn_clear{});
@@ -98,15 +72,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
         all_values<T>([](auto const pos) {
                 fn_erase{}(~T{}, pos);
         });
-        all_singleton_arrays<T>([](auto const& a1) {
-                mem_erase{}(~T{}, a1.begin(), a1.end());
-        });
-        all_singleton_ilists<T>([](auto ilist1) {
-                mem_erase{}(~T{}, ilist1);
-        });
 
         all_cardinality_sets<T>(op_compl{});
         all_singleton_sets<T>(op_compl{});
+        all_cardinality_sets<T>(fn_complement{});
+        all_singleton_sets<T>(fn_complement{});
         all_cardinality_sets<T>(fn_replace{});
         all_singleton_sets<T>(fn_replace{});
         all_values<T>([](auto const pos) {
@@ -121,17 +91,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
 
         all_cardinality_sets<T>(op_equal_to{});
         all_singleton_sets<T>(op_equal_to{});
-        all_cardinality_sets<T>(op_not_equal_to{});
-        all_singleton_sets<T>(op_not_equal_to{});
 
         all_cardinality_sets<T>(op_less{});
         all_singleton_sets<T>(op_less{});
-        all_cardinality_sets<T>(op_greater{});
-        all_singleton_sets<T>(op_greater{});
-        all_cardinality_sets<T>(op_greater_equal{});
-        all_singleton_sets<T>(op_greater_equal{});
-        all_cardinality_sets<T>(op_less_equal{});
-        all_singleton_sets<T>(op_less_equal{});
 
         all_singleton_sets<T>(fn_contains{});
         all_values<T>([](auto const pos) {
@@ -163,17 +125,68 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
 
         all_cardinality_sets<T>(fn_is_subset_of{});
         all_singleton_sets<T>(fn_is_subset_of{});
-        all_cardinality_sets<T>(fn_is_superset_of{});
-        all_singleton_sets<T>(fn_is_superset_of{});
-        all_cardinality_sets<T>(fn_is_proper_subset_of{});
-        all_singleton_sets<T>(fn_is_proper_subset_of{});
-        all_cardinality_sets<T>(fn_is_proper_superset_of{});
-        all_singleton_sets<T>(fn_is_proper_superset_of{});
 
         all_cardinality_sets<T>(fn_intersects{});
         all_singleton_sets<T>(fn_intersects{});
-        all_cardinality_sets<T>(fn_disjoint{});
-        all_singleton_sets<T>(fn_disjoint{});
+}
+
+using IntSetTypes = boost::mpl::vector
+<       int_set<  0, uint32_t>
+,       int_set<  1, uint32_t>
+,       int_set<  2, uint32_t>
+,       int_set< 32, uint32_t>
+,       int_set< 33, uint32_t>
+,       int_set< 34, uint32_t>
+,       int_set< 64, uint32_t>
+,       int_set< 65, uint32_t>
+,       int_set< 66, uint32_t>
+,       int_set< 96, uint32_t>
+,       int_set<128>
+#if defined(__GNUG__)
+,       int_set<128, __uint128_t>
+,       int_set<256, __uint128_t>
+#endif
+>;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
+{
+        all_singleton_arrays<T>([](auto const& a1) {
+                constructor<T>{}(a1.begin(), a1.end());
+        });
+        all_singleton_ilists<T>([](auto ilist1) {
+                constructor<T>{}(ilist1);
+        });
+
+        all_singleton_ilists<T>([](auto ilist1) {
+                op_assign{}(~T{}, ilist1);
+        });
+
+        all_cardinality_sets<T>(mem_front{});
+        all_singleton_sets<T>(mem_front{});
+
+        all_cardinality_sets<T>(mem_back{});
+        all_singleton_sets<T>(mem_back{});
+
+        all_singleton_arrays<T>([](auto const& a1) {
+                mem_insert{}(T{}, a1.begin(), a1.end());
+        });
+        all_singleton_ilists<T>([](auto ilist1) {
+                mem_insert{}(T{}, ilist1);
+        });
+
+        all_cardinality_sets<T>([](auto& is) {
+                for (auto first = is.begin(), last = is.end(); first != last; /* update inside loop */) {
+                        first = mem_erase{}(is, first);
+                }
+        });
+        all_singleton_sets<T>([](auto& is) {
+                for (auto first = is.begin(), last = is.end(); first != last; /* update inside loop */) {
+                        first = mem_erase{}(is, first);
+                }
+        });
+        all_cardinality_sets<T>([](auto& is) {
+                mem_erase{}(is, is.begin(), is.end());
+        });
 }
 
 BOOST_AUTO_TEST_SUITE_END()

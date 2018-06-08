@@ -12,14 +12,6 @@
 namespace xstd {
 namespace tti {
 
-template<class IntSet, class InputIterator, class = void>
-constexpr static auto has_range_assign_v = false;
-
-template<class IntSet, class InputIterator>
-constexpr static auto has_range_assign_v<IntSet, InputIterator, std::void_t<decltype(
-        std::declval<IntSet>().assign(std::declval<InputIterator>(), std::declval<InputIterator>())
-)>> = true;
-
 template<class IntSet, class = void>
 constexpr static auto has_const_iterator_v = false;
 
@@ -93,19 +85,19 @@ constexpr static auto has_ilist_insert_v<IntSet, ValueType, std::void_t<decltype
 )>> = true;
 
 template<class IntSet, class InputIterator, class = void>
+constexpr static auto has_iterator_erase_v = false;
+
+template<class IntSet, class InputIterator>
+constexpr static auto has_iterator_erase_v<IntSet, InputIterator, std::void_t<decltype(
+        std::declval<IntSet>().erase(std::declval<InputIterator>())
+)>> = true;
+
+template<class IntSet, class InputIterator, class = void>
 constexpr static auto has_range_erase_v = false;
 
 template<class IntSet, class InputIterator>
 constexpr static auto has_range_erase_v<IntSet, InputIterator, std::void_t<decltype(
         std::declval<IntSet>().erase(std::declval<InputIterator>(), std::declval<InputIterator>())
-)>> = true;
-
-template<class IntSet, class ValueType, class = void>
-constexpr static auto has_ilist_erase_v = false;
-
-template<class IntSet, class ValueType>
-constexpr static auto has_ilist_erase_v<IntSet, ValueType, std::void_t<decltype(
-        std::declval<IntSet>().erase(std::declval<std::initializer_list<ValueType>>())
 )>> = true;
 
 template<class IntSet, class KeyType, class = void>
