@@ -1028,7 +1028,7 @@ private:
                         auto nrv = *this; ++*this; return nrv;
                 }
 
-                XSTD_PP_CONSTEXPR_INTRINSIC auto& operator--() // Throws:Nothing.
+                XSTD_PP_CONSTEXPR_INTRINSIC auto& operator--() // Throws: Nothing.
                 {
                         assert(0 < m_value); assert(m_value <= N);
                         m_value = m_is->find_prev(m_value);
