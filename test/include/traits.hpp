@@ -124,6 +124,30 @@ constexpr static auto has_count_v<IntSet, KeyType, std::void_t<decltype(
         std::declval<IntSet>().count(std::declval<KeyType>())
 )>> = true;
 
+template<class IntSet, class KeyType, class = void>
+constexpr static auto has_lower_bound_v = false;
+
+template<class IntSet, class KeyType>
+constexpr static auto has_lower_bound_v<IntSet, KeyType, std::void_t<decltype(
+        std::declval<IntSet>().lower_bound(std::declval<KeyType>())
+)>> = true;
+
+template<class IntSet, class KeyType, class = void>
+constexpr static auto has_upper_bound_v = false;
+
+template<class IntSet, class KeyType>
+constexpr static auto has_upper_bound_v<IntSet, KeyType, std::void_t<decltype(
+        std::declval<IntSet>().upper_bound(std::declval<KeyType>())
+)>> = true;
+
+template<class IntSet, class KeyType, class = void>
+constexpr static auto has_equal_range_v = false;
+
+template<class IntSet, class KeyType>
+constexpr static auto has_equal_range_v<IntSet, KeyType, std::void_t<decltype(
+        std::declval<IntSet>().equal_range(std::declval<KeyType>())
+)>> = true;
+
 template<class IntSet, class = void>
 constexpr static auto has_op_minus_assign_v = false;
 

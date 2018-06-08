@@ -99,6 +99,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Exhaustive, T, SetTypes)
                 });
         });
 
+        all_values<T>([](auto const& x) {
+                all_singleton_sets<T>([&](auto& i1){
+                        mem_lower_bound{}(i1, x);
+                });
+                all_singleton_sets<T>([&](auto const& i1){
+                        mem_lower_bound{}(i1, x);
+                });
+        });
+
+        all_values<T>([](auto const& x) {
+                all_singleton_sets<T>([&](auto& i1){
+                        mem_upper_bound{}(i1, x);
+                });
+                all_singleton_sets<T>([&](auto const& i1){
+                        mem_upper_bound{}(i1, x);
+                });
+        });
+
+        all_values<T>([](auto const& x) {
+                all_singleton_sets<T>([&](auto& i1){
+                        mem_equal_range{}(i1, x);
+                });
+                all_singleton_sets<T>([&](auto const& i1){
+                        mem_equal_range{}(i1, x);
+                });
+        });
+
         all_singleton_set_pairs<T>(fn_swap{});
 
         all_singleton_set_pairs<T>(op_compl{});

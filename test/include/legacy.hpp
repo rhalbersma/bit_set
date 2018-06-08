@@ -37,7 +37,12 @@ template<int N, class UIntType>
 auto& insert(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val = true)
 {
         if (pos >= N) throw std::out_of_range{""};
-        return val ? is.insert(pos) : is.erase(pos);
+        if (val) {
+                is.insert(pos);
+        } else {
+                is.erase(pos);
+        }
+        return is;
 }
 
 template<std::size_t N>
@@ -62,7 +67,8 @@ template<int N, class UIntType>
 auto& erase(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 {
         if (pos >= N) throw std::out_of_range{""};
-        return is.erase(pos);
+        is.erase(pos);
+        return is;
 }
 
 template<std::size_t N>
@@ -208,7 +214,12 @@ auto at(std::bitset<N>& bs, std::size_t const pos, bool const val) // Throws: No
 template<int N, class UIntType>
 constexpr auto at(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val) // Throws: Nothing.
 {
-        return val ? is.insert(pos) : is.erase(pos);
+        if (val) {
+                is.insert(pos);
+        } else {
+                is.erase(pos);
+        }
+        return is;
 }
 
 template<std::size_t N>

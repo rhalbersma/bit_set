@@ -12,6 +12,7 @@
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <algorithm>                    // all_of, any_of, copy_if, count, equal, find, for_each, includes, is_sorted, lexicographical_compare,
                                         // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform
+                                        // lower_bound, upper_bound, equal_range
 #include <functional>                   // greater, plus
 #include <initializer_list>             // initializer_list
 #include <istream>                      // basic_istream
@@ -853,6 +854,63 @@ struct mem_count
         {
                 if constexpr (tti::has_count_v<IntSet, KeyType>) {
                         BOOST_CHECK(is.count(x) == std::count(is.cbegin(), is.cend(), x));
+                }
+        }
+};
+
+struct mem_lower_bound
+{
+        template<class IntSet, class KeyType>
+        auto operator()(IntSet& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
+        {
+                if constexpr (tti::has_lower_bound_v<IntSet, KeyType>) {
+                        BOOST_CHECK(is.lower_bound(x) == std::lower_bound(is.cbegin(), is.cend(), x));
+                }
+        }
+
+        template<class IntSet, class KeyType>
+        auto operator()(IntSet const& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
+        {
+                if constexpr (tti::has_lower_bound_v<IntSet, KeyType>) {
+                        BOOST_CHECK(is.lower_bound(x) == std::lower_bound(is.cbegin(), is.cend(), x));
+                }
+        }
+};
+
+struct mem_upper_bound
+{
+        template<class IntSet, class KeyType>
+        auto operator()(IntSet& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
+        {
+                if constexpr (tti::has_upper_bound_v<IntSet, KeyType>) {
+                        BOOST_CHECK(is.upper_bound(x) == std::upper_bound(is.cbegin(), is.cend(), x));
+                }
+        }
+
+        template<class IntSet, class KeyType>
+        auto operator()(IntSet const& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
+        {
+                if constexpr (tti::has_upper_bound_v<IntSet, KeyType>) {
+                        BOOST_CHECK(is.upper_bound(x) == std::upper_bound(is.cbegin(), is.cend(), x));
+                }
+        }
+};
+
+struct mem_equal_range
+{
+        template<class IntSet, class KeyType>
+        auto operator()(IntSet& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
+        {
+                if constexpr (tti::has_equal_range_v<IntSet, KeyType>) {
+                        BOOST_CHECK(is.equal_range(x) == std::equal_range(is.cbegin(), is.cend(), x));
+                }
+        }
+
+        template<class IntSet, class KeyType>
+        auto operator()(IntSet const& is [[maybe_unused]], KeyType const& x [[maybe_unused]]) const
+        {
+                if constexpr (tti::has_equal_range_v<IntSet, KeyType>) {
+                        BOOST_CHECK(is.equal_range(x) == std::equal_range(is.cbegin(), is.cend(), x));
                 }
         }
 };
