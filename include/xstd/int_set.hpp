@@ -879,9 +879,11 @@ private:
         XSTD_PP_CONSTEXPR_INTRINSIC auto find_prev(int n) const // Throws: Nothing.
         {
                 assert(0 < n); assert(n <= N);
-                --n;
+                if (--n == 0) { return 0; }
                 if constexpr (num_blocks == 1) {
-                        return n - detail::clznz(m_data[0] << (block_size - 1 - n));
+                        if (auto const block = m_data[0] << (block_size - 1 - n); block) {
+                                return n - detail::clznz(block);
+                        }
                 } else if constexpr (num_blocks >= 2) {
                         auto i = which(n);
                         if (auto const offset = where(n); offset != block_size - 1) {
@@ -897,7 +899,7 @@ private:
                                 }
                         }
                 }
-                return n;
+                return 0;
         }
 
         class proxy_reference
