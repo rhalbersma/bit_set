@@ -68,7 +68,7 @@ struct constructor
                 std::for_each(first, last, [&](auto const elem) {
                         BOOST_CHECK(dst.count(elem));
                 });
-                BOOST_CHECK_EQUAL(dst.size(), std::distance(first, last));
+                BOOST_CHECK_EQUAL(static_cast<int>(dst.size()), static_cast<int>(std::distance(first, last)));
         }
 
         constexpr auto operator()(std::initializer_list<typename X::value_type> ilist) const
@@ -77,7 +77,7 @@ struct constructor
                 for (auto const elem : ilist) {
                         BOOST_CHECK(dst.count(elem));
                 }
-                BOOST_CHECK_EQUAL(dst.size(), ilist.size());
+                BOOST_CHECK_EQUAL(static_cast<int>(dst.size()), static_cast<int>(ilist.size()));
         }
 };
 
@@ -91,7 +91,7 @@ struct op_assign
                 for (auto const elem : ilist) {
                         BOOST_CHECK(dst.count(elem));
                 }
-                BOOST_CHECK_EQUAL(dst.size(), ilist.size());
+                BOOST_CHECK_EQUAL(static_cast<int>(dst.size()), static_cast<int>(ilist.size()));
         }
 };
 
@@ -224,7 +224,7 @@ struct mem_insert
                         BOOST_CHECK(dst.count(elem));
                 });
                 BOOST_CHECK_LE(src.size(), dst.size());
-                BOOST_CHECK_LE(dst.size(), static_cast<int>(src.size()) + static_cast<int>(std::distance(first, last)));
+                BOOST_CHECK_LE(static_cast<int>(dst.size()), static_cast<int>(src.size()) + static_cast<int>(std::distance(first, last)));
         }
 
         template<class IntSet, class ValueType>
