@@ -3,24 +3,21 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <bitset>                               // bitset
+#include <set/primitives.hpp>                   // constructor
 #include <xstd/int_set.hpp>                     // int_set
-#include <legacy.hpp>                           // bitset, int_set
-#include <primitive.hpp>                        // constructor
+#include <boost/container/flat_set.hpp>         // flat_set
 #include <boost/mpl/vector.hpp>                 // vector
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <set>                                  // set
 
 BOOST_AUTO_TEST_SUITE(Constant)
 
 using namespace xstd;
 
-using BitSetTypes = boost::mpl::vector
-<       std::bitset<  0>
-,       std::bitset< 32>
-,       std::bitset< 64>
-,       std::bitset< 96>
-,       std::bitset<128>
+using IntSetTypes = boost::mpl::vector
+<       std::set<int>
+,       boost::container::flat_set<int>
 ,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
 ,       int_set<  2, uint32_t>
@@ -38,7 +35,7 @@ using BitSetTypes = boost::mpl::vector
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
 {
         constructor<T>{}();
 }

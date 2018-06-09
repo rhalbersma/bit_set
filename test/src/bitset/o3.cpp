@@ -3,15 +3,15 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <bitset>                               // bitset
-#include <xstd/int_set.hpp>                     // int_set
-#include <legacy.hpp>                           // bitset, int_set
-#include <exhaustive.hpp>                       // all_singleton_set_triples
-#include <primitive.hpp>                        // op_equal_to, op_less, fn_is_subset_of,
+#include <bitset/compatible.hpp>                // bitset, int_set
+#include <bitset/exhaustive.hpp>                // all_singleton_set_triples
+#include <bitset/primitives.hpp>                // op_equal_to, op_less, fn_is_subset_of,
                                                 // op_bitand, op_bitor, op_xor
+#include <xstd/int_set.hpp>                     // int_set
 #include <boost/mpl/vector.hpp>                 // vector
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <bitset>                               // bitset
 
 BOOST_AUTO_TEST_SUITE(Cubic)
 

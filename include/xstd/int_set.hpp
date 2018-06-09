@@ -551,7 +551,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto& clear() noexcept
+        XSTD_PP_CONSTEXPR_ALGORITHM auto clear() noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] = zero;
@@ -562,7 +562,6 @@ public:
                         std::fill_n(std::begin(m_data), num_logical_blocks, zero);
                 }
                 assert(empty());
-                return *this;
         }
 
         constexpr auto& replace(value_type const n) // Throws: Nothing.
@@ -1332,17 +1331,17 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto crend(int_set<N, UIntType> const& is)
 }
 
 template<int N, class UIntType>
-[[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(int_set<N, UIntType> const& is)
-        -> decltype(is.empty())
-{
-        return is.empty();
-}
-
-template<int N, class UIntType>
 XSTD_PP_CONSTEXPR_ALGORITHM auto size(int_set<N, UIntType> const& is)
         -> decltype(is.size())
 {
         return is.size();
+}
+
+template<int N, class UIntType>
+[[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(int_set<N, UIntType> const& is)
+        -> decltype(is.empty())
+{
+        return is.empty();
 }
 
 }       // namespace xstd

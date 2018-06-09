@@ -54,7 +54,8 @@ auto& clear(std::bitset<N>& bs) noexcept
 template<int N, class UIntType>
 auto& clear(int_set<N, UIntType>& is) noexcept
 {
-        return is.clear();
+        is.clear();
+        return is;
 }
 
 template<std::size_t N>
