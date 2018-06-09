@@ -236,7 +236,7 @@ struct mem_insert
                         BOOST_CHECK(dst.count(elem));
                 }
                 BOOST_CHECK_LE(src.size(), dst.size());
-                BOOST_CHECK_LE(dst.size(), static_cast<int>(src.size()) + static_cast<int>(ilist.size()));
+                BOOST_CHECK_LE(static_cast<int>(dst.size()), static_cast<int>(src.size()) + static_cast<int>(ilist.size()));
         }
 };
 
@@ -282,7 +282,7 @@ struct mem_erase
                         BOOST_CHECK(!dst.count(elem));
                 });
                 BOOST_CHECK_LE(dst.size(), src.size());
-                BOOST_CHECK_LE(src.size(), static_cast<int>(dst.size()) + static_cast<int>(std::distance(first, last)));
+                BOOST_CHECK_LE(static_cast<int>(src.size()), static_cast<int>(dst.size()) + static_cast<int>(std::distance(first, last)));
         }
 };
 
