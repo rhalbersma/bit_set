@@ -179,7 +179,7 @@ struct mem_size
         auto operator()(X const& a) noexcept
         {                                                                       // [container.requirements.general] Table 83
                 static_assert(std::is_same_v<decltype(a.size()), typename X::size_type>);
-                BOOST_CHECK_EQUAL(a.size(), std::distance(a.begin(), a.end()));
+                BOOST_CHECK_EQUAL(static_cast<int>(a.size()), static_cast<int>(std::distance(a.begin(), a.end())));
         }
 };
 
@@ -335,7 +335,7 @@ struct mem_count
         auto operator()(X const& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.count(k)), typename X::size_type>);
-                BOOST_CHECK_EQUAL(b.count(k), std::count(b.begin(), b.end(), k));
+                BOOST_CHECK_EQUAL(static_cast<int>(b.count(k)), static_cast<int>(std::count(b.begin(), b.end(), k)));
         }
 };
 
