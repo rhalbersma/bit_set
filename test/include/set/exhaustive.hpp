@@ -11,11 +11,8 @@
 
 namespace xstd {
 
-template<class T>
-using size_t = typename T::size_type;
-
 template<class T, int L>
-inline const auto limit_v = static_cast<int>(std::min(size_t<T>{L}, T{}.max_size()));
+inline const auto limit_v = static_cast<int>(std::min(typename T::size_type{L}, T{}.max_size()));
 
 constexpr auto L0 = 512;
 constexpr auto L1 = 256;
