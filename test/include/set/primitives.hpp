@@ -38,7 +38,7 @@ struct nested_types
                 static_assert(std::is_signed_v<typename X::difference_type>);
                 static_assert(std::is_integral_v<typename X::difference_type>);
 
-                // we use a signed instead unsigned size_type for xstd::int_set
+                // we use a signed instead of an unsigned size_type for xstd::int_set
                 static_assert(std::is_integral_v<typename X::size_type>);
 
                 static_assert(std::is_same_v<typename X::value_type, int>);
@@ -49,49 +49,49 @@ struct nested_types
                                                                                 // [container.requirements.general] Table 84
                 static_assert(std::is_same_v<typename X::      reverse_iterator, std::reverse_iterator<typename X::      iterator>>);
                 static_assert(std::is_same_v<typename X::const_reverse_iterator, std::reverse_iterator<typename X::const_iterator>>);
+
+                                                                                // [associative.reqmts]/6
+                static_assert(std::is_same_v<typename std::iterator_traits<typename X::iterator>::iterator_category, std::bidirectional_iterator_tag>);
         }
 };
 
 template<class X>
 struct constructor
 {
-        constexpr auto operator()() const noexcept
-        {                                                                       // [container.requirements.general] Table 83
+        constexpr auto operator()() const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_default_constructible_v<typename X::key_compare>);
                 X u;
                 BOOST_CHECK(u.empty());
+                BOOST_CHECK(X().empty());
         }
 
         template<class InputIterator>
-        auto operator()(InputIterator first, InputIterator last) const
-        {
-                auto const dst = X(first, last);
-                std::for_each(first, last, [&](auto const elem) {
-                        BOOST_CHECK(dst.count(elem));
-                });
-                BOOST_CHECK_EQUAL(static_cast<int>(dst.size()), static_cast<int>(std::distance(first, last)));
+        auto operator()(InputIterator i, InputIterator j) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_default_constructible_v<typename X::key_compare>);
+                X u(i, j);
+                X u1;
+                u1.insert(i, j);
+                BOOST_CHECK(u == u1);
         }
 
-        constexpr auto operator()(std::initializer_list<typename X::value_type> ilist) const
-        {
-                auto const dst = X(ilist);
-                for (auto const elem : ilist) {
-                        BOOST_CHECK(dst.count(elem));
-                }
-                BOOST_CHECK_EQUAL(static_cast<int>(dst.size()), static_cast<int>(ilist.size()));
+        constexpr auto operator()(std::initializer_list<typename X::value_type> il) const
+        {                                                                       // [associative.reqmts] Table 90
+                X u(il);
+                X u1(il.begin(), il.end());
+                BOOST_CHECK(u == u1);
         }
 };
 
 struct op_assign
 {
         template<class X>
-        constexpr auto operator()(X const& is, std::initializer_list<typename X::value_type> ilist) const
-        {
-                auto const src = is;
-                auto dst = src; dst = ilist;
-                for (auto const elem : ilist) {
-                        BOOST_CHECK(dst.count(elem));
-                }
-                BOOST_CHECK_EQUAL(static_cast<int>(dst.size()), static_cast<int>(ilist.size()));
+        constexpr auto operator()(X& a, std::initializer_list<typename X::value_type> il) const
+        {                                                                       // [associative.reqmts] Table 90
+                a = il;
+                X a1(il);
+                BOOST_CHECK(a == a1);
         }
 };
 
@@ -400,7 +400,7 @@ struct op_equal_to
 {
         template<class X>
         auto operator()(X const& a) const noexcept
-        {
+        {                                                                       // [container.requirements.general] Table 83
                 BOOST_CHECK(a == a);                                            // reflexive
         }
 
@@ -414,64 +414,58 @@ struct op_equal_to
 
         template<class X>
         auto operator()(X const& a, X const& b, X const& c) const noexcept
-        {
-                auto const ab = a == b;
-                auto const bc = b == c;
-                auto const ac = a == c;
-                BOOST_CHECK(!(ab && bc) || ac);                                 // transitive
+        {                                                                       // [container.requirements.general] Table 83
+                BOOST_CHECK(!(a == b && b == c) || a == c);                     // transitive
         }
 };
 
 struct op_not_equal_to
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 83
                 static_assert(std::is_convertible_v<decltype(a != b), bool>);
-                BOOST_CHECK_EQUAL(a != b, !(a == b));                           
+                BOOST_CHECK_EQUAL(a != b, !(a == b));
         }
 };
 
 struct op_less
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a) const noexcept
-        {
+        template<class X>
+        auto operator()(X const& a) const noexcept
+        {                                                                       // [container.requirements.general] Table 85
                 BOOST_CHECK(!(a < a));                                          // irreflexive
         }
 
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 85
                 static_assert(std::is_convertible_v<decltype(a < b), bool>);
                 BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
                 BOOST_CHECK(!(a < b) || !(b < a));                              // asymmetric
         }
 
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b, IntSet const& c) const noexcept
-        {
-                auto const ab = a < b;
-                auto const bc = b < c;
-                auto const ac = a < c;
-                BOOST_CHECK(!(ab && bc) || ac);                                 // transitive
+        template<class X>
+        auto operator()(X const& a, X const& b, X const& c) const noexcept
+        {                                                                       // [container.requirements.general] Table 85
+                BOOST_CHECK(!(a < b && b < c) || a < c);                        // transitive
         }
 };
 
 struct op_greater
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 85
                 static_assert(std::is_convertible_v<decltype(a > b), bool>);
-                BOOST_CHECK_EQUAL(a > b, b < a); 
+                BOOST_CHECK_EQUAL(a > b, b < a);
         }
 };
 
 struct op_less_equal
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 85
                 static_assert(std::is_convertible_v<decltype(a <= b), bool>);
                 BOOST_CHECK_EQUAL(a <= b, !(b < a));
@@ -480,8 +474,8 @@ struct op_less_equal
 
 struct op_greater_equal
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 85
                 static_assert(std::is_convertible_v<decltype(a >= b), bool>);
                 BOOST_CHECK_EQUAL(a >= b, !(a < b));

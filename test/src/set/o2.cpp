@@ -42,8 +42,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
                 constructor<T>{}(ilist2);
         });
 
-        all_doubleton_ilists<T>([](auto ilist2) {
-                op_assign{}(T{}, ilist2);
+        all_singleton_sets<T>([](auto& is1) {
+                all_singleton_ilists<T>([&](auto ilist1) {
+                        op_assign{}(is1, ilist1);
+                });
         });
 
         all_doubleton_arrays<T>([](auto const& a2) {

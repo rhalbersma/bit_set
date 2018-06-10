@@ -53,10 +53,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
                 constructor<T>{}(ilist1);
         });
 
-        all_singleton_ilists<T>([](auto ilist1) {
-                op_assign{}(T{}, ilist1);
-        });
-
         all_cardinality_sets<T>(mem_const_reference{});
         all_singleton_sets<T>(mem_const_reference{});
 
