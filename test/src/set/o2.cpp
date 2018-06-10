@@ -49,10 +49,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
         });
 
         all_doubleton_arrays<T>([](auto const& a2) {
-                mem_insert{}(T{}, a2.begin(), a2.end());
+                T is;
+                mem_insert{}(is, a2.begin(), a2.end());
         });
         all_doubleton_ilists<T>([](auto ilist2) {
-                mem_insert{}(T{}, ilist2);
+                T is;
+                mem_insert{}(is, ilist2);
         });
 
         // all_doubleton_sets<T>([](auto& is2) {

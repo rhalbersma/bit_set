@@ -79,11 +79,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
         all_cardinality_sets<T>(mem_size{});
         all_cardinality_sets<T>(mem_max_size{});
 
+        all_values<T>([](auto const& t) {
+                T is;
+                mem_insert{}(is, t);
+        });
+        all_values<T>([](auto const& t) {
+                T is;
+                mem_insert{}(is, is.end(), t);
+        });
         all_singleton_arrays<T>([](auto const& a1) {
-                mem_insert{}(T{}, a1.begin(), a1.end());
+                T is;
+                mem_insert{}(is, a1.begin(), a1.end());
         });
         all_singleton_ilists<T>([](auto ilist1) {
-                mem_insert{}(T{}, ilist1);
+                T is;
+                mem_insert{}(is, ilist1);
         });
 
         // all_cardinality_sets<T>([](auto& is) {

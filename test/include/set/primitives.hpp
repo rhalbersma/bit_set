@@ -193,53 +193,47 @@ struct mem_max_size
         }
 };
 
-struct fn_insert
-{
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet const& is, SizeType const pos) const
-        {
-                auto const src = is;
-                auto dst = src;
-                auto const& ret = insert(dst, pos);
-
-                for (auto N = max_size(IntSet{}), i = decltype(N){0}; i < N; ++i) {
-                                                                                // [bitset.members]/14
-                        BOOST_CHECK_EQUAL(contains(dst, i), i == pos ? true : contains(src, i));
-                }
-                BOOST_CHECK_EQUAL(std::addressof(ret), std::addressof(dst));    // [bitset.members]/15
-
-                IntSet singlet; insert(singlet, pos);
-                BOOST_CHECK(dst == (src | singlet));
-        }
-};
-
 struct mem_insert
 {
-        template<class IntSet, class InputIterator>
-        auto operator()(IntSet const& is, InputIterator first, InputIterator last) const
-        {
-                auto const src = is;
-                auto dst = src; dst.insert(first, last);
-                std::for_each(first, last, [&](auto const elem) {
-                        BOOST_CHECK(dst.count(elem));
-                });
-                BOOST_CHECK_LE(src.size(), dst.size());
-                BOOST_CHECK_LE(static_cast<int>(dst.size()), static_cast<int>(src.size()) + static_cast<int>(std::distance(first, last)));
+        template<class X>
+        auto operator()(X& a, typename X::value_type const t) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_same_v<decltype(a.insert(t)), std::pair<typename X::iterator, bool>>);
+                auto r = a.insert(t);
+                BOOST_CHECK(r == std::make_pair(a.find(t), true));
         }
 
-        template<class IntSet, class ValueType>
-        constexpr auto operator()(IntSet const& is, std::initializer_list<ValueType> ilist) const
-        {
-                auto const src = is;
-                auto dst = src; dst.insert(ilist);
-                for (auto const elem : ilist) {
-                        BOOST_CHECK(dst.count(elem));
-                }
-                BOOST_CHECK_LE(src.size(), dst.size());
-                BOOST_CHECK_LE(static_cast<int>(dst.size()), static_cast<int>(src.size()) + static_cast<int>(ilist.size()));
+        template<class X>
+        auto operator()(X& a, typename X::iterator p, typename X::value_type const t) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_same_v<decltype(a.insert(p, t)), typename X::iterator>);
+                auto r = a.insert(p, t);
+                BOOST_CHECK(r == a.find(t));
+        }
+
+        template<class X, class InputIterator>
+        auto operator()(X& a, InputIterator i, InputIterator j) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_convertible_v<typename std::iterator_traits<InputIterator>::value_type, typename X::value_type>);
+                static_assert(std::is_same_v<decltype(a.insert(i, j)), void>);
+                auto a1 = a;
+                a.insert(i, j);
+                std::for_each(i, j, [&](auto const& t) {
+                        a1.insert(t);
+                });
+                BOOST_CHECK(a == a1);
+        }
+
+        template<class X>
+        constexpr auto operator()(X& a, std::initializer_list<typename X::value_type> il) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_same_v<decltype(a.insert(il)), void>);
+                auto a1 = a;
+                a.insert(il);
+                a1.insert(il.begin(), il.end());
+                BOOST_CHECK(a == a1);
         }
 };
-
 
 struct fn_erase
 {
