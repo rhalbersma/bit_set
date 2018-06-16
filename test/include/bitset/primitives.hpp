@@ -336,7 +336,7 @@ struct fn_size
 struct fn_max_size
 {
         template<class IntSet>
-        auto operator()(IntSet const& is) const noexcept
+        auto operator()(IntSet const& is [[maybe_unused]]) const noexcept
         {
                 if constexpr (!tti::has_resize_v<IntSet>) {
                         BOOST_CHECK_EQUAL(max_size(is), max_size(IntSet{}));    // [bitset.members]/35
