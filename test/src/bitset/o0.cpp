@@ -3,7 +3,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <bitset/compatible.hpp>                // bitset, int_set
+#include <bitset/compatible/bitset.hpp>         // bitset
+#include <bitset/compatible/dynamic_bitset.hpp> // dynamic_bitset
+#include <bitset/compatible/int_set.hpp>        // int_set
 #include <bitset/primitives.hpp>                // constructor
 #include <xstd/int_set.hpp>                     // int_set
 #include <boost/mpl/vector.hpp>                 // vector
@@ -21,6 +23,7 @@ using BitSetTypes = boost::mpl::vector
 ,       std::bitset< 64>
 ,       std::bitset< 96>
 ,       std::bitset<128>
+,       boost::dynamic_bitset<>
 ,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
 ,       int_set<  2, uint32_t>

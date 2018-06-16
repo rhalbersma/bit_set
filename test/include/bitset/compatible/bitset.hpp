@@ -5,26 +5,25 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/int_set.hpp>     // int_set
-#include <bitset>               // bitset
-#include <cstddef>              // size_t
-#include <stdexcept>            // out_of_range
+#include <bitset>       // bitset
+#include <cstddef>      // size_t
 
 namespace xstd {
 
-template<class T>
-using size_t = typename T::size_type;
+template<std::size_t N>
+auto resize(std::bitset<N>& bs, std::size_t /* num_bits */, bool const value = false) noexcept
+{
+        if (value) {
+                bs.set();
+        } else {
+                bs.reset();
+        }
+}
 
 template<std::size_t N>
 auto& fill(std::bitset<N>& bs) noexcept
 {
         return bs.set();
-}
-
-template<int N, class UIntType>
-auto& fill(int_set<N, UIntType>& is) noexcept
-{
-        return is.fill();
 }
 
 template<std::size_t N>
@@ -33,29 +32,10 @@ auto& insert(std::bitset<N>& bs, std::size_t const pos, bool const val = true)
         return bs.set(pos, val);
 }
 
-template<int N, class UIntType>
-auto& insert(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val = true)
-{
-        if (pos >= N) throw std::out_of_range{""};
-        if (val) {
-                is.insert(pos);
-        } else {
-                is.erase(pos);
-        }
-        return is;
-}
-
 template<std::size_t N>
 auto& clear(std::bitset<N>& bs) noexcept
 {
         return bs.reset();
-}
-
-template<int N, class UIntType>
-auto& clear(int_set<N, UIntType>& is) noexcept
-{
-        is.clear();
-        return is;
 }
 
 template<std::size_t N>
@@ -64,37 +44,16 @@ auto& erase(std::bitset<N>& bs, std::size_t const pos)
         return bs.reset(pos);
 }
 
-template<int N, class UIntType>
-auto& erase(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
-{
-        if (pos >= N) throw std::out_of_range{""};
-        is.erase(pos);
-        return is;
-}
-
 template<std::size_t N>
 auto& complement(std::bitset<N>& bs) noexcept
 {
         return bs.flip();
 }
 
-template<int N, class UIntType>
-auto& complement(int_set<N, UIntType>& is) noexcept
-{
-        return is.complement();
-}
-
 template<std::size_t N>
 auto& replace(std::bitset<N>& bs, std::size_t const pos)
 {
         return bs.flip(pos);
-}
-
-template<int N, class UIntType>
-auto& replace(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
-{
-        if (pos >= N) throw std::out_of_range{""};
-        return is.replace(pos);
 }
 
 template<std::size_t N>
@@ -107,12 +66,6 @@ template<std::size_t N>
 constexpr auto max_size(std::bitset<N> const& bs) noexcept
 {
         return bs.size();
-}
-
-template<int N, class UIntType>
-constexpr auto max_size(int_set<N, UIntType> const& is) noexcept
-{
-        return is.max_size();
 }
 
 template<std::size_t N>
@@ -145,35 +98,16 @@ auto contains(std::bitset<N> const& bs, std::size_t const pos)
         return bs.test(pos);
 }
 
-template<int N, class UIntType>
-auto contains(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const pos)
-{
-        if (pos >= N) throw std::out_of_range{""};
-        return is.contains(pos);
-}
-
 template<std::size_t N>
 [[nodiscard]] auto full(std::bitset<N> const& bs) noexcept
 {
         return bs.all();
 }
 
-template<int N, class UIntType>
-[[nodiscard]] auto full(int_set<N, UIntType> const& is) noexcept
-{
-        return is.full();
-}
-
 template<std::size_t N>
 [[nodiscard]] auto not_empty(std::bitset<N> const& bs) noexcept
 {
         return bs.any();
-}
-
-template<int N, class UIntType>
-[[nodiscard]] auto not_empty(int_set<N, UIntType> const& is) noexcept
-{
-        return !is.empty();
 }
 
 template<std::size_t N>
@@ -188,39 +122,16 @@ constexpr auto at(std::bitset<N> const& bs, std::size_t const pos) // Throws: No
         return bs[pos];
 }
 
-template<int N, class UIntType>
-constexpr auto at(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const pos) // Throws: Nothing.
-{
-        return is.contains(pos);
-}
-
 template<std::size_t N>
 auto at(std::bitset<N>& bs, std::size_t const pos) // Throws: Nothing.
 {
         return bs[pos];
 }
 
-template<int N, class UIntType>
-constexpr auto at(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos) // Throws: Nothing.
-{
-        return is.contains(pos);
-}
-
 template<std::size_t N>
 auto at(std::bitset<N>& bs, std::size_t const pos, bool const val) // Throws: Nothing.
 {
         return bs[pos] = val;
-}
-
-template<int N, class UIntType>
-constexpr auto at(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val) // Throws: Nothing.
-{
-        if (val) {
-                is.insert(pos);
-        } else {
-                is.erase(pos);
-        }
-        return is;
 }
 
 template<std::size_t N>

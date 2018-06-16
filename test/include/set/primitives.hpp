@@ -9,7 +9,7 @@
                                         // has_any_of_v, has_none_of_v, has_all_of_v, has_accumulate_v, has_for_each_v, has_reverse_for_each_v,
                                         // has_op_minus_assign_v, has_range_insert_v, has_ilist_insert_v, has_range_erase_v, has_ilist_erase_v,
                                         // has_max_size_v, has_empty_v, has_full_v
-#include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
+#include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
 #include <algorithm>                    // all_of, any_of, copy_if, count, equal, find, for_each, includes, is_sorted, lexicographical_compare,
                                         // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform
                                         // lower_bound, upper_bound, equal_range
@@ -179,7 +179,7 @@ struct mem_size
         auto operator()(X const& a) noexcept
         {                                                                       // [container.requirements.general] Table 83
                 static_assert(std::is_same_v<decltype(a.size()), typename X::size_type>);
-                BOOST_CHECK_EQUAL(static_cast<int>(a.size()), static_cast<int>(std::distance(a.begin(), a.end())));
+                BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(a.size()), std::distance(a.begin(), a.end()));
         }
 };
 
@@ -235,30 +235,27 @@ struct mem_insert
         }
 };
 
-struct fn_erase
+struct mem_erase
 {
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet const& is, SizeType const pos) const
+        template<class X>
+        auto operator()(X const& is, typename X::value_type const t) const
         {
                 auto const src = is;
                 auto dst = src;
-                auto const& ret = erase(dst, pos);
+                auto const& ret = erase(dst, t);
 
-                for (auto N = max_size(IntSet{}), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = max_size(X{}), i = decltype(N){0}; i < N; ++i) {
                                                                                 // [bitset.members]/19
-                        BOOST_CHECK_EQUAL(contains(dst, i), i == pos ? false : contains(src, i));
+                        BOOST_CHECK_EQUAL(contains(dst, i), i == t ? false : contains(src, i));
                 }
                 BOOST_CHECK_EQUAL(std::addressof(ret), std::addressof(dst));    // [bitset.members]/20
 
-                IntSet singlet; insert(singlet, pos);
+                X singlet; insert(singlet, t);
                 BOOST_CHECK(dst == src - singlet);
         }
-};
 
-struct mem_erase
-{
-        template<class IntSet, class InputIterator>
-        auto operator()(IntSet const& is, InputIterator first) const
+        template<class X, class InputIterator>
+        auto operator()(X const& is, InputIterator first) const
         {
                 int const elem = *first;
                 auto const src = is;
@@ -267,8 +264,8 @@ struct mem_erase
                 return first;
         }
 
-        template<class IntSet, class InputIterator>
-        auto operator()(IntSet const& is, InputIterator first, InputIterator last) const
+        template<class X, class InputIterator>
+        auto operator()(X const& is, InputIterator first, InputIterator last) const
         {
                 auto const src = is;
                 auto dst = src; dst.erase(first, last);
@@ -288,7 +285,8 @@ struct mem_swap
                 auto a1 = a, b1 = b;
                 static_assert(std::is_same_v<decltype(a.swap(b)), void>);
                 a1.swap(b1);
-                BOOST_CHECK(a1 == b); BOOST_CHECK(b1 == a);
+                BOOST_CHECK(a1 == b); 
+                BOOST_CHECK(b1 == a);
         }
 };
 
@@ -300,9 +298,9 @@ struct mem_clear
                 auto a1 = a;
                 static_assert(std::is_same_v<decltype(a.clear()), void>);
                 a.clear();
-                BOOST_CHECK(a.empty());
                 a1.erase(a1.begin(), a1.end());
                 BOOST_CHECK(a == a1);
+                BOOST_CHECK(a.empty());
         }
 };
 
@@ -329,7 +327,7 @@ struct mem_count
         auto operator()(X const& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.count(k)), typename X::size_type>);
-                BOOST_CHECK_EQUAL(static_cast<int>(b.count(k)), static_cast<int>(std::count(b.begin(), b.end(), k)));
+                BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(b.count(k)), std::count(b.begin(), b.end(), k));
         }
 };
 

@@ -11,10 +11,9 @@
 
 namespace xstd {
 
-template<class T, int L>
-inline const auto limit_v = static_cast<int>(std::min(typename T::size_type{L}, T{}.max_size()));
+template<class T, typename T::value_type L>
+inline const auto limit_v = std::min(L, static_cast<typename T::value_type>(T{}.max_size()));
 
-constexpr auto L0 = 512;
 constexpr auto L1 = 256;
 constexpr auto L2 = 128;
 constexpr auto L3 =  64;

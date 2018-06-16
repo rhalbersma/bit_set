@@ -37,11 +37,11 @@ constexpr static auto has_back_v<IntSet, std::void_t<decltype(
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_max_size_v = false;
+constexpr static auto has_resize_v = false;
 
 template<class IntSet>
-constexpr static auto has_max_size_v<IntSet, std::void_t<decltype(
-        std::declval<IntSet>().max_size()
+constexpr static auto has_resize_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>().resize(std::declval<typename IntSet::size_type>(), std::declval<bool>())
 )>> = true;
 
 template<class IntSet, class = void>

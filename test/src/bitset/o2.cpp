@@ -3,7 +3,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <bitset/compatible.hpp>                // bitset, int_set
+#include <bitset/compatible/bitset.hpp>         // bitset
+#include <bitset/compatible/dynamic_bitset.hpp> // dynamic_bitset
+#include <bitset/compatible/int_set.hpp>        // int_set
 #include <bitset/exhaustive.hpp>                // all_values, all_singleton_sets, all_singleton_set_pairs,
                                                 // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
 #include <bitset/primitives.hpp>                // constructor, const_reference, const_iterator,
@@ -28,6 +30,7 @@ using BitSetTypes = boost::mpl::vector
 <       std::bitset<  0>
 ,       std::bitset< 32>
 ,       std::bitset< 64>
+,       boost::dynamic_bitset<>
 ,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
 ,       int_set< 33, uint32_t>

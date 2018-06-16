@@ -5,17 +5,32 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <traits.hpp>           // has_resize_v
 #include <array>                // array
+#include <cstddef>              // size_t
 #include <initializer_list>     // initializer_list
 
 namespace xstd {
+
+template<class T, int L>
+constexpr auto limit_v = []{
+        if constexpr (tti::has_resize_v<T>) {
+                return static_cast<decltype(max_size(std::declval<T>()))>(L);
+        } else {
+                return max_size(T{});
+        }
+}();
+
+constexpr auto L1 = 256;
+constexpr auto L2 = 128;
+constexpr auto L3 =  64;
 
 // NOTE: these tests are O(N)
 
 template<class IntSet, class UnaryFunction>
 auto all_values(UnaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -26,25 +41,26 @@ auto all_values(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_cardinality_sets(UnaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
-        for (auto i = SizeType{0}; i < N; ++i) {
-                auto ii = ~(~IntSet{} << i);
-                fun(ii);
+        for (auto i = SizeType{0}; i <= N; ++i) {
+                IntSet is; resize(is, N);
+                for (auto j = SizeType{0}; j < i; ++j) {
+                        insert(is, j);
+                }
+                fun(is);
         }
-        auto iN = ~IntSet{};
-        fun(iN);
 }
 
 template<class IntSet, class UnaryFunction>
 auto all_singleton_arrays(UnaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
-                auto i1 = std::array<SizeType, 1>{{ i }};
+                auto i1 = std::array{ i };
                 fun(i1);
         }
 }
@@ -52,7 +68,7 @@ auto all_singleton_arrays(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_singleton_ilists(UnaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -64,27 +80,27 @@ auto all_singleton_ilists(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_singleton_sets(UnaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
-                IntSet tmp;
+                IntSet tmp; resize(tmp, N);
                 auto i1 = insert(tmp, i);
                 fun(i1);
         }
 }
 
-// NOTE: this test is O(N^2)
+// NOTE: these tests are O(N^2)
 
 template<class IntSet, class UnaryFunction>
 auto all_doubleton_arrays(UnaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L2>;
         using SizeType = decltype(N);
 
         for (auto j = SizeType{1}; j < N; ++j) {
                 for (auto i = SizeType{0}; i < j; ++i) {
-                        auto ij2 = std::array<SizeType, 2>{{ i, j }};
+                        auto ij2 = std::array{ i, j };
                         fun(ij2);
                 }
         }
@@ -93,7 +109,7 @@ auto all_doubleton_arrays(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_doubleton_ilists(UnaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L2>;
         using SizeType = decltype(N);
 
         for (auto j = SizeType{1}; j < N; ++j) {
@@ -107,12 +123,12 @@ auto all_doubleton_ilists(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_doubleton_sets(UnaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L2>;
         using SizeType = decltype(N);
 
         for (auto j = SizeType{1}; j < N; ++j) {
                 for (auto i = SizeType{0}; i < j; ++i) {
-                        IntSet tmp;
+                        IntSet tmp; resize(tmp, N);
                         auto ij2 = insert(insert(tmp, i), j);
                         fun(ij2);
                 }
@@ -122,14 +138,14 @@ auto all_doubleton_sets(UnaryFunction fun)
 template<class IntSet, class BinaryFunction>
 auto all_singleton_set_pairs(BinaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L2>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
-                IntSet tmp1;
+                IntSet tmp1; resize(tmp1, N);
                 auto i1 = insert(tmp1, i);
                 for (auto j = SizeType{0}; j < N; ++j) {
-                        IntSet tmp2;
+                        IntSet tmp2; resize(tmp2, N);
                         auto j1 = insert(tmp2, j);
                         fun(i1, j1);
                 }
@@ -141,17 +157,17 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 template<class IntSet, class TernaryFunction>
 auto all_singleton_set_triples(TernaryFunction fun)
 {
-        constexpr auto N = max_size(IntSet{});
+        const auto N = limit_v<IntSet, L3>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
-                IntSet tmp1;
+                IntSet tmp1; resize(tmp1, N);
                 auto i1 = insert(tmp1, i);
                 for (auto j = SizeType{0}; j < N; ++j) {
-                        IntSet tmp2;
+                        IntSet tmp2; resize(tmp2, N);
                         auto j1 = insert(tmp2, j);
                         for (auto k = SizeType{0}; k < N; ++k) {
-                                IntSet tmp3;
+                                IntSet tmp3; resize(tmp3, N);
                                 auto k1 = insert(tmp3, k);
                                 fun(i1, j1, k1);
                         }

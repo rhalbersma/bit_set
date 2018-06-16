@@ -8,7 +8,7 @@
 #include <algorithm>            // all_of, copy, copy_backward, copy_n, equal, fill_n, lexicographical_compare, max, swap_ranges
 #include <array>                // array
 #include <cassert>              // assert
-#include <cstddef>              // size_t
+#include <cstddef>              // ptrdiff_t, size_t
 #include <cstdint>              // uint64_t
 #include <functional>           // less, not_fn
 #include <initializer_list>     // initializer_list
@@ -340,7 +340,7 @@ public:
         using reference              = proxy_reference;
         using const_reference        = proxy_reference;
         using size_type              = int;
-        using difference_type        = int;
+        using difference_type        = std::ptrdiff_t;
         using iterator               = proxy_iterator;
         using const_iterator         = proxy_iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
@@ -609,28 +609,28 @@ public:
                 -> iterator
         {
                 assert(0 <= x); assert(x < N);
-                return { this, find_next(x - 1) };
+                return { this, find_first_from(x) };
         }
 
         constexpr auto lower_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(0 <= x); assert(x < N);
-                return { this, find_next(x - 1) };
+                return { this, find_first_from(x) };
         }
 
         constexpr auto upper_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
                 assert(0 <= x); assert(x < N);
-                return { this, find_next(x) };
+                return { this, find_first_from(x + 1) };
         }
 
         constexpr auto upper_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(0 <= x); assert(x < N);
-                return { this, find_next(x) };
+                return { this, find_first_from(x + 1) };
         }
 
         constexpr auto equal_range(key_type const& x) // Throws: Nothing.
@@ -888,10 +888,10 @@ private:
                 return N;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto find_next(int n) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC auto find_first_from(int n) const // Throws: Nothing.
         {
-                assert(-1 <= n); assert(n < N);
-                if (++n == N) {
+                assert(0 <= n); assert(n <= N);
+                if (n == N) {
                         return N;
                 }
                 if constexpr (num_logical_blocks == 1) {
@@ -916,10 +916,9 @@ private:
                 return N;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto find_prev(int n) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC auto find_last_from(int n) const // Throws: Nothing.
         {
-                assert(0 < n); assert(n <= N);
-                --n;
+                assert(0 <= n); assert(n < N);
                 if constexpr (num_logical_blocks == 1) {
                         return n - detail::clznz(m_data[0] << (block_size - 1 - n));
                 } else {
@@ -1011,7 +1010,7 @@ private:
                 XSTD_PP_CONSTEXPR_INTRINSIC auto& operator++() // Throws: Nothing.
                 {
                         assert(0 <= m_value); assert(m_value < N);
-                        m_value = m_is->find_next(m_value);
+                        m_value = m_is->find_first_from(m_value + 1);
                         assert(0 < m_value); assert(m_value <= N);
                         return *this;
                 }
@@ -1024,7 +1023,7 @@ private:
                 XSTD_PP_CONSTEXPR_INTRINSIC auto& operator--() // Throws: Nothing.
                 {
                         assert(0 < m_value); assert(m_value <= N);
-                        m_value = m_is->find_prev(m_value);
+                        m_value = m_is->find_last_from(m_value - 1);
                         assert(0 <= m_value); assert(m_value < N);
                         return *this;
                 }
