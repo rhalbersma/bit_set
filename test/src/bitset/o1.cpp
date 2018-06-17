@@ -6,7 +6,7 @@
 #include <bitset/compatible/bitset.hpp>         // bitset
 #include <bitset/compatible/dynamic_bitset.hpp> // dynamic_bitset
 #include <bitset/compatible/int_set.hpp>        // int_set
-#include <bitset/exhaustive.hpp>                // all_values, all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets
+#include <bitset/exhaustive.hpp>                // empty_set, full_set, all_values, all_cardinality_sets, all_singleton_sets
 #include <bitset/primitives.hpp>                // constructor, const_reference, const_iterator, mem_front, mem_back,
                                                 // mem_accumulate, mem_for_each, mem_reverse_for_each,
                                                 // fn_fill, fn_insert, mem_insert, fn_clear, fn_erase, mem_erase,
@@ -55,60 +55,90 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
 {
         all_cardinality_sets<T>(fn_fill{});
         all_singleton_sets<T>(fn_fill{});
-        // all_cardinality_sets<T>(fn_insert{});
-        // all_singleton_sets<T>(fn_insert{});
-        // all_values<T>([](auto const pos) {
-        //         fn_insert{}(T{}, pos);
-        //         fn_insert{}(T{}, pos, true);
-        //         fn_insert{}(~T{}, pos, false);
-        // });
+        all_cardinality_sets<T>(fn_insert{});
+        all_singleton_sets<T>(fn_insert{});
+        all_values<T>([](auto const pos) {
+                empty_set<T>([&](auto& is0) {
+                        fn_insert{}(is0, pos);
+                });
+                empty_set<T>([&](auto& is0) {
+                        fn_insert{}(is0, pos, true);
+                });
+                full_set<T>([&](auto& isN) {
+                        fn_insert{}(isN, pos, false);
+                });
+        });
 
         all_cardinality_sets<T>(fn_clear{});
         all_singleton_sets<T>(fn_clear{});
-        // all_cardinality_sets<T>(fn_erase{});
-        // all_singleton_sets<T>(fn_erase{});
-        // all_values<T>([](auto const pos) {
-        //         fn_erase{}(~T{}, pos);
-        // });
+        all_cardinality_sets<T>(fn_erase{});
+        all_singleton_sets<T>(fn_erase{});
+        all_values<T>([](auto const pos) {
+                full_set<T>([&](auto& isN) {
+                        fn_erase{}(isN, pos);
+                });
+        });
 
         all_cardinality_sets<T>(op_compl{});
         all_singleton_sets<T>(op_compl{});
         all_cardinality_sets<T>(fn_complement{});
         all_singleton_sets<T>(fn_complement{});
-        // all_cardinality_sets<T>(fn_replace{});
-        // all_singleton_sets<T>(fn_replace{});
-        // all_values<T>([](auto const pos) {
-        //         fn_replace{}(T{}, pos);
-        //         fn_replace{}(~T{}, pos);
-        // });
+        all_cardinality_sets<T>(fn_replace{});
+        all_singleton_sets<T>(fn_replace{});
+        all_values<T>([](auto const pos) {
+                empty_set<T>([&](auto& is0) {
+                        fn_replace{}(is0, pos);
+                });
+                full_set<T>([&](auto& isN) {
+                        fn_replace{}(isN, pos);
+                });
+       });
 
         all_cardinality_sets<T>(fn_size{});
 
         all_cardinality_sets<T>(fn_max_size{});
         all_singleton_sets<T>(fn_max_size{});
 
-        // all_singleton_sets<T>(fn_contains{});
-        // all_values<T>([](auto const pos) {
-        //         fn_contains{}(T{}, pos);
-        //         fn_contains{}(~T{}, pos);
-        // });
+        all_singleton_sets<T>(fn_contains{});
+        all_values<T>([](auto const pos) {
+                empty_set<T>([&](auto const& is0) {
+                        fn_contains{}(is0, pos);
+                });
+                full_set<T>([&](auto const& isN) {
+                        fn_contains{}(isN, pos);
+                });
+        });
 
         all_cardinality_sets<T>(fn_full{});
         all_cardinality_sets<T>(fn_not_empty{});
         all_cardinality_sets<T>(fn_empty{});
 
-        // all_values<T>([](auto const pos) {
-        //         op_at{}(T{}, pos);
-        //         op_at{}(~T{}, pos);
-        //         auto none = T{};
-        //         op_at{}(none, pos);
-        //         op_at{}(none, pos, true);
-        //         op_at{}(none, pos, false);
-        //         auto ones = ~T{};
-        //         op_at{}(ones, pos);
-        //         op_at{}(ones, pos, false);
-        //         op_at{}(ones, pos, true);
-        // });
+        all_values<T>([](auto const pos) {
+                empty_set<T>([&](auto const& is0) {
+                        op_at{}(is0, pos);
+                });
+                full_set<T>([&](auto const& isN) {
+                        op_at{}(isN, pos);
+                });
+                empty_set<T>([&](auto& is0) {
+                        op_at{}(is0, pos);
+                });
+                empty_set<T>([&](auto& is0) {
+                        op_at{}(is0, pos, false);
+                });
+                empty_set<T>([&](auto& is0) {
+                        op_at{}(is0, pos, true);
+                });
+                full_set<T>([&](auto& isN) {
+                        op_at{}(isN, pos);
+                });
+                full_set<T>([&](auto& isN) {
+                        op_at{}(isN, pos, false);
+                });
+                full_set<T>([&](auto& isN) {
+                        op_at{}(isN, pos, true);
+                });
+        });
 
         all_singleton_sets<T>(op_bitand{});
         all_singleton_sets<T>(op_bitor{});

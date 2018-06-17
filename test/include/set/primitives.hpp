@@ -10,7 +10,7 @@
                                         // has_op_minus_assign_v, has_range_insert_v, has_ilist_insert_v, has_range_erase_v, has_ilist_erase_v,
                                         // has_max_size_v, has_empty_v, has_full_v
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <algorithm>                    // all_of, any_of, copy_if, count, equal, find, for_each, includes, is_sorted, lexicographical_compare,
+#include <algorithm>                    // all_of, any_of, copy_if, count, equal, find, for_each, includes, lexicographical_compare,
                                         // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform
                                         // lower_bound, upper_bound, equal_range
 #include <functional>                   // greater, plus
@@ -143,7 +143,7 @@ struct mem_front
         template<class IntSet>
         auto operator()(IntSet const& is [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_front_v<IntSet> && tti::has_const_iterator_v<IntSet>) {
+                if constexpr (tti::has_front_v<IntSet> && tti::has_forward_iterator_v<IntSet>) {
                         BOOST_CHECK(is.empty() || (is.front() == *is.cbegin()));
                         BOOST_CHECK(is.empty() || (&is.front() == is.cbegin()));
                 }
@@ -155,7 +155,7 @@ struct mem_back
         template<class IntSet>
         auto operator()(IntSet const& is [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_back_v<IntSet> && tti::has_const_iterator_v<IntSet>) {
+                if constexpr (tti::has_back_v<IntSet> && tti::has_forward_iterator_v<IntSet>) {
                         BOOST_CHECK(is.empty() || (is.back() == *is.crbegin()));
                         BOOST_CHECK(is.empty() || (&is.back() == std::next(is.crbegin()).base()));
                 }

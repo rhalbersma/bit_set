@@ -8,7 +8,6 @@
 #include <xstd/int_set.hpp>     // int_set
 #include <cassert>              // assert
 #include <stdexcept>            // out_of_range
-#include <string>
 
 namespace xstd {
 
@@ -35,10 +34,9 @@ auto& fill(int_set<N, UIntType>& is) noexcept
 template<int N, class UIntType>
 auto& insert(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val = true)
 {
-        // if (pos >= N) {
-        //         std::string s = "int_set<" + std::to_string(N) + ">::set(" + std::to_string(pos) + ")";
-        //         throw std::out_of_range(s);
-        // }
+        if (pos >= N) {
+                throw std::out_of_range{""};
+        }
         if (val) {
                 is.insert(pos);
         } else {
@@ -56,9 +54,9 @@ auto& clear(int_set<N, UIntType>& is) noexcept
 template<int N, class UIntType>
 auto& erase(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 {
-        // if (pos >= N) {
-        //         throw std::out_of_range{"int_set::reset"};
-        // }
+        if (pos >= N) {
+                throw std::out_of_range{""};
+        }
         is.erase(pos);
         return is;
 }
@@ -72,9 +70,9 @@ auto& complement(int_set<N, UIntType>& is) noexcept
 template<int N, class UIntType>
 auto& replace(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 {
-        // if (pos >= N) {
-        //         throw std::out_of_range{"int_set::flip"};
-        // }
+        if (pos >= N) {
+                throw std::out_of_range{""};
+        }
         return is.replace(pos);
 }
 
@@ -87,9 +85,9 @@ constexpr auto max_size(int_set<N, UIntType> const& is) noexcept
 template<int N, class UIntType>
 auto contains(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const pos)
 {
-        // if (pos >= N) {
-        //         throw std::out_of_range{"int_set::test"};
-        // }
+        if (pos >= N) {
+                throw std::out_of_range{""};
+        }
         return is.contains(pos);
 }
 

@@ -6,8 +6,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
-#include <cstddef>                      // size_t
-#include <iterator>
+#include <cstddef>                      // ptrdiff_t, size_t
+#include <iterator>                     // forward_iterator_tag
 #include <stdexcept>                    // out_of_range
 
 namespace boost {
@@ -28,7 +28,7 @@ template<class Block, class Allocator>
 auto& insert(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos, bool const val = true)
 {
         if (pos >= bs.size()) {
-                throw std::out_of_range{"dynamic_bitset::set"};
+                throw std::out_of_range{""};
         } else {
                 return bs.set(pos, val);
         }
@@ -44,7 +44,7 @@ template<class Block, class Allocator>
 auto& erase(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
 {
         if (pos >= bs.size()) {
-                throw std::out_of_range{"dynamic_bitset::reset"};
+                throw std::out_of_range{""};
         } else {
                 return bs.reset(pos);
         }
@@ -60,7 +60,7 @@ template<class Block, class Allocator>
 auto& replace(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
 {
         if (pos >= bs.size()) {
-                throw std::out_of_range{"dynamic_bitset::flip"};
+                throw std::out_of_range{""};
         } else {
                 return bs.flip(pos);
         }
@@ -82,7 +82,7 @@ template<class Block, class Allocator>
 auto contains(dynamic_bitset<Block, Allocator> const& bs, std::size_t const pos)
 {
         if (pos >= bs.size()) {
-                throw std::out_of_range{"dynamic_bitset::test"};
+                throw std::out_of_range{""};
         } else {
                 return bs.test(pos);
         }

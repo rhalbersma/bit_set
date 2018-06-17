@@ -9,19 +9,36 @@
 #include <array>                // array
 #include <cstddef>              // size_t
 #include <initializer_list>     // initializer_list
-#include <utility>
+#include <utility>              // declval
 
 namespace xstd {
 
-template<class T>
-using max_size_type = decltype(max_size(std::declval<T>()));
-
 template<class T, int L>
-inline const auto limit_v = tti::has_resize_v<T> ? static_cast<max_size_type<T>>(L) : max_size(T{});
+inline const auto limit_v = tti::has_resize_v<T> ? static_cast<decltype(max_size(std::declval<T>()))>(L) : max_size(T{});
 
 constexpr auto L1 = 128;
 constexpr auto L2 =  64;
 constexpr auto L3 =  32;
+
+// NOTE: these tests are O(1)
+
+template<class IntSet, class UnaryFunction>
+auto empty_set(UnaryFunction fun)
+{
+        const auto N = limit_v<IntSet, L1>;
+        IntSet is0; resize(is0, N);
+        assert(empty(is0));
+        fun(is0);
+}
+
+template<class IntSet, class UnaryFunction>
+auto full_set(UnaryFunction fun)
+{
+        const auto N = limit_v<IntSet, L1>;
+        IntSet isN; resize(isN, N, true);
+        assert(full(isN));
+        fun(isN);
+}
 
 // NOTE: these tests are O(N)
 
