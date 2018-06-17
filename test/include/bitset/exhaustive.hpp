@@ -9,17 +9,15 @@
 #include <array>                // array
 #include <cstddef>              // size_t
 #include <initializer_list>     // initializer_list
+#include <utility>
 
 namespace xstd {
 
+template<class T>
+using max_size_type = decltype(max_size(std::declval<T>()));
+
 template<class T, int L>
-inline const auto limit_v = []{
-        if (tti::has_resize_v<T>) {
-                return static_cast<decltype(max_size(std::declval<T>()))>(L);
-        } else {
-                return max_size(T{});
-        }
-}();
+inline const auto limit_v = tti::has_resize_v<T> ? static_cast<max_size_type<T>>(L) : max_size(T{});
 
 constexpr auto L1 = 128;
 constexpr auto L2 =  64;
