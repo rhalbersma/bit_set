@@ -16,7 +16,7 @@ template<class T>
 using size_t = typename T::size_type;
 
 template<int N, class UIntType>
-auto resize(int_set<N, UIntType>& is, int const num_bits [[maybe_unused]], bool const value = false) noexcept
+auto resize(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const num_bits [[maybe_unused]], bool const value = false) noexcept
 {
         assert(num_bits == N);
         if (value) {

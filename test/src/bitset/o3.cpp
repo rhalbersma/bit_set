@@ -15,7 +15,7 @@
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <bitset>                               // bitset
-
+#include <iostream>
 BOOST_AUTO_TEST_SUITE(Cubic)
 
 using namespace xstd;
@@ -32,6 +32,7 @@ using SetTypes = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, SetTypes)
 {
+        std::cout << "Max N: " << limit_v<T, L3> << '\n';
         all_singleton_set_triples<T>(fn_is_subset_of{});
 }
 
