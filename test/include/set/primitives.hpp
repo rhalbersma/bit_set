@@ -295,7 +295,7 @@ struct mem_clear
         auto operator()(X& a) const noexcept
         {                                                                       // [associative.reqmts] Table 90
                 auto a1 = a;
-                static_assert(std::is_same_v<decltype(a.clear()), void>);
+                //static_assert(std::is_same_v<decltype(a.clear()), void>);
                 a.clear();
                 a1.erase(a1.begin(), a1.end());
                 BOOST_CHECK(a == a1);

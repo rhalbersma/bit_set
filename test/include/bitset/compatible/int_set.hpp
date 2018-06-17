@@ -46,8 +46,7 @@ auto& insert(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, b
 template<int N, class UIntType>
 auto& clear(int_set<N, UIntType>& is) noexcept
 {
-        is.clear();
-        return is;
+        return is.clear();
 }
 
 template<int N, class UIntType>

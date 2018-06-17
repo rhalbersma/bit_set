@@ -551,7 +551,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto clear() noexcept
+        XSTD_PP_CONSTEXPR_ALGORITHM auto& clear() noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] = zero;
@@ -562,6 +562,7 @@ public:
                         std::fill_n(std::begin(m_data), num_logical_blocks, zero);
                 }
                 assert(empty());
+                return *this;
         }
 
         constexpr auto& replace(value_type const n) // Throws: Nothing.
