@@ -21,16 +21,16 @@ constexpr auto limit_v = []{
         }
 }();
 
-constexpr auto L1 = 256;
-constexpr auto L2 = 128;
-constexpr auto L3 =  64;
+constexpr auto L1 = 128;
+constexpr auto L2 =  64;
+constexpr auto L3 =  32;
 
 // NOTE: these tests are O(N)
 
 template<class IntSet, class UnaryFunction>
 auto all_values(UnaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L1>;
+        constexpr auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -41,7 +41,7 @@ auto all_values(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_cardinality_sets(UnaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L1>;
+        constexpr auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i <= N; ++i) {
@@ -56,7 +56,7 @@ auto all_cardinality_sets(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_singleton_arrays(UnaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L1>;
+        constexpr auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -68,7 +68,7 @@ auto all_singleton_arrays(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_singleton_ilists(UnaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L1>;
+        constexpr auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -80,7 +80,7 @@ auto all_singleton_ilists(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_singleton_sets(UnaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L1>;
+        constexpr auto N = limit_v<IntSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -95,7 +95,7 @@ auto all_singleton_sets(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_doubleton_arrays(UnaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L2>;
+        constexpr auto N = limit_v<IntSet, L2>;
         using SizeType = decltype(N);
 
         for (auto j = SizeType{1}; j < N; ++j) {
@@ -109,7 +109,7 @@ auto all_doubleton_arrays(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_doubleton_ilists(UnaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L2>;
+        constexpr auto N = limit_v<IntSet, L2>;
         using SizeType = decltype(N);
 
         for (auto j = SizeType{1}; j < N; ++j) {
@@ -123,7 +123,7 @@ auto all_doubleton_ilists(UnaryFunction fun)
 template<class IntSet, class UnaryFunction>
 auto all_doubleton_sets(UnaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L2>;
+        constexpr auto N = limit_v<IntSet, L2>;
         using SizeType = decltype(N);
 
         for (auto j = SizeType{1}; j < N; ++j) {
@@ -138,7 +138,7 @@ auto all_doubleton_sets(UnaryFunction fun)
 template<class IntSet, class BinaryFunction>
 auto all_singleton_set_pairs(BinaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L2>;
+        constexpr auto N = limit_v<IntSet, L2>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -157,7 +157,7 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 template<class IntSet, class TernaryFunction>
 auto all_singleton_set_triples(TernaryFunction fun)
 {
-        const auto N = limit_v<IntSet, L3>;
+        constexpr auto N = limit_v<IntSet, L3>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {

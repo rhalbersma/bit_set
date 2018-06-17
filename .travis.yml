@@ -35,6 +35,8 @@ install:
   BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.bz2"
   mkdir -p ${BOOST_DIR} && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xj -C ${BOOST_DIR}
   cd ${BOOST_DIR} && ./bootstrap.sh --with-libraries=test && ./b2 -d0
+  BOOST_ROOT=${BOOST_DIR}
+  BOOST_LIBRARYDIR=${BOOST_DIR}/stage/lib
 
 ################################################################################
 # Install the latest CMake
@@ -50,7 +52,7 @@ before_script:
 - |
   cd ${TRAVIS_BUILD_DIR}
   mkdir build && cd build
-  cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DBOOST_ROOT="${BOOST_DIR}" -DBOOST_LIBRARYDIR="${BOOST_DIR}/stage/lib"
+  cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
  
 script: 
 - |

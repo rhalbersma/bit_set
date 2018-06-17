@@ -730,7 +730,9 @@ public:
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] <<= n;
                 } else if constexpr (num_logical_blocks >= 2) {
-                        if (n == 0) { return *this; }
+                        if (n == 0) {
+                                return *this;
+                        }
 
                         auto const n_block = n / block_size;
                         auto const L_shift = n % block_size;
@@ -760,7 +762,9 @@ public:
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] >>= n;
                 } else if constexpr (num_logical_blocks >= 2) {
-                        if (n == 0) { return *this; }
+                        if (n == 0) {
+                                return *this;
+                        }
 
                         auto const n_block = n / block_size;
                         auto const R_shift = n % block_size;

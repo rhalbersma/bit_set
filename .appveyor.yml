@@ -4,13 +4,13 @@ image:
 environment:
   matrix:
     - generator: "Visual Studio 15 2017"
-      BOOST_ROOT: C:/Libraries/boost_1_66_0
-      BOOST_LIBRARYDIR: C:/Libraries/boost_1_66_0/lib32-msvc-14.1
+      BOOST_ROOT: C:/Libraries/boost_1_67_0
+      BOOST_LIBRARYDIR: C:/Libraries/boost_1_67_0/lib32-msvc-14.1
       PATH: "%BOOST_LIBRARYDIR%;%PATH%"
 
     - generator: "Visual Studio 15 2017 Win64"
-      BOOST_ROOT: C:/Libraries/boost_1_66_0
-      BOOST_LIBRARYDIR: C:/Libraries/boost_1_66_0/lib64-msvc-14.1
+      BOOST_ROOT: C:/Libraries/boost_1_67_0
+      BOOST_LIBRARYDIR: C:/Libraries/boost_1_67_0/lib64-msvc-14.1
       PATH: "%BOOST_LIBRARYDIR%;%PATH%"
 
 configuration:
