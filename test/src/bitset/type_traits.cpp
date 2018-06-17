@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_SUITE(TypeTraits)
 
 using namespace xstd;
 
-using SetTypes = boost::mpl::vector
+using BitSetTypes = boost::mpl::vector
 <       std::bitset<  0>
 ,       std::bitset< 32>
 ,       std::bitset< 64>
@@ -29,26 +29,29 @@ using SetTypes = boost::mpl::vector
 ,       int_set<256>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsNothrowDefaultConstructible, T, SetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsNothrowDefaultConstructible, T, BitSetTypes)
 {
         static_assert(std::is_nothrow_default_constructible_v<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsTriviallyCopyable, T, SetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsTriviallyCopyable, T, BitSetTypes)
 {
         static_assert(std::is_trivially_copyable_v<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsStandardLayout, T, SetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsStandardLayout, T, BitSetTypes)
 {
         static_assert(std::is_standard_layout_v<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(HasResize, T, SetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(HasNoResize, T, BitSetTypes)
 {
         static_assert(!tti::has_resize_v<T>);
 }
 
-static_assert(tti::has_resize_v<boost::dynamic_bitset<>>);
+BOOST_AUTO_TEST_CASE(DynamicBitsetHasResize)
+{
+        static_assert(tti::has_resize_v<boost::dynamic_bitset<>>);
+}
 
 BOOST_AUTO_TEST_SUITE_END()

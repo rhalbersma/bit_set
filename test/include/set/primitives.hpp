@@ -20,7 +20,6 @@
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
 #include <set>                          // set
-#include <stdexcept>                    // out_of_range
 #include <type_traits>                  // is_constructible_v
 #include <utility>
 #include <vector>                       // vector

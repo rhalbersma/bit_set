@@ -45,13 +45,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
         all_singleton_set_pairs<T>(op_minus_assign{});
 
         all_values<T>([](auto const pos) {
-                all_singleton_sets<T>([&](auto const& i1){
+                all_singleton_sets<T>([&](auto& i1){
                         op_shift_left_assign{}(i1, pos);
                 });
         });
 
         all_values<T>([](auto const pos) {
-                all_singleton_sets<T>([&](auto const& i1){
+                all_singleton_sets<T>([&](auto& i1){
                         op_shift_right_assign{}(i1, pos);
                 });
         });
