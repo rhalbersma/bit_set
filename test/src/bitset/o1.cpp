@@ -55,8 +55,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
 {
         all_cardinality_sets<T>(fn_fill{});
         all_singleton_sets<T>(fn_fill{});
-        all_cardinality_sets<T>(fn_insert{});
-        all_singleton_sets<T>(fn_insert{});
+        // all_cardinality_sets<T>(fn_insert{});
+        // all_singleton_sets<T>(fn_insert{});
         // all_values<T>([](auto const pos) {
         //         fn_insert{}(T{}, pos);
         //         fn_insert{}(T{}, pos, true);
@@ -65,8 +65,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
 
         all_cardinality_sets<T>(fn_clear{});
         all_singleton_sets<T>(fn_clear{});
-        all_cardinality_sets<T>(fn_erase{});
-        all_singleton_sets<T>(fn_erase{});
+        // all_cardinality_sets<T>(fn_erase{});
+        // all_singleton_sets<T>(fn_erase{});
         // all_values<T>([](auto const pos) {
         //         fn_erase{}(~T{}, pos);
         // });
@@ -75,8 +75,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
         all_singleton_sets<T>(op_compl{});
         all_cardinality_sets<T>(fn_complement{});
         all_singleton_sets<T>(fn_complement{});
-        all_cardinality_sets<T>(fn_replace{});
-        all_singleton_sets<T>(fn_replace{});
+        // all_cardinality_sets<T>(fn_replace{});
+        // all_singleton_sets<T>(fn_replace{});
         // all_values<T>([](auto const pos) {
         //         fn_replace{}(T{}, pos);
         //         fn_replace{}(~T{}, pos);
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
         all_cardinality_sets<T>(fn_max_size{});
         all_singleton_sets<T>(fn_max_size{});
 
-        all_singleton_sets<T>(fn_contains{});
+        // all_singleton_sets<T>(fn_contains{});
         // all_values<T>([](auto const pos) {
         //         fn_contains{}(T{}, pos);
         //         fn_contains{}(~T{}, pos);

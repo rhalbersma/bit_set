@@ -447,6 +447,7 @@ struct op_shift_left
         template<class IntSet, class SizeType>
         auto operator()(IntSet const& is, SizeType const n) const
         {
+                BOOST_CHECK_LE(n, max_size(is));
                 auto expected = is; expected <<= n;
                 BOOST_CHECK(is << n == expected);                               // [bitset.members]/43
 
@@ -469,6 +470,7 @@ struct op_shift_right
         template<class IntSet, class SizeType>
         auto operator()(IntSet const& is, SizeType const n) const
         {
+                BOOST_CHECK_LE(n, max_size(is));
                 auto expected = is; expected >>= n;
                 BOOST_CHECK(is >> n == expected);                               // [bitset.members]/44
 
