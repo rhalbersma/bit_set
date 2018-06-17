@@ -5,8 +5,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/int_set.hpp> // int_set
-#include <stdexcept>        // out_of_range
+#include <xstd/int_set.hpp>     // int_set
+#include <cassert>              // assert
+#include <stdexcept>            // out_of_range
 #include <string>
 
 namespace xstd {
@@ -15,8 +16,9 @@ template<class T>
 using size_t = typename T::size_type;
 
 template<int N, class UIntType>
-auto resize(int_set<N, UIntType>& is, int /* num_bits */, bool const value = false) noexcept
+auto resize(int_set<N, UIntType>& is, int const num_bits [[maybe_unused]], bool const value = false) noexcept
 {
+        assert(num_bits == N);
         if (value) {
                 is.fill();
         } else {

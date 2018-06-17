@@ -6,13 +6,15 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <bitset>       // bitset
+#include <cassert>      // assert
 #include <cstddef>      // size_t
 
 namespace xstd {
 
 template<std::size_t N>
-auto resize(std::bitset<N>& bs, std::size_t /* num_bits */, bool const value = false) noexcept
+auto resize(std::bitset<N>& bs, std::size_t const num_bits [[maybe_unused]], bool const value = false) noexcept
 {
+        assert(num_bits == N);
         if (value) {
                 bs.set();
         } else {
