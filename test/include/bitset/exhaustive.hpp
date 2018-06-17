@@ -159,7 +159,7 @@ auto all_singleton_set_triples(TernaryFunction fun)
 {
         constexpr auto N = limit_v<IntSet, L3>;
         using SizeType = decltype(N);
-
+        
         for (auto i = SizeType{0}; i < N; ++i) {
                 IntSet tmp1; resize(tmp1, N);
                 auto i1 = insert(tmp1, i);

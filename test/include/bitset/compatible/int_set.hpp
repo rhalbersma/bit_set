@@ -7,6 +7,7 @@
 
 #include <xstd/int_set.hpp> // int_set
 #include <stdexcept>        // out_of_range
+#include <string>
 
 namespace xstd {
 
@@ -33,15 +34,15 @@ template<int N, class UIntType>
 auto& insert(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val = true)
 {
         if (pos >= N) {
-                throw std::out_of_range("int_set::set");
-        } else {
-                if (val) {
-                        is.insert(pos);
-                } else {
-                        is.erase(pos);
-                }
-                return is;
+                std::string s = "int_set<" + std::to_string(N) + ">::set(" + std::to_string(pos) + ")";
+                throw std::out_of_range(s);
         }
+        if (val) {
+                is.insert(pos);
+        } else {
+                is.erase(pos);
+        }
+        return is;
 }
 
 template<int N, class UIntType>
@@ -55,10 +56,9 @@ auto& erase(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{"int_set::reset"};
-        } else {
-                is.erase(pos);
-                return is;
         }
+        is.erase(pos);
+        return is;
 }
 
 template<int N, class UIntType>
@@ -72,9 +72,8 @@ auto& replace(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{"int_set::flip"};
-        } else {
-                return is.replace(pos);
         }
+        return is.replace(pos);
 }
 
 template<int N, class UIntType>
@@ -88,9 +87,8 @@ auto contains(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const
 {
         if (pos >= N) {
                 throw std::out_of_range{"int_set::test"};
-        } else {
-                return is.contains(pos);
         }
+        return is.contains(pos);
 }
 
 template<int N, class UIntType>
