@@ -10,6 +10,7 @@
 #include <bitset/primitives.hpp>                // op_equal_to, op_less, fn_is_subset_of,
                                                 // op_bitand, op_bitor, op_xor
 #include <xstd/int_set.hpp>                     // int_set
+#include <boost/dynamic_bitset.hpp>             // dynamic_bitset
 #include <boost/mpl/vector.hpp>                 // vector
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
@@ -24,9 +25,9 @@ using SetTypes = boost::mpl::vector
 ,       std::bitset<32>
 ,       std::bitset<64>
 ,       boost::dynamic_bitset<>
-,       int_set< 0, uint32_t>
-,       int_set<32, uint32_t>
-,       int_set<64, uint32_t>
+// ,       int_set< 0, uint32_t>
+// ,       int_set<32, uint32_t>
+// ,       int_set<64, uint32_t>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, SetTypes)

@@ -277,11 +277,9 @@ struct fn_complement
 struct fn_replace
 {
         template<class IntSet>
-        auto operator()(IntSet const& is) const noexcept
+        auto operator()(IntSet& is) const noexcept
         {
-                auto value [[maybe_unused]] = is;
-                                                                                // [bitset.members]/25
-                BOOST_CHECK_THROW(replace(value, max_size(is)), std::out_of_range);
+                BOOST_CHECK_THROW(replace(is, max_size(is)), std::out_of_range);// [bitset.members]/25
         }
 
         template<class IntSet, class SizeType>

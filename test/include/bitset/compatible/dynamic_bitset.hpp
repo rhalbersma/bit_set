@@ -26,7 +26,9 @@ auto& fill(boost::dynamic_bitset<Block, Allocator>& bs) noexcept
 template<class Block, class Allocator>
 auto& insert(boost::dynamic_bitset<Block, Allocator>& bs, std::size_t const pos, bool const val = true)
 {
-        if (pos >= bs.size()) throw std::out_of_range{""};
+        if (pos >= bs.size()) {
+                throw std::out_of_range{""};
+        }
         return bs.set(pos, val);
 }
 
@@ -39,7 +41,9 @@ auto& clear(boost::dynamic_bitset<Block, Allocator>& bs) noexcept
 template<class Block, class Allocator>
 auto& erase(boost::dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
 {
-        if (pos >= bs.size()) throw std::out_of_range{""};
+        if (pos >= bs.size()) {
+                throw std::out_of_range{""};
+        }
         return bs.reset(pos);
 }
 
@@ -52,7 +56,9 @@ auto& complement(boost::dynamic_bitset<Block, Allocator>& bs) noexcept
 template<class Block, class Allocator>
 auto& replace(boost::dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
 {
-        if (pos >= bs.size()) throw std::out_of_range{""};
+        if (pos >= bs.size()) {
+                throw std::out_of_range{""};
+        }
         return bs.flip(pos);
 }
 
@@ -71,7 +77,9 @@ constexpr auto max_size(boost::dynamic_bitset<Block, Allocator> const& bs) noexc
 template<class Block, class Allocator>
 auto contains(boost::dynamic_bitset<Block, Allocator> const& bs, std::size_t const pos)
 {
-        if (pos >= bs.size()) throw std::out_of_range{""};
+        if (pos >= bs.size()) {
+                throw std::out_of_range{""};
+        }
         return bs.test(pos);
 }
 
