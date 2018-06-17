@@ -25,7 +25,7 @@ using SetTypes = boost::mpl::vector
 ,       std::bitset<32>
 ,       std::bitset<64>
 ,       boost::dynamic_bitset<>
-// ,       int_set< 0, uint32_t>
+,       int_set< 0, uint32_t>
 ,       int_set<32, uint32_t>
 ,       int_set<64, uint32_t>
 >;

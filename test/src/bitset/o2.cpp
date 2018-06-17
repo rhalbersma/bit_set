@@ -32,10 +32,10 @@ using BitSetTypes = boost::mpl::vector
 ,       std::bitset< 32>
 ,       std::bitset< 64>
 ,       boost::dynamic_bitset<>
-// ,       int_set<  0, uint32_t>
-// ,       int_set<  1, uint32_t>
-// ,       int_set< 33, uint32_t>
-// ,       int_set< 65, uint32_t>
+,       int_set<  0, uint32_t>
+,       int_set<  1, uint32_t>
+,       int_set< 33, uint32_t>
+,       int_set< 65, uint32_t>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)

@@ -36,7 +36,7 @@ install:
   mkdir -p ${BOOST_DIR} && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xj -C ${BOOST_DIR}
   cd ${BOOST_DIR} && ./bootstrap.sh --with-libraries=test && ./b2 -d0
   BOOST_ROOT=${BOOST_DIR}
-  BOOST_LIBRARYDIR=${BOOST_DIR}/stage/lib
+  BOOST_LIBRARYDIR="${BOOST_DIR}/stage/lib"
 
 ################################################################################
 # Install the latest CMake
