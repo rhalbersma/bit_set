@@ -84,9 +84,8 @@ auto all_singleton_sets(UnaryFunction fun)
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
-                IntSet tmp; resize(tmp, N);
-                auto i1 = insert(tmp, i);
-                fun(i1);
+                IntSet is1; resize(is1, N); insert(is1, i);
+                fun(is1);
         }
 }
 
@@ -128,9 +127,8 @@ auto all_doubleton_sets(UnaryFunction fun)
 
         for (auto j = SizeType{1}; j < N; ++j) {
                 for (auto i = SizeType{0}; i < j; ++i) {
-                        IntSet tmp; resize(tmp, N);
-                        auto ij2 = insert(insert(tmp, i), j);
-                        fun(ij2);
+                        IntSet is2; resize(is2, N); insert(is2, i); insert(is2, j);
+                        fun(is2);
                 }
         }
 }
@@ -142,12 +140,10 @@ auto all_singleton_set_pairs(BinaryFunction fun)
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
-                IntSet tmp1; resize(tmp1, N);
-                auto i1 = insert(tmp1, i);
+                IntSet is1_i; resize(is1_i, N); insert(is1_i, i);
                 for (auto j = SizeType{0}; j < N; ++j) {
-                        IntSet tmp2; resize(tmp2, N);
-                        auto j1 = insert(tmp2, j);
-                        fun(i1, j1);
+                        IntSet is1_j; resize(is1_j, N); insert(is1_j, j);
+                        fun(is1_i, is1_j);
                 }
         }
 }
@@ -161,15 +157,12 @@ auto all_singleton_set_triples(TernaryFunction fun)
         using SizeType = decltype(N);
         
         for (auto i = SizeType{0}; i < N; ++i) {
-                IntSet tmp1; resize(tmp1, N);
-                auto i1 = insert(tmp1, i);
+                IntSet is1_i; resize(is1_i, N); insert(is1_i, i);
                 for (auto j = SizeType{0}; j < N; ++j) {
-                        IntSet tmp2; resize(tmp2, N);
-                        auto j1 = insert(tmp2, j);
+                        IntSet is1_j; resize(is1_j, N); insert(is1_j, j);
                         for (auto k = SizeType{0}; k < N; ++k) {
-                                IntSet tmp3; resize(tmp3, N);
-                                auto k1 = insert(tmp3, k);
-                                fun(i1, j1, k1);
+                                IntSet is1_k; resize(is1_k, N); insert(is1_k, k);
+                                fun(is1_i, is1_j, is1_k);
                         }
                 }
         }

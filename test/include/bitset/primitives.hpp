@@ -112,6 +112,7 @@ struct op_shift_left_assign
         template<class IntSet, class SizeType>
         auto operator()(IntSet& is, SizeType const pos) const
         {
+                BOOST_CHECK_LE(pos, max_size(is));
                 auto const src = is;
                 auto const& dst = is <<= pos;
 
@@ -131,6 +132,7 @@ struct op_shift_right_assign
         template<class IntSet, class SizeType>
         auto operator()(IntSet& is, SizeType const pos) const
         {
+                BOOST_CHECK_LE(pos, max_size(is));
                 auto const src = is;
                 auto const& dst = is >>= pos;
 
