@@ -83,5 +83,5 @@ foreach(t ${targets})
         ${cxx_compile_options_coverage}
     )
 
-    add_test(${target_id} ${target_id})
+    add_test(${target_id} ${target_id} --report_level=detailed)
 endforeach()

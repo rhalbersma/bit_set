@@ -55,7 +55,7 @@ before_script:
 script: 
 - |
   cmake --build .
-  ctest
+  ctest --verbose
 
 after_success:
 - |
