@@ -23,7 +23,7 @@ class Int
         int m_value;
 public:
         /* explicit(false) */ Int(int v) noexcept : m_value{v} {}
-        /* explicit(false) */ operator auto() const noexcept { return m_value; }
+        /* explicit(false) */ operator int() const noexcept { return m_value; }
 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, IntSetTypes)
