@@ -7,6 +7,7 @@
 
 #include <traits.hpp>           // has_resize_v
 #include <array>                // array
+#include <cassert>              // assert
 #include <cstddef>              // size_t
 #include <initializer_list>     // initializer_list
 #include <utility>              // declval

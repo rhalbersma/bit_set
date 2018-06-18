@@ -170,50 +170,11 @@ Frequently Asked Questions
 **Q**: How do you work around this?   
 **A**: `int` is not a class-type and does not have member functions, so this situation never occurs.
 
+**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?   
+**A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.
+
 **Q**: So iterating over an `int_set` is really fool-proof?   
 **A**: Yes, `int_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
-
-**Q**: I'm no fool, but a C++ programmer, how do I break things?   
-**A**: If you insist, it is possible to use `int_set` iterators incorrectly by relying on too many implicit conversions.
-
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/1hD8lFDPveVbFdJx)
-
-```cpp
-#include "xstd/int_set.hpp"
-#include <algorithm>
-#include <iostream>
-#include <experimental/iterator>
-#include <set>
-
-#define USE_INT_SET 1
-#if USE_INT_SET
-    constexpr auto N = 32;
-    using set_type = xstd::int_set<N>;
-#else
-    using set_type = std::set<int>;
-#endif
-
-class Int
-{
-    int m_value;
-public:
-    /* implicit */ Int(int v) noexcept : m_value{v} {}
-    /* implicit */ operator auto() const noexcept { return m_value; }
-};
-
-int main()
-{
-    auto primes = set_type { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };
-    std::set<Int> s;
-
-    // at most one user-defined conversion allowed
-    // xstd::int_set::reference -> int -> Int is an error
-    // std::set::reference == int& -> int -> Int is OK
-    std::copy(primes.begin(), primes.end(), std::inserter(s, s.end()));
-
-    std::copy(s.begin(), s.end(), std::experimental::make_ostream_joiner(std::cout, ','));
-}
-```
 
 Requirements
 ============

@@ -7,7 +7,6 @@
 
 #include <algorithm>            // min
 #include <array>                // array
-#include <cassert>              // assert
 #include <initializer_list>     // initializer_list
 
 namespace xstd {
