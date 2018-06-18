@@ -5,12 +5,11 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <algorithm>            // all_of, copy, copy_backward, copy_n, equal, fill_n, lexicographical_compare, max, swap_ranges
-#include <array>                // array
+#include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, for_each, lexicographical_compare, max, swap_ranges
 #include <cassert>              // assert
 #include <cstddef>              // ptrdiff_t, size_t
 #include <cstdint>              // uint64_t
-#include <functional>           // less, not_fn
+#include <functional>           // less
 #include <initializer_list>     // initializer_list
 #include <iterator>             // bidirectional_iterator_tag, begin, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
@@ -407,7 +406,7 @@ public:
                 } else if constexpr (num_logical_blocks == 2) {
                         return !m_data[0] && !m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return std::none_of(std::cbegin(m_data), std::cend(m_data), [](auto const block) -> bool {
+                        return std::none_of(std::begin(m_data), std::end(m_data), [](auto const block) -> bool {
                                 return block;
                         });
                 }
@@ -423,7 +422,7 @@ public:
                         } else if constexpr (num_logical_blocks == 2) {
                                 return m_data[0] == ones && m_data[1] == ones;
                         } else if constexpr (num_logical_blocks >= 3) {
-                                return std::all_of(std::cbegin(m_data), std::cend(m_data), [](auto const block) {
+                                return std::all_of(std::begin(m_data), std::end(m_data), [](auto const block) {
                                         return block == ones;
                                 });
                         }
@@ -435,7 +434,7 @@ public:
                                 return m_data[0] == ones && m_data[1] == no_excess_bits;
                         } else if constexpr (num_logical_blocks >= 3) {
                                 return
-                                        std::all_of(std::cbegin(m_data), std::prev(std::cend(m_data)), [](auto const block) {
+                                        std::all_of(std::begin(m_data), std::prev(std::end(m_data)), [](auto const block) {
                                                 return block == ones;
                                         }) && m_data[num_logical_blocks - 1] == no_excess_bits;
                                 ;
@@ -452,7 +451,7 @@ public:
                 } else if constexpr (num_logical_blocks == 2) {
                         return detail::popcount(m_data[0]) + detail::popcount(m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return std::accumulate(std::cbegin(m_data), std::cend(m_data), 0, [](auto const sum, auto const block) {
+                        return std::accumulate(std::begin(m_data), std::end(m_data), 0, [](auto const sum, auto const block) {
                                 return sum + detail::popcount(block);
                         });
                 }
@@ -484,14 +483,14 @@ public:
         }
 
         template<class InputIterator>
-        constexpr auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_ALGORITHM auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
         {
-                while (first != last) {
-                        insert(*first++);
-                }
+                std::for_each(first, last, [&](auto const& n) {
+                        insert(n);
+                });
         }
 
-        constexpr auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_ALGORITHM auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
         {
                 insert(ilist.begin(), ilist.end());
         }
@@ -738,7 +737,7 @@ public:
                         auto const L_shift = n % block_size;
 
                         if (L_shift == 0) {
-                                std::copy_backward(std::cbegin(m_data), std::prev(std::cend(m_data), n_block), std::end(m_data));
+                                std::copy_backward(std::begin(m_data), std::prev(std::end(m_data), n_block), std::end(m_data));
                         } else {
                                 auto const R_shift = block_size - L_shift;
 
@@ -770,7 +769,7 @@ public:
                         auto const R_shift = n % block_size;
 
                         if (R_shift == 0) {
-                                std::copy_n(std::next(std::cbegin(m_data), n_block), num_logical_blocks - n_block, std::begin(m_data));
+                                std::copy_n(std::next(std::begin(m_data), n_block), num_logical_blocks - n_block, std::begin(m_data));
                         } else {
                                 auto const L_shift = block_size - R_shift;
 
@@ -1071,8 +1070,8 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(int_set<N, UIntType> const& lhs [[ma
                 return tied(lhs) == tied(rhs);
         } else if constexpr (num_logical_blocks >= 3) {
                 return std::equal(
-                        std::cbegin(lhs.m_data), std::cend(lhs.m_data),
-                        std::cbegin(rhs.m_data), std::cend(rhs.m_data)
+                        std::begin(lhs.m_data), std::end(lhs.m_data),
+                        std::begin(rhs.m_data), std::end(rhs.m_data)
                 );
         }
 }
@@ -1098,8 +1097,8 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(int_set<N, UIntType> const& lhs [[may
                 return tied(lhs) < tied(rhs);
         } else if constexpr (num_logical_blocks >= 3) {
                 return std::lexicographical_compare(
-                        std::crbegin(lhs.m_data), std::crend(lhs.m_data),
-                        std::crbegin(rhs.m_data), std::crend(rhs.m_data)
+                        std::rbegin(lhs.m_data), std::rend(lhs.m_data),
+                        std::rbegin(rhs.m_data), std::rend(rhs.m_data)
                 );
         }
 }
@@ -1182,8 +1181,8 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& lhs [[
                 ;
         } else if constexpr (num_logical_blocks >= 3) {
                 return std::equal(
-                        std::cbegin(lhs.m_data), std::cend(lhs.m_data),
-                        std::cbegin(rhs.m_data), std::cend(rhs.m_data),
+                        std::begin(lhs.m_data), std::end(lhs.m_data),
+                        std::begin(rhs.m_data), std::end(rhs.m_data),
                         [](auto const wL, auto const wR)
                                 -> bool
                         {
@@ -1227,8 +1226,8 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, UIntType> const& lhs [[ma
                 ;
         } else if constexpr (num_logical_blocks >= 3) {
                 return !std::equal(
-                        std::cbegin(lhs.m_data), std::cend(lhs.m_data),
-                        std::cbegin(rhs.m_data), std::cend(rhs.m_data),
+                        std::begin(lhs.m_data), std::end(lhs.m_data),
+                        std::begin(rhs.m_data), std::end(rhs.m_data),
                         [](auto const wL, auto const wR)
                                 -> bool
                         {
