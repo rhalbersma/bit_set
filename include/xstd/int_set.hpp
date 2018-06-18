@@ -968,7 +968,7 @@ private:
 
                 proxy_reference& operator=(value_type const) = delete;
 
-                /* explicit(false) */ constexpr operator auto() const noexcept
+                /* explicit(false) */ constexpr operator value_type() const noexcept
                 {
                         return m_value;
                 }
