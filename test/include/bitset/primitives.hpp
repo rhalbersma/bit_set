@@ -292,7 +292,7 @@ struct fn_size
                 BOOST_CHECK_EQUAL(size(is), expected);                          // [bitset.members]/34
 
                 if constexpr (tti::has_forward_iterator_v<IntSet>) {
-                        BOOST_CHECK_EQUAL(size(is), std::distance(begin(is), end(is)));
+                        BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(size(is)), std::distance(begin(is), end(is)));
                 }
         }
 };
