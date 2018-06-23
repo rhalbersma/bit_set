@@ -5,7 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, for_each, lexicographical_compare, max, swap_ranges
+#include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, for_each, lexicographical_compare, max, none_of, swap_ranges
 #include <cassert>              // assert
 #include <cstddef>              // ptrdiff_t, size_t
 #include <cstdint>              // uint64_t
@@ -466,9 +466,7 @@ public:
                 -> std::pair<iterator, bool>
         {
                 assert(0 <= x); assert(x < N);
-                if constexpr (num_logical_blocks == 1) {
-                        m_data[0] |= bit1(x);
-                } else if constexpr (num_logical_blocks >= 2) {
+                if constexpr (num_logical_blocks >= 1) {
                         m_data[which(x)] |= bit1(where(x));
                 }
                 assert(contains(x));
@@ -519,9 +517,7 @@ public:
         constexpr auto erase(key_type const& x) // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
-                if constexpr (num_logical_blocks == 1) {
-                        m_data[0] &= ~bit1(x);
-                } else if constexpr (num_logical_blocks >= 2) {
+                if constexpr (num_logical_blocks >= 1) {
                         m_data[which(x)] &= ~bit1(where(x));
                 }
                 assert(!contains(x));
@@ -567,9 +563,7 @@ public:
         constexpr auto& replace(value_type const n) // Throws: Nothing.
         {
                 assert(0 <= n); assert(n < N);
-                if constexpr (num_logical_blocks == 1) {
-                        m_data[0] ^= bit1(n);
-                } else if constexpr (num_logical_blocks >= 2) {
+                if constexpr (num_logical_blocks >= 1) {
                         m_data[which(n)] ^= bit1(where(n));
                 }
                 return *this;
@@ -578,10 +572,10 @@ public:
         [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
-                if constexpr (num_logical_blocks == 1) {
-                        if (m_data[0] & bit1(x)) { return true; }
-                } else if constexpr (num_logical_blocks >= 2) {
-                        if (m_data[which(x)] & bit1(where(x))) { return true ; }
+                if constexpr (num_logical_blocks >= 1) {
+                        if (m_data[which(x)] & bit1(where(x))) {
+                                return true ;
+                        }
                 }
                 return false;
         }
@@ -796,6 +790,7 @@ private:
         constexpr static auto zero = static_cast<block_type>(0);
         constexpr static auto ones = ~zero;
         constexpr static auto no_excess_bits = ones >> excess_bits;
+        static_assert(excess_bits ^ (ones == no_excess_bits));
 
         constexpr static auto bit1(value_type const n) // Throws: Nothing.
         {
@@ -804,18 +799,26 @@ private:
                 return static_cast<block_type>(1) << n;
         }
 
-        constexpr static auto which(value_type const n) // Throws: Nothing.
+        constexpr static auto which(value_type const n [[maybe_unused]]) // Throws: Nothing.
         {
-                static_assert(num_logical_blocks >= 2);
+                static_assert(num_logical_blocks >= 1);
                 assert(0 <= n); assert(n < N);
-                return n / block_size;
+                if constexpr (num_logical_blocks == 1) {
+                        return 0;
+                } else {
+                        return n / block_size;
+                }
         }
 
         constexpr static auto where(value_type const n) // Throws: Nothing.
         {
-                static_assert(num_logical_blocks >= 2);
+                static_assert(num_logical_blocks >= 1);
                 assert(0 <= n); assert(n < N);
-                return n % block_size;
+                if constexpr (num_logical_blocks == 1) {
+                        return n;
+                } else {
+                        return n % block_size;
+                }
         }
 
         constexpr auto clear_excess_bits() noexcept
