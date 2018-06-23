@@ -5,10 +5,11 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <traits.hpp>                   // has_op_minus_assign_v, has_forward_iterator_v, has_resize_v, has_hinted_insert_v
+#include <traits.hpp>                   // has_forward_iterator_v, has_hinted_insert_v, has_op_minus_assign_v, has_resize_v
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_LE, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <algorithm>                    // copy_if, equal, find, includes, lexicographical_compare,
                                         // set_difference, set_intersection, set_symmetric_difference, set_union, transform
+#include <cstddef>                      // ptrdiff_t
 #include <iterator>                     // distance, inserter
 #include <memory>                       // addressof
 #include <set>                          // set
@@ -16,13 +17,13 @@
 
 namespace xstd {
 
-template<class IntSet>
+template<class BitSet>
 struct constructor
 {
         constexpr auto operator()() const noexcept
         {
-                IntSet is;
-                BOOST_CHECK(empty(is));                                         // [bitset.cons]/1
+                BitSet bs;
+                BOOST_CHECK(none(bs));                                          // [bitset.cons]/1
         }
 
         // [bitset.cons]/2-7 describe constructors taking unsigned long long, basic_string and char const*
@@ -30,16 +31,16 @@ struct constructor
 
 struct op_bitand_assign
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet& lhs, IntSet const& rhs) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet& lhs, BitSet const& rhs) const noexcept
         {
-                BOOST_CHECK_EQUAL(max_size(lhs), max_size(rhs));
+                BOOST_CHECK_EQUAL(fn_size(lhs), fn_size(rhs));
                 auto const src = lhs;
                 auto const& dst = lhs &= rhs;
 
-                for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
                                                                                 // [bitset.members]/1
-                        BOOST_CHECK_EQUAL(contains(dst, i), !contains(rhs, i) ? false : contains(src, i));
+                        BOOST_CHECK_EQUAL(at(dst, i), !at(rhs, i) ? false : at(src, i));
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/2
         }
@@ -47,16 +48,16 @@ struct op_bitand_assign
 
 struct op_bitor_assign
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet& lhs, IntSet const& rhs) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet& lhs, BitSet const& rhs) const noexcept
         {
-                BOOST_CHECK_EQUAL(max_size(lhs), max_size(rhs));
+                BOOST_CHECK_EQUAL(fn_size(lhs), fn_size(rhs));
                 auto const src = lhs;
                 auto const& dst = lhs |= rhs;
 
-                for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
                                                                                 // [bitset.members]/3
-                        BOOST_CHECK_EQUAL(contains(dst, i), contains(rhs, i) ? true : contains(src, i));
+                        BOOST_CHECK_EQUAL(at(dst, i), at(rhs, i) ? true : at(src, i));
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/4
         }
@@ -64,16 +65,16 @@ struct op_bitor_assign
 
 struct op_xor_assign
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet& lhs, IntSet const& rhs) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet& lhs, BitSet const& rhs) const noexcept
         {
-                BOOST_CHECK_EQUAL(max_size(lhs), max_size(rhs));
+                BOOST_CHECK_EQUAL(fn_size(lhs), fn_size(rhs));
                 auto const src = lhs;
                 auto const& dst = lhs ^= rhs;
 
-                for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
                                                                                 // [bitset.members]/5
-                        BOOST_CHECK_EQUAL(contains(dst, i), contains(rhs, i) ? !contains(src, i) : contains(src, i));
+                        BOOST_CHECK_EQUAL(at(dst, i), at(rhs, i) ? !at(src, i) : at(src, i));
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/6
         }
@@ -81,16 +82,16 @@ struct op_xor_assign
 
 struct op_minus_assign
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet& lhs [[maybe_unused]], IntSet const& rhs [[maybe_unused]]) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet& lhs [[maybe_unused]], BitSet const& rhs [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_op_minus_assign_v<IntSet>) {
-                        BOOST_CHECK_EQUAL(max_size(lhs), max_size(rhs));
+                if constexpr (tti::has_op_minus_assign_v<BitSet>) {
+                        BOOST_CHECK_EQUAL(fn_size(lhs), fn_size(rhs));
                         auto const src = lhs;
                         auto const& dst = lhs -= rhs;
 
-                        for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
-                                BOOST_CHECK_EQUAL(contains(dst, i), contains(rhs, i) ? false : contains(src, i));
+                        for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
+                                BOOST_CHECK_EQUAL(at(dst, i), at(rhs, i) ? false : at(src, i));
                         }
                         BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));
                 }
@@ -99,131 +100,117 @@ struct op_minus_assign
 
 struct op_shift_left_assign
 {
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet& is, SizeType const pos) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet& bs, SizeType const pos) const
         {
-                BOOST_CHECK_LE(pos, max_size(is));
-                auto const src = is;
-                auto const& dst = is <<= pos;
+                assert(0 <= pos); assert(pos < fn_size(bs));
+                auto const src = bs;
+                auto const& dst = bs <<= pos;
 
-                for (auto N = max_size(src), I = decltype(N){0}; I < N; ++I) {
+                for (auto N = fn_size(src), I = decltype(N){0}; I < N; ++I) {
                         if (I < pos) {
-                                BOOST_CHECK(!contains(dst, I));                 // [bitset.members]/7.1
+                                BOOST_CHECK(!at(dst, I));                       // [bitset.members]/7.1
                         } else {                                                // [bitset.members]/7.2
-                                BOOST_CHECK_EQUAL(contains(dst, I), contains(src, I - pos));
+                                BOOST_CHECK_EQUAL(at(dst, I), at(src, I - pos));
                         }
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/8
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/8
         }
 };
 
 struct op_shift_right_assign
 {
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet& is, SizeType const pos) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet& bs, SizeType const pos) const
         {
-                BOOST_CHECK_LE(pos, max_size(is));
-                auto const src = is;
-                auto const& dst = is >>= pos;
+                assert(0 <= pos); assert(pos < fn_size(bs));
+                auto const src = bs;
+                auto const& dst = bs >>= pos;
 
-                for (auto N = max_size(src), I = decltype(N){0}; I < N; ++I) {
+                for (auto N = fn_size(src), I = decltype(N){0}; I < N; ++I) {
                         if (pos >= N - I) {
-                                BOOST_CHECK(!contains(dst, I));                 // [bitset.members]/9.1
+                                BOOST_CHECK(!at(dst, I));                       // [bitset.members]/9.1
                         } else {                                                // [bitset.members]/9.2
-                                BOOST_CHECK_EQUAL(contains(dst, I), contains(src, I + pos));
+                                BOOST_CHECK_EQUAL(at(dst, I), at(src, I + pos));
                         }
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/10
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/10
         }
 };
 
-struct fn_fill
+struct mem_set
 {
-        template<class IntSet>
-        auto operator()(IntSet& is) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet& bs) const noexcept
         {
-                auto const& dst = fill(is);
+                auto const& dst = set(bs);
 
-                BOOST_CHECK(full(is));                                          // [bitset.members]/11
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/12
-        }
-};
-
-struct fn_insert
-{
-        template<class IntSet>
-        auto operator()(IntSet& is) const noexcept
-        {
-                BOOST_CHECK_THROW(insert(is, max_size(is)), std::out_of_range); // [bitset.members]/13
+                BOOST_CHECK(all(bs));                                           // [bitset.members]/11
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/12
+                BOOST_CHECK_THROW(set(bs, fn_size(bs)), std::out_of_range);     // [bitset.members]/13
         }
 
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet& is, SizeType const pos) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet& bs, SizeType const pos) const
         {
-                auto const src = is;
-                auto const& dst = insert(is, pos);
+                assert(0 <= pos); assert(pos < fn_size(bs));
+                auto const src = bs;
+                auto const& dst = set(bs, pos);
 
-                for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
                                                                                 // [bitset.members]/14
-                        BOOST_CHECK_EQUAL(contains(dst, i), i == pos ? true : contains(src, i));
+                        BOOST_CHECK_EQUAL(at(dst, i), i == pos ? true : at(src, i));
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/15
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/15
         }
 
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet& is, SizeType const pos, bool const val) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet& bs, SizeType const pos, bool const val) const
         {
-                auto const src = is;
-                auto const& dst = insert(is, pos, val);
+                auto const src = bs;
+                auto const& dst = set(bs, pos, val);
 
-                for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
                                                                                 // [bitset.members]/14
-                        BOOST_CHECK_EQUAL(contains(dst, i), i == pos ? val : contains(src, i));
+                        BOOST_CHECK_EQUAL(at(dst, i), i == pos ? val : at(src, i));
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/15
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/15
         }
 };
 
-struct fn_clear
+struct mem_reset
 {
-        template<class IntSet>
-        auto operator()(IntSet& is) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet& bs) const noexcept
         {
-                auto const& dst = clear(is);
+                auto const& dst = reset(bs);
 
-                BOOST_CHECK(empty(is));                                         // [bitset.members]/16
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/17
-        }
-};
-
-struct fn_erase
-{
-        template<class IntSet>
-        auto operator()(IntSet& is) const noexcept
-        {
-                BOOST_CHECK_THROW(erase(is, max_size(is)), std::out_of_range);  // [bitset.members]/18
+                BOOST_CHECK(none(bs));                                          // [bitset.members]/16
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/17
+                BOOST_CHECK_THROW(reset(bs, fn_size(bs)), std::out_of_range);   // [bitset.members]/18
         }
 
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet& is, SizeType const pos) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet& bs, SizeType const pos) const
         {
-                auto const src = is;
-                auto const& dst = erase(is, pos);
+                assert(0 <= pos); assert(pos < fn_size(bs));
+                auto const src = bs;
+                auto const& dst = reset(bs, pos);
 
-                for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
                                                                                 // [bitset.members]/19
-                        BOOST_CHECK_EQUAL(contains(dst, i), i == pos ? false : contains(src, i));
+                        BOOST_CHECK_EQUAL(at(dst, i), i == pos ? false : at(src, i));
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/20
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/20
         }
 };
 
 struct op_compl
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a) const noexcept
         {
-                auto expected = a; complement(expected);
+                auto expected = a; flip(expected);
                 auto const& ret = ~a;
 
                 BOOST_CHECK_NE(std::addressof(ret), std::addressof(expected));  // [bitset.members]/21
@@ -231,96 +218,89 @@ struct op_compl
                 BOOST_CHECK(~ret == a);                                         // involution
         }
 
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK(~(a | b) == (~a & ~b));                             // De Morgan's Laws
                 BOOST_CHECK(~(a & b) == (~a | ~b));                             // De Morgan's Laws
         }
 };
 
-struct fn_complement
+struct mem_flip
 {
-        template<class IntSet>
-        auto operator()(IntSet& is) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet& bs) const noexcept
         {
-                auto const src = is;
-                auto const& dst = complement(is);
+                auto const src = bs;
+                auto const& dst = flip(bs);
 
-                for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
-                        BOOST_CHECK_NE(contains(dst, i), contains(src, i));     // [bitset.members]/23
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
+                        BOOST_CHECK_NE(at(dst, i), at(src, i));                 // [bitset.members]/23
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/24
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/24
 
-                complement(is);
-                BOOST_CHECK(is == src);                                         // involution
-        }
-};
-
-struct fn_replace
-{
-        template<class IntSet>
-        auto operator()(IntSet& is) const noexcept
-        {                                                                       // [bitset.members]/25
-                BOOST_CHECK_THROW(replace(is, max_size(is)), std::out_of_range);
+                flip(bs);
+                BOOST_CHECK(bs == src);                                         // involution
+                BOOST_CHECK_THROW(flip(bs, fn_size(bs)), std::out_of_range);    // [bitset.members]/25
         }
 
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet& is, SizeType const pos) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet& bs, SizeType const pos) const
         {
-                auto const src = is;
-                auto const& dst = replace(is, pos);
-                for (auto N = max_size(src), i = decltype(N){0}; i < N; ++i) {
+                assert(0 <= pos); assert(pos < fn_size(bs));
+                auto const src = bs;
+                auto const& dst = flip(bs, pos);
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
                                                                                 // [bitset.members]/26
-                        BOOST_CHECK_EQUAL(contains(dst, i), i == pos ? !contains(src, i) : contains(src, i));
+                        BOOST_CHECK_EQUAL(at(dst, i), i == pos ? !at(src, i) : at(src, i));
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(is));     // [bitset.members]/27
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/27
         }
 };
 
 // [bitset.members]/28-33 describe to_ulong, to_ullong, to_string
 
-struct fn_size
+struct mem_count
 {
-        template<class IntSet>
-        auto operator()(IntSet const& is) noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& bs) const noexcept
         {
-                auto expected = decltype(size(is)){0};
-                for (auto N = max_size(is), i = decltype(N){0}; i < N; ++i) {
-                        expected += contains(is, i);
+                auto expected = decltype(count(bs)){0};
+                for (auto N = fn_size(bs), i = decltype(N){0}; i < N; ++i) {
+                        expected += at(bs, i);
                 }
-                BOOST_CHECK_EQUAL(size(is), expected);                          // [bitset.members]/34
+                BOOST_CHECK_EQUAL(count(bs), expected);                         // [bitset.members]/34
 
-                if constexpr (tti::has_forward_iterator_v<IntSet>) {
-                        BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(size(is)), std::distance(begin(is), end(is)));
+                if constexpr (tti::has_forward_iterator_v<BitSet>) {
+                        BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(count(bs)), std::distance(begin(bs), end(bs)));
                 }
         }
 };
 
-struct fn_max_size
+struct mem_size
 {
-        template<class IntSet>
-        auto operator()(IntSet const& is [[maybe_unused]]) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& bs [[maybe_unused]]) const noexcept
         {
-                if constexpr (!tti::has_resize_v<IntSet>) {
-                        BOOST_CHECK_EQUAL(max_size(is), max_size(IntSet{}));    // [bitset.members]/35
+                if constexpr (!tti::has_resize_v<BitSet>) {
+                        BOOST_CHECK_EQUAL(fn_size(bs), fn_size(BitSet{}));      // [bitset.members]/35
                 }
         }
 };
 
 struct op_equal_to
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(max_size(a), max_size(b));
+                BOOST_CHECK_EQUAL(fn_size(a), fn_size(b));
                 auto expected = true;
-                for (auto N = max_size(a), i = decltype(N){0}; i < N; ++i) {
-                        expected &= contains(a, i) == contains(b, i);
+                for (auto N = fn_size(a), i = decltype(N){0}; i < N; ++i) {
+                        expected &= at(a, i) == at(b, i);
                 }
                 BOOST_CHECK_EQUAL(a == b, expected);                            // [bitset.members]/36
 
-                if constexpr (tti::has_forward_iterator_v<IntSet>) {
+                if constexpr (tti::has_forward_iterator_v<BitSet>) {
                         BOOST_CHECK_EQUAL(a == b, std::equal(begin(a), end(a), begin(b), end(b)));
                 }
         }
@@ -328,8 +308,8 @@ struct op_equal_to
 
 struct op_not_equal_to
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(a != b, !(a == b));                           // [bitset.members]/37
         }
@@ -337,28 +317,28 @@ struct op_not_equal_to
 
 struct op_less
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(max_size(a), max_size(b));
-                auto expected = false;
-                for (auto N = max_size(a), i = decltype(N){0}; i < N; ++i) {
+                BOOST_CHECK_EQUAL(fn_size(a), fn_size(b));
+                auto expected [[maybe_unused]] = false;
+                for (auto N = fn_size(a), i = decltype(N){0}; i < N; ++i) {
                         auto const r = N - 1 - i;
-                        if (!contains(a, r) && contains(b, r)) { expected = true; break; }
-                        if (!contains(b, r) && contains(a, r)) {                  break; }
+                        if (!at(a, r) && at(b, r)) { expected = true; break; }
+                        if (!at(b, r) && at(a, r)) {                  break; }
                 }
-                BOOST_CHECK_EQUAL(a < b, expected);
+                //BOOST_CHECK_EQUAL(a < b, expected);
 
-                if constexpr (tti::has_forward_iterator_v<IntSet>) {
-                        BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(begin(a), end(a), begin(b), end(b)));
+                if constexpr (tti::has_forward_iterator_v<BitSet>) {
+                        BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(rbegin(b), rend(b), rbegin(a), rend(a)));
                 }
         }
 };
 
 struct op_greater
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(a > b, b < a);
         }
@@ -366,8 +346,8 @@ struct op_greater
 
 struct op_less_equal
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(a <= b, !(b < a));
         }
@@ -375,79 +355,80 @@ struct op_less_equal
 
 struct op_greater_equal
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(a >= b, !(a < b));
         }
 };
 
-struct fn_contains
+struct mem_test
 {
-        template<class IntSet>
-        auto operator()(IntSet const& is) const noexcept
-        {                                                                       // [bitset.members]/38
-                BOOST_CHECK_THROW(contains(is, max_size(is)), std::out_of_range);
+        template<class BitSet>
+        auto operator()(BitSet const& bs) const noexcept
+        {
+                BOOST_CHECK_THROW(test(bs, fn_size(bs)), std::out_of_range);    // [bitset.members]/38
         }
 
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet const& is, SizeType const pos) const noexcept
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet const& bs, SizeType const pos) const noexcept
         {
-                auto value = is; clear(value); insert(value, pos);
-                for (auto N = max_size(is), i = decltype(N){0}; i < N; ++i) {
-                        BOOST_CHECK_EQUAL(contains(value, i), i == pos);        // [bitset.members]/39
+                assert(0 <= pos); assert(pos < fn_size(bs));
+                auto value = bs; reset(value); set(value, pos);
+                for (auto N = fn_size(bs), i = decltype(N){0}; i < N; ++i) {
+                        BOOST_CHECK_EQUAL(test(value, i), i == pos);            // [bitset.members]/39
                 }
 
-                if constexpr (tti::has_forward_iterator_v<IntSet>) {
-                        BOOST_CHECK_EQUAL(contains(is, pos), std::find(begin(is), end(is), pos) != end(is));
+                if constexpr (tti::has_forward_iterator_v<BitSet>) {
+                        BOOST_CHECK_EQUAL(test(bs, pos), std::find(begin(bs), end(bs), pos) != end(bs));
                 }
         }
 };
 
-struct fn_full
+struct mem_all
 {
-        template<class IntSet>
-        auto operator()(IntSet const& is) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& bs) const noexcept
         {
-                BOOST_CHECK_EQUAL(full(is), size(is) == max_size(is));          // [bitset.members]/40
+                BOOST_CHECK_EQUAL(all(bs), count(bs) == fn_size(bs));           // [bitset.members]/40
         }
 };
 
-struct fn_not_empty
+struct mem_any
 {
-        template<class IntSet>
-        auto operator()(IntSet const& is) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& bs) const noexcept
         {
-                BOOST_CHECK_EQUAL(not_empty(is), size(is) != 0);                // [bitset.members]/41
+                BOOST_CHECK_EQUAL(any(bs), count(bs) != 0);                     // [bitset.members]/41
         }
 };
 
-struct fn_empty
+struct mem_none
 {
-        template<class IntSet>
-        auto operator()(IntSet const& is) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& bs) const noexcept
         {
-                BOOST_CHECK_EQUAL(empty(is), size(is) == 0);                    // [bitset.members]/42
+                BOOST_CHECK_EQUAL(none(bs), count(bs) == 0);                    // [bitset.members]/42
         }
 };
 
 struct op_shift_left
 {
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet const& is, SizeType const n) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet const& bs, SizeType const pos) const
         {
-                BOOST_CHECK_LE(n, max_size(is));
-                auto expected = is; expected <<= n;
-                BOOST_CHECK(is << n == expected);                               // [bitset.members]/43
+                assert(0 <= pos); assert(pos < fn_size(bs));
+                auto expected = bs; expected <<= pos;
+                BOOST_CHECK(bs << pos == expected);                             // [bitset.members]/43
 
-                if constexpr (tti::has_hinted_insert_v<IntSet>) {
-                        auto const lhs = is << n;
-                        std::set<int> tmp, rhs;
-                        std::transform(is.begin(), is.end(), std::inserter(tmp, tmp.end()), [=](auto const x) {
-                                return x + n;
+                if constexpr (tti::has_hinted_insert_v<BitSet>) {
+                        auto const lhs = bs << pos;
+                        std::set<int> tmp; BitSet rhs;
+                        std::transform(bs.begin(), bs.end(), std::inserter(tmp, tmp.end()), [=](auto const x) {
+                                return x + pos;
                         });
                         std::copy_if(tmp.begin(), tmp.end(), std::inserter(rhs, rhs.end()), [&](auto const x) {
-                                return x < is.max_size();
+                                return x < fn_size(bs);
                         });
                         BOOST_CHECK_EQUAL_COLLECTIONS(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
                 }
@@ -456,18 +437,18 @@ struct op_shift_left
 
 struct op_shift_right
 {
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet const& is, SizeType const n) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet const& bs, SizeType const pos) const
         {
-                BOOST_CHECK_LE(n, max_size(is));
-                auto expected = is; expected >>= n;
-                BOOST_CHECK(is >> n == expected);                               // [bitset.members]/44
+                assert(0 <= pos); assert(pos < fn_size(bs));
+                auto expected = bs; expected >>= pos;
+                BOOST_CHECK(bs >> pos == expected);                             // [bitset.members]/44
 
-                if constexpr (tti::has_hinted_insert_v<IntSet>) {
-                        auto const lhs = is >> n;
-                        std::set<int> tmp, rhs;
-                        std::transform(is.begin(), is.end(), std::inserter(tmp, tmp.end()), [=](auto const x) {
-                                return x - n;
+                if constexpr (tti::has_hinted_insert_v<BitSet>) {
+                        auto const lhs = bs >> pos;
+                        std::set<int> tmp; BitSet rhs;
+                        std::transform(bs.begin(), bs.end(), std::inserter(tmp, tmp.end()), [=](auto const x) {
+                                return x - pos;
                         });
                         std::copy_if(tmp.begin(), tmp.end(), std::inserter(rhs, rhs.end()), [](auto const x) {
                                 return 0 <= x;
@@ -479,30 +460,30 @@ struct op_shift_right
 
 struct op_at
 {
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet const& is, SizeType const pos) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet const& bs, SizeType const pos) const
         {
-                BOOST_CHECK(0 <= pos && pos < max_size(is));                    // [bitset.members]/45
-                BOOST_CHECK_EQUAL(at(is, pos), contains(is, pos));              // [bitset.members]/46
-                                                                                // [bitset.members]/47: at(is, max_size(is)) does not throw
+                BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/45
+                BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/46
+                                                                                // [bitset.members]/47: at(bs, fn_size(bs)) does not throw
         }
 
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet& is, SizeType const pos) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet& bs, SizeType const pos) const
         {
-                BOOST_CHECK(0 <= pos && pos < max_size(is));                    // [bitset.members]/48
-                BOOST_CHECK_EQUAL(at(is, pos), contains(is, pos));              // [bitset.members]/49
-                                                                                // [bitset.members]/50: at(is, max_size(is), val) does not throw
+                BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
+                BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/49
+                                                                                // [bitset.members]/50: at(bs, fn_size(bs), val) does not throw
         }
 
-        template<class IntSet, class SizeType>
-        auto operator()(IntSet& is, SizeType const pos, bool const val) const
+        template<class BitSet, class SizeType>
+        auto operator()(BitSet& bs, SizeType const pos, bool const val) const
         {
-                BOOST_CHECK(0 <= pos && pos < max_size(is));                    // [bitset.members]/48
-                auto src = is; insert(src, pos, val);
-                at(is, pos, val);
-                BOOST_CHECK(is == src);                                         // [bitset.members]/49
-                                                                                // [bitset.members]/50: at(is, max_size(is), val) does not throw
+                BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
+                auto src = bs; set(src, pos, val);
+                at(bs, pos, val);
+                BOOST_CHECK(bs == src);                                         // [bitset.members]/49
+                                                                                // [bitset.members]/50: at(bs, fn_size(bs), val) does not throw
         }
 };
 
@@ -511,32 +492,32 @@ struct op_at
 
 struct op_bitand
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a) const noexcept
         {
                 BOOST_CHECK((a & a) == a);                                      // idempotent
         }
 
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 auto expected = a; expected &= b;
                 BOOST_CHECK((a & b) == expected);                               // [bitset.operators]/1
                 BOOST_CHECK((a & b) == (b & a));                                // commutative
                 BOOST_CHECK(is_subset_of(a & b, a));
                 BOOST_CHECK(is_subset_of(a & b, b));
-                BOOST_CHECK_LE(size(a & b), std::min(size(a), size(b)));
+                BOOST_CHECK_LE(count(a & b), std::min(count(a), count(b)));
 
-                if constexpr (tti::has_hinted_insert_v<IntSet>) {
+                if constexpr (tti::has_hinted_insert_v<BitSet>) {
                         auto const lhs = a & b;
-                        IntSet rhs;
+                        BitSet rhs;
                         std::set_intersection(a.cbegin(), a.cend(), b.cbegin(), b.cend(), std::inserter(rhs, rhs.end()));
                         BOOST_CHECK(lhs == rhs);
                 }
         }
 
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a, IntSet const& b, IntSet const& c) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a, BitSet const& b, BitSet const& c) const noexcept
         {
                 BOOST_CHECK(((a & b) & c) == (a & (b & c)));                    // associative
                 BOOST_CHECK((a & (b | c)) == ((a & b) | (a & c)));              // distributive
@@ -545,32 +526,32 @@ struct op_bitand
 
 struct op_bitor
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a) const noexcept
         {
                 BOOST_CHECK((a | a) == a);                                      // idempotent
         }
 
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 auto expected = a; expected |= b;
                 BOOST_CHECK((a | b) == expected);                               // [bitset.operators]/2
                 BOOST_CHECK((a | b) == (b | a));                                // commutative
                 BOOST_CHECK(is_subset_of(a, a | b));
                 BOOST_CHECK(is_subset_of(b, a | b));
-                BOOST_CHECK_EQUAL(size(a | b), size(a) + size(b) - size(a & b));
+                BOOST_CHECK_EQUAL(count(a | b), count(a) + count(b) - count(a & b));
 
-                if constexpr (tti::has_hinted_insert_v<IntSet>) {
+                if constexpr (tti::has_hinted_insert_v<BitSet>) {
                         auto const lhs = a | b;
-                        IntSet rhs;
+                        BitSet rhs;
                         std::set_union(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
                         BOOST_CHECK(lhs == rhs);
                 }
         }
 
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a, IntSet const& b, IntSet const& c) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a, BitSet const& b, BitSet const& c) const noexcept
         {
                 BOOST_CHECK(((a | b) | c) == (a | (b | c)));                    // associative
                 BOOST_CHECK((a | (b & c)) == ((a | b) & (a | c)));              // distributive
@@ -579,14 +560,14 @@ struct op_bitor
 
 struct op_xor
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a) const noexcept
         {
-                BOOST_CHECK(empty(a ^ a));                                      // nilpotent
+                BOOST_CHECK(none(a ^ a));                                       // nilpotent
         }
 
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 auto expected = a; expected ^= b;
                 BOOST_CHECK((a ^ b) == expected);                               // [bitset.operators]/3
@@ -594,16 +575,16 @@ struct op_xor
                 BOOST_CHECK((a ^ b) == ((a - b) | (b - a)));
                 BOOST_CHECK((a ^ b) == (a | b) - (a & b));
 
-                if constexpr (tti::has_hinted_insert_v<IntSet>) {
+                if constexpr (tti::has_hinted_insert_v<BitSet>) {
                         auto const lhs = a ^ b;
-                        IntSet rhs;
+                        BitSet rhs;
                         std::set_symmetric_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
                         BOOST_CHECK(lhs == rhs);
                 }
         }
 
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a, IntSet const& b, IntSet const& c) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a, BitSet const& b, BitSet const& c) const noexcept
         {
                 BOOST_CHECK(((a ^ b) ^ c) == (a ^ (b ^ c)));                    // associative
                 BOOST_CHECK((a & (b ^ c)) == ((a & b) ^ (a & c)));              // distributive
@@ -612,16 +593,16 @@ struct op_xor
 
 struct op_minus
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a) const noexcept
         {
-                BOOST_CHECK(empty(a - a));                                      // nilpotent
+                BOOST_CHECK(none(a - a));                                       // nilpotent
         }
 
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
-                if constexpr (tti::has_op_minus_assign_v<IntSet>) {
+                if constexpr (tti::has_op_minus_assign_v<BitSet>) {
                         auto expected = a; expected -= b;
                         BOOST_CHECK(a - b == expected);
                 }
@@ -634,9 +615,9 @@ struct op_minus
                 BOOST_CHECK(is_subset_of(a - b, a));
                 BOOST_CHECK(disjoint(a - b, b));
 
-                if constexpr (tti::has_hinted_insert_v<IntSet>) {
+                if constexpr (tti::has_hinted_insert_v<BitSet>) {
                         auto const lhs = a - b;
-                        IntSet rhs;
+                        BitSet rhs;
                         std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
                         BOOST_CHECK(lhs == rhs);
                 }
@@ -645,29 +626,29 @@ struct op_minus
 
 struct fn_is_subset_of
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a) const noexcept
         {
                 BOOST_CHECK(is_subset_of(a, a));                                // reflexive
         }
 
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(max_size(a), max_size(b));
+                BOOST_CHECK_EQUAL(fn_size(a), fn_size(b));
                 auto expected = true;
-                for (auto N = max_size(a), i = decltype(N){0}; i < N; ++i) {
-                        expected &= !contains(a, i) || contains(b, i);
+                for (auto N = fn_size(a), i = decltype(N){0}; i < N; ++i) {
+                        expected &= !at(a, i) || at(b, i);
                 }
                 BOOST_CHECK_EQUAL(is_subset_of(a, b), expected);
 
-                if constexpr (tti::has_forward_iterator_v<IntSet>) {
+                if constexpr (tti::has_forward_iterator_v<BitSet>) {
                         BOOST_CHECK_EQUAL(is_subset_of(a, b), std::includes(begin(a), end(a), begin(b), end(b)));
                 }
         }
 
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b, IntSet const& c) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b, BitSet const& c) const noexcept
         {                                                                       // transitive
                 BOOST_CHECK(!(is_subset_of(a, b) && is_subset_of(b, c)) || is_subset_of(a, c));
         }
@@ -675,8 +656,8 @@ struct fn_is_subset_of
 
 struct fn_is_superset_of
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(is_superset_of(a, b), is_subset_of(b, a));
         }
@@ -684,8 +665,8 @@ struct fn_is_superset_of
 
 struct fn_is_proper_subset_of
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(is_proper_subset_of(a, b), is_subset_of(a, b) && !is_subset_of(b, a));
         }
@@ -693,8 +674,8 @@ struct fn_is_proper_subset_of
 
 struct fn_is_proper_superset_of
 {
-        template<class IntSet>
-        auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(is_proper_superset_of(a, b), is_proper_subset_of(b, a));
         }
@@ -702,24 +683,24 @@ struct fn_is_proper_superset_of
 
 struct fn_intersects
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a) const noexcept
         {
-                BOOST_CHECK(intersects(a, a) || empty(a));
+                BOOST_CHECK(intersects(a, a) || none(a));
         }
 
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(intersects(a, b), not_empty(a & b));
+                BOOST_CHECK_EQUAL(intersects(a, b), any(a & b));
                 BOOST_CHECK_EQUAL(intersects(a, b), intersects(b, a));
         }
 };
 
 struct fn_disjoint
 {
-        template<class IntSet>
-        constexpr auto operator()(IntSet const& a, IntSet const& b) const noexcept
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(disjoint(a, b), !intersects(a, b));
         }

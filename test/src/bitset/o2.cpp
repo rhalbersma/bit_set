@@ -8,10 +8,8 @@
 #include <bitset/compatible/int_set.hpp>        // int_set
 #include <bitset/exhaustive.hpp>                // all_values, all_singleton_sets, all_singleton_set_pairs,
                                                 // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
-#include <bitset/primitives.hpp>                // constructor, const_reference, const_iterator,
-                                                // mem_all_of, mem_any_of, mem_none_of, mem_for_each, mem_reverse_for_each,
-                                                // op_bitand_assign, op_bitor_assign, op_xor_assign, op_minus_assign,
-                                                // op_shift_left_assign, op_shift_right_assign, mem_insert, mem_erase, fn_swap, op_compl,
+#include <bitset/primitives.hpp>                // op_bitand_assign, op_bitor_assign, op_xor_assign, op_minus_assign,
+                                                // op_shift_left_assign, op_shift_right_assign, op_compl,
                                                 // op_equal_to, op_not_equal_to, op_less, op_greater, op_greater_equal, op_less_equal,
                                                 // op_shift_left, op_shift_right, op_bitand, op_bitor, op_xor, op_minus,
                                                 // fn_is_subset_of, fn_is_superset_of, fn_is_proper_subset_of, fn_is_proper_superset_of,
@@ -31,7 +29,7 @@ using BitSetTypes = boost::mpl::vector
 <       std::bitset<  0>
 ,       std::bitset< 32>
 ,       std::bitset< 64>
-,       boost::dynamic_bitset<>
+//,       boost::dynamic_bitset<>
 ,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
 ,       int_set< 33, uint32_t>

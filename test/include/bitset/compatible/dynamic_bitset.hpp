@@ -19,13 +19,13 @@ auto resize(dynamic_bitset<Block, Allocator>& bs, std::size_t const num_bits, bo
 }
 
 template<class Block, class Allocator>
-auto& fill(dynamic_bitset<Block, Allocator>& bs) noexcept
+auto& set(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
         return bs.set();
 }
 
 template<class Block, class Allocator>
-auto& insert(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos, bool const val = true)
+auto& set(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos, bool const val = true)
 {
         if (pos >= bs.size()) {
                 throw std::out_of_range{""};
@@ -35,13 +35,13 @@ auto& insert(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos, bool c
 }
 
 template<class Block, class Allocator>
-auto& clear(dynamic_bitset<Block, Allocator>& bs) noexcept
+auto& reset(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
         return bs.reset();
 }
 
 template<class Block, class Allocator>
-auto& erase(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
+auto& reset(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
 {
         if (pos >= bs.size()) {
                 throw std::out_of_range{""};
@@ -51,13 +51,13 @@ auto& erase(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
 }
 
 template<class Block, class Allocator>
-auto& complement(dynamic_bitset<Block, Allocator>& bs) noexcept
+auto& flip(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
         return bs.flip();
 }
 
 template<class Block, class Allocator>
-auto& replace(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
+auto& flip(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
 {
         if (pos >= bs.size()) {
                 throw std::out_of_range{""};
@@ -67,19 +67,19 @@ auto& replace(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
 }
 
 template<class Block, class Allocator>
-constexpr auto size(dynamic_bitset<Block, Allocator> const& bs) noexcept
+constexpr auto count(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return bs.count();
 }
 
 template<class Block, class Allocator>
-constexpr auto max_size(dynamic_bitset<Block, Allocator> const& bs) noexcept
+constexpr auto fn_size(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return bs.size();
 }
 
 template<class Block, class Allocator>
-auto contains(dynamic_bitset<Block, Allocator> const& bs, std::size_t const pos)
+auto test(dynamic_bitset<Block, Allocator> const& bs, std::size_t const pos)
 {
         if (pos >= bs.size()) {
                 throw std::out_of_range{""};
@@ -89,19 +89,19 @@ auto contains(dynamic_bitset<Block, Allocator> const& bs, std::size_t const pos)
 }
 
 template<class Block, class Allocator>
-[[nodiscard]] auto full(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto all(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return bs.all();
 }
 
 template<class Block, class Allocator>
-[[nodiscard]] auto not_empty(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto any(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return bs.any();
 }
 
 template<class Block, class Allocator>
-[[nodiscard]] auto empty(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto none(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return bs.none();
 }

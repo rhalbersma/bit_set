@@ -17,6 +17,7 @@ inline const auto limit_v = std::min(L, static_cast<typename T::value_type>(T{}.
 constexpr auto L1 = 256;
 constexpr auto L2 = 128;
 constexpr auto L3 =  64;
+constexpr auto L4 =  32;
 
 // NOTE: these tests are O(N)
 
@@ -136,6 +137,25 @@ auto all_singleton_set_triples(TernaryFunction fun)
                         for (auto k = 0; k < N; ++k) {
                                 auto is1_k = IntSet{ k };
                                 fun(is1_i, is1_j, is1_k);
+                        }
+                }
+        }
+}
+
+// NOTE: this test is O(N^4)
+
+template<class IntSet, class BinaryFunction>
+auto all_doubleton_set_pairs(BinaryFunction fun)
+{
+        const auto N = limit_v<IntSet, L4>;
+        for (auto j = 1; j < N; ++j) {
+                for (auto i = 0; i < j; ++i) {
+                        auto is2_ij = IntSet{ i, j };
+                        for (auto n = 1; n < N; ++n) {
+                                for (auto m = 0; m < n; ++m) {
+                                        auto is2_mn = IntSet{ m, n };
+                                        fun(is2_ij, is2_mn);
+                                }
                         }
                 }
         }

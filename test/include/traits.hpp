@@ -17,31 +17,7 @@ constexpr static auto has_forward_iterator_v = false;
 
 template<class IntSet>
 constexpr static auto has_forward_iterator_v<IntSet, std::void_t<decltype(
-        begin(std::declval<IntSet>())
-)>> = true;
-
-template<class IntSet, class = void>
-constexpr static auto has_front_v = false;
-
-template<class IntSet>
-constexpr static auto has_front_v<IntSet, std::void_t<decltype(
-        std::declval<IntSet>().front()
-)>> = true;
-
-template<class IntSet, class = void>
-constexpr static auto has_back_v = false;
-
-template<class IntSet>
-constexpr static auto has_back_v<IntSet, std::void_t<decltype(
-        std::declval<IntSet>().back()
-)>> = true;
-
-template<class IntSet, class = void>
-constexpr static auto has_resize_v = false;
-
-template<class IntSet>
-constexpr static auto has_resize_v<IntSet, std::void_t<decltype(
-        std::declval<IntSet>().resize(std::declval<typename IntSet::size_type>(), std::declval<bool>())
+        ++begin(std::declval<IntSet>()) == end(std::declval<IntSet>())
 )>> = true;
 
 template<class IntSet, class = void>
@@ -58,6 +34,30 @@ constexpr static auto has_op_minus_assign_v = false;
 template<class IntSet>
 constexpr static auto has_op_minus_assign_v<IntSet, std::void_t<decltype(
         std::declval<IntSet>() -= std::declval<IntSet>()
+)>> = true;
+
+template<class IntSet, class = void>
+constexpr static auto has_resize_v = false;
+
+template<class IntSet>
+constexpr static auto has_resize_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>().resize(std::declval<typename IntSet::size_type>(), std::declval<bool>())
+)>> = true;
+
+template<class IntSet, class = void>
+constexpr static auto has_front_v = false;
+
+template<class IntSet>
+constexpr static auto has_front_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>().front()
+)>> = true;
+
+template<class IntSet, class = void>
+constexpr static auto has_back_v = false;
+
+template<class IntSet>
+constexpr static auto has_back_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>().back()
 )>> = true;
 
 }       // namespace tti

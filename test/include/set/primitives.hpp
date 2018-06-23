@@ -175,7 +175,7 @@ struct mem_empty
 struct mem_size
 {
         template<class X>
-        auto operator()(X const& a) noexcept
+        auto operator()(X const& a) const noexcept
         {                                                                       // [container.requirements.general] Table 83
                 static_assert(std::is_same_v<decltype(a.size()), typename X::size_type>);
                 BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(a.size()), std::distance(a.begin(), a.end()));
@@ -237,20 +237,12 @@ struct mem_insert
 struct mem_erase
 {
         template<class X>
-        auto operator()(X const& is, typename X::value_type const t) const
+        auto operator()(X& a, typename X::value_type const k) const
         {
-                auto const src = is;
-                auto dst = src;
-                auto const& ret = erase(dst, t);
-
-                for (auto N = max_size(X{}), i = decltype(N){0}; i < N; ++i) {
-                                                                                // [bitset.members]/19
-                        BOOST_CHECK_EQUAL(contains(dst, i), i == t ? false : contains(src, i));
-                }
-                BOOST_CHECK_EQUAL(std::addressof(ret), std::addressof(dst));    // [bitset.members]/20
-
-                X singlet; insert(singlet, t);
-                BOOST_CHECK(dst == src - singlet);
+                static_assert(std::is_same_v<decltype(a.erase(k)), typename X::size_type>);
+                auto n = a.count(k);
+                auto r = a.erase(k);
+                BOOST_CHECK(r == n);
         }
 
         template<class X, class InputIterator>
@@ -284,7 +276,7 @@ struct mem_swap
                 auto a1 = a, b1 = b;
                 static_assert(std::is_same_v<decltype(a.swap(b)), void>);
                 a1.swap(b1);
-                BOOST_CHECK(a1 == b); 
+                BOOST_CHECK(a1 == b);
                 BOOST_CHECK(b1 == a);
         }
 };
@@ -489,7 +481,7 @@ struct fn_swap
 struct fn_iterator
 {
         template<class C>
-        auto operator()(C& c) noexcept
+        auto operator()(C& c) const noexcept
         {
                 BOOST_CHECK( begin(c) == c.begin());                            // [iterator.range]/2
                 BOOST_CHECK(   end(c) == c.end());                              // [iterator.range]/3
@@ -498,7 +490,7 @@ struct fn_iterator
         }
 
         template<class C>
-        auto operator()(C const& c) noexcept
+        auto operator()(C const& c) const noexcept
         {
                 BOOST_CHECK(  begin(c) == c.begin());                           // [iterator.range]/2
                 BOOST_CHECK(    end(c) == c.end());                             // [iterator.range]/3
@@ -514,7 +506,7 @@ struct fn_iterator
 struct fn_size
 {
         template<class C>
-        auto operator()(C const& c) noexcept
+        auto operator()(C const& c) const noexcept
         {
                 BOOST_CHECK_EQUAL(size(c), c.size());                           // [iterator.container]/2
         }

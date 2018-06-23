@@ -26,13 +26,13 @@ auto resize(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const num_bit
 }
 
 template<int N, class UIntType>
-auto& fill(int_set<N, UIntType>& is) noexcept
+auto& set(int_set<N, UIntType>& is) noexcept
 {
         return is.fill();
 }
 
 template<int N, class UIntType>
-auto& insert(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val = true)
+auto& set(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val = true)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -46,13 +46,13 @@ auto& insert(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, b
 }
 
 template<int N, class UIntType>
-auto& clear(int_set<N, UIntType>& is) noexcept
+auto& reset(int_set<N, UIntType>& is) noexcept
 {
         return is.clear();
 }
 
 template<int N, class UIntType>
-auto& erase(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
+auto& reset(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -62,13 +62,13 @@ auto& erase(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 }
 
 template<int N, class UIntType>
-auto& complement(int_set<N, UIntType>& is) noexcept
+auto& flip(int_set<N, UIntType>& is) noexcept
 {
         return is.complement();
 }
 
 template<int N, class UIntType>
-auto& replace(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
+auto& flip(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -77,13 +77,19 @@ auto& replace(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
 }
 
 template<int N, class UIntType>
-constexpr auto max_size(int_set<N, UIntType> const& is) noexcept
+constexpr auto count(int_set<N, UIntType> const& is) noexcept
+{
+        return is.size();
+}
+
+template<int N, class UIntType>
+constexpr auto fn_size(int_set<N, UIntType> const& is) noexcept
 {
         return is.max_size();
 }
 
 template<int N, class UIntType>
-auto contains(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const pos)
+auto test(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -92,15 +98,21 @@ auto contains(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const
 }
 
 template<int N, class UIntType>
-[[nodiscard]] auto full(int_set<N, UIntType> const& is) noexcept
+[[nodiscard]] auto all(int_set<N, UIntType> const& is) noexcept
 {
         return is.full();
 }
 
 template<int N, class UIntType>
-[[nodiscard]] auto not_empty(int_set<N, UIntType> const& is) noexcept
+[[nodiscard]] auto any(int_set<N, UIntType> const& is) noexcept
 {
         return !is.empty();
+}
+
+template<int N, class UIntType>
+[[nodiscard]] auto none(int_set<N, UIntType> const& is) noexcept
+{
+        return is.empty();
 }
 
 template<int N, class UIntType>

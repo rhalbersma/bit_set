@@ -6,7 +6,7 @@
 #include <bitset/compatible/bitset.hpp>         // bitset
 #include <bitset/compatible/dynamic_bitset.hpp> // dynamic_bitset
 #include <bitset/compatible/int_set.hpp>        // int_set
-#include <bitset/exhaustive.hpp>                // all_singleton_set_triples
+#include <bitset/exhaustive.hpp>                // all_doubleton_set_pairs
 #include <bitset/primitives.hpp>                // fn_is_subset_of, op_bitand, op_bitor, op_xor
 #include <xstd/int_set.hpp>                     // int_set
 #include <boost/dynamic_bitset.hpp>             // dynamic_bitset
@@ -15,30 +15,21 @@
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <bitset>                               // bitset
 
-BOOST_AUTO_TEST_SUITE(Cubic)
+BOOST_AUTO_TEST_SUITE(Quartic)
 
 using namespace xstd;
 
 using SetTypes = boost::mpl::vector
 <       std::bitset< 0>
-,       std::bitset<32>
-,       std::bitset<64>
+,       std::bitset<8>
 ,       boost::dynamic_bitset<>
 ,       int_set< 0, uint32_t>
-,       int_set<32, uint32_t>
 ,       int_set<64, uint32_t>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, SetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(LexicographicalCompare, T, SetTypes)
 {
-        all_singleton_set_triples<T>(fn_is_subset_of{});
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(AssociativityAndDistributivity, T, SetTypes)
-{
-        all_singleton_set_triples<T>(op_bitand{});
-        all_singleton_set_triples<T>(op_bitor{});
-        all_singleton_set_triples<T>(op_xor{});
+        all_doubleton_set_pairs<T>(op_less{});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -462,32 +462,32 @@ public:
                 return N;
         }
 
-        constexpr auto insert(value_type const n) // Throws: Nothing.
+        constexpr auto insert(value_type const x) // Throws: Nothing.
                 -> std::pair<iterator, bool>
         {
-                assert(0 <= n); assert(n < N);
+                assert(0 <= x); assert(x < N);
                 if constexpr (num_logical_blocks == 1) {
-                        m_data[0] |= bit1(n);
+                        m_data[0] |= bit1(x);
                 } else if constexpr (num_logical_blocks >= 2) {
-                        m_data[which(n)] |= bit1(where(n));
+                        m_data[which(x)] |= bit1(where(x));
                 }
-                assert(contains(n));
-                return { { this, n }, true };
+                assert(contains(x));
+                return { { this, x }, true };
         }
 
-        constexpr auto insert(const_iterator /* hint */, value_type const n) // Throws: Nothing.
+        constexpr auto insert(const_iterator /* hint */, value_type const x) // Throws: Nothing.
                 -> iterator
         {
-                insert(n);
-                return { this, n };
+                insert(x);
+                return { this, x };
         }
 
         template<class InputIterator>
         XSTD_PP_CONSTEXPR_ALGORITHM auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
         {
-                std::for_each(first, last, [&](auto const& n) {
-                        insert(n);
-                });
+                while (first != last) {
+                        insert(*first++);
+                }
         }
 
         XSTD_PP_CONSTEXPR_ALGORITHM auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
@@ -516,14 +516,6 @@ public:
                 return pos;
         }
 
-        constexpr auto erase(const_iterator first, const_iterator last) // Throws: Nothing.
-        {
-                while (first != last) {
-                        erase(*first++);
-                }
-                return first;
-        }
-
         constexpr auto erase(key_type const& x) // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
@@ -534,6 +526,14 @@ public:
                 }
                 assert(!contains(x));
                 return 1;
+        }
+
+        constexpr auto erase(const_iterator first, const_iterator last) // Throws: Nothing.
+        {
+                while (first != last) {
+                        erase(*first++);
+                }
+                return first;
         }
 
         XSTD_PP_CONSTEXPR_SWAP auto swap(int_set& other [[maybe_unused]]) noexcept(num_logical_blocks == 0 || std::is_nothrow_swappable_v<value_type>)
@@ -1098,16 +1098,16 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(int_set<N, UIntType> const& lhs [[may
         if constexpr (num_logical_blocks == 0) {
                 return false;
         } else if constexpr (num_logical_blocks == 1) {
-                return lhs.m_data[0] < rhs.m_data[0];
+                return rhs.m_data[0] < lhs.m_data[0];
         } else if constexpr (num_logical_blocks == 2) {
                 constexpr auto tied = [](auto const& is) {
                         return std::tie(is.m_data[1], is.m_data[0]);
                 };
-                return tied(lhs) < tied(rhs);
+                return tied(rhs) < tied(lhs);
         } else if constexpr (num_logical_blocks >= 3) {
                 return std::lexicographical_compare(
-                        std::rbegin(lhs.m_data), std::rend(lhs.m_data),
-                        std::rbegin(rhs.m_data), std::rend(rhs.m_data)
+                        std::rbegin(rhs.m_data), std::rend(rhs.m_data),
+                        std::rbegin(lhs.m_data), std::rend(lhs.m_data)
                 );
         }
 }

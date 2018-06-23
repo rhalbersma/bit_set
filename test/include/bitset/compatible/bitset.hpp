@@ -23,49 +23,49 @@ auto resize(std::bitset<N>& bs, std::size_t const num_bits [[maybe_unused]], boo
 }
 
 template<std::size_t N>
-auto& fill(std::bitset<N>& bs) noexcept
+auto& set(std::bitset<N>& bs) noexcept
 {
         return bs.set();
 }
 
 template<std::size_t N>
-auto& insert(std::bitset<N>& bs, std::size_t const pos, bool const val = true)
+auto& set(std::bitset<N>& bs, std::size_t const pos, bool const val = true)
 {
         return bs.set(pos, val);
 }
 
 template<std::size_t N>
-auto& clear(std::bitset<N>& bs) noexcept
+auto& reset(std::bitset<N>& bs) noexcept
 {
         return bs.reset();
 }
 
 template<std::size_t N>
-auto& erase(std::bitset<N>& bs, std::size_t const pos)
+auto& reset(std::bitset<N>& bs, std::size_t const pos)
 {
         return bs.reset(pos);
 }
 
 template<std::size_t N>
-auto& complement(std::bitset<N>& bs) noexcept
+auto& flip(std::bitset<N>& bs) noexcept
 {
         return bs.flip();
 }
 
 template<std::size_t N>
-auto& replace(std::bitset<N>& bs, std::size_t const pos)
+auto& flip(std::bitset<N>& bs, std::size_t const pos)
 {
         return bs.flip(pos);
 }
 
 template<std::size_t N>
-constexpr auto size(std::bitset<N> const& bs) noexcept
+constexpr auto count(std::bitset<N> const& bs) noexcept
 {
         return bs.count();
 }
 
 template<std::size_t N>
-constexpr auto max_size(std::bitset<N> const& bs) noexcept
+constexpr auto fn_size(std::bitset<N> const& bs) noexcept
 {
         return bs.size();
 }
@@ -95,25 +95,25 @@ auto operator<=(std::bitset<N> const& lhs, std::bitset<N> const& rhs)
 }
 
 template<std::size_t N>
-auto contains(std::bitset<N> const& bs, std::size_t const pos)
+auto test(std::bitset<N> const& bs, std::size_t const pos)
 {
         return bs.test(pos);
 }
 
 template<std::size_t N>
-[[nodiscard]] auto full(std::bitset<N> const& bs) noexcept
+[[nodiscard]] auto all(std::bitset<N> const& bs) noexcept
 {
         return bs.all();
 }
 
 template<std::size_t N>
-[[nodiscard]] auto not_empty(std::bitset<N> const& bs) noexcept
+[[nodiscard]] auto any(std::bitset<N> const& bs) noexcept
 {
         return bs.any();
 }
 
 template<std::size_t N>
-[[nodiscard]] auto empty(std::bitset<N> const& bs) noexcept
+[[nodiscard]] auto none(std::bitset<N> const& bs) noexcept
 {
         return bs.none();
 }
