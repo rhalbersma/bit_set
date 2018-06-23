@@ -19,9 +19,9 @@ using namespace xstd;
 using IntSetTypes = boost::mpl::vector
 <       std::set<int>
 ,       boost::container::flat_set<int>
-// ,       int_set< 0, uint32_t>
-// ,       int_set<32, uint32_t>
-// ,       int_set<64, uint32_t>
+,       int_set< 0, uint32_t>
+,       int_set<32, uint32_t>
+,       int_set<64, uint32_t>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(LexicographicalCompare, T, IntSetTypes)

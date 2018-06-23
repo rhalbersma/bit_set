@@ -15,7 +15,7 @@ The code below demonstrates how an `int_set` is a drop-in replacement for `std::
 
 For power users, bit-twiddling syntax will make the code even more expressive and performant. The `int_set` iterators inside the range-for call platform dependent intrinsics to lookup the first or last 1-bit. Similar intrinsics are called for counting the number of elements in an `int_set`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/fp9UbnAPCENV82UJ)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/Og01wkHsnHBqcUEJ)
 
 ```cpp
 #include "xstd/int_set.hpp"
@@ -41,8 +41,9 @@ int main()
         primes.insert(i);
     }
     for (auto p : primes) {
-        if (p * p >= N) break;
-        for (auto n = p * p; n < N; n += p) {
+        auto const p_squared = p * p;
+        if (p_squared >= N) break;
+        for (auto n = p_squared; n < N; n += p) {
             primes.erase(n);
         }
     }

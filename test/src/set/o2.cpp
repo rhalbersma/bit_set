@@ -27,10 +27,10 @@ using namespace xstd;
 using IntSetTypes = boost::mpl::vector
 <       std::set<int>
 ,       boost::container::flat_set<int>
-// ,       int_set<  0, uint32_t>
-// ,       int_set<  1, uint32_t>
-// ,       int_set< 33, uint32_t>
-// ,       int_set< 65, uint32_t>
+,       int_set<  0, uint32_t>
+,       int_set<  1, uint32_t>
+,       int_set< 33, uint32_t>
+,       int_set< 65, uint32_t>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)

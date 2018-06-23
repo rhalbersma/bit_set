@@ -327,10 +327,10 @@ struct op_less
                         if (!at(a, r) && at(b, r)) { expected = true; break; }
                         if (!at(b, r) && at(a, r)) {                  break; }
                 }
-                //BOOST_CHECK_EQUAL(a < b, expected);
+                BOOST_CHECK_EQUAL(a < b, expected);
 
                 if constexpr (tti::has_forward_iterator_v<BitSet>) {
-                        BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(rbegin(b), rend(b), rbegin(a), rend(a)));
+                        BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(begin(a), end(a), begin(b), end(b)));
                 }
         }
 };

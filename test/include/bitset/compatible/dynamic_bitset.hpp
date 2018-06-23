@@ -160,146 +160,146 @@ auto disjoint(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block,
         return !intersects(lhs, rhs);
 }
 
-template<class Block, class Allocator>
-class proxy_reference;
+// template<class Block, class Allocator>
+// class proxy_reference;
 
-template<class Block, class Allocator>
-class proxy_iterator;
+// template<class Block, class Allocator>
+// class proxy_iterator;
 
-template<class Block, class Allocator>
-class proxy_reference
-{
-        using value_type = typename dynamic_bitset<Block, Allocator>::size_type;
-        dynamic_bitset<Block, Allocator> const& m_bs;
-        value_type const m_value;
-public:
-        ~proxy_reference() = default;
-        proxy_reference(proxy_reference const&) = default;
-        proxy_reference(proxy_reference&&) = default;
-        proxy_reference& operator=(proxy_reference const&) = delete;
-        proxy_reference& operator=(proxy_reference&&) = delete;
+// template<class Block, class Allocator>
+// class proxy_reference
+// {
+//         using value_type = typename dynamic_bitset<Block, Allocator>::size_type;
+//         dynamic_bitset<Block, Allocator> const& m_bs;
+//         value_type const m_value;
+// public:
+//         ~proxy_reference() = default;
+//         proxy_reference(proxy_reference const&) = default;
+//         proxy_reference(proxy_reference&&) = default;
+//         proxy_reference& operator=(proxy_reference const&) = delete;
+//         proxy_reference& operator=(proxy_reference&&) = delete;
 
-        proxy_reference() = delete;
+//         proxy_reference() = delete;
 
-        constexpr proxy_reference(dynamic_bitset<Block, Allocator> const& bs, value_type const v) noexcept
-        :
-                m_bs{bs},
-                m_value{v}
-        {
-                assert(0 <= m_value); assert(m_value < bs.size());
-        }
+//         constexpr proxy_reference(dynamic_bitset<Block, Allocator> const& bs, value_type const v) noexcept
+//         :
+//                 m_bs{bs},
+//                 m_value{v}
+//         {
+//                 assert(0 <= m_value); assert(m_value < bs.size());
+//         }
 
-        proxy_reference& operator=(value_type const) = delete;
+//         proxy_reference& operator=(value_type const) = delete;
 
-        /* implicit */ constexpr operator value_type() const noexcept
-        {
-                return m_value;
-        }
+//         /* implicit */ constexpr operator value_type() const noexcept
+//         {
+//                 return m_value;
+//         }
 
-        constexpr auto operator&() const noexcept
-                -> proxy_iterator<Block, Allocator>
-        {
-                return { &m_bs, m_value };
-        }
-};
+//         constexpr auto operator&() const noexcept
+//                 -> proxy_iterator<Block, Allocator>
+//         {
+//                 return { &m_bs, m_value };
+//         }
+// };
 
-template<class Block, class Allocator>
-class proxy_iterator
-{
-public:
-        using difference_type   = std::ptrdiff_t;
-        using value_type        = std::size_t;
-        using pointer           = proxy_iterator<Block, Allocator>;
-        using reference         = proxy_reference<Block, Allocator>;
-        using iterator_category = std::forward_iterator_tag;
+// template<class Block, class Allocator>
+// class proxy_iterator
+// {
+// public:
+//         using difference_type   = std::ptrdiff_t;
+//         using value_type        = std::size_t;
+//         using pointer           = proxy_iterator<Block, Allocator>;
+//         using reference         = proxy_reference<Block, Allocator>;
+//         using iterator_category = std::forward_iterator_tag;
 
-private:
-        dynamic_bitset<Block, Allocator>  const* m_bs;
-        value_type m_value;
+// private:
+//         dynamic_bitset<Block, Allocator>  const* m_bs;
+//         value_type m_value;
 
-public:
-        proxy_iterator() = default;
+// public:
+//         proxy_iterator() = default;
 
-        constexpr proxy_iterator(dynamic_bitset<Block, Allocator> const* bs, value_type const v) // Throws: Nothing.
-        :
-                m_bs{bs},
-                m_value{v}
-        {
-                assert(0 <= m_value); assert(m_value < bs->size() || m_value == bs->npos);
-        }
+//         constexpr proxy_iterator(dynamic_bitset<Block, Allocator> const* bs, value_type const v) // Throws: Nothing.
+//         :
+//                 m_bs{bs},
+//                 m_value{v}
+//         {
+//                 assert(0 <= m_value); assert(m_value < bs->size() || m_value == bs->npos);
+//         }
 
-        constexpr auto operator*() const // Throws: Nothing.
-                -> proxy_reference<Block, Allocator>
-        {
-                assert(0 <= m_value); assert(m_value < m_bs->size());
-                return { *m_bs, m_value };
-        }
+//         constexpr auto operator*() const // Throws: Nothing.
+//                 -> proxy_reference<Block, Allocator>
+//         {
+//                 assert(0 <= m_value); assert(m_value < m_bs->size());
+//                 return { *m_bs, m_value };
+//         }
 
-        auto& operator++() // Throws: Nothing.
-        {
-                assert(0 <= m_value); assert(m_value < m_bs->size());
-                m_value = m_bs->find_next(m_value);
-                assert(0 < m_value); assert(m_value < m_bs->size() || m_value == m_bs->npos);
-                return *this;
-        }
+//         auto& operator++() // Throws: Nothing.
+//         {
+//                 assert(0 <= m_value); assert(m_value < m_bs->size());
+//                 m_value = m_bs->find_next(m_value);
+//                 assert(0 < m_value); assert(m_value < m_bs->size() || m_value == m_bs->npos);
+//                 return *this;
+//         }
 
-        auto operator++(int) // Throws: Nothing.
-        {
-                auto nrv = *this; ++*this; return nrv;
-        }
+//         auto operator++(int) // Throws: Nothing.
+//         {
+//                 auto nrv = *this; ++*this; return nrv;
+//         }
 
-        friend constexpr auto operator==(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
-        {
-                assert(lhs.m_bs == rhs.m_bs);
-                return lhs.m_value == rhs.m_value;
-        }
+//         friend constexpr auto operator==(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
+//         {
+//                 assert(lhs.m_bs == rhs.m_bs);
+//                 return lhs.m_value == rhs.m_value;
+//         }
 
-        friend constexpr auto operator!=(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
-        {
-                return !(lhs == rhs);
-        }
-};
+//         friend constexpr auto operator!=(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
+//         {
+//                 return !(lhs == rhs);
+//         }
+// };
 
-template<class Block, class Allocator>
-auto begin(dynamic_bitset<Block, Allocator>& bs)
-        -> proxy_iterator<Block, Allocator>
-{
-        return { &bs, bs.find_first() };
-}
+// template<class Block, class Allocator>
+// auto begin(dynamic_bitset<Block, Allocator>& bs)
+//         -> proxy_iterator<Block, Allocator>
+// {
+//         return { &bs, bs.find_first() };
+// }
 
-template<class Block, class Allocator>
-auto begin(dynamic_bitset<Block, Allocator> const& bs)
-        -> proxy_iterator<Block, Allocator>
-{
-        return { &bs, bs.find_first() };
-}
+// template<class Block, class Allocator>
+// auto begin(dynamic_bitset<Block, Allocator> const& bs)
+//         -> proxy_iterator<Block, Allocator>
+// {
+//         return { &bs, bs.find_first() };
+// }
 
-template<class Block, class Allocator>
-auto end(dynamic_bitset<Block, Allocator>& bs)
-        -> proxy_iterator<Block, Allocator>
-{
-        return { &bs, bs.npos };
-}
+// template<class Block, class Allocator>
+// auto end(dynamic_bitset<Block, Allocator>& bs)
+//         -> proxy_iterator<Block, Allocator>
+// {
+//         return { &bs, bs.npos };
+// }
 
-template<class Block, class Allocator>
-auto end(dynamic_bitset<Block, Allocator> const& bs)
-        -> proxy_iterator<Block, Allocator>
-{
-        return { &bs, bs.npos };
-}
+// template<class Block, class Allocator>
+// auto end(dynamic_bitset<Block, Allocator> const& bs)
+//         -> proxy_iterator<Block, Allocator>
+// {
+//         return { &bs, bs.npos };
+// }
 
-template<class Block, class Allocator>
-auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept(noexcept(boost::begin(bs)))
-        -> decltype(boost::begin(bs))
-{
-        return boost::begin(bs);
-}
+// template<class Block, class Allocator>
+// auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept(noexcept(boost::begin(bs)))
+//         -> decltype(boost::begin(bs))
+// {
+//         return boost::begin(bs);
+// }
 
-template<class Block, class Allocator>
-auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept(noexcept(boost::end(bs)))
-        -> decltype(boost::end(bs))
-{
-        return boost::end(bs);
-}
+// template<class Block, class Allocator>
+// auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept(noexcept(boost::end(bs)))
+//         -> decltype(boost::end(bs))
+// {
+//         return boost::end(bs);
+// }
 
 }       // namespace boost
