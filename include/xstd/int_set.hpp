@@ -217,59 +217,59 @@ struct popcount
 
 }       // namespace builtin
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(UIntType x) // Throws: Nothing.
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(Block x) // Throws: Nothing.
 {
         assert(x != 0);
         return builtin::ctznz{}(x);
 }
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(UIntType x) // Throws: Nothing.
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(Block x) // Throws: Nothing.
 {
         assert(x != 0);
         return builtin::bsfnz{}(x);
 }
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctz(UIntType x) noexcept
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto ctz(Block x) noexcept
 {
-        return x ? ctznz(x) : std::numeric_limits<UIntType>::digits;
+        return x ? ctznz(x) : std::numeric_limits<Block>::digits;
 }
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsf(UIntType x) noexcept
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsf(Block x) noexcept
 {
-        return x ? bsfnz(x) : std::numeric_limits<UIntType>::digits;
+        return x ? bsfnz(x) : std::numeric_limits<Block>::digits;
 }
 
 #if defined(__GNUG__)
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(UIntType x) // Throws: Nothing.
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(Block x) // Throws: Nothing.
 {
         assert(x != 0);
         return builtin::clznz{}(x);
 }
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(UIntType x) // Throws: Nothing.
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(Block x) // Throws: Nothing.
 {
         assert(x != 0);
-        return std::numeric_limits<UIntType>::digits - 1 - builtin::clznz{}(x);
+        return std::numeric_limits<Block>::digits - 1 - builtin::clznz{}(x);
 }
 
 #elif defined(_MSC_VER)
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(UIntType x) // Throws: Nothing.
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(Block x) // Throws: Nothing.
 {
         assert(x != 0);
-        return std::numeric_limits<UIntType>::digits - 1 - builtin::bsrnz{}(x);
+        return std::numeric_limits<Block>::digits - 1 - builtin::bsrnz{}(x);
 }
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(UIntType x) // Throws: Nothing.
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(Block x) // Throws: Nothing.
 {
         assert(x != 0);
         return builtin::bsrnz{}(x);
@@ -277,49 +277,49 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(UIntType x) // Throws: Nothing.
 
 #endif
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clz(UIntType x) noexcept
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto clz(Block x) noexcept
 {
-        return x ? clznz(x) : std::numeric_limits<UIntType>::digits;
+        return x ? clznz(x) : std::numeric_limits<Block>::digits;
 }
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsr(UIntType x) noexcept
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsr(Block x) noexcept
 {
         return x ? bsrnz(x) : -1;
 }
 
-template<class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(UIntType x) noexcept
+template<class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(Block x) noexcept
 {
         return builtin::popcount{}(x);
 }
 
 }       // namespace detail
 
-template<int /* N */, class /* UIntType */>
+template<int /* N */, class /* Block */>
 class int_set;
 
-template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM auto operator==  (int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
-template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM auto operator<   (int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
-template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM bool is_subset_of(int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
-template<int N, class UIntType> XSTD_PP_CONSTEXPR_ALGORITHM bool intersects  (int_set<N, UIntType> const& /* lhs */, int_set<N, UIntType> const& /* rhs */) noexcept;
+template<int N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM auto operator==  (int_set<N, Block> const& /* lhs */, int_set<N, Block> const& /* rhs */) noexcept;
+template<int N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM auto operator<   (int_set<N, Block> const& /* lhs */, int_set<N, Block> const& /* rhs */) noexcept;
+template<int N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM bool is_subset_of(int_set<N, Block> const& /* lhs */, int_set<N, Block> const& /* rhs */) noexcept;
+template<int N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM bool intersects  (int_set<N, Block> const& /* lhs */, int_set<N, Block> const& /* rhs */) noexcept;
 
-template<int N, class UIntType = std::size_t>
+template<int N, class Block = std::size_t>
 class int_set
 {
         static_assert(0 <= N);
-        static_assert(std::is_unsigned_v<UIntType>);
-        static_assert(std::is_integral_v<UIntType>);
-        static_assert(sizeof(unsigned) <= sizeof(UIntType));
+        static_assert(std::is_unsigned_v<Block>);
+        static_assert(std::is_integral_v<Block>);
+        static_assert(sizeof(unsigned) <= sizeof(Block));
 
         #if defined(_MSC_VER)
 
-        static_assert(sizeof(UIntType) <= sizeof(std::size_t));
+        static_assert(sizeof(Block) <= sizeof(std::size_t));
 
         #endif
 
-        constexpr static auto block_size = std::numeric_limits<UIntType>::digits;
+        constexpr static auto block_size = std::numeric_limits<Block>::digits;
         constexpr static auto num_logical_blocks = (N - 1 + block_size) / block_size;
         constexpr static auto num_storage_blocks = std::max(num_logical_blocks, 1);
         constexpr static auto num_bits = num_logical_blocks * block_size;
@@ -328,7 +328,7 @@ class int_set
         class proxy_reference;
         class proxy_iterator;
 
-        UIntType m_data[num_storage_blocks]{};  // zero-initializated by default
+        Block m_data[num_storage_blocks]{};  // zero-initializated by default
 public:
         using key_type               = int;
         using key_compare            = std::less<key_type>;
@@ -344,7 +344,7 @@ public:
         using const_iterator         = proxy_iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-        using block_type             = UIntType;
+        using block_type             = Block;
         using insert_return_type     = void;
 
         int_set() = default;
@@ -495,15 +495,26 @@ public:
 
         XSTD_PP_CONSTEXPR_ALGORITHM auto& fill() noexcept
         {
-                if constexpr (num_logical_blocks == 1) {
-                        m_data[0] = ones;
-                } else if constexpr (num_logical_blocks == 2) {
-                        m_data[0] = ones;
-                        m_data[1] = ones;
-                } else if constexpr (num_logical_blocks >= 3) {
-                        std::fill_n(std::begin(m_data), num_logical_blocks, ones);
+                if constexpr (excess_bits == 0) {
+                        if constexpr (num_logical_blocks == 1) {
+                                m_data[0] = ones;
+                        } else if constexpr (num_logical_blocks == 2) {
+                                m_data[0] = ones;
+                                m_data[1] = ones;
+                        } else if constexpr (num_logical_blocks >= 3) {
+                                std::fill_n(std::begin(m_data), num_logical_blocks, ones);
+                        }
+                } else {
+                        if constexpr (num_logical_blocks == 1) {
+                                m_data[0] = no_excess_bits;
+                        } else if constexpr (num_logical_blocks == 2) {
+                                m_data[0] = ones;
+                                m_data[1] = no_excess_bits;
+                        } else if constexpr (num_logical_blocks >= 3) {
+                                std::fill_n(std::begin(m_data), num_logical_blocks - 1, ones);
+                                m_data[num_logical_blocks - 1] = no_excess_bits;
+                        }
                 }
-                clear_excess_bits();
                 assert(full());
                 return *this;
         }
@@ -643,17 +654,30 @@ public:
 
         constexpr auto& complement() noexcept
         {
-                if constexpr (num_logical_blocks == 1) {
-                        m_data[0] = ~m_data[0];
-                } else if constexpr (num_logical_blocks == 2) {
-                        m_data[0] = ~m_data[0];
-                        m_data[1] = ~m_data[1];
-                } else if constexpr (num_logical_blocks >= 3) {
-                        for (auto& block : m_data) {
-                                block = ~block;
+                if constexpr (excess_bits == 0) {
+                        if constexpr (num_logical_blocks == 1) {
+                                m_data[0] = ~m_data[0];
+                        } else if constexpr (num_logical_blocks == 2) {
+                                m_data[0] = ~m_data[0];
+                                m_data[1] = ~m_data[1];
+                        } else if constexpr (num_logical_blocks >= 3) {
+                                for (auto& block : m_data) {
+                                        block = ~block;
+                                }
+                        }
+                } else {
+                        if constexpr (num_logical_blocks == 1) {
+                                m_data[0] = ~m_data[0] & no_excess_bits;
+                        } else if constexpr (num_logical_blocks == 2) {
+                                m_data[0] = ~m_data[0];
+                                m_data[1] = ~m_data[1] & no_excess_bits;
+                        } else if constexpr (num_logical_blocks >= 3) {
+                                for (auto i = 0; i < num_logical_blocks - 1; ++i) {
+                                        m_data[i] = ~m_data[i];
+                                }
+                                m_data[num_logical_blocks - 1] = ~m_data[num_logical_blocks - 1] & no_excess_bits;
                         }
                 }
-                clear_excess_bits();
                 return *this;
         }
 
@@ -787,6 +811,7 @@ public:
         }
 
 private:
+        constexpr static auto unit = static_cast<block_type>(1);
         constexpr static auto zero = static_cast<block_type>(0);
         constexpr static auto ones = ~zero;
         constexpr static auto no_excess_bits = ones >> excess_bits;
@@ -796,7 +821,7 @@ private:
         {
                 static_assert(num_logical_blocks >= 1);
                 assert(0 <= n); assert(n < block_size);
-                return static_cast<block_type>(1) << n;
+                return unit << n;
         }
 
         constexpr static auto which(value_type const n [[maybe_unused]]) // Throws: Nothing.
@@ -1067,10 +1092,10 @@ private:
         friend XSTD_PP_CONSTEXPR_ALGORITHM bool intersects  <>(int_set const& /* lhs */, int_set const& /* rhs */) noexcept;
 };
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(int_set<N, Block> const& lhs [[maybe_unused]], int_set<N, Block> const& rhs [[maybe_unused]]) noexcept
 {
-        constexpr auto num_logical_blocks = int_set<N, UIntType>::num_logical_blocks;
+        constexpr auto num_logical_blocks = int_set<N, Block>::num_logical_blocks;
         if constexpr (num_logical_blocks == 0) {
                 return true;
         } else if constexpr (num_logical_blocks == 1) {
@@ -1088,16 +1113,16 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(int_set<N, UIntType> const& lhs [[ma
         }
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator!=(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto operator!=(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         return !(lhs == rhs);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(int_set<N, Block> const& lhs [[maybe_unused]], int_set<N, Block> const& rhs [[maybe_unused]]) noexcept
 {
-        constexpr auto num_logical_blocks = int_set<N, UIntType>::num_logical_blocks;
+        constexpr auto num_logical_blocks = int_set<N, Block>::num_logical_blocks;
         if constexpr (num_logical_blocks == 0) {
                 return false;
         } else if constexpr (num_logical_blocks == 1) {
@@ -1115,73 +1140,73 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(int_set<N, UIntType> const& lhs [[may
         }
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator>(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto operator>(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         return rhs < lhs;
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator>=(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto operator>=(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         return !(lhs < rhs);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator<=(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto operator<=(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         return !(rhs < lhs);
 }
 
-template<int N, class UIntType>
-constexpr auto operator~(int_set<N, UIntType> const& lhs) noexcept
+template<int N, class Block>
+constexpr auto operator~(int_set<N, Block> const& lhs) noexcept
 {
         auto nrv{lhs}; nrv.complement(); return nrv;
 }
 
-template<int N, class UIntType>
-constexpr auto operator&(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+constexpr auto operator&(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv &= rhs; return nrv;
 }
 
-template<int N, class UIntType>
-constexpr auto operator|(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+constexpr auto operator|(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv |= rhs; return nrv;
 }
 
-template<int N, class UIntType>
-constexpr auto operator^(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+constexpr auto operator^(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv ^= rhs; return nrv;
 }
 
-template<int N, class UIntType>
-constexpr auto operator-(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+constexpr auto operator-(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv -= rhs; return nrv;
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator<<(int_set<N, UIntType> const& lhs, int const n) // Throws: Nothing.
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto operator<<(int_set<N, Block> const& lhs, int const n) // Throws: Nothing.
 {
         assert(0 <= n); assert(n < N);
         auto nrv{lhs}; nrv <<= n; return nrv;
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator>>(int_set<N, UIntType> const& lhs, int const n) // Throws: Nothing.
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto operator>>(int_set<N, Block> const& lhs, int const n) // Throws: Nothing.
 {
         assert(0 <= n); assert(n < N);
         auto nrv{lhs}; nrv >>= n; return nrv;
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, Block> const& lhs [[maybe_unused]], int_set<N, Block> const& rhs [[maybe_unused]]) noexcept
         -> bool
 {
-        constexpr auto num_logical_blocks = int_set<N, UIntType>::num_logical_blocks;
+        constexpr auto num_logical_blocks = int_set<N, Block>::num_logical_blocks;
         if constexpr (num_logical_blocks == 0) {
                 return true;
         } else if constexpr (num_logical_blocks == 1) {
@@ -1204,29 +1229,29 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(int_set<N, UIntType> const& lhs [[
         }
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_superset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto is_superset_of(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(rhs, lhs);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_subset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_subset_of(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(lhs, rhs) && !is_subset_of(rhs, lhs);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_superset_of(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_superset_of(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, UIntType> const& lhs [[maybe_unused]], int_set<N, UIntType> const& rhs [[maybe_unused]]) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, Block> const& lhs [[maybe_unused]], int_set<N, Block> const& rhs [[maybe_unused]]) noexcept
         -> bool
 {
-        constexpr auto num_logical_blocks = int_set<N, UIntType>::num_logical_blocks;
+        constexpr auto num_logical_blocks = int_set<N, Block>::num_logical_blocks;
         if constexpr (num_logical_blocks == 0) {
                 return false;
         } else if constexpr (num_logical_blocks == 1) {
@@ -1249,111 +1274,111 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(int_set<N, UIntType> const& lhs [[ma
         }
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto disjoint(int_set<N, UIntType> const& lhs, int_set<N, UIntType> const& rhs) noexcept
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto disjoint(int_set<N, Block> const& lhs, int_set<N, Block> const& rhs) noexcept
 {
         return !intersects(lhs, rhs);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_SWAP auto swap(int_set<N, UIntType>& lhs, int_set<N, UIntType>& rhs) noexcept(noexcept(lhs.swap(rhs)))
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_SWAP auto swap(int_set<N, Block>& lhs, int_set<N, Block>& rhs) noexcept(noexcept(lhs.swap(rhs)))
 {
         lhs.swap(rhs);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto begin(int_set<N, UIntType>& is)
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto begin(int_set<N, Block>& is)
         -> decltype(is.begin())
 {
         return is.begin();
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto begin(int_set<N, UIntType> const& is)
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto begin(int_set<N, Block> const& is)
         -> decltype(is.begin())
 {
         return is.begin();
 }
 
-template<int N, class UIntType>
-constexpr auto end(int_set<N, UIntType>& is)
+template<int N, class Block>
+constexpr auto end(int_set<N, Block>& is)
         -> decltype(is.end())
 {
         return is.end();
 }
 
-template<int N, class UIntType>
-constexpr auto end(int_set<N, UIntType> const& is)
+template<int N, class Block>
+constexpr auto end(int_set<N, Block> const& is)
         -> decltype(is.end())
 {
         return is.end();
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin(int_set<N, UIntType> const& is) noexcept(noexcept(xstd::begin(is)))
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin(int_set<N, Block> const& is) noexcept(noexcept(xstd::begin(is)))
         -> decltype(xstd::begin(is))
 {
         return xstd::begin(is);
 }
 
-template<int N, class UIntType>
-constexpr auto cend(int_set<N, UIntType> const& is) noexcept(noexcept(xstd::end(is)))
+template<int N, class Block>
+constexpr auto cend(int_set<N, Block> const& is) noexcept(noexcept(xstd::end(is)))
         -> decltype(xstd::end(is))
 {
         return xstd::end(is);
 }
 
-template<int N, class UIntType>
-constexpr auto rbegin(int_set<N, UIntType>& is)
+template<int N, class Block>
+constexpr auto rbegin(int_set<N, Block>& is)
         -> decltype(is.rbegin())
 {
         return is.rbegin();
 }
 
-template<int N, class UIntType>
-constexpr auto rbegin(int_set<N, UIntType> const& is)
+template<int N, class Block>
+constexpr auto rbegin(int_set<N, Block> const& is)
         -> decltype(is.rbegin())
 {
         return is.rbegin();
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, UIntType>& is)
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, Block>& is)
         -> decltype(is.rend())
 {
         return is.rend();
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, UIntType> const& is)
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, Block> const& is)
         -> decltype(is.rend())
 {
         return is.rend();
 }
 
-template<int N, class UIntType>
-constexpr auto crbegin(int_set<N, UIntType> const& is)
+template<int N, class Block>
+constexpr auto crbegin(int_set<N, Block> const& is)
         -> decltype(xstd::rbegin(is))
 {
         return xstd::rbegin(is);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_INTRINSIC auto crend(int_set<N, UIntType> const& is)
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto crend(int_set<N, Block> const& is)
         -> decltype(xstd::rend(is))
 {
         return xstd::rend(is);
 }
 
-template<int N, class UIntType>
-XSTD_PP_CONSTEXPR_ALGORITHM auto size(int_set<N, UIntType> const& is)
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto size(int_set<N, Block> const& is)
         -> decltype(is.size())
 {
         return is.size();
 }
 
-template<int N, class UIntType>
-[[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(int_set<N, UIntType> const& is)
+template<int N, class Block>
+[[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(int_set<N, Block> const& is)
         -> decltype(is.empty())
 {
         return is.empty();

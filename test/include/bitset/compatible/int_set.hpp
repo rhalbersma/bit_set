@@ -14,8 +14,8 @@ namespace xstd {
 template<class T>
 using size_t = typename T::size_type;
 
-template<int N, class UIntType>
-auto resize(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const num_bits [[maybe_unused]], bool const value = false) noexcept
+template<int N, class Block>
+auto resize(int_set<N, Block>& is, size_t<int_set<N, Block>> const num_bits [[maybe_unused]], bool const value = false) noexcept
 {
         assert(num_bits == N);
         if (value) {
@@ -25,14 +25,14 @@ auto resize(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const num_bit
         }
 }
 
-template<int N, class UIntType>
-auto& set(int_set<N, UIntType>& is) noexcept
+template<int N, class Block>
+auto& set(int_set<N, Block>& is) noexcept
 {
         return is.fill();
 }
 
-template<int N, class UIntType>
-auto& set(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val = true)
+template<int N, class Block>
+auto& set(int_set<N, Block>& is, size_t<int_set<N, Block>> const pos, bool const val = true)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -45,14 +45,14 @@ auto& set(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool
         return is;
 }
 
-template<int N, class UIntType>
-auto& reset(int_set<N, UIntType>& is) noexcept
+template<int N, class Block>
+auto& reset(int_set<N, Block>& is) noexcept
 {
         return is.clear();
 }
 
-template<int N, class UIntType>
-auto& reset(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
+template<int N, class Block>
+auto& reset(int_set<N, Block>& is, size_t<int_set<N, Block>> const pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -61,14 +61,14 @@ auto& reset(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
         return is;
 }
 
-template<int N, class UIntType>
-auto& flip(int_set<N, UIntType>& is) noexcept
+template<int N, class Block>
+auto& flip(int_set<N, Block>& is) noexcept
 {
         return is.complement();
 }
 
-template<int N, class UIntType>
-auto& flip(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
+template<int N, class Block>
+auto& flip(int_set<N, Block>& is, size_t<int_set<N, Block>> const pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -76,20 +76,20 @@ auto& flip(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos)
         return is.replace(pos);
 }
 
-template<int N, class UIntType>
-constexpr auto count(int_set<N, UIntType> const& is) noexcept
+template<int N, class Block>
+constexpr auto count(int_set<N, Block> const& is) noexcept
 {
         return is.size();
 }
 
-template<int N, class UIntType>
-constexpr auto fn_size(int_set<N, UIntType> const& is) noexcept
+template<int N, class Block>
+constexpr auto fn_size(int_set<N, Block> const& is) noexcept
 {
         return is.max_size();
 }
 
-template<int N, class UIntType>
-auto test(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const pos)
+template<int N, class Block>
+auto test(int_set<N, Block> const& is, size_t<int_set<N, Block>> const pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -97,38 +97,38 @@ auto test(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const pos
         return is.contains(pos);
 }
 
-template<int N, class UIntType>
-[[nodiscard]] auto all(int_set<N, UIntType> const& is) noexcept
+template<int N, class Block>
+[[nodiscard]] auto all(int_set<N, Block> const& is) noexcept
 {
         return is.full();
 }
 
-template<int N, class UIntType>
-[[nodiscard]] auto any(int_set<N, UIntType> const& is) noexcept
+template<int N, class Block>
+[[nodiscard]] auto any(int_set<N, Block> const& is) noexcept
 {
         return !is.empty();
 }
 
-template<int N, class UIntType>
-[[nodiscard]] auto none(int_set<N, UIntType> const& is) noexcept
+template<int N, class Block>
+[[nodiscard]] auto none(int_set<N, Block> const& is) noexcept
 {
         return is.empty();
 }
 
-template<int N, class UIntType>
-constexpr auto at(int_set<N, UIntType> const& is, size_t<int_set<N, UIntType>> const pos) // Throws: Nothing.
+template<int N, class Block>
+constexpr auto at(int_set<N, Block> const& is, size_t<int_set<N, Block>> const pos) // Throws: Nothing.
 {
         return is.contains(pos);
 }
 
-template<int N, class UIntType>
-constexpr auto at(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos) // Throws: Nothing.
+template<int N, class Block>
+constexpr auto at(int_set<N, Block>& is, size_t<int_set<N, Block>> const pos) // Throws: Nothing.
 {
         return is.contains(pos);
 }
 
-template<int N, class UIntType>
-constexpr auto at(int_set<N, UIntType>& is, size_t<int_set<N, UIntType>> const pos, bool const val) // Throws: Nothing.
+template<int N, class Block>
+constexpr auto at(int_set<N, Block>& is, size_t<int_set<N, Block>> const pos, bool const val) // Throws: Nothing.
 {
         if (val) {
                 is.insert(pos);
