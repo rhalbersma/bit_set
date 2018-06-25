@@ -7,17 +7,42 @@
 
 #include <algorithm>            // min
 #include <array>                // array
+#include <cassert>              // assert
 #include <initializer_list>     // initializer_list
+
+#include <iostream>
 
 namespace xstd {
 
 template<class T, typename T::value_type L>
-inline const auto limit_v = std::min(L, static_cast<typename T::value_type>(T{}.max_size()));
+inline const auto limit_v = static_cast<int>(std::min(static_cast<std::size_t>(L), static_cast<std::size_t>(T{}.max_size())));
 
 constexpr auto L1 = 256;
 constexpr auto L2 = 128;
 constexpr auto L3 =  64;
 constexpr auto L4 =  32;
+
+// NOTE: these tests are O(1)
+
+template<class IntSet, class UnaryFunction>
+auto empty_set(UnaryFunction fun)
+{
+        IntSet is0;
+        assert(is0.empty());
+        fun(is0);
+}
+
+template<class IntSet, class UnaryFunction>
+auto full_set(UnaryFunction fun)
+{
+        const auto N = limit_v<IntSet, L1>;
+        IntSet isN;
+        for (auto i = 0; i < N; ++i) {
+                isN.insert(i);
+        }
+        assert(static_cast<int>(isN.size()) == N);
+        fun(isN);
+}
 
 // NOTE: these tests are O(N)
 

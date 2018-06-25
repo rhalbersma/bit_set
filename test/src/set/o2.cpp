@@ -49,17 +49,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
         });
 
         all_doubleton_arrays<T>([](auto const& a2) {
-                T is;
-                mem_insert{}(is, a2.begin(), a2.end());
+                empty_set<T>([&](auto& is0) {
+                        mem_insert{}(is0, a2.begin(), a2.end());
+                });
         });
         all_doubleton_ilists<T>([](auto ilist2) {
-                T is;
-                mem_insert{}(is, ilist2);
+                empty_set<T>([=](auto& is0) {
+                        mem_insert{}(is0, ilist2);
+                });
         });
 
-        // all_doubleton_sets<T>([](auto& is2) {
-        //         mem_erase{}(is2, is2.begin(), is2.end());
-        // });
+        // boost::container::flat_set<int>::erase invalidates iterators
+        if constexpr (!std::is_same_v<T, boost::container::flat_set<int>>) {
+                all_doubleton_sets<T>([](auto& is2) {
+                        mem_erase{}(is2, is2.begin(), is2.end());
+                });
+        }
+
+        all_singleton_set_pairs<T>(mem_swap{});
 
         all_values<T>([](auto const& x) {
                 all_singleton_sets<T>([&](auto& i1){

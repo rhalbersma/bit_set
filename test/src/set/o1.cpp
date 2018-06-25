@@ -80,35 +80,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
         all_cardinality_sets<T>(mem_max_size{});
 
         all_values<T>([](auto const& t) {
-                T is;
-                mem_insert{}(is, t);
+                empty_set<T>([=](auto& is) {
+                        mem_insert{}(is, t);
+                });
         });
         all_values<T>([](auto const& t) {
-                T is;
-                mem_insert{}(is, is.end(), t);
+                empty_set<T>([=](auto& is) {
+                        mem_insert{}(is, is.end(), t);
+                });
         });
         all_singleton_arrays<T>([](auto const& a1) {
-                T is;
-                mem_insert{}(is, a1.begin(), a1.end());
+                empty_set<T>([&](auto& is) {
+                        mem_insert{}(is, a1.begin(), a1.end());
+                });
         });
         all_singleton_ilists<T>([](auto ilist1) {
-                T is;
-                mem_insert{}(is, ilist1);
+                empty_set<T>([&](auto& is) {
+                        mem_insert{}(is, ilist1);
+                });
         });
 
-        // all_cardinality_sets<T>([](auto& is) {
-        //         for (auto first = is.begin(), last = is.end(); first != last; /* update inside loop */) {
-        //                 first = mem_erase{}(is, first);
-        //         }
-        // });
-        // all_singleton_sets<T>([](auto& is) {
-        //         for (auto first = is.begin(), last = is.end(); first != last; /* update inside loop */) {
-        //                 first = mem_erase{}(is, first);
-        //         }
-        // });
-        // all_cardinality_sets<T>([](auto& is) {
-        //         mem_erase{}(is, is.begin(), is.end());
-        // });
+        full_set<T>([](auto& is) {
+                all_values<T>([&](auto const& k) {
+                        mem_erase{}(is, k);
+                });
+        });
+
+        // boost::container::flat_set<int>::erase invalidates iterators
+        if constexpr (!std::is_same_v<T, boost::container::flat_set<int>>) {
+                full_set<T>([](auto& is) {
+                        for (auto first = is.begin(), last = is.end(); first != last; /* update inside loop */) {
+                                mem_erase{}(is, first++);
+                        }
+                });
+                full_set<T>([](auto& is) {
+                        mem_erase{}(is, is.begin(), is.end());
+                });
+        }
 
         all_cardinality_sets<T>(mem_clear{});
         all_singleton_sets<T>(mem_clear{});

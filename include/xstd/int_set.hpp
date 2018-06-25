@@ -519,12 +519,6 @@ public:
                 return *this;
         }
 
-        constexpr auto erase(iterator pos) // Throws: Nothing.
-        {
-                erase(*pos++);
-                return pos;
-        }
-
         constexpr auto erase(key_type const& x) // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
@@ -533,6 +527,12 @@ public:
                 }
                 assert(!contains(x));
                 return 1;
+        }
+
+        constexpr auto erase(const_iterator pos) // Throws: Nothing.
+        {
+                erase(*pos++);
+                return pos;
         }
 
         constexpr auto erase(const_iterator first, const_iterator last) // Throws: Nothing.

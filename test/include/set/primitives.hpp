@@ -29,29 +29,27 @@ namespace xstd {
 template<class X>
 struct nested_types
 {
-        constexpr auto operator()() const noexcept
-        {                                                                       // [container.requirements.general] Table 83
-                static_assert(std::is_convertible_v<typename X::iterator, typename X::const_iterator>);
-                static_assert(std::is_same_v<typename X::      iterator::value_type, typename X::value_type>);
-                static_assert(std::is_same_v<typename X::const_iterator::value_type, typename X::value_type>);
-                static_assert(std::is_signed_v<typename X::difference_type>);
-                static_assert(std::is_integral_v<typename X::difference_type>);
+                                                                                // [container.requirements.general] Table 83
+        static_assert(std::is_convertible_v<typename X::iterator, typename X::const_iterator>);
+        static_assert(std::is_same_v<typename X::      iterator::value_type, typename X::value_type>);
+        static_assert(std::is_same_v<typename X::const_iterator::value_type, typename X::value_type>);
+        static_assert(std::is_signed_v<typename X::difference_type>);
+        static_assert(std::is_integral_v<typename X::difference_type>);
 
-                // we use a signed instead of an unsigned size_type for xstd::int_set
-                static_assert(std::is_integral_v<typename X::size_type>);
+        // we use a signed instead of an unsigned size_type for xstd::int_set
+        static_assert(std::is_integral_v<typename X::size_type>);
 
-                static_assert(std::is_same_v<typename X::value_type, int>);
+        static_assert(std::is_same_v<typename X::value_type, int>);
 
-                // we use a proxy reference for xstd::int_set which convertible to int const&, instead of the same as int const&
-                static_assert(std::is_convertible_v<typename X::const_reference, int const&>);
+        // we use a proxy reference for xstd::int_set which convertible to int const&, instead of the same as int const&
+        static_assert(std::is_convertible_v<typename X::const_reference, int const&>);
 
                                                                                 // [container.requirements.general] Table 84
-                static_assert(std::is_same_v<typename X::      reverse_iterator, std::reverse_iterator<typename X::      iterator>>);
-                static_assert(std::is_same_v<typename X::const_reverse_iterator, std::reverse_iterator<typename X::const_iterator>>);
+        static_assert(std::is_same_v<typename X::      reverse_iterator, std::reverse_iterator<typename X::      iterator>>);
+        static_assert(std::is_same_v<typename X::const_reverse_iterator, std::reverse_iterator<typename X::const_iterator>>);
 
                                                                                 // [associative.reqmts]/6
-                static_assert(std::is_same_v<typename std::iterator_traits<typename X::iterator>::iterator_category, std::bidirectional_iterator_tag>);
-        }
+        static_assert(std::is_same_v<typename std::iterator_traits<typename X::iterator>::iterator_category, std::bidirectional_iterator_tag>);
 };
 
 template<class X>
@@ -237,34 +235,31 @@ struct mem_insert
 struct mem_erase
 {
         template<class X>
-        auto operator()(X& a, typename X::value_type const k) const
-        {
+        auto operator()(X& a, typename X::key_type const& k) const
+        {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(a.erase(k)), typename X::size_type>);
-                auto n = a.count(k);
-                auto r = a.erase(k);
-                BOOST_CHECK(r == n);
+                auto const expected = a.count(k);
+                auto const returns = a.erase(k);
+                BOOST_CHECK(returns == expected);
         }
 
-        template<class X, class InputIterator>
-        auto operator()(X const& is, InputIterator first) const
-        {
-                int const elem = *first;
-                auto const src = is;
-                auto dst = src; first = dst.erase(first);
-                BOOST_CHECK(!dst.count(elem));
-                return first;
+        template<class X>
+        auto operator()(X& a, typename X::const_iterator q) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_same_v<decltype(a.erase(q)), typename X::iterator>);
+                BOOST_CHECK(q != a.end());
+                auto const expected = std::next(q);                             // assumes erase does not invalidate iterators
+                auto const returns = a.erase(q);
+                BOOST_CHECK(returns == expected);
         }
 
-        template<class X, class InputIterator>
-        auto operator()(X const& is, InputIterator first, InputIterator last) const
-        {
-                auto const src = is;
-                auto dst = src; dst.erase(first, last);
-                std::for_each(first, last, [&](auto const elem) {
-                        BOOST_CHECK(!dst.count(elem));
-                });
-                BOOST_CHECK_LE(dst.size(), src.size());
-                BOOST_CHECK_LE(static_cast<int>(src.size()), static_cast<int>(dst.size()) + static_cast<int>(std::distance(first, last)));
+        template<class X>
+        auto operator()(X& a, typename X::const_iterator q1, typename X::const_iterator q2) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_same_v<decltype(a.erase(q1, q2)), typename X::iterator>);
+                auto const expected = q2;                                       // assumes erase does not invalidate iterators
+                auto const returns = a.erase(q1, q2);
+                BOOST_CHECK(returns == expected);
         }
 };
 
