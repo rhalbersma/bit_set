@@ -585,7 +585,7 @@ public:
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_logical_blocks >= 1) {
                         if (m_data[which(x)] & bit1(where(x))) {
-                                return true ;
+                                return true;
                         }
                 }
                 return false;
