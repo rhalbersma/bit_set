@@ -20,6 +20,8 @@ using IntSetTypes = boost::mpl::vector
 <       std::set<int>
 ,       boost::container::flat_set<int>
 ,       int_set< 0, uint32_t>
+,       int_set< 1, uint32_t>
+,       int_set< 2, uint32_t>
 ,       int_set<32, uint32_t>
 ,       int_set<64, uint32_t>
 >;

@@ -5,24 +5,17 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <traits.hpp>                   // has_range_assign_v, has_ilist_assign_v, has_const_iterator_v, has_front_v, has_back_v,
-                                        // has_any_of_v, has_none_of_v, has_all_of_v, has_accumulate_v, has_for_each_v, has_reverse_for_each_v,
-                                        // has_op_minus_assign_v, has_range_insert_v, has_ilist_insert_v, has_range_erase_v, has_ilist_erase_v,
-                                        // has_max_size_v, has_empty_v, has_full_v
+#include <traits.hpp>                   // has_back_v, has_front_v
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <algorithm>                    // all_of, any_of, copy_if, count, equal, find, for_each, includes, lexicographical_compare,
-                                        // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform
-                                        // lower_bound, upper_bound, equal_range
-#include <functional>                   // greater, plus
+#include <algorithm>                    // all_of, any_of, copy_if, count, equal, equal_range, find, for_each, includes, lexicographical_compare, lower_bound,
+                                        // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform, upper_bound
 #include <initializer_list>             // initializer_list
-#include <istream>                      // basic_istream
 #include <iterator>                     // distance, inserter, next, prev
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
 #include <set>                          // set
-#include <type_traits>                  // is_constructible_v
-#include <utility>
-#include <vector>                       // vector
+#include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructrible_v, is_integral_v, is_same_v, is_signed_v,
+#include <utility>                      // pair
 
 namespace xstd {
 
@@ -103,7 +96,7 @@ struct mem_const_reference
         }
 };
 
-struct mem_iterator
+struct mem_const_iterator
 {
         template<class X>
         auto operator()(X& a) const noexcept
@@ -141,7 +134,7 @@ struct mem_front
         template<class IntSet>
         auto operator()(IntSet const& is [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_front_v<IntSet> && tti::has_forward_iterator_v<IntSet>) {
+                if constexpr (tti::has_front_v<IntSet>) {
                         BOOST_CHECK(is.empty() || (is.front() == *is.cbegin()));
                         BOOST_CHECK(is.empty() || (&is.front() == is.cbegin()));
                 }
@@ -153,7 +146,7 @@ struct mem_back
         template<class IntSet>
         auto operator()(IntSet const& is [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_back_v<IntSet> && tti::has_forward_iterator_v<IntSet>) {
+                if constexpr (tti::has_back_v<IntSet>) {
                         BOOST_CHECK(is.empty() || (is.back() == *is.crbegin()));
                         BOOST_CHECK(is.empty() || (&is.back() == std::next(is.crbegin()).base()));
                 }

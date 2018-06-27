@@ -6,7 +6,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <bitset>       // bitset
-#include <cassert>      // assert
 #include <cstddef>      // size_t
 
 namespace xstd {
@@ -14,7 +13,6 @@ namespace xstd {
 template<std::size_t N>
 auto resize(std::bitset<N>& bs, std::size_t const num_bits [[maybe_unused]], bool const value = false) noexcept
 {
-        assert(num_bits == N);
         if (value) {
                 bs.set();
         } else {
@@ -68,30 +66,6 @@ template<std::size_t N>
 constexpr auto fn_size(std::bitset<N> const& bs) noexcept
 {
         return bs.size();
-}
-
-template<std::size_t N>
-auto operator<(std::bitset<N> const& lhs, std::bitset<N> const& rhs)
-{
-        return lhs.to_string() < rhs.to_string();
-}
-
-template<std::size_t N>
-auto operator>(std::bitset<N> const& lhs, std::bitset<N> const& rhs)
-{
-        return rhs < lhs;
-}
-
-template<std::size_t N>
-auto operator>=(std::bitset<N> const& lhs, std::bitset<N> const& rhs)
-{
-        return !(lhs < rhs);
-}
-
-template<std::size_t N>
-auto operator<=(std::bitset<N> const& lhs, std::bitset<N> const& rhs)
-{
-        return !(rhs < lhs);
 }
 
 template<std::size_t N>
@@ -157,13 +131,13 @@ auto is_superset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexce
 template<std::size_t N>
 auto is_proper_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return is_subset_of(lhs, rhs) && !is_subset_of(rhs, lhs);
+        return is_subset_of(lhs, rhs) && lhs != rhs;
 }
 
 template<std::size_t N>
 auto is_proper_superset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
+        return is_superset_of(lhs, rhs) && lhs != rhs;
 }
 
 template<std::size_t N>

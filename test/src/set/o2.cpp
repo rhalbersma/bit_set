@@ -5,14 +5,9 @@
 
 #include <set/exhaustive.hpp>                   // all_values, all_singleton_sets, all_singleton_set_pairs,
                                                 // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
-#include <set/primitives.hpp>                   // constructor, const_reference, const_iterator,
-                                                // mem_all_of, mem_any_of, mem_none_of, mem_for_each, mem_reverse_for_each,
-                                                // op_bitand_assign, op_bitor_assign, op_xor_assign, op_minus_assign,
-                                                // op_shift_left_assign, op_shift_right_assign, mem_insert, mem_erase, fn_swap, op_compl,
-                                                // op_equal_to, op_not_equal_to, op_less, op_greater, op_greater_equal, op_less_equal,
-                                                // op_shift_left, op_shift_right, op_bitand, op_bitor, op_xor, op_minus,
-                                                // fn_is_subset_of, fn_is_superset_of, fn_is_proper_subset_of, fn_is_proper_superset_of,
-                                                // fn_intersect, fn_disjoint
+#include <set/primitives.hpp>                   // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
+                                                // mem_lower_bound, mem_upper_bound, mem_equal_range,
+                                                // op_equal, op_not_equal_to, op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
 #include <xstd/int_set.hpp>                     // int_set
 #include <boost/container/flat_set.hpp>         // flat_set
 #include <boost/mpl/vector.hpp>                 // vector

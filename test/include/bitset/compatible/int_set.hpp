@@ -6,7 +6,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/int_set.hpp>     // int_set
-#include <cassert>              // assert
 #include <stdexcept>            // out_of_range
 
 namespace xstd {
@@ -17,7 +16,6 @@ using size_t = typename T::size_type;
 template<int N, class Block>
 auto resize(int_set<N, Block>& is, size_t<int_set<N, Block>> const num_bits [[maybe_unused]], bool const value = false) noexcept
 {
-        assert(num_bits == N);
         if (value) {
                 is.fill();
         } else {

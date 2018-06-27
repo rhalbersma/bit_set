@@ -6,8 +6,7 @@
 #include <bitset/compatible/bitset.hpp>         // bitset
 #include <bitset/compatible/dynamic_bitset.hpp> // dynamic_bitset
 #include <bitset/compatible/int_set.hpp>        // int_set
-#include <bitset/exhaustive.hpp>                // all_values, all_singleton_sets, all_singleton_set_pairs,
-                                                // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
+#include <bitset/exhaustive.hpp>                // all_values, all_singleton_sets, all_singleton_set_pairs
 #include <bitset/primitives.hpp>                // op_bitand_assign, op_bitor_assign, op_xor_assign, op_minus_assign,
                                                 // op_shift_left_assign, op_shift_right_assign, op_compl,
                                                 // op_equal_to, op_not_equal_to, op_less, op_greater, op_greater_equal, op_less_equal,
@@ -59,11 +58,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
 
         all_singleton_set_pairs<T>(op_equal_to{});
         all_singleton_set_pairs<T>(op_not_equal_to{});
-
-        all_singleton_set_pairs<T>(op_less{});
-        all_singleton_set_pairs<T>(op_greater{});
-        all_singleton_set_pairs<T>(op_greater_equal{});
-        all_singleton_set_pairs<T>(op_less_equal{});
 
         all_values<T>([](auto const pos){
                 all_singleton_sets<T>([&](auto const& i1){

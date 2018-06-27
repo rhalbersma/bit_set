@@ -191,7 +191,16 @@ public:
 
         proxy_reference& operator=(value_type const) = delete;
 
-        /* implicit */ constexpr operator value_type() const noexcept
+        /* explicit(false) */ constexpr operator value_type() const noexcept
+        {
+                return m_value;
+        }
+
+        template<class T, std::enable_if_t<
+                std::is_class_v<T> &&
+                std::is_constructible_v<T, value_type>
+        >...>
+        /* explicit(false) */ constexpr operator T() const noexcept(noexcept(T(m_value)))
         {
                 return m_value;
         }

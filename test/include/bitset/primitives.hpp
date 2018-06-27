@@ -315,53 +315,6 @@ struct op_not_equal_to
         }
 };
 
-struct op_less
-{
-        template<class BitSet>
-        auto operator()(BitSet const& a, BitSet const& b) const noexcept
-        {
-                BOOST_CHECK_EQUAL(fn_size(a), fn_size(b));
-                auto expected [[maybe_unused]] = false;
-                for (auto N = fn_size(a), i = decltype(N){0}; i < N; ++i) {
-                        auto const r = N - 1 - i;
-                        if (!at(a, r) && at(b, r)) { expected = true; break; }
-                        if (!at(b, r) && at(a, r)) {                  break; }
-                }
-                BOOST_CHECK_EQUAL(a < b, expected);
-
-                if constexpr (tti::has_forward_iterator_v<BitSet>) {
-                        BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(begin(a), end(a), begin(b), end(b)));
-                }
-        }
-};
-
-struct op_greater
-{
-        template<class BitSet>
-        auto operator()(BitSet const& a, BitSet const& b) const noexcept
-        {
-                BOOST_CHECK_EQUAL(a > b, b < a);
-        }
-};
-
-struct op_less_equal
-{
-        template<class BitSet>
-        auto operator()(BitSet const& a, BitSet const& b) const noexcept
-        {
-                BOOST_CHECK_EQUAL(a <= b, !(b < a));
-        }
-};
-
-struct op_greater_equal
-{
-        template<class BitSet>
-        auto operator()(BitSet const& a, BitSet const& b) const noexcept
-        {
-                BOOST_CHECK_EQUAL(a >= b, !(a < b));
-        }
-};
-
 struct mem_test
 {
         template<class BitSet>

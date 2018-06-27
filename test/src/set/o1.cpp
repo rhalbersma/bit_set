@@ -3,16 +3,10 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <set/exhaustive.hpp>                   // all_values, all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets
-#include <set/primitives.hpp>                   // constructor, const_reference, const_iterator, mem_front, mem_back,
-                                                // mem_accumulate, mem_for_each, mem_reverse_for_each,
-                                                // fn_fill, fn_insert, mem_insert, fn_clear, fn_erase, mem_erase,
-                                                // op_compl, fn_complement, fn_replace, fn_size, fn_max_size,
-                                                // op_equal_to, op_not_equal_to, op_less, op_greater, op_greater_equal, op_less_equal,
-                                                // fn_contains, fn_full, fn_not_empty, fn_empty, op_at,
-                                                // op_bitand, op_bitor, op_xor, op_minus
-                                                // fn_is_subset_of, fn_is_superset_of, fn_is_proper_subset_of, fn_is_proper_superset_of,
-                                                // fn_intersects, fn_disjoint,
+#include <set/exhaustive.hpp>                   // empty_set, full_set, all_values, all_cardinality_sets,
+                                                // all_singleton_arrays, all_singleton_ilists, all_singleton_sets
+#include <set/primitives.hpp>                   // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back, mem_empty, mem_size,
+                                                // mem_max_size, mem_insert, mem_erase, mem_clear, op_equal, op_less, fn_iterator, fn_size, fn_empty
 #include <xstd/int_set.hpp>                     // int_set
 #include <boost/container/flat_set.hpp>         // flat_set
 #include <boost/mpl/vector.hpp>                 // vector
@@ -56,17 +50,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
         all_cardinality_sets<T>(mem_const_reference{});
         all_singleton_sets<T>(mem_const_reference{});
 
-        all_cardinality_sets<T>([](auto& is) { 
-                mem_iterator{}(is);
+        all_cardinality_sets<T>([](auto& is) {
+                mem_const_iterator{}(is);
         });
-        all_cardinality_sets<T>([](auto const& is) { 
-                mem_iterator{}(is);
+        all_cardinality_sets<T>([](auto const& is) {
+                mem_const_iterator{}(is);
         });
-        all_singleton_sets<T>([](auto& is) { 
-                mem_iterator{}(is);
+        all_singleton_sets<T>([](auto& is) {
+                mem_const_iterator{}(is);
         });
-        all_singleton_sets<T>([](auto const& is) { 
-                mem_iterator{}(is);
+        all_singleton_sets<T>([](auto const& is) {
+                mem_const_iterator{}(is);
         });
 
         all_cardinality_sets<T>(mem_front{});
