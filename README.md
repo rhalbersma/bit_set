@@ -142,7 +142,7 @@ Many of the bitwise operators for `int_set` are equivalent to algorithms on sort
 | :-------------------------------- | :------------------------ |
 | `is_subset_of(a, b)`              | `includes(begin(a), end(a), begin(b), end(b))` |
 | `auto c = a & b;`                 | `set<int> c;` <br> `set_intersection(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| <code>auto c = b &#124; b;</code> | `set<int> c;` <br> `set_union(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
+| <code>auto c = a &#124; b;</code> | `set<int> c;` <br> `set_union(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
 | `auto c = a ^ b;`                 | `set<int> c;` <br> `set_symmetric_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
 | `auto c = a - b;`                 | `set<int> c;` <br> `set_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
 | `auto b = a << n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x){ return x + n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x){ return x < N; });` |
