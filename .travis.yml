@@ -8,8 +8,12 @@ matrix:
     - env: CXX_COMPILER=clang++-6.0 CXX=g++-7
       addons: { apt: { packages: ["clang-6.0", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-6.0"] } }
 
-    - env: CXX_COMPILER=clang++-7 CXX=g++-7
-      addons: { apt: { packages: ["clang-7", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty"] } }
+# Not yet white-listed APT source for Travis
+#    - env: CXX_COMPILER=clang++-7 CXX=g++-7
+#      addons: { apt: { packages: ["clang-7", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-7"] } }
+
+    - env: CXX_COMPILER=clang++-8 CXX=g++-7
+      addons: { apt: { packages: ["clang-8", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty"] } }
 
     - env: CXX_COMPILER=g++-7
       addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
