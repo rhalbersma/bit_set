@@ -24,18 +24,18 @@ matrix:
 install:
 
 ################################################################################
-# All manual dependencies are installed in ${TRAVIS_BUILD_DIR}/../deps
+# Third party dependencies are installed in ${TRAVIS_BUILD_DIR}/../third_party
 ################################################################################
 - |
-  DEPS_DIR="${TRAVIS_BUILD_DIR}/../deps"
-  mkdir -p ${DEPS_DIR}
+  THIRD_PARTY_DIR="${TRAVIS_BUILD_DIR}/../third_party"
+  mkdir -p ${THIRD_PARTY_DIR}
   
 ################################################################################
 # Install the latest Boost and build Boost.Test (compiled with gcc)
 ################################################################################
 - |
   BOOST_VERSION=1.67.0
-  BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
+  BOOST_DIR=${THIRD_PARTY_DIR}/boost-${BOOST_VERSION}
   BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.bz2"
   mkdir -p ${BOOST_DIR} && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xj -C ${BOOST_DIR}
   cd ${BOOST_DIR} && ./bootstrap.sh --with-libraries=test && ./b2 -d0
@@ -45,7 +45,7 @@ install:
 ################################################################################
 - |
   CMAKE_VERSION=3.11.3
-  CMAKE_DIR=${DEPS_DIR}/cmake-${CMAKE_VERSION}
+  CMAKE_DIR=${THIRD_PARTY_DIR}/cmake-${CMAKE_VERSION}
   CMAKE_URL="http://www.cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}
   export PATH=${CMAKE_DIR}/bin:${PATH}
