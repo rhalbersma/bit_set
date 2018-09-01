@@ -571,7 +571,7 @@ public:
                 return *this;
         }
 
-        constexpr auto& replace(value_type const n) // Throws: Nothing.
+        constexpr auto& replace(value_type const n [[maybe_unused]]) // Throws: Nothing.
         {
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_logical_blocks >= 1) {
