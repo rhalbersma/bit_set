@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_SUITE(Cubic)
 
 using namespace xstd;
 
-using IntSetTypes = boost::mpl::vector
+using int_set_types = boost::mpl::vector
 <       std::set<int>
 ,       boost::container::flat_set<int>
 ,       int_set< 0, uint32_t>
@@ -24,7 +24,7 @@ using IntSetTypes = boost::mpl::vector
 ,       int_set<64, uint32_t>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, IntSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, int_set_types)
 {
         all_singleton_set_triples<T>(op_equal_to{});
         all_singleton_set_triples<T>(op_less{});

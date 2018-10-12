@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_SUITE(TypeTraits)
 
 using namespace xstd;
 
-using BitSetTypes = boost::mpl::vector
+using bitset_types = boost::mpl::vector
 <       std::bitset<  0>
 ,       std::bitset< 32>
 ,       std::bitset< 64>
@@ -29,22 +29,22 @@ using BitSetTypes = boost::mpl::vector
 ,       int_set<256>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsNothrowDefaultConstructible, T, BitSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsNothrowDefaultConstructible, T, bitset_types)
 {
         static_assert(std::is_nothrow_default_constructible_v<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsTriviallyCopyable, T, BitSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsTriviallyCopyable, T, bitset_types)
 {
         static_assert(std::is_trivially_copyable_v<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsStandardLayout, T, BitSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsStandardLayout, T, bitset_types)
 {
         static_assert(std::is_standard_layout_v<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(HasNoResize, T, BitSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(HasNoResize, T, bitset_types)
 {
         static_assert(!tti::has_resize_v<T>);
 }

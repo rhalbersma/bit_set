@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(Quadratic)
 
 using namespace xstd;
 
-using IntSetTypes = boost::mpl::vector
+using int_set_types = boost::mpl::vector
 <       std::set<int>
 ,       boost::container::flat_set<int>
 ,       int_set<  0, uint32_t>
@@ -28,7 +28,7 @@ using IntSetTypes = boost::mpl::vector
 ,       int_set< 65, uint32_t>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
 {
         all_doubleton_arrays<T>([](auto const& a2) {
                 constructor<T>{}(a2.begin(), a2.end());

@@ -13,7 +13,7 @@
 
 BOOST_AUTO_TEST_SUITE(TypeTraits)
 
-using IntSetTypes = boost::mpl::vector
+using int_set_types = boost::mpl::vector
 <       std::set<int>
 ,       boost::container::flat_set<int>
 ,       xstd::int_set<  0>
@@ -23,7 +23,7 @@ using IntSetTypes = boost::mpl::vector
 ,       xstd::int_set<256>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsNothrowDefaultConstructible, T, IntSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsNothrowDefaultConstructible, T, int_set_types)
 {
         static_assert(std::is_default_constructible_v<T>);
 }

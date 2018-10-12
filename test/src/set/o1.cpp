@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_SUITE(Linear)
 
 using namespace xstd;
 
-using IntSetTypes = boost::mpl::vector
+using int_set_types = boost::mpl::vector
 <       std::set<int>
 ,       boost::container::flat_set<int>
 ,       int_set<  0, uint32_t>
@@ -38,7 +38,7 @@ using IntSetTypes = boost::mpl::vector
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, IntSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
 {
         all_singleton_arrays<T>([](auto const& a1) {
                 constructor<T>{}(a1.begin(), a1.end());

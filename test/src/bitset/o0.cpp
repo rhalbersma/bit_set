@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_SUITE(Constant)
 
 using namespace xstd;
 
-using BitSetTypes = boost::mpl::vector
+using bitset_types = boost::mpl::vector
 <       std::bitset<  0>
 ,       std::bitset< 32>
 ,       std::bitset< 64>
@@ -42,7 +42,7 @@ using BitSetTypes = boost::mpl::vector
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, BitSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 {
         constructor<T>{}();
 }

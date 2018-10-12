@@ -481,14 +481,14 @@ public:
         }
 
         template<class InputIterator>
-        XSTD_PP_CONSTEXPR_ALGORITHM auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
+        constexpr auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
         {
                 while (first != last) {
                         insert(*first++);
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        constexpr auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
         {
                 insert(ilist.begin(), ilist.end());
         }
