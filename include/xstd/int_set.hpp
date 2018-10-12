@@ -18,15 +18,6 @@
 #include <type_traits>          // is_integral_v, is_nothrow_swappable_v, is_unsigned_v
 #include <utility>              // pair, swap
 
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0202r3.html
-#define XSTD_PP_CONSTEXPR_ALGORITHM     /* constexpr */
-
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0879r0.html
-#define XSTD_PP_CONSTEXPR_SWAP          /* constexpr */
-
-// no WG21 proposal yet
-#define XSTD_PP_CONSTEXPR_NUMERIC       /* constexpr */
-
 #if defined(__GNUG__)
 
 #define XSTD_PP_CONSTEXPR_INTRINSIC     constexpr
@@ -36,6 +27,15 @@
 #define XSTD_PP_CONSTEXPR_INTRINSIC     /* constexpr */
 
 #endif
+
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0202r3.html
+#define XSTD_PP_CONSTEXPR_ALGORITHM     /* constexpr */
+
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0879r0.html
+#define XSTD_PP_CONSTEXPR_SWAP          /* constexpr */
+
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0892r2.html
+#define XSTD_PP_EXPLICIT_FALSE          /* explicit(false) */
 
 namespace xstd {
 namespace detail {
@@ -997,7 +997,7 @@ private:
 
                 proxy_reference& operator=(value_type const) = delete;
 
-                /* explicit(false) */ constexpr operator value_type() const noexcept
+                XSTD_PP_EXPLICIT_FALSE constexpr operator value_type() const noexcept
                 {
                         return m_value;
                 }
@@ -1006,7 +1006,7 @@ private:
                         std::is_class_v<T> &&
                         std::is_constructible_v<T, value_type>
                 >...>
-                /* explicit(false) */ constexpr operator T() const noexcept(noexcept(T(m_value)))
+                XSTD_PP_EXPLICIT_FALSE constexpr operator T() const noexcept(noexcept(T(m_value)))
                 {
                         return m_value;
                 }

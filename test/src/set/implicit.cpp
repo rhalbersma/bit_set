@@ -13,23 +13,23 @@
 
 BOOST_AUTO_TEST_SUITE(Implicit)
 
-using IntSetTypes = boost::mpl::vector
+using int_set_types = boost::mpl::vector
 <       std::set<int>
 ,       xstd::int_set<32>
 >;
 
-class Int
+class int_
 {
         int m_value;
 public:
-        /* explicit(false) */ Int(int v) noexcept : m_value{v} {}
-        /* explicit(false) */ operator int() const noexcept { return m_value; }
+        XSTD_PP_EXPLICIT_FALSE int_(int const v) noexcept : m_value{v} {}
+        XSTD_PP_EXPLICIT_FALSE operator int() const noexcept { return m_value; }
 };
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, IntSetTypes)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, int_set_types)
 {
         auto src = T { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };
-        std::set<Int> dst;
+        std::set<int_> dst;
         std::copy(src.begin(), src.end(), std::inserter(dst, dst.end()));
         BOOST_CHECK_EQUAL_COLLECTIONS(src.begin(), src.end(), dst.begin(), dst.end());
 }
