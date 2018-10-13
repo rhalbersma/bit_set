@@ -133,7 +133,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(UnsignedIntegral const x) noexcept
 #endif
 
 template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(UnsignedIntegral const x) const // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(UnsignedIntegral const x) // Throws: Nothing.
 {
         static_assert(std::is_unsigned_v<UnsignedIntegral>);
         static_assert(std::is_integral_v<UnsignedIntegral>);
@@ -151,13 +151,13 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(UnsignedIntegral const x) const // Throws
 }
 
 template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(UnsignedIntegral const x) const // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(UnsignedIntegral const x) // Throws: Nothing.
 {
         return bsfnz(x);
 }
 
 template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(UnsignedIntegral const x) const // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(UnsignedIntegral const x) // Throws: Nothing.
 {
         static_assert(std::is_unsigned_v<UnsignedIntegral>);
         static_assert(std::is_integral_v<UnsignedIntegral>);
