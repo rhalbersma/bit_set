@@ -241,12 +241,6 @@ class int_set
         static_assert(std::is_unsigned_v<Block>);
         static_assert(std::is_integral_v<Block>);
 
-        #if defined(_MSC_VER)
-
-        static_assert(sizeof(Block) <= sizeof(std::size_t));
-
-        #endif
-
         constexpr static auto block_size = std::numeric_limits<Block>::digits;
         constexpr static auto num_logical_blocks = (N - 1 + block_size) / block_size;
         constexpr static auto num_storage_blocks = std::max(num_logical_blocks, 1);
