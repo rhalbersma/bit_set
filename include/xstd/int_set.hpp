@@ -747,7 +747,7 @@ public:
 private:
         constexpr static auto zero = static_cast<block_type>( 0);
         constexpr static auto ones = static_cast<block_type>(-1);
-        constexpr static auto no_excess_bits = static_cast<block_type>(ones << excess_bits);
+        constexpr static auto no_excess_bits = static_cast<block_type>(static_cast<block_type>(-1) << excess_bits);
         static_assert(excess_bits ^ (ones == no_excess_bits));
         constexpr static auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
 
