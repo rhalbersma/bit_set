@@ -256,6 +256,7 @@ class int_set
         constexpr static auto num_storage_blocks = std::max(num_logical_blocks, 1);
         constexpr static auto num_bits = num_logical_blocks * block_size;
         constexpr static auto excess_bits = num_bits - N;
+        static_assert(0 <= excess_bits); static_assert(excess_bits < block_size);
 
         class proxy_reference;
         class proxy_iterator;
@@ -745,7 +746,7 @@ public:
 
 private:
         constexpr static auto zero = static_cast<block_type>( 0);
-        constexpr static auto ones = static_cast<block_type>(~0);
+        constexpr static auto ones = static_cast<block_type>(-1);
         constexpr static auto no_excess_bits = static_cast<block_type>(ones << excess_bits);
         static_assert(excess_bits ^ (ones == no_excess_bits));
         constexpr static auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));

@@ -37,7 +37,7 @@ using unsigned_integer_types = boost::mpl::vector
 using namespace xstd::builtin;
 
 template<class T> constexpr auto zero = static_cast<T>( 0);
-template<class T> constexpr auto ones = static_cast<T>(~0);
+template<class T> constexpr auto ones = static_cast<T>(-1);
 
 template<class T>
 constexpr auto bit1(int const n)
