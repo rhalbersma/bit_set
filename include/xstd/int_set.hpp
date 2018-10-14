@@ -15,7 +15,7 @@
 #include <limits>               // digits
 #include <numeric>              // accumulate
 #include <tuple>                // tie
-#include <type_traits>          // is_integral_v, is_nothrow_swappable_v, is_unsigned_v
+#include <type_traits>          // enable_if_t, is_integral_v, is_nothrow_swappable_v, is_unsigned_v
 #include <utility>              // pair, swap
 
 #if defined(__GNUG__)
@@ -49,69 +49,70 @@ constexpr auto get(__uint128_t const x) noexcept
         return static_cast<uint64_t>(x >> (64 * N));
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(UnsignedIntegral const x) // Throws: Nothing.
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(T const x) // Throws: Nothing.
 {
-        static_assert(std::is_unsigned_v<UnsignedIntegral>);
-        static_assert(std::is_integral_v<UnsignedIntegral>);
-
         assert(x != 0);
-        if constexpr (sizeof(UnsignedIntegral) < sizeof(unsigned)) {
+        if constexpr (sizeof(T) < sizeof(unsigned)) {
                 return __builtin_ctz(static_cast<unsigned>(x));
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned)) {
                 return __builtin_ctz(x);
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned long long)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned long long)) {
                 return __builtin_ctzll(x);
-        } else if constexpr (sizeof(UnsignedIntegral) == 2 * sizeof(unsigned long long)) {
+        } else if constexpr (sizeof(T) == 2 * sizeof(unsigned long long)) {
                 return get<0>(x) != 0 ? __builtin_ctzll(get<0>(x)) : __builtin_ctzll(get<1>(x)) + 64;
         }
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(UnsignedIntegral const x) // Throws: Nothing.
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(T const x) // Throws: Nothing.
 {
         return ctznz(x);
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(UnsignedIntegral const x) // Throws: Nothing.
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(T const x) // Throws: Nothing.
 {
-        static_assert(std::is_unsigned_v<UnsignedIntegral>);
-        static_assert(std::is_integral_v<UnsignedIntegral>);
-
         assert(x != 0);
-        if constexpr (sizeof(UnsignedIntegral) < sizeof(unsigned)) {
-                constexpr auto padded_zeros = std::numeric_limits<unsigned>::digits - std::numeric_limits<UnsignedIntegral>::digits;
+        if constexpr (sizeof(T) < sizeof(unsigned)) {
+                constexpr auto padded_zeros = std::numeric_limits<unsigned>::digits - std::numeric_limits<T>::digits;
                 return __builtin_clz(static_cast<unsigned>(x)) - padded_zeros;
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned)) {
                 return __builtin_clz(x);
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned long long)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned long long)) {
                 return __builtin_clzll(x);
-        } else if constexpr (sizeof(UnsignedIntegral) == 2 * sizeof(unsigned long long)) {
+        } else if constexpr (sizeof(T) == 2 * sizeof(unsigned long long)) {
                 return get<1>(x) != 0 ? __builtin_clzll(get<1>(x)) : __builtin_clzll(get<0>(x)) + 64;
         }
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(UnsignedIntegral const x) // Throws: Nothing.
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
-        return std::numeric_limits<UnsignedIntegral>::digits - 1 - clznz(x);
+        return std::numeric_limits<T>::digits - 1 - clznz(x);
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(UnsignedIntegral const x) noexcept
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(T const x) noexcept
 {
-        static_assert(std::is_unsigned_v<UnsignedIntegral>);
-        static_assert(std::is_integral_v<UnsignedIntegral>);
-
-        if constexpr (sizeof(UnsignedIntegral) < sizeof(unsigned)) {
+        if constexpr (sizeof(T) < sizeof(unsigned)) {
                 return __builtin_popcount(static_cast<unsigned>(x));
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned)) {
                 return __builtin_popcount(x);
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned long long)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned long long)) {
                 return __builtin_popcountll(x);
-        } else if constexpr (sizeof(UnsignedIntegral) == 2 * sizeof(unsigned long long)) {
+        } else if constexpr (sizeof(T) == 2 * sizeof(unsigned long long)) {
                 return __builtin_popcountll(get<0>(x)) + __builtin_popcountll(get<1>(x));
         }
 }
@@ -132,94 +133,103 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(UnsignedIntegral const x) noexcept
 
 #endif
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(UnsignedIntegral const x) // Throws: Nothing.
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(T const x) // Throws: Nothing.
 {
-        static_assert(std::is_unsigned_v<UnsignedIntegral>);
-        static_assert(std::is_integral_v<UnsignedIntegral>);
-
         assert(x != 0);
         unsigned long index;
-        if constexpr (sizeof(UnsignedIntegral) < sizeof(unsigned long)) {
+        if constexpr (sizeof(T) < sizeof(unsigned long)) {
                 _BitScanForward(&index, static_cast<unsigned long>(x));
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned long)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned long)) {
                 _BitScanForward(&index, x);
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(uint64_t)) {
+        } else if constexpr (sizeof(T) == sizeof(uint64_t)) {
                 _BitScanForward64(&index, x);
         }
         return static_cast<int>(index);
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(UnsignedIntegral const x) // Throws: Nothing.
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(T const x) // Throws: Nothing.
 {
         return bsfnz(x);
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(UnsignedIntegral const x) // Throws: Nothing.
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(T const x) // Throws: Nothing.
 {
-        static_assert(std::is_unsigned_v<UnsignedIntegral>);
-        static_assert(std::is_integral_v<UnsignedIntegral>);
-
         assert(x != 0);
         unsigned long index;
-        if constexpr (sizeof(UnsignedIntegral) < sizeof(unsigned long)) {
+        if constexpr (sizeof(T) < sizeof(unsigned long)) {
                 _BitScanReverse(&index, static_cast<unsigned long>(x));
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned long)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned long)) {
                 _BitScanReverse(&index, x);
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(uint64_t)) {
+        } else if constexpr (sizeof(T) == sizeof(uint64_t)) {
                 _BitScanReverse64(&index, x);
         }
         return static_cast<int>(index);
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(UnsignedIntegral const x) // Throws: Nothing.
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
-        return std::numeric_limits<UnsignedIntegral>::digits - 1 - bsrnz(x);
+        return std::numeric_limits<T>::digits - 1 - bsrnz(x);
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(UnsignedIntegral const x) noexcept
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(T const x) noexcept
 {
-        static_assert(std::is_unsigned_v<UnsignedIntegral>);
-        static_assert(std::is_integral_v<UnsignedIntegral>);
-
-        if constexpr (sizeof(UnsignedIntegral) < sizeof(unsigned short)) {
+        if constexpr (sizeof(T) < sizeof(unsigned short)) {
                 return static_cast<int>(__popcnt16(static_cast<unsigned short>(x)));
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned short)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned short)) {
                 return static_cast<int>(__popcnt16(x));
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(unsigned)) {
+        } else if constexpr (sizeof(T) == sizeof(unsigned)) {
                 return static_cast<int>(__popcnt(x));
-        } else if constexpr (sizeof(UnsignedIntegral) == sizeof(uint64_t)) {
+        } else if constexpr (sizeof(T) == sizeof(uint64_t)) {
                 return static_cast<int>(__popcnt64(x));
         }
 }
 
 #endif
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctz(UnsignedIntegral const x) noexcept
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto ctz(T const x) noexcept
 {
-        return x ? ctznz(x) : std::numeric_limits<UnsignedIntegral>::digits;
+        return x ? ctznz(x) : std::numeric_limits<T>::digits;
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsf(UnsignedIntegral const x) noexcept
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsf(T const x) noexcept
 {
-        return x ? bsfnz(x) : std::numeric_limits<UnsignedIntegral>::digits;
+        return x ? bsfnz(x) : std::numeric_limits<T>::digits;
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clz(UnsignedIntegral const x) noexcept
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto clz(T const x) noexcept
 {
-        return x ? clznz(x) : std::numeric_limits<UnsignedIntegral>::digits;
+        return x ? clznz(x) : std::numeric_limits<T>::digits;
 }
 
-template<class UnsignedIntegral>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsr(UnsignedIntegral const x) noexcept
+template<class T, std::enable_if_t<
+        std::is_unsigned_v<T> && std::is_integral_v<T>
+>...>
+XSTD_PP_CONSTEXPR_INTRINSIC auto bsr(T const x) noexcept
 {
         return x ? bsrnz(x) : -1;
 }
