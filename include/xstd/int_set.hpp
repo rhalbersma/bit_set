@@ -693,11 +693,11 @@ public:
 
                                 for (auto i = num_logical_blocks - 1; i > n_block; --i) {
                                         m_data[i] =
-                                                (m_data[i - n_block    ] >> R_shift) |
-                                                (m_data[i - n_block - 1] << L_shift)
+                                                static_cast<block_type>(m_data[i - n_block    ] >> R_shift) |
+                                                static_cast<block_type>(m_data[i - n_block - 1] << L_shift)
                                         ;
                                 }
-                                m_data[n_block] = m_data[0] >> R_shift;
+                                m_data[n_block] = static_cast<block_type>(m_data[0] >> R_shift);
                         }
                         std::fill_n(std::begin(m_data), n_block, zero);
                 }
@@ -725,11 +725,11 @@ public:
 
                                 for (auto i = 0; i < num_logical_blocks - 1 - n_block; ++i) {
                                         m_data[i] =
-                                                (m_data[i + n_block    ] << L_shift) |
-                                                (m_data[i + n_block + 1] >> R_shift)
+                                                static_cast<block_type>(m_data[i + n_block    ] << L_shift) |
+                                                static_cast<block_type>(m_data[i + n_block + 1] >> R_shift)
                                         ;
                                 }
-                                m_data[num_logical_blocks - 1 - n_block] = m_data[num_logical_blocks - 1] << L_shift;
+                                m_data[num_logical_blocks - 1 - n_block] = static_cast<block_type>(m_data[num_logical_blocks - 1] << L_shift);
                         }
                         std::fill_n(std::rbegin(m_data), n_block, zero);
                 }
