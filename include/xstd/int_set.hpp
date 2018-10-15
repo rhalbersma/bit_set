@@ -255,8 +255,8 @@ class int_set
         constexpr static auto num_logical_blocks = (N - 1 + block_size) / block_size;
         constexpr static auto num_storage_blocks = std::max(num_logical_blocks, 1);
         constexpr static auto num_bits = num_logical_blocks * block_size;
-        constexpr static auto excess_bits = num_bits - N;
-        static_assert(0 <= excess_bits); static_assert(excess_bits < block_size);
+        constexpr static auto num_excess_bits = num_bits - N;
+        static_assert(0 <= num_excess_bits); static_assert(num_excess_bits < block_size);
 
         class proxy_reference;
         class proxy_iterator;
@@ -347,7 +347,7 @@ public:
 
         [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto full() const noexcept
         {
-                if constexpr (excess_bits == 0) {
+                if constexpr (num_excess_bits == 0) {
                         if constexpr (num_logical_blocks == 0) {
                                 return true;
                         } else if constexpr (num_logical_blocks == 1) {
@@ -428,7 +428,7 @@ public:
 
         XSTD_PP_CONSTEXPR_ALGORITHM auto& fill() noexcept
         {
-                if constexpr (excess_bits == 0) {
+                if constexpr (num_excess_bits == 0) {
                         if constexpr (num_logical_blocks == 1) {
                                 m_data[0] = ones;
                         } else if constexpr (num_logical_blocks == 2) {
@@ -587,7 +587,7 @@ public:
 
         constexpr auto& complement() noexcept
         {
-                if constexpr (excess_bits == 0) {
+                if constexpr (num_excess_bits == 0) {
                         if constexpr (num_logical_blocks == 1) {
                                 m_data[0] = ~m_data[0];
                         } else if constexpr (num_logical_blocks == 2) {
@@ -747,15 +747,19 @@ public:
 private:
         constexpr static auto zero = static_cast<block_type>( 0);
         constexpr static auto ones = static_cast<block_type>(-1);
+
 #if defined(_MSC_VER)
         #pragma warning(push)
         #pragma warning(disable: 4309)
 #endif
-        constexpr static auto no_excess_bits = static_cast<block_type>(ones << excess_bits);
+
+        constexpr static auto no_excess_bits = static_cast<block_type>(ones << num_excess_bits);
+
 #if defined(_MSC_VER)
         #pragma warning(pop)
 #endif
-        static_assert(excess_bits ^ (ones == no_excess_bits));
+
+        static_assert(num_excess_bits ^ (ones == no_excess_bits));
         constexpr static auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
 
         constexpr static auto bit1(value_type const n) // Throws: Nothing.
@@ -789,7 +793,7 @@ private:
 
         constexpr auto clear_excess_bits() noexcept
         {
-                if constexpr (excess_bits != 0) {
+                if constexpr (num_excess_bits != 0) {
                         static_assert(num_logical_blocks >= 1);
                         m_data[num_logical_blocks - 1] &= no_excess_bits;
                 }
