@@ -26,32 +26,33 @@ using namespace xstd;
 
 using bitset_types = boost::mpl::vector
 <       std::bitset<  0>
+,       std::bitset<  1>
 ,       std::bitset<  8>
+,       std::bitset<  9>
 ,       std::bitset< 16>
+,       std::bitset< 17>
 ,       std::bitset< 24>
 ,       std::bitset< 32>
+,       std::bitset< 33>
 ,       std::bitset< 48>
 ,       std::bitset< 64>
+,       std::bitset< 65>
 ,       std::bitset< 96>
-,       std::bitset<128>
-,       std::bitset<192>
-,       std::bitset<256>
-,       std::bitset<384>
 ,       boost::dynamic_bitset<>
-// ,       int_set<  0, uint8_t>
-// ,       int_set<  1, uint8_t>
-// ,       int_set<  8, uint8_t>
-// ,       int_set<  9, uint8_t>
-// ,       int_set< 16, uint8_t>
-// ,       int_set< 17, uint8_t>
-// ,       int_set< 24, uint8_t>
-// ,       int_set<  0, uint16_t>
-// ,       int_set<  1, uint16_t>
-// ,       int_set< 16, uint16_t>
-// ,       int_set< 17, uint16_t>
-// ,       int_set< 32, uint16_t>
-// ,       int_set< 33, uint16_t>
-// ,       int_set< 48, uint16_t>
+,       int_set<  0, uint8_t>
+,       int_set<  1, uint8_t>
+,       int_set<  8, uint8_t>
+,       int_set<  9, uint8_t>
+,       int_set< 16, uint8_t>
+,       int_set< 17, uint8_t>
+,       int_set< 24, uint8_t>
+,       int_set<  0, uint16_t>
+,       int_set<  1, uint16_t>
+,       int_set< 16, uint16_t>
+,       int_set< 17, uint16_t>
+,       int_set< 32, uint16_t>
+,       int_set< 33, uint16_t>
+,       int_set< 48, uint16_t>
 ,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
 ,       int_set< 32, uint32_t>

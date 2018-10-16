@@ -20,6 +20,39 @@
 
 #if defined(__GNUG__)
 
+#define DO_PRAGMA(X) _Pragma(#X)
+#define PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED(X)   \
+        _Pragma("GCC diagnostic push")          \
+        DO_PRAGMA(GCC diagnostic ignored X)
+
+#define PRAGMA_GCC_DIAGNOSTIC_POP               \
+        _Pragma("GCC diagnostic pop")
+
+#else
+
+#define PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED(X)
+#define PRAGMA_GCC_DIAGNOSTIC_POP
+
+#endif
+
+#if defined(_MSC_VER)
+
+#define PRAGMA_VC_WARNING_PUSH_DISABLE(X)       \
+        __pragma(warning(push))                 \
+        __pragma(warning(disable: X))
+
+#define PRAGMA_VC_WARNING_POP                   \
+        __pragma(warning(pop))
+
+#else
+
+#define PRAGMA_VC_WARNING_PUSH_DISABLE(X)
+#define PRAGMA_VC_WARNING_POP
+
+#endif
+
+#if defined(__GNUG__)
+
 #define XSTD_PP_CONSTEXPR_INTRINSIC     constexpr
 
 #elif defined(_MSC_VER)
@@ -400,7 +433,9 @@ public:
         {
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_logical_blocks >= 1) {
+                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] |= bit1(where(x));
+                        PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 assert(contains(x));
                 return { { this, x }, true };
@@ -456,7 +491,9 @@ public:
         {
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_logical_blocks >= 1) {
+                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] &= ~bit1(where(x));
+                        PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 assert(!contains(x));
                 return 1;
@@ -508,7 +545,9 @@ public:
         {
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_logical_blocks >= 1) {
+                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(n)] ^= bit1(where(n));
+                        PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 return *this;
         }
@@ -589,26 +628,26 @@ public:
         {
                 if constexpr (num_excess_bits == 0) {
                         if constexpr (num_logical_blocks == 1) {
-                                m_data[0] = ~m_data[0];
+                                m_data[0] = static_cast<block_type>(~m_data[0]);
                         } else if constexpr (num_logical_blocks == 2) {
-                                m_data[0] = ~m_data[0];
-                                m_data[1] = ~m_data[1];
+                                m_data[0] = static_cast<block_type>(~m_data[0]);
+                                m_data[1] = static_cast<block_type>(~m_data[1]);
                         } else if constexpr (num_logical_blocks >= 3) {
                                 for (auto& block : m_data) {
-                                        block = ~block;
+                                        block = static_cast<block_type>(~block);
                                 }
                         }
                 } else {
                         if constexpr (num_logical_blocks == 1) {
-                                m_data[0] = ~m_data[0] & no_excess_bits;
+                                m_data[0] = static_cast<block_type>(~m_data[0]) & no_excess_bits;
                         } else if constexpr (num_logical_blocks == 2) {
-                                m_data[0] = ~m_data[0];
-                                m_data[1] = ~m_data[1] & no_excess_bits;
+                                m_data[0] = static_cast<block_type>(~m_data[0]);
+                                m_data[1] = static_cast<block_type>(~m_data[1]) & no_excess_bits;
                         } else if constexpr (num_logical_blocks >= 3) {
                                 for (auto i = 0; i < num_logical_blocks - 1; ++i) {
-                                        m_data[i] = ~m_data[i];
+                                        m_data[i] = static_cast<block_type>(~m_data[i]);
                                 }
-                                m_data[num_logical_blocks - 1] = ~m_data[num_logical_blocks - 1] & no_excess_bits;
+                                m_data[num_logical_blocks - 1] = static_cast<block_type>(~m_data[num_logical_blocks - 1]) & no_excess_bits;
                         }
                 }
                 return *this;
@@ -662,13 +701,19 @@ public:
         constexpr auto& operator-=(int_set const& other [[maybe_unused]]) noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
+                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] &= ~other.m_data[0];
+                        PRAGMA_GCC_DIAGNOSTIC_POP
                 } else if constexpr (num_logical_blocks == 2) {
+                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] &= ~other.m_data[0];
                         m_data[1] &= ~other.m_data[1];
+                        PRAGMA_GCC_DIAGNOSTIC_POP
                 } else if constexpr (num_logical_blocks >= 3) {
                         for (auto i = 0; i < num_logical_blocks; ++i) {
+                                PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                                 m_data[i] &= ~other.m_data[i];
+                                PRAGMA_GCC_DIAGNOSTIC_POP
                         }
                 }
                 return *this;
@@ -678,7 +723,9 @@ public:
         {
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_logical_blocks == 1) {
+                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] >>= n;
+                        PRAGMA_GCC_DIAGNOSTIC_POP
                 } else if constexpr (num_logical_blocks >= 2) {
                         if (n == 0) {
                                 return *this;
@@ -710,7 +757,9 @@ public:
         {
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_logical_blocks == 1) {
+                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] <<= n;
+                        PRAGMA_GCC_DIAGNOSTIC_POP
                 } else if constexpr (num_logical_blocks >= 2) {
                         if (n == 0) {
                                 return *this;
@@ -748,16 +797,9 @@ private:
         constexpr static auto zero = static_cast<block_type>( 0);
         constexpr static auto ones = static_cast<block_type>(-1);
 
-#if defined(_MSC_VER)
-        #pragma warning(push)
-        #pragma warning(disable: 4309)
-#endif
-
+        PRAGMA_VC_WARNING_PUSH_DISABLE(4309)
         constexpr static auto no_excess_bits = static_cast<block_type>(ones << num_excess_bits);
-
-#if defined(_MSC_VER)
-        #pragma warning(pop)
-#endif
+        PRAGMA_VC_WARNING_POP
 
         static_assert(num_excess_bits ^ (ones == no_excess_bits));
         constexpr static auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
