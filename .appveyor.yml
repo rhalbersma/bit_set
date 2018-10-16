@@ -33,4 +33,4 @@ build_script:
     
 test_script:
 - cmd: >-
-    ctest --verbose
+    ctest
