@@ -402,7 +402,7 @@ public:
                                 return
                                         std::all_of(std::begin(m_data), std::prev(std::end(m_data)), [](auto const block) {
                                                 return block == ones;
-                                        }) && m_data[num_logical_blocks - 1] == no_excess_bits;
+                                        }) && m_data[num_logical_blocks - 1] == no_excess_bits
                                 ;
                         }
                 }
