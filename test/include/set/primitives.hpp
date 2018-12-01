@@ -310,6 +310,16 @@ struct mem_count
         }
 };
 
+struct mem_contains
+{
+        template<class X>
+        auto operator()(X const& b, typename X::key_type const& k) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_same_v<decltype(b.contains(k)), bool>);
+                BOOST_CHECK_EQUAL(b.contains(k), b.find(k) != b.end());
+        }
+};
+
 struct mem_lower_bound
 {
         template<class X>

@@ -552,17 +552,6 @@ public:
                 return *this;
         }
 
-        [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
-        {
-                assert(0 <= x); assert(x < N);
-                if constexpr (num_logical_blocks >= 1) {
-                        if (m_data[which(x)] & bit1(where(x))) {
-                                return true;
-                        }
-                }
-                return false;
-        }
-
         constexpr auto find(key_type const& x) // Throws: Nothing.
         {
                 assert(0 <= x); assert(x < N);
@@ -582,42 +571,53 @@ public:
                 return contains(x);
         }
 
-        constexpr auto lower_bound(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
+        {
+                assert(0 <= x); assert(x < N);
+                if constexpr (num_logical_blocks >= 1) {
+                        if (m_data[which(x)] & bit1(where(x))) {
+                                return true;
+                        }
+                }
+                return false;
+        }
+
+        XSTD_PP_CONSTEXPR_INTRINSIC auto lower_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
                 assert(0 <= x); assert(x < N);
                 return { this, find_first_from(x) };
         }
 
-        constexpr auto lower_bound(key_type const& x) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC auto lower_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(0 <= x); assert(x < N);
                 return { this, find_first_from(x) };
         }
 
-        constexpr auto upper_bound(key_type const& x) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC auto upper_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
                 assert(0 <= x); assert(x < N);
                 return { this, find_first_from(x + 1) };
         }
 
-        constexpr auto upper_bound(key_type const& x) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC auto upper_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(0 <= x); assert(x < N);
                 return { this, find_first_from(x + 1) };
         }
 
-        constexpr auto equal_range(key_type const& x) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC auto equal_range(key_type const& x) // Throws: Nothing.
                 -> std::pair<iterator, iterator>
         {
                 assert(0 <= x); assert(x < N);
                 return { lower_bound(x), upper_bound(x) };
         }
 
-        constexpr auto equal_range(key_type const& x) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC auto equal_range(key_type const& x) const // Throws: Nothing.
                 -> std::pair<const_iterator, const_iterator>
         {
                 assert(0 <= x); assert(x < N);

@@ -10,8 +10,6 @@
 #include <cassert>              // assert
 #include <initializer_list>     // initializer_list
 
-#include <iostream>
-
 namespace xstd {
 
 template<class T, typename T::value_type L>
