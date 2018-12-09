@@ -26,7 +26,7 @@ before_build:
 
     cd %THIRD_PARTY_DIR%
 
-    git clone https://github.com/HowardHinnant/hash_append.git
+    git clone https://github.com/rhalbersma/hash_append.git
 
     cd %APPVEYOR_BUILD_FOLDER%
 
