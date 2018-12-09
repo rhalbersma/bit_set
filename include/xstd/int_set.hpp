@@ -1362,15 +1362,4 @@ template<int N, class Block>
         return is.empty();
 }
 
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html
-template<class HashAlgorithm, int N, class Block>
-auto hash_append(HashAlgorithm& h, int_set<N, Block> const& is) noexcept
-{
-        using xstd::hash_append;
-        for (int const elem : is) {
-                hash_append(h, elem);
-        }
-        hash_append(h, is.size());
-}
-
 }       // namespace xstd

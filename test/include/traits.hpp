@@ -60,13 +60,5 @@ constexpr static auto has_back_v<IntSet, std::void_t<decltype(
         std::declval<IntSet>().back()
 )>> = true;
 
-template<class HashAlgorithm, class IntSet, class = void>
-constexpr static auto has_hash_append_v = false;
-
-template<class HashAlgorithm, class IntSet>
-constexpr static auto has_hash_append_v<HashAlgorithm, IntSet, std::void_t<decltype(
-        hash_append(std::declval<HashAlgorithm>(), std::declval<IntSet>())
-)>> = true;
-
 }       // namespace tti
 }       // namespace xstd

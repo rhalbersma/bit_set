@@ -106,7 +106,6 @@ Most `bitset` expressions have a direct translation to equivalent `int_set` expr
 | `bs.none()`                | `is.empty()`                           | |
 | `bs[pos]`                  | `is.contains(pos)`                     | |
 | `bs[pos] = val`            | `val ? is.insert(pos) : is.erase(pos)` | |
-| `std::hash<std::bitset<N>>{}(bs)` | `std::uhash<>{}(is)`            | [N3980: Types don't know #](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html) |
 
 The semantic differences are that `int_set` has a signed integral `size_type` and does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this behavior is undefined.
 
@@ -130,8 +129,9 @@ Functionality from `bitset` that is not in `int_set`
   - **Constructors**: No construction from `unsigned long long`, `std::string` or `char const*`.
   - **Conversion**: No conversion to `unsigned long`, `unsigned long long` and `std::string`.
   - **I/O**: No overloaded I/O streaming through overloaded `operator>>` and `operator<<`.
+  - **Hashing**: No specialization for `std::hash<>`.
 
-Much of this functionality can be easily provided by user-defined code. For instance, the missing `bitset` constructors and input streaming can be replaced by the `int_set` constructors taking an iterator range or an `initalizer_list`. Similarly, the missing `bitset` conversion functions and output streaming can be replaced by the `copy` algorithm over the `int_set` iterators into a suitable `ostream_iterator`.
+Much of this functionality can be easily provided by user-defined code. For instance, the missing `bitset` constructors and input streaming can be replaced by the `int_set` constructors taking an iterator range or an `initalizer_list`. Similarly, the missing `bitset` conversion functions and output streaming can be replaced by the `copy` algorithm over the `int_set` iterators into a suitable `ostream_iterator`. The hashing functionality can be obtained through third-party libraries such as [N3980](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html).
 
 Composable data-parallel algorithms on sorted ranges
 ----------------------------------------------------

@@ -52,7 +52,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     )
 endif()
 
-set(third_party_include_dir ${PROJECT_SOURCE_DIR}/../third_party)
 set(test_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(test_source_dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
 file(GLOB_RECURSE targets RELATIVE ${test_source_dir} *.cpp)
@@ -72,7 +71,6 @@ foreach(t ${targets})
     )
 
     target_include_directories(${target_id} PRIVATE
-        ${third_party_include_dir}
         ${test_include_dir}
     )
 
