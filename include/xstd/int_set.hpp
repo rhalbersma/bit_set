@@ -409,6 +409,7 @@ public:
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC auto size() const noexcept
+                -> size_type
         {
                 if constexpr (num_logical_blocks == 0) {
                         return 0;
@@ -424,6 +425,7 @@ public:
         }
 
         constexpr auto max_size() const noexcept
+                -> size_type
         {
                 return N;
         }
@@ -434,7 +436,7 @@ public:
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
-                        m_data[which(x)] |= bit1(where(x));
+                        m_data[which(x)] |= single_bit_mask(where(x));
                         PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 assert(contains(x));
@@ -492,7 +494,7 @@ public:
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
-                        m_data[which(x)] &= ~bit1(where(x));
+                        m_data[which(x)] &= ~single_bit_mask(where(x));
                         PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 assert(!contains(x));
@@ -546,7 +548,7 @@ public:
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
-                        m_data[which(n)] ^= bit1(where(n));
+                        m_data[which(n)] ^= single_bit_mask(where(n));
                         PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 return *this;
@@ -575,7 +577,7 @@ public:
         {
                 assert(0 <= x); assert(x < N);
                 if constexpr (num_logical_blocks >= 1) {
-                        if (m_data[which(x)] & bit1(where(x))) {
+                        if (m_data[which(x)] & single_bit_mask(where(x))) {
                                 return true;
                         }
                 }
@@ -787,10 +789,15 @@ public:
                 return *this;
         }
 
-        template<class HashAlgorithm>
-        friend constexpr auto hash_append(HashAlgorithm& h, int_set const& is) noexcept
+        constexpr auto byte_stream() const noexcept
+                -> std::pair<void const*, std::size_t>
         {
-                h(is.data(), num_bits / std::numeric_limits<unsigned char>::digits);
+                constexpr auto byte_size = std::numeric_limits<unsigned char>::digits;
+                return
+                {
+                        static_cast<void const*>(&m_data[0]),
+                        static_cast<std::size_t>((N - 1 + byte_size) / byte_size)
+                };
         }
 
 private:
@@ -804,7 +811,7 @@ private:
         static_assert(num_excess_bits ^ (ones == no_excess_bits));
         constexpr static auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
 
-        constexpr static auto bit1(value_type const n) // Throws: Nothing.
+        constexpr static auto single_bit_mask(value_type const n) // Throws: Nothing.
         {
                 static_assert(num_logical_blocks >= 1);
                 assert(0 <= n); assert(n < block_size);
@@ -839,11 +846,6 @@ private:
                         static_assert(num_logical_blocks >= 1);
                         m_data[num_logical_blocks - 1] &= no_excess_bits;
                 }
-        }
-
-        constexpr auto const* data() const noexcept
-        {
-                return m_data;
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC auto find_front() const // Throws: Nothing.
@@ -1369,6 +1371,14 @@ template<int N, class Block>
         -> decltype(is.empty())
 {
         return is.empty();
+}
+
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html
+template<class HashAlgorithm, int N, class Block>
+auto hash_append(HashAlgorithm& hash, int_set<N, Block> const& is) noexcept
+{
+        auto const [ key, len ] = is.byte_stream();
+        hash(key, len);
 }
 
 }       // namespace xstd
