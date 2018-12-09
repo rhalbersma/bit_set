@@ -789,17 +789,6 @@ public:
                 return *this;
         }
 
-        constexpr auto byte_stream() const noexcept
-                -> std::pair<void const*, std::size_t>
-        {
-                constexpr auto byte_size = std::numeric_limits<unsigned char>::digits;
-                return
-                {
-                        static_cast<void const*>(&m_data[0]),
-                        static_cast<std::size_t>((N - 1 + byte_size) / byte_size)
-                };
-        }
-
 private:
         constexpr static auto zero = static_cast<block_type>( 0);
         constexpr static auto ones = static_cast<block_type>(-1);
@@ -1375,10 +1364,13 @@ template<int N, class Block>
 
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html
 template<class HashAlgorithm, int N, class Block>
-auto hash_append(HashAlgorithm& hash, int_set<N, Block> const& is) noexcept
+auto hash_append(HashAlgorithm& h, int_set<N, Block> const& is) noexcept
 {
-        auto const [ key, len ] = is.byte_stream();
-        hash(key, len);
+        using xstd::hash_append;
+        for (auto const& elem : is) {
+                hash_append(h, elem);
+        }
+        hash_append(h, is.size());
 }
 
 }       // namespace xstd

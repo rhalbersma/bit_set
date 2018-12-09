@@ -106,7 +106,7 @@ Most `bitset` expressions have a direct translation to equivalent `int_set` expr
 | `bs.none()`                | `is.empty()`                           | |
 | `bs[pos]`                  | `is.contains(pos)`                     | |
 | `bs[pos] = val`            | `val ? is.insert(pos) : is.erase(pos)` | |
-| `std::hash<std::bitset<N>>{}(bs)` | `std::uhash<HashAlgorithm>{}(is)` | [N3980: Types don't know #](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html) |
+| `std::hash<std::bitset<N>>{}(bs)` | `std::uhash<>{}(is)`            | [N3980: Types don't know #](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html) |
 
 The semantic differences are that `int_set` has a signed integral `size_type` and does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this behavior is undefined.
 

@@ -6,6 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <traits.hpp>                   // has_forward_iterator_v, has_hinted_insert_v, has_op_minus_assign_v, has_resize_v
+#include <hash_append/hash_append.h>    // uhash
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_LE, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <algorithm>                    // copy_if, equal, find, includes, lexicographical_compare,
                                         // set_difference, set_intersection, set_symmetric_difference, set_union, transform
@@ -440,8 +441,18 @@ struct op_at
         }
 };
 
-
-// [bitset.hash]/1 describes std::hash specialization
+template<class Hash = acme::siphash>
+struct fn_hash
+{
+        template<class BitSet>
+        auto operator()(BitSet const& bs) const noexcept
+        {
+                if constexpr (tti::has_hash_append_v<Hash, BitSet>) {
+                        auto const v = std::vector<int>(bs.begin(), bs.end());  // [bitset.hash]/1
+                        BOOST_CECK_EQUAL(xstd::uhash<Hash>{}(bs), xstd::uhash<Hash>{}(v));
+                }
+        }
+};
 
 struct op_bitand
 {

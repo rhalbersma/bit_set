@@ -164,6 +164,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 });
         });
 
+        all_singleton_sets<T>(fn_hash{});
+        all_cardinality_sets<T>(fn_hash{});
+
         all_singleton_sets<T>(op_bitand{});
         all_singleton_sets<T>(op_bitor{});
         all_singleton_sets<T>(op_xor{});

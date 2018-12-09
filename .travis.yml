@@ -51,6 +51,8 @@ install:
 
 before_script:
 - |
+  cd ${THIRD_PARTY_DIR}
+  git clone https://github.com/HowardHinnant/hash_append.git
   cd ${TRAVIS_BUILD_DIR}
   mkdir build && cd build
   cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DBOOST_ROOT="${BOOST_DIR}" -DBOOST_LIBRARYDIR="${BOOST_DIR}/stage/lib"

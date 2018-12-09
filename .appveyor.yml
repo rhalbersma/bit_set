@@ -20,6 +20,14 @@ before_build:
 - cmd: >-
     set PATH=%BOOST_LIBRARYDIR%;%PATH%
 
+    set THIRD_PARTY_DIR="%APPVEYOR_BUILD_FOLDER%/../third_party"
+
+    mkdir %THIRD_PARTY_DIR%
+
+    cd %THIRD_PARTY_DIR%
+
+    git clone https://github.com/HowardHinnant/hash_append.git
+
     cd %APPVEYOR_BUILD_FOLDER%
 
     mkdir build
