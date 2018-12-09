@@ -5,6 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <xstd/int_set.hpp>
 #include <traits.hpp>                   // has_forward_iterator_v, has_hinted_insert_v, has_op_minus_assign_v, has_resize_v
 #include <hash_append/hash_append.h>    // uhash
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_LE, BOOST_CHECK_NE, BOOST_CHECK_THROW
