@@ -449,7 +449,7 @@ struct fn_hash
         {
                 if constexpr (tti::has_hash_append_v<Hash, BitSet>) {
                         auto const v = std::vector<int>(bs.begin(), bs.end());  // [bitset.hash]/1
-                        BOOST_CECK_EQUAL(xstd::uhash<Hash>{}(bs), xstd::uhash<Hash>{}(v));
+                        BOOST_CHECK_EQUAL(xstd::uhash<Hash>{}(bs), xstd::uhash<Hash>{}(v));
                 }
         }
 };
