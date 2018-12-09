@@ -1367,7 +1367,7 @@ template<class HashAlgorithm, int N, class Block>
 auto hash_append(HashAlgorithm& h, int_set<N, Block> const& is) noexcept
 {
         using xstd::hash_append;
-        for (auto const& elem : is) {
+        for (auto const elem : is) {
                 hash_append(h, elem);
         }
         hash_append(h, is.size());
