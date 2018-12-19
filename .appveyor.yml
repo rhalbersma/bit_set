@@ -19,11 +19,7 @@ install:
 - cmd: >-
     vcpkg upgrade
 
-    vcpkg install --triplet "%platform%"-windows
-      boost-container
-      boost-dynamic-bitset
-      boost-mpl
-      boost-test
+    vcpkg install --triplet "%platform%"-windows boost-container boost-dynamic-bitset boost-mpl boost-test
 
 before_build:
 - cmd: >-
