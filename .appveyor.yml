@@ -3,33 +3,37 @@ image:
   - Visual Studio 2017 Preview
 
 environment:
-  BOOST_ROOT: C:/Libraries/boost_1_67_0
   matrix:
     - platform: x86
       GENERATOR: "Visual Studio 15 2017"
-      BOOST_LIBRARYDIR: "%BOOST_ROOT%/lib32-msvc-14.1"
     - platform: x64
       GENERATOR: "Visual Studio 15 2017 Win64"
-      BOOST_LIBRARYDIR: "%BOOST_ROOT%/lib64-msvc-14.1"
 
 configuration:
   - Debug
   - Release
 
+cache:
+- c:\tools\vcpkg\installed\
+
+install:
+- cmd: >-
+    vcpkg upgrade
+
+    vcpkg install boost:"%platform%"-windows
+
 before_build:
 - cmd: >-
-    set PATH=%BOOST_LIBRARYDIR%;%PATH%
-
     cd %APPVEYOR_BUILD_FOLDER%
 
     mkdir build
 
     cd build
 
-    cmake .. -G "%GENERATOR%" -DCMAKE_BUILD_TYPE="%configuration%"
+    cmake .. -G "%GENERATOR%" -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
 
 build_script:
-- cmake --build .
+- cmake --build . --config "%configuration%"
 
 test_script:
 - ctest
