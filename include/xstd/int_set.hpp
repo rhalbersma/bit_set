@@ -344,7 +344,7 @@ public:
         XSTD_PP_CONSTEXPR_INTRINSIC auto rend()    const noexcept { return const_reverse_iterator{begin()}; }
 
         XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin()  const noexcept { return const_iterator{begin()}; }
-        XSTD_PP_CONSTEXPR_INTRINSIC auto cend()    const noexcept { return const_iterator{end()};   }
+        constexpr                   auto cend()    const noexcept { return const_iterator{end()};   }
         constexpr                   auto crbegin() const noexcept { return const_reverse_iterator{rbegin()}; }
         XSTD_PP_CONSTEXPR_INTRINSIC auto crend()   const noexcept { return const_reverse_iterator{rend()};   }
 
@@ -424,7 +424,7 @@ public:
                 }
         }
 
-        constexpr auto max_size() const noexcept
+        constexpr static auto max_size() noexcept
                 -> size_type
         {
                 return N;
@@ -1293,20 +1293,6 @@ constexpr auto end(int_set<N, Block> const& is)
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin(int_set<N, Block> const& is) noexcept(noexcept(xstd::begin(is)))
-        -> decltype(xstd::begin(is))
-{
-        return xstd::begin(is);
-}
-
-template<int N, class Block>
-constexpr auto cend(int_set<N, Block> const& is) noexcept(noexcept(xstd::end(is)))
-        -> decltype(xstd::end(is))
-{
-        return xstd::end(is);
-}
-
-template<int N, class Block>
 constexpr auto rbegin(int_set<N, Block>& is)
         -> decltype(is.rbegin())
 {
@@ -1332,6 +1318,20 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, Block> const& is)
         -> decltype(is.rend())
 {
         return is.rend();
+}
+
+template<int N, class Block>
+XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin(int_set<N, Block> const& is) noexcept(noexcept(xstd::begin(is)))
+        -> decltype(xstd::begin(is))
+{
+        return xstd::begin(is);
+}
+
+template<int N, class Block>
+constexpr auto cend(int_set<N, Block> const& is) noexcept(noexcept(xstd::end(is)))
+        -> decltype(xstd::end(is))
+{
+        return xstd::end(is);
 }
 
 template<int N, class Block>
