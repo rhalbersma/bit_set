@@ -11,7 +11,8 @@
 #include <cstdint>              // uint64_t
 #include <functional>           // less
 #include <initializer_list>     // initializer_list
-#include <iterator>             // bidirectional_iterator_tag, begin, end, next, prev, rbegin, rend, reverse_iterator
+#include <iosfwd>               // basic_istream, basic_ostream
+#include <iterator>             // bidirectional_iterator_tag, begin, end, next, ostream_iterator, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
 #include <tuple>                // tie
@@ -1361,5 +1362,16 @@ template<int N, class Block>
 {
         return is.empty();
 }
+
+template<class CharT, class Traits, int N, class Block>
+auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, int_set<N, Block>& is)
+{
+        using T = typename int_set<N, Block>::value_type;
+        std::copy(is.begin(), is.end(), std::ostream_iterator<T, CharT, Traits>{ostr, ','});
+        return ostr;
+}
+
+template<class CharT, class Traits, int N, class Block>
+auto& operator>>(std::basic_istream<CharT, Traits>& istr, int_set<N, Block>& is);
 
 }       // namespace xstd
