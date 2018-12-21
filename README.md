@@ -98,8 +98,8 @@ Most `bitset` expressions have a direct translation to equivalent `int_set` expr
 | `bs.reset(pos)`            | `is.erase(pos)`                        | does not do bounds-checking or throw `out_of_range` |
 | `bs.flip()`                | `is.complement()`                      | |
 | `bs.flip(pos)`             | `is.replace(pos)`                      | does not do bounds-checking or throw `out_of_range` |
-| `bs.count()`               | `is.size()`                            | `size_type` is signed                               |
-| `bs.size()`                | `is.max_size()`                        | `size_type` is signed                               |
+| `bs.count()`               | `is.size()`                            | returns a signed `size_type`                        |
+| `bs.size()`                | `is.max_size()`                        | returns a signed `size_type`; is a `static` member  |
 | `bs.test(pos)`             | `is.contains(pos)`                     | does not do bounds-checking or throw `out_of_range` |
 | `bs.all()`                 | `is.full()`                            | |
 | `bs.any()`                 | `!is.empty()`                          | |
