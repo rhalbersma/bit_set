@@ -25,8 +25,8 @@ BOOST_AUTO_TEST_SUITE(Linear)
 using namespace xstd;
 
 using bitset_types = boost::mpl::vector
-<       std::bitset<  0>
-,       std::bitset<  1>
+<       std::bitset<  1>
+//,       std::bitset<  1>
 ,       std::bitset<  8>
 ,       std::bitset<  9>
 ,       std::bitset< 16>
@@ -39,21 +39,21 @@ using bitset_types = boost::mpl::vector
 ,       std::bitset< 65>
 ,       std::bitset< 96>
 ,       boost::dynamic_bitset<>
-,       int_set<  0, uint8_t>
+//,       int_set<  0, uint8_t>
 ,       int_set<  1, uint8_t>
 ,       int_set<  8, uint8_t>
 ,       int_set<  9, uint8_t>
 ,       int_set< 16, uint8_t>
 ,       int_set< 17, uint8_t>
 ,       int_set< 24, uint8_t>
-,       int_set<  0, uint16_t>
+//,       int_set<  0, uint16_t>
 ,       int_set<  1, uint16_t>
 ,       int_set< 16, uint16_t>
 ,       int_set< 17, uint16_t>
 ,       int_set< 32, uint16_t>
 ,       int_set< 33, uint16_t>
 ,       int_set< 48, uint16_t>
-,       int_set<  0, uint32_t>
+//,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
 ,       int_set< 32, uint32_t>
 ,       int_set< 33, uint32_t>
@@ -61,7 +61,7 @@ using bitset_types = boost::mpl::vector
 ,       int_set< 65, uint32_t>
 ,       int_set< 96, uint32_t>
 #if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
-,       int_set<  0, uint64_t>
+//,       int_set<  0, uint64_t>
 ,       int_set<  1, uint64_t>
 ,       int_set< 64, uint64_t>
 ,       int_set< 65, uint64_t>
@@ -70,7 +70,7 @@ using bitset_types = boost::mpl::vector
 ,       int_set<192, uint64_t>
 #endif
 #if defined(__GNUG__)
-,       int_set<  0, __uint128_t>
+//,       int_set<  0, __uint128_t>
 ,       int_set<  1, __uint128_t>
 ,       int_set<128, __uint128_t>
 ,       int_set<129, __uint128_t>
