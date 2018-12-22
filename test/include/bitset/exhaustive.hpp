@@ -13,10 +13,10 @@ namespace xstd {
 template<class T, int L>
 auto const limit_v = tti::has_resize_v<T> ? static_cast<decltype(fn_size(std::declval<T>()))>(L) : fn_size(T{});
 
-constexpr auto L0 = 256;
-constexpr auto L1 = 128;
-constexpr auto L2 =  64;
-constexpr auto L3 =  32;
+inline constexpr auto L0 = 256;
+inline constexpr auto L1 = 128;
+inline constexpr auto L2 =  64;
+inline constexpr auto L3 =  32;
 
 // NOTE: these tests are O(1)
 

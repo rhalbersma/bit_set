@@ -2,6 +2,7 @@ image:
   - Visual Studio 2017
 
 environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
   matrix:
     - platform: x86
       GENERATOR: "Visual Studio 15 2017"
@@ -13,26 +14,20 @@ configuration:
   - Release
 
 cache:
-- c:\tools\vcpkg\installed\
+  - c:\tools\vcpkg\installed\
 
 install:
-- cmd: >-
-    vcpkg upgrade
-
-    vcpkg install --triplet "%platform%"-windows boost-container boost-dynamic-bitset boost-mpl boost-test
+  - vcpkg install --triplet "%platform%"-windows boost-container boost-dynamic-bitset boost-mpl boost-test
 
 before_build:
-- cmd: >-
-    cd %APPVEYOR_BUILD_FOLDER%
-
-    mkdir build
-
-    cd build
-
-    cmake .. -G "%GENERATOR%" -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - mkdir build
+  - cd build
+  - cmake .. -G "%GENERATOR%"
+    "-DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
 build_script:
-- cmake --build . --config "%configuration%"
+  - cmake --build . --config %configuration%
 
 test_script:
-- ctest
+  - ctest
