@@ -11,8 +11,7 @@
 #include <cstdint>              // uint64_t
 #include <functional>           // less
 #include <initializer_list>     // initializer_list
-#include <iosfwd>               // basic_istream, basic_ostream
-#include <iterator>             // bidirectional_iterator_tag, begin, end, next, ostream_iterator, prev, rbegin, rend, reverse_iterator
+#include <iterator>             // bidirectional_iterator_tag, begin, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
 #include <tuple>                // tie
@@ -105,6 +104,7 @@ template<class T, std::enable_if_t<
 >...>
 XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(T const x) // Throws: Nothing.
 {
+        assert(x != 0);
         return ctznz(x);
 }
 
@@ -295,7 +295,7 @@ class int_set
         class proxy_reference;
         class proxy_iterator;
 
-        Block m_data[num_storage_blocks]{};  // zero-initializated by default
+        Block m_data[num_storage_blocks]{};     // zero-initialization
 public:
         using key_type               = int;
         using key_compare            = std::less<key_type>;
@@ -314,7 +314,7 @@ public:
         using block_type             = Block;
         using insert_return_type     = void;
 
-        int_set() = default;
+        int_set() = default;                    // zero-initialization
 
         template<class InputIterator>
         constexpr int_set(InputIterator first, InputIterator last) // Throws: Nothing.
@@ -504,6 +504,7 @@ public:
 
         constexpr auto erase(const_iterator pos) // Throws: Nothing.
         {
+                assert(0 <= x); assert(x < N);
                 erase(*pos++);
                 return pos;
         }
@@ -1266,112 +1267,101 @@ XSTD_PP_CONSTEXPR_SWAP auto swap(int_set<N, Block>& lhs, int_set<N, Block>& rhs)
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto begin(int_set<N, Block>& is)
+XSTD_PP_CONSTEXPR_INTRINSIC auto begin(int_set<N, Block>& is) noexcept
         -> decltype(is.begin())
 {
         return is.begin();
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto begin(int_set<N, Block> const& is)
+XSTD_PP_CONSTEXPR_INTRINSIC auto begin(int_set<N, Block> const& is) noexcept
         -> decltype(is.begin())
 {
         return is.begin();
 }
 
 template<int N, class Block>
-constexpr auto end(int_set<N, Block>& is)
+constexpr auto end(int_set<N, Block>& is) noexcept
         -> decltype(is.end())
 {
         return is.end();
 }
 
 template<int N, class Block>
-constexpr auto end(int_set<N, Block> const& is)
+constexpr auto end(int_set<N, Block> const& is) noexcept
         -> decltype(is.end())
 {
         return is.end();
 }
 
 template<int N, class Block>
-constexpr auto rbegin(int_set<N, Block>& is)
+constexpr auto rbegin(int_set<N, Block>& is) noexcept
         -> decltype(is.rbegin())
 {
         return is.rbegin();
 }
 
 template<int N, class Block>
-constexpr auto rbegin(int_set<N, Block> const& is)
+constexpr auto rbegin(int_set<N, Block> const& is) noexcept
         -> decltype(is.rbegin())
 {
         return is.rbegin();
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, Block>& is)
+XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, Block>& is) noexcept
         -> decltype(is.rend())
 {
         return is.rend();
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, Block> const& is)
+XSTD_PP_CONSTEXPR_INTRINSIC auto rend(int_set<N, Block> const& is) noexcept
         -> decltype(is.rend())
 {
         return is.rend();
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin(int_set<N, Block> const& is) noexcept(noexcept(xstd::begin(is)))
+XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin(int_set<N, Block> const& is) noexcept
         -> decltype(xstd::begin(is))
 {
         return xstd::begin(is);
 }
 
 template<int N, class Block>
-constexpr auto cend(int_set<N, Block> const& is) noexcept(noexcept(xstd::end(is)))
+constexpr auto cend(int_set<N, Block> const& is) noexcept
         -> decltype(xstd::end(is))
 {
         return xstd::end(is);
 }
 
 template<int N, class Block>
-constexpr auto crbegin(int_set<N, Block> const& is)
+constexpr auto crbegin(int_set<N, Block> const& is) noexcept
         -> decltype(xstd::rbegin(is))
 {
         return xstd::rbegin(is);
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto crend(int_set<N, Block> const& is)
+XSTD_PP_CONSTEXPR_INTRINSIC auto crend(int_set<N, Block> const& is) noexcept
         -> decltype(xstd::rend(is))
 {
         return xstd::rend(is);
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto size(int_set<N, Block> const& is)
+XSTD_PP_CONSTEXPR_ALGORITHM auto size(int_set<N, Block> const& is) noexcept
         -> decltype(is.size())
 {
         return is.size();
 }
 
 template<int N, class Block>
-[[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(int_set<N, Block> const& is)
+[[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(int_set<N, Block> const& is) noexcept
         -> decltype(is.empty())
 {
         return is.empty();
 }
-
-template<class CharT, class Traits, int N, class Block>
-auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, int_set<N, Block>& is)
-{
-        using T = typename int_set<N, Block>::value_type;
-        std::copy(is.begin(), is.end(), std::ostream_iterator<T, CharT, Traits>{ostr, ','});
-        return ostr;
-}
-
-template<class CharT, class Traits, int N, class Block>
-auto& operator>>(std::basic_istream<CharT, Traits>& istr, int_set<N, Block>& is);
 
 }       // namespace xstd
