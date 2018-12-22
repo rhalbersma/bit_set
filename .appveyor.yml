@@ -17,7 +17,11 @@ cache:
   - c:\tools\vcpkg\installed\
 
 install:
-  - vcpkg install --triplet "%platform%"-windows boost-container boost-dynamic-bitset boost-mpl boost-test
+  - vcpkg install --triplet "%platform%"-windows
+    boost-container
+    boost-dynamic-bitset
+    boost-mpl
+    boost-test
 
 before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
