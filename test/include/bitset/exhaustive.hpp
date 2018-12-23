@@ -8,11 +8,11 @@
 #include <traits.hpp>   // has_resize_v
 #include <utility>      // declval
 
-#if defined(_MSC_VER) && defined(NDEBUG)
-        // Visual C++ in Release mode will generate C4702 (unreachable code) errors for int_set<N> if N == 0 is defined as const
-        #define XSTD_PP_MSVC_RELEASE_MODE_CONST /* const */
+// Visual C++ in Release mode will generate C4702 (unreachable code) errors for int_set<N> for N == 0 if N is defined as const
+#if defined(_MSC_VER) && !defined(_DEBUG)
+#       define XSTD_PP_MSVC_RELEASE_MODE_CONST  /* const */
 #else
-        #define XSTD_PP_MSVC_RELEASE_MODE_CONST const
+#       define XSTD_PP_MSVC_RELEASE_MODE_CONST  const
 #endif
 
 namespace xstd {
