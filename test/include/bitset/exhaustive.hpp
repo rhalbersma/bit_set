@@ -12,8 +12,10 @@
 
 namespace xstd {
 
+#define XSTD_PP_MSVC_RELEASE_MODE_CONST /* const */
+
 template<class T, int L>
-auto limit_v = tti::has_resize_v<T> ? static_cast<decltype(fn_size(std::declval<T>()))>(L) : fn_size(T{});
+auto XSTD_PP_MSVC_RELEASE_MODE_CONST limit_v = tti::has_resize_v<T> ? static_cast<decltype(fn_size(std::declval<T>()))>(L) : fn_size(T{});
 
 inline constexpr auto L0 = 256;
 inline constexpr auto L1 = 128;
@@ -25,7 +27,7 @@ inline constexpr auto L3 =  32;
 template<class BitSet, class UnaryFunction>
 auto empty_set(UnaryFunction fun)
 {
-        auto const N = limit_v<BitSet, L0>;
+        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L0>;
         BitSet bs0; resize(bs0, N);
         fun(bs0);
 }
@@ -33,7 +35,7 @@ auto empty_set(UnaryFunction fun)
 template<class BitSet, class UnaryFunction>
 auto full_set(UnaryFunction fun)
 {
-        auto const N = limit_v<BitSet, L0>;
+        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L0>;
         BitSet bsN; resize(bsN, N, true);
         fun(bsN);
 }
@@ -43,7 +45,7 @@ auto full_set(UnaryFunction fun)
 template<class BitSet, class UnaryFunction>
 auto all_values(UnaryFunction fun)
 {
-        auto const N = limit_v<BitSet, L1>;
+        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -54,7 +56,7 @@ auto all_values(UnaryFunction fun)
 template<class BitSet, class UnaryFunction>
 auto all_cardinality_sets(UnaryFunction fun)
 {
-        auto const N = limit_v<BitSet, L1>;
+        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i <= N; ++i) {
@@ -70,7 +72,7 @@ auto all_cardinality_sets(UnaryFunction fun)
 template<class BitSet, class UnaryFunction>
 auto all_singleton_sets(UnaryFunction fun)
 {
-        auto const N = limit_v<BitSet, L1>;
+        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -84,7 +86,7 @@ auto all_singleton_sets(UnaryFunction fun)
 template<class BitSet, class BinaryFunction>
 auto all_singleton_set_pairs(BinaryFunction fun)
 {
-        auto N = limit_v<BitSet, L2>;
+        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L2>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -101,7 +103,7 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 template<class BitSet, class TernaryFunction>
 auto all_singleton_set_triples(TernaryFunction fun)
 {
-        auto N = limit_v<BitSet, L3>;
+        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L3>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
