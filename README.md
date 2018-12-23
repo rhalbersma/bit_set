@@ -1,6 +1,6 @@
-[![Language](https://img.shields.io/badge/language-C++-blue.svg)](https://isocpp.org/) 
-[![Standard](https://img.shields.io/badge/c%2B%2B-17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization) 
-[![License](https://img.shields.io/badge/license-Boost-blue.svg)](https://opensource.org/licenses/BSL-1.0) 
+[![Language](https://img.shields.io/badge/language-C++-blue.svg)](https://isocpp.org/)
+[![Standard](https://img.shields.io/badge/c%2B%2B-17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
+[![License](https://img.shields.io/badge/license-Boost-blue.svg)](https://opensource.org/licenses/BSL-1.0)
 [![](https://tokei.rs/b1/github/rhalbersma/int_set)](https://github.com/rhalbersma/int_set)
 
 Rebooting the `std::bitset` franchise
@@ -87,11 +87,11 @@ The main difference between `set<int>` and `int_set<N>` is that an `int_set<N>` 
 Functionality from `set<int>` that is not in `int_set`
 ----------------------------------------------------
 
-`int_set<N>` provides the same functionality as `std::set<int, std::less<int>, Allocator>`, where `Allocator` statically allocates memory to store `N` integers. This means that `int_set` does not provide customization for: 
+`int_set<N>` provides the same functionality as `std::set<int, std::less<int>, Allocator>`, where `Allocator` statically allocates memory to store `N` integers. This means that `int_set` does not provide customization for:
 
   - **Key comparison**: `int_set` uses `std::less<int>` as its comparator.
   - **Allocator support**: `int_set` is an array-backed set of non-negative integers and does not dynamically allocate memory. In particular, `int_set` does not provided a `get_allocator()` member function and its constructors do not take an allocator argument.
-  - **Splicing**: `int_set` is a not a node-based container, and does not provide the splicing operatorions as defined in [P0083R3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `int_set` does not provide the nested type `node_type`, `insert()` overloads taking a node handle, `extract()` or `merge()` member functions. 
+  - **Splicing**: `int_set` is a not a node-based container, and does not provide the splicing operatorions as defined in [P0083R3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `int_set` does not provide the nested type `node_type`, `insert()` overloads taking a node handle, `extract()` or `merge()` member functions.
 
 
 Much of this functionality can be easily provided by user-defined code. For instance, the missing `bitset` constructors and input streaming can be replaced by the `int_set` constructors taking an iterator range or an `initalizer_list`. Similarly, the missing `bitset` conversion functions and output streaming can be replaced by the `copy` algorithm over the `int_set` iterators into a suitable `ostream_iterator`. The hashing functionality can be obtained through third-party libraries such as [N3980](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html).
@@ -165,28 +165,28 @@ The difference with iterator-based algorithms on general sorted ranges is that t
 Frequently Asked Questions
 ==========================
 
-**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?   
+**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?
 **A**: Using proxy iterators, which hold a pointer and an offset.
 
-**Q**: What happens if you dereference a proxy iterator?   
+**Q**: What happens if you dereference a proxy iterator?
 **A**: You get a proxy reference: `ref == *it`.
 
-**Q**: What happens if you take the address of a proxy reference?   
+**Q**: What happens if you take the address of a proxy reference?
 **A**: You get a proxy iterator: `it == &ref`.
 
-**Q**: How do you get any value out of a proxy reference?   
+**Q**: How do you get any value out of a proxy reference?
 **A**: They implicitly convert to `int`.
 
-**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?   
+**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?
 **A**: Indeed, proxy references break the equivalence between functions calls like `ref.mem_fn()` and `it->mem_fn()`.
 
-**Q**: How do you work around this?   
+**Q**: How do you work around this?
 **A**: `int` is not a class-type and does not have member functions, so this situation never occurs.
 
-**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?   
+**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?
 **A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.
 
-**Q**: So iterating over an `int_set` is really fool-proof?   
+**Q**: So iterating over an `int_set` is really fool-proof?
 **A**: Yes, `int_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
 
 Requirements
@@ -202,6 +202,6 @@ This single-header library has no other dependencies than the C++ Standard Libra
 License
 =======
 
-Copyright Rein Halbersma 2014-2018.   
-Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/users/license.html).   
+Copyright Rein Halbersma 2014-2018.
+Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/users/license.html).
 (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)

@@ -10,6 +10,11 @@
 #include <cassert>              // assert
 #include <initializer_list>     // initializer_list
 
+#if defined(_MSC_VER)
+        // sint_set<0> gives bogus "unreachable code" warnings
+        __pragma(warning(disable: 4702))
+#endif
+
 namespace xstd {
 
 template<class T, typename T::value_type L>
