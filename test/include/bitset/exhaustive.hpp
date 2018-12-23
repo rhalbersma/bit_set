@@ -84,7 +84,7 @@ auto all_singleton_sets(UnaryFunction fun)
 template<class BitSet, class BinaryFunction>
 auto all_singleton_set_pairs(BinaryFunction fun)
 {
-        auto const N = limit_v<BitSet, L2>;
+        auto N = limit_v<BitSet, L2>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
