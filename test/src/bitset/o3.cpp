@@ -52,7 +52,7 @@ using bitset_types = boost::mpl::vector
 ,       int_set< 32, uint16_t>
 ,       int_set< 33, uint16_t>
 ,       int_set< 48, uint16_t>
-//,       int_set<  0, uint32_t>
+,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
 ,       int_set< 32, uint32_t>
 ,       int_set< 33, uint32_t>

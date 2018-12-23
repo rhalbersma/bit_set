@@ -99,7 +99,7 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 template<class BitSet, class TernaryFunction>
 auto all_singleton_set_triples(TernaryFunction fun)
 {
-        auto const N = limit_v<BitSet, L3>;
+        auto /*const*/ N = limit_v<BitSet, L3>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
