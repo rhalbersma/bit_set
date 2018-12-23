@@ -9,22 +9,9 @@
 #include <utility>      // declval
 
 #if defined(_MSC_VER)
-
-#define PRAGMA_VC_WARNING_PUSH_DISABLE(X)       \
-        __pragma(warning(push))                 \
-        __pragma(warning(disable: X))
-
-#define PRAGMA_VC_WARNING_POP                   \
-        __pragma(warning(pop))
-
-#else
-
-#define PRAGMA_VC_WARNING_PUSH_DISABLE(X)
-#define PRAGMA_VC_WARNING_POP
-
+        // std::bitset<0> and int_set<0> give bogus "unreachable code" warnings
+        __pragma(warning(disable: 4702))
 #endif
-
-PRAGMA_VC_WARNING_PUSH_DISABLE(4702)
 
 namespace xstd {
 
@@ -133,5 +120,3 @@ auto all_singleton_set_triples(TernaryFunction fun)
 }
 
 }       // namespace xstd
-
-PRAGMA_VC_WARNING_POP
