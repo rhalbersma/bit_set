@@ -8,14 +8,28 @@
 #include <traits.hpp>   // has_resize_v
 #include <utility>      // declval
 
-// Visual C++ in Release mode will generate C4702 (unreachable code) errors for int_set<N> for N == 0 if N is defined as const
+#if defined(_MSC_VER)
+
+#define PRAGMA_VC_WARNING_PUSH_DISABLE(X)       \
+        __pragma(warning(push))                 \
+        __pragma(warning(disable: X))
+
+#define PRAGMA_VC_WARNING_POP                   \
+        __pragma(warning(pop))
+
+#else
+
+#define PRAGMA_VC_WARNING_PUSH_DISABLE(X)
+#define PRAGMA_VC_WARNING_POP
+
+#endif
+
+PRAGMA_VC_WARNING_PUSH_DISABLE(4702)
 
 namespace xstd {
 
-#define XSTD_PP_MSVC_RELEASE_MODE_CONST /* const */
-
 template<class T, int L>
-auto XSTD_PP_MSVC_RELEASE_MODE_CONST limit_v = tti::has_resize_v<T> ? static_cast<decltype(fn_size(std::declval<T>()))>(L) : fn_size(T{});
+auto const limit_v = tti::has_resize_v<T> ? static_cast<decltype(fn_size(std::declval<T>()))>(L) : fn_size(T{});
 
 inline constexpr auto L0 = 256;
 inline constexpr auto L1 = 128;
@@ -27,7 +41,7 @@ inline constexpr auto L3 =  32;
 template<class BitSet, class UnaryFunction>
 auto empty_set(UnaryFunction fun)
 {
-        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L0>;
+        auto const N = limit_v<BitSet, L0>;
         BitSet bs0; resize(bs0, N);
         fun(bs0);
 }
@@ -35,7 +49,7 @@ auto empty_set(UnaryFunction fun)
 template<class BitSet, class UnaryFunction>
 auto full_set(UnaryFunction fun)
 {
-        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L0>;
+        auto const N = limit_v<BitSet, L0>;
         BitSet bsN; resize(bsN, N, true);
         fun(bsN);
 }
@@ -45,7 +59,7 @@ auto full_set(UnaryFunction fun)
 template<class BitSet, class UnaryFunction>
 auto all_values(UnaryFunction fun)
 {
-        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L1>;
+        auto const N = limit_v<BitSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -56,7 +70,7 @@ auto all_values(UnaryFunction fun)
 template<class BitSet, class UnaryFunction>
 auto all_cardinality_sets(UnaryFunction fun)
 {
-        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L1>;
+        auto const N = limit_v<BitSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i <= N; ++i) {
@@ -72,7 +86,7 @@ auto all_cardinality_sets(UnaryFunction fun)
 template<class BitSet, class UnaryFunction>
 auto all_singleton_sets(UnaryFunction fun)
 {
-        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L1>;
+        auto const N = limit_v<BitSet, L1>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -86,7 +100,7 @@ auto all_singleton_sets(UnaryFunction fun)
 template<class BitSet, class BinaryFunction>
 auto all_singleton_set_pairs(BinaryFunction fun)
 {
-        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L2>;
+        auto const N = limit_v<BitSet, L2>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -103,7 +117,7 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 template<class BitSet, class TernaryFunction>
 auto all_singleton_set_triples(TernaryFunction fun)
 {
-        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L3>;
+        auto const N = limit_v<BitSet, L3>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
@@ -119,3 +133,5 @@ auto all_singleton_set_triples(TernaryFunction fun)
 }
 
 }       // namespace xstd
+
+PRAGMA_VC_WARNING_POP
