@@ -8,6 +8,13 @@
 #include <traits.hpp>   // has_resize_v
 #include <utility>      // declval
 
+#if defined(_MSC_VER) && defined(NDEBUG)
+        // Visual C++ in Release mode will generate C4702 (unreachable code) errors for int_set<N> if N == 0 is defined as const
+        #define XSTD_PP_MSVC_RELEASE_MODE_CONST /* const */
+#else
+        #define XSTD_PP_MSVC_RELEASE_MODE_CONST const
+#endif
+
 namespace xstd {
 
 template<class T, int L>
@@ -99,7 +106,7 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 template<class BitSet, class TernaryFunction>
 auto all_singleton_set_triples(TernaryFunction fun)
 {
-        auto /*const*/ N = limit_v<BitSet, L3>;
+        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L3>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
