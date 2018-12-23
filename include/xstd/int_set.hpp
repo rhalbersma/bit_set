@@ -430,19 +430,17 @@ public:
                 return N;
         }
 
-        template<class... Args, std::enable_if_t<
-                sizeof...(Args) == 1
-        >...>
+        template<class... Args>
         constexpr auto emplace(Args&&... args) // Throws: Nothing.
         {
+                static_assert(sizeof...(Args) == 1);
                 return insert(value_type(std::forward<Args>(args)...));
         }
 
-        template<class... Args, std::enable_if_t<
-                sizeof...(Args) == 1
-        >...>
+        template<class... Args>
         constexpr auto emplace_hint(const_iterator hint, Args&&... args) // Throws: Nothing.
         {
+                static_assert(sizeof...(Args) == 1);
                 return insert(hint, value_type(std::forward<Args>(args)...));
         }
 
