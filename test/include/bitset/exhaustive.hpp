@@ -9,15 +9,6 @@
 #include <utility>      // declval
 
 // Visual C++ in Release mode will generate C4702 (unreachable code) errors for int_set<N> for N == 0 if N is defined as const
-#if defined(_MSC_VER)
-
-#define XSTD_PP_MSVC_RELEASE_MODE_CONST
-
-#else
-
-#define XSTD_PP_MSVC_RELEASE_MODE_CONST const
-
-#endif
 
 namespace xstd {
 
@@ -110,7 +101,7 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 template<class BitSet, class TernaryFunction>
 auto all_singleton_set_triples(TernaryFunction fun)
 {
-        auto XSTD_PP_MSVC_RELEASE_MODE_CONST N = limit_v<BitSet, L3>;
+        auto N = limit_v<BitSet, L3>;
         using SizeType = decltype(N);
 
         for (auto i = SizeType{0}; i < N; ++i) {
