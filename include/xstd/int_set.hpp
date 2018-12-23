@@ -16,7 +16,7 @@
 #include <numeric>              // accumulate
 #include <tuple>                // tie
 #include <type_traits>          // enable_if_t, is_integral_v, is_nothrow_swappable_v, is_unsigned_v
-#include <utility>              // pair, swap
+#include <utility>              // forward, pair, swap
 
 #if defined(__GNUG__)
 
@@ -312,7 +312,6 @@ public:
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
         using block_type             = Block;
-        using insert_return_type     = void;
 
         int_set() = default;                    // zero-initialization
 
@@ -429,6 +428,22 @@ public:
                 -> size_type
         {
                 return N;
+        }
+
+        template<class... Args, std::enable_if_t<
+                sizeof...(Args) == 1
+        >...>
+        constexpr auto emplace(Args&&... args) // Throws: Nothing.
+        {
+                return insert(value_type(std::forward<Args>(args)...));
+        }
+
+        template<class... Args, std::enable_if_t<
+                sizeof...(Args) == 1
+        >...>
+        constexpr auto emplace_hint(const_iterator hint, Args&&... args) // Throws: Nothing.
+        {
+                return insert(hint, value_type(std::forward<Args>(args)...));
         }
 
         constexpr auto insert(value_type const x) // Throws: Nothing.

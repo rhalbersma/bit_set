@@ -78,11 +78,23 @@ Documentation
 =============
 
 The interface for the class template `xstd::int_set<N>` consist of three major pieces:
-  1. the full interface of the class template [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
-  2. bitwise operators `&=`, `|=`, `^=`, `<<=`, `>>=`, `~`, `&`, `|`, `^`, `<<`, `>>` from the class template [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset);
-  3. non-member functions `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in the class template [`boost::dynamic_bitset<Block, Allocator>`](https://www.boost.org/doc/libs/1_67_0/libs/dynamic_bitset/dynamic_bitset.html);
+  1. *almost* the full interface of the class template [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set) with the same syntax and semantics, but with much higher performance in time and space;
+  2. composable data-parallel versions of the standard algorithms on sorted ranges in the form of the bitwise operators `&=`, `|=`, `^=`, `<<=`, `>>=`, `~`, `&`, `|`, `^`, `<<`, `>>` from the class template [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset);
+  3. additional set algorithms `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in the class template [`boost::dynamic_bitset<Block, Allocator>`](https://www.boost.org/doc/libs/1_67_0/libs/dynamic_bitset/dynamic_bitset.html);
 
 The main difference between `set<int>` and `int_set<N>` is that an `int_set<N>` has a statically (i.e. at compile-time) defined maximum size of `N`. Inserting values outside the interval `[0, N)` into an `int_set<N>` is **undefined behavior**.
+
+Functionality from `set<int>` that is not in `int_set`
+----------------------------------------------------
+
+`int_set<N>` provides the same functionality as `std::set<int, std::less<int>, Allocator>`, where `Allocator` statically allocates memory to store `N` integers. This means that `int_set` does not provide customization for: 
+
+  - **Key comparison**: `int_set` uses `std::less<int>` as its comparator.
+  - **Allocator support**: `int_set` is an array-backed set of non-negative integers and does not dynamically allocate memory. In particular, `int_set` does not provided a `get_allocator()` member function and its constructors do not take an allocator argument.
+  - **Splicing**: `int_set` is a not a node-based container, and does not provide the splicing operatorions as defined in [P0083R3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `int_set` does not provide the nested type `node_type`, `insert()` overloads taking a node handle, `extract()` or `merge()` member functions. 
+
+
+Much of this functionality can be easily provided by user-defined code. For instance, the missing `bitset` constructors and input streaming can be replaced by the `int_set` constructors taking an iterator range or an `initalizer_list`. Similarly, the missing `bitset` conversion functions and output streaming can be replaced by the `copy` algorithm over the `int_set` iterators into a suitable `ostream_iterator`. The hashing functionality can be obtained through third-party libraries such as [N3980](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html).
 
 Translating `bitset` expressions to `int_set`
 ---------------------------------------------
@@ -148,7 +160,7 @@ Many of the bitwise operators for `int_set` are equivalent to algorithms on sort
 | `auto b = a << n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x){ return x + n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x){ return x < N; });` |
 | `auto b = a >> n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x){ return x - n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x){ return 0 <= x; });` |
 
-The difference with iterator-based algorithms on general sorted ranges is that the bitwise operators from `int_set` provide **composable** and **data-parallel** versions of these algorithms. For the upcoming [Range TS](http://en.cppreference.com/w/cpp/experimental/ranges), these algorithms can also be formulated in a composable way, but without the data-parallellism that `int_set` provides.
+The difference with iterator-based algorithms on general sorted ranges is that the bitwise operators from `int_set` provide **composable** and **data-parallel** versions of these algorithms. For the upcoming [Ranges TS](http://en.cppreference.com/w/cpp/experimental/ranges), these algorithms can also be formulated in a composable way, but without the data-parallellism that `int_set` provides.
 
 Frequently Asked Questions
 ==========================

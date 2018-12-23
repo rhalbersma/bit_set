@@ -183,6 +183,28 @@ struct mem_max_size
         }
 };
 
+struct mem_emplace
+{
+        template<class X, class... Args>
+        auto operator()(X& a, Args&&... args) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_same_v<decltype(a.emplace(std::forward<Args>(args)...)), std::pair<typename X::iterator, bool>>); 
+                auto r = a.emplace(std::forward<Args>(args)...);
+                BOOST_CHECK(r == std::make_pair(a.find(typename X::value_type(std::forward<Args>(args)...)), true));
+        }
+};
+
+struct mem_emplace_hint
+{
+        template<class X, class... Args>
+        auto operator()(X& a, typename X::iterator p, Args&&... args) const
+        {                                                                       // [associative.reqmts] Table 90
+                static_assert(std::is_same_v<decltype(a.emplace_hint(p, std::forward<Args>(args)...)), typename X::iterator>);
+                auto r = a.emplace_hint(p, std::forward<Args>(args)...);
+                BOOST_CHECK(r == a.find(typename X::value_type(std::forward<Args>(args)...)));
+        }
+};
+
 struct mem_insert
 {
         template<class X>

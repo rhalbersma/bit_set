@@ -27,42 +27,47 @@ using int_set_types = boost::mpl::vector
 ,       boost::container::flat_set<int>
 ,       int_set<  0, uint8_t>
 ,       int_set<  1, uint8_t>
+,       int_set<  7, uint8_t>
 ,       int_set<  8, uint8_t>
 ,       int_set<  9, uint8_t>
+,       int_set< 15, uint8_t>
 ,       int_set< 16, uint8_t>
 ,       int_set< 17, uint8_t>
-,       int_set< 24, uint8_t>
 ,       int_set<  0, uint16_t>
 ,       int_set<  1, uint16_t>
+,       int_set< 15, uint16_t>
 ,       int_set< 16, uint16_t>
 ,       int_set< 17, uint16_t>
+,       int_set< 31, uint16_t>
 ,       int_set< 32, uint16_t>
 ,       int_set< 33, uint16_t>
-,       int_set< 48, uint16_t>
 ,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
+,       int_set< 31, uint32_t>
 ,       int_set< 32, uint32_t>
 ,       int_set< 33, uint32_t>
+,       int_set< 63, uint32_t>
 ,       int_set< 64, uint32_t>
 ,       int_set< 65, uint32_t>
-,       int_set< 96, uint32_t>
 #if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
 ,       int_set<  0, uint64_t>
 ,       int_set<  1, uint64_t>
+,       int_set< 63, uint64_t>
 ,       int_set< 64, uint64_t>
 ,       int_set< 65, uint64_t>
+,       int_set<127, uint64_t>
 ,       int_set<128, uint64_t>
 ,       int_set<129, uint64_t>
-,       int_set<192, uint64_t>
 #endif
 #if defined(__GNUG__)
 ,       int_set<  0, __uint128_t>
 ,       int_set<  1, __uint128_t>
+,       int_set<127, __uint128_t>
 ,       int_set<128, __uint128_t>
 ,       int_set<129, __uint128_t>
+,       int_set<255, __uint128_t>
 ,       int_set<256, __uint128_t>
 ,       int_set<257, __uint128_t>
-,       int_set<384, __uint128_t>
 #endif
 >;
 
@@ -103,10 +108,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
 
         all_values<T>([](auto const& t) {
                 empty_set<T>([=](auto& is) {
+                        mem_emplace{}(is, t);
+                });
+                empty_set<T>([=](auto& is) {
                         mem_insert{}(is, t);
                 });
         });
         all_values<T>([](auto const& t) {
+                empty_set<T>([=](auto& is) {
+                        mem_emplace_hint{}(is, is.end(), t);
+                });
                 empty_set<T>([=](auto& is) {
                         mem_insert{}(is, is.end(), t);
                 });
