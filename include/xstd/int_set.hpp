@@ -447,6 +447,7 @@ public:
         constexpr auto insert(const_iterator /* hint */, value_type const x) // Throws: Nothing.
                 -> iterator
         {
+                assert(0 <= x); assert(x < N);
                 insert(x);
                 return { this, x };
         }
@@ -504,7 +505,7 @@ public:
 
         constexpr auto erase(const_iterator pos) // Throws: Nothing.
         {
-                assert(0 <= x); assert(x < N);
+                assert(pos != end());
                 erase(*pos++);
                 return pos;
         }
