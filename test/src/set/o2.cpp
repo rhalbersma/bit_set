@@ -88,16 +88,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         all_singleton_set_pairs<T>(mem_swap{});
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& i1){
+                all_singleton_sets<T>([&](auto& i1) {
                         mem_find{}(i1, x);
                 });
-                all_singleton_sets<T>([&](auto const& i1){
+                all_singleton_sets<T>([&](auto const& i1) {
                         mem_find{}(i1, x);
                 });
         });
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto const& i1){
+                all_singleton_sets<T>([&](auto const& i1) {
                         mem_count{}(i1, x);
                 });
         });
@@ -105,35 +105,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         // std::set and boost::container::flat_set do not yet support contains() (added for C++2a)
         if constexpr (!(std::is_same_v<T, std::set<int>> || std::is_same_v<T, boost::container::flat_set<int>>)) {
                 all_values<T>([](auto const& x) {
-                        all_singleton_sets<T>([&](auto const& i1){
+                        all_singleton_sets<T>([&](auto const& i1) {
                                 mem_contains{}(i1, x);
                         });
                 });
         }
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& i1){
+                all_singleton_sets<T>([&](auto& i1) {
                         mem_lower_bound{}(i1, x);
                 });
-                all_singleton_sets<T>([&](auto const& i1){
+                all_singleton_sets<T>([&](auto const& i1) {
                         mem_lower_bound{}(i1, x);
                 });
         });
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& i1){
+                all_singleton_sets<T>([&](auto& i1) {
                         mem_upper_bound{}(i1, x);
                 });
-                all_singleton_sets<T>([&](auto const& i1){
+                all_singleton_sets<T>([&](auto const& i1) {
                         mem_upper_bound{}(i1, x);
                 });
         });
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& i1){
+                all_singleton_sets<T>([&](auto& i1) {
                         mem_equal_range{}(i1, x);
                 });
-                all_singleton_sets<T>([&](auto const& i1){
+                all_singleton_sets<T>([&](auto const& i1) {
                         mem_equal_range{}(i1, x);
                 });
         });

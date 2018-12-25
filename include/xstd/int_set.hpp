@@ -468,9 +468,9 @@ public:
         template<class InputIterator>
         constexpr auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
         {
-                while (first != last) {
-                        insert(*first++);
-                }
+                std::for_each(first, last, [&](auto const x) {
+                        insert(x);
+                });
         }
 
         constexpr auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
@@ -525,10 +525,10 @@ public:
 
         constexpr auto erase(const_iterator first, const_iterator last) // Throws: Nothing.
         {
-                while (first != last) {
-                        erase(*first++);
-                }
-                return first;
+                std::for_each(first, last, [&](auto const x) {
+                        erase(x);
+                });
+                return last;
         }
 
         XSTD_PP_CONSTEXPR_SWAP auto swap(int_set& other [[maybe_unused]]) noexcept(num_logical_blocks == 0 || std::is_nothrow_swappable_v<value_type>)
