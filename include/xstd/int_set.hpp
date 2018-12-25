@@ -1384,7 +1384,7 @@ auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, int_set<N, Block> cons
 {
         ostr << '[';
         auto first = true;
-        for (auto const& x : is) {
+        for (auto const x : is) {
                 if (!first) {
                         ostr << ',';
                 } else {
