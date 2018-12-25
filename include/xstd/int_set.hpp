@@ -1403,7 +1403,7 @@ auto& operator>>(std::basic_istream<CharT, Traits>& istr, int_set<N, Block>& is)
         CharT c;
 
         istr >> c; assert(c == '[');
-        for (auto first = true;;) {
+        for (auto first = true; /* break inside loop */; /* first updated inside loop */) {
                 if (!first) {
                         istr >> c; assert(c == ',' || c == ']');
                         if (c != ',') {
