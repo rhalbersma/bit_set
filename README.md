@@ -165,28 +165,28 @@ The difference with iterator-based algorithms on general sorted ranges is that t
 Frequently Asked Questions
 ==========================
 
-**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?
+**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?  
 **A**: Using proxy iterators, which hold a pointer and an offset.
 
-**Q**: What happens if you dereference a proxy iterator?
+**Q**: What happens if you dereference a proxy iterator?  
 **A**: You get a proxy reference: `ref == *it`.
 
-**Q**: What happens if you take the address of a proxy reference?
+**Q**: What happens if you take the address of a proxy reference?  
 **A**: You get a proxy iterator: `it == &ref`.
 
-**Q**: How do you get any value out of a proxy reference?
+**Q**: How do you get any value out of a proxy reference?  
 **A**: They implicitly convert to `int`.
 
-**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?
+**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?  
 **A**: Indeed, proxy references break the equivalence between functions calls like `ref.mem_fn()` and `it->mem_fn()`.
 
-**Q**: How do you work around this?
+**Q**: How do you work around this?  
 **A**: `int` is not a class-type and does not have member functions, so this situation never occurs.
 
-**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?
+**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?  
 **A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.
 
-**Q**: So iterating over an `int_set` is really fool-proof?
+**Q**: So iterating over an `int_set` is really fool-proof?  
 **A**: Yes, `int_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
 
 Requirements
