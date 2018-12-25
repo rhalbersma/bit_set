@@ -11,6 +11,7 @@
 #include <cstdint>              // uint64_t
 #include <functional>           // less
 #include <initializer_list>     // initializer_list
+#include <iosfwd>               // basic_ostream
 #include <iterator>             // bidirectional_iterator_tag, begin, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
@@ -1376,6 +1377,47 @@ template<int N, class Block>
         -> decltype(is.empty())
 {
         return is.empty();
+}
+
+template<class CharT, class Traits, int N, class Block>
+auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, int_set<N, Block> const& is)
+{
+        ostr << '[';
+        auto first = true;
+        for (auto const& x : is) {
+                if (!first) {
+                        ostr << ',';
+                } else {
+                        first = false;
+                }
+                ostr << x;
+        }
+        ostr << ']';
+        return ostr;
+}
+
+template<class CharT, class Traits, int N, class Block>
+auto& operator>>(std::basic_istream<CharT, Traits>& istr, int_set<N, Block>& is)
+{
+        typename int_set<N, Block>::value_type x;
+        CharT c;
+
+        istr >> c; assert(c == '[');
+        for (auto first = true;;) {
+                if (!first) {
+                        istr >> c; assert(c == ',' || c == ']');
+                        if (c != ',') {
+                                istr.putback(c);
+                                break;
+                        }
+                } else {
+                        first = false;
+                }
+                istr >> x; assert(0 <= x); assert(x < is.max_size());
+                is.insert(x);
+        }
+        istr >> c; assert(c == ']');
+        return istr;
 }
 
 }       // namespace xstd

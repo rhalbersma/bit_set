@@ -215,15 +215,15 @@ struct op_compl
                 auto const& ret = ~a;
 
                 BOOST_CHECK_NE(std::addressof(ret), std::addressof(expected));  // [bitset.members]/21
-                BOOST_CHECK(ret == expected);                                   // [bitset.members]/22
-                BOOST_CHECK(~ret == a);                                         // involution
+                BOOST_CHECK_EQUAL(ret, expected);                               // [bitset.members]/22
+                BOOST_CHECK_EQUAL(~ret, a);                                     // involution
         }
 
         template<class BitSet>
         constexpr auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
-                BOOST_CHECK(~(a | b) == (~a & ~b));                             // De Morgan's Laws
-                BOOST_CHECK(~(a & b) == (~a | ~b));                             // De Morgan's Laws
+                BOOST_CHECK_EQUAL(~(a | b), (~a & ~b));                         // De Morgan's Laws
+                BOOST_CHECK_EQUAL(~(a & b), (~a | ~b));                         // De Morgan's Laws
         }
 };
 
@@ -241,7 +241,7 @@ struct mem_flip
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/24
 
                 flip(bs);
-                BOOST_CHECK(bs == src);                                         // involution
+                BOOST_CHECK_EQUAL(bs, src);                                     // involution
                 BOOST_CHECK_THROW(flip(bs, fn_size(bs)), std::out_of_range);    // [bitset.members]/25
         }
 
@@ -373,7 +373,7 @@ struct op_shift_left
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto expected = bs; expected <<= pos;
-                BOOST_CHECK(bs << pos == expected);                             // [bitset.members]/43
+                BOOST_CHECK_EQUAL(bs << pos, expected);                         // [bitset.members]/43
 
                 if constexpr (tti::has_hinted_insert_v<BitSet>) {
                         auto const lhs = bs << pos;
@@ -396,7 +396,7 @@ struct op_shift_right
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto expected = bs; expected >>= pos;
-                BOOST_CHECK(bs >> pos == expected);                             // [bitset.members]/44
+                BOOST_CHECK_EQUAL(bs >> pos, expected);                         // [bitset.members]/44
 
                 if constexpr (tti::has_hinted_insert_v<BitSet>) {
                         auto const lhs = bs >> pos;
@@ -436,7 +436,7 @@ struct op_at
                 BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
                 auto src = bs; set(src, pos, val);
                 at(bs, pos, val);
-                BOOST_CHECK(bs == src);                                         // [bitset.members]/49
+                BOOST_CHECK_EQUAL(bs, src);                                     // [bitset.members]/49
                                                                                 // [bitset.members]/50: at(bs, fn_size(bs), val) does not throw
         }
 };
@@ -448,15 +448,15 @@ struct op_bitand
         template<class BitSet>
         constexpr auto operator()(BitSet const& a) const noexcept
         {
-                BOOST_CHECK((a & a) == a);                                      // idempotent
+                BOOST_CHECK_EQUAL((a & a), a);                                  // idempotent
         }
 
         template<class BitSet>
         auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 auto expected = a; expected &= b;
-                BOOST_CHECK((a & b) == expected);                               // [bitset.operators]/1
-                BOOST_CHECK((a & b) == (b & a));                                // commutative
+                BOOST_CHECK_EQUAL((a & b), expected);                           // [bitset.operators]/1
+                BOOST_CHECK_EQUAL((a & b), (b & a));                            // commutative
                 BOOST_CHECK(is_subset_of(a & b, a));
                 BOOST_CHECK(is_subset_of(a & b, b));
                 BOOST_CHECK_LE(count(a & b), std::min(count(a), count(b)));
@@ -465,15 +465,15 @@ struct op_bitand
                         auto const lhs = a & b;
                         BitSet rhs;
                         std::set_intersection(a.cbegin(), a.cend(), b.cbegin(), b.cend(), std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK(lhs == rhs);
+                        BOOST_CHECK_EQUAL(lhs, rhs);
                 }
         }
 
         template<class BitSet>
         constexpr auto operator()(BitSet const& a, BitSet const& b, BitSet const& c) const noexcept
         {
-                BOOST_CHECK(((a & b) & c) == (a & (b & c)));                    // associative
-                BOOST_CHECK((a & (b | c)) == ((a & b) | (a & c)));              // distributive
+                BOOST_CHECK_EQUAL(((a & b) & c), (a & (b & c)));                // associative
+                BOOST_CHECK_EQUAL((a & (b | c)), ((a & b) | (a & c)));          // distributive
         }
 };
 
@@ -482,15 +482,15 @@ struct op_bitor
         template<class BitSet>
         constexpr auto operator()(BitSet const& a) const noexcept
         {
-                BOOST_CHECK((a | a) == a);                                      // idempotent
+                BOOST_CHECK_EQUAL((a | a), a);                                  // idempotent
         }
 
         template<class BitSet>
         auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 auto expected = a; expected |= b;
-                BOOST_CHECK((a | b) == expected);                               // [bitset.operators]/2
-                BOOST_CHECK((a | b) == (b | a));                                // commutative
+                BOOST_CHECK_EQUAL((a | b), expected);                           // [bitset.operators]/2
+                BOOST_CHECK_EQUAL((a | b), (b | a));                            // commutative
                 BOOST_CHECK(is_subset_of(a, a | b));
                 BOOST_CHECK(is_subset_of(b, a | b));
                 BOOST_CHECK_EQUAL(count(a | b), count(a) + count(b) - count(a & b));
@@ -499,15 +499,15 @@ struct op_bitor
                         auto const lhs = a | b;
                         BitSet rhs;
                         std::set_union(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK(lhs == rhs);
+                        BOOST_CHECK_EQUAL(lhs,rhs);
                 }
         }
 
         template<class BitSet>
         constexpr auto operator()(BitSet const& a, BitSet const& b, BitSet const& c) const noexcept
         {
-                BOOST_CHECK(((a | b) | c) == (a | (b | c)));                    // associative
-                BOOST_CHECK((a | (b & c)) == ((a | b) & (a | c)));              // distributive
+                BOOST_CHECK_EQUAL(((a | b) | c), (a | (b | c)));                // associative
+                BOOST_CHECK_EQUAL((a | (b & c)), ((a | b) & (a | c)));          // distributive
         }
 };
 
@@ -523,24 +523,24 @@ struct op_xor
         auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
                 auto expected = a; expected ^= b;
-                BOOST_CHECK((a ^ b) == expected);                               // [bitset.operators]/3
-                BOOST_CHECK((a ^ b) == (b ^ a));                                // commutative
-                BOOST_CHECK((a ^ b) == ((a - b) | (b - a)));
-                BOOST_CHECK((a ^ b) == (a | b) - (a & b));
+                BOOST_CHECK_EQUAL((a ^ b), expected);                           // [bitset.operators]/3
+                BOOST_CHECK_EQUAL((a ^ b), (b ^ a));                            // commutative
+                BOOST_CHECK_EQUAL((a ^ b), ((a - b) | (b - a)));
+                BOOST_CHECK_EQUAL((a ^ b), (a | b) - (a & b));
 
                 if constexpr (tti::has_hinted_insert_v<BitSet>) {
                         auto const lhs = a ^ b;
                         BitSet rhs;
                         std::set_symmetric_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK(lhs == rhs);
+                        BOOST_CHECK_EQUAL(lhs, rhs);
                 }
         }
 
         template<class BitSet>
         constexpr auto operator()(BitSet const& a, BitSet const& b, BitSet const& c) const noexcept
         {
-                BOOST_CHECK(((a ^ b) ^ c) == (a ^ (b ^ c)));                    // associative
-                BOOST_CHECK((a & (b ^ c)) == ((a & b) ^ (a & c)));              // distributive
+                BOOST_CHECK_EQUAL(((a ^ b) ^ c), (a ^ (b ^ c)));                // associative
+                BOOST_CHECK_EQUAL((a & (b ^ c)), ((a & b) ^ (a & c)));          // distributive
         }
 };
 
@@ -557,14 +557,14 @@ struct op_minus
         {
                 if constexpr (tti::has_op_minus_assign_v<BitSet>) {
                         auto expected = a; expected -= b;
-                        BOOST_CHECK(a - b == expected);
+                        BOOST_CHECK_EQUAL(a - b, expected);
                 }
 
-                BOOST_CHECK(a - b == (a & ~b));
-                BOOST_CHECK(~(a - b) == (~a | b));
-                BOOST_CHECK(~a - ~b == b - a);
-                BOOST_CHECK(a - b == (a | b) - b);
-                BOOST_CHECK(a - b == a - (a & b));
+                BOOST_CHECK_EQUAL(a - b, (a & ~b));
+                BOOST_CHECK_EQUAL(~(a - b), (~a | b));
+                BOOST_CHECK_EQUAL(~a - ~b, b - a);
+                BOOST_CHECK_EQUAL(a - b, (a | b) - b);
+                BOOST_CHECK_EQUAL(a - b, a - (a & b));
                 BOOST_CHECK(is_subset_of(a - b, a));
                 BOOST_CHECK(disjoint(a - b, b));
 
@@ -572,7 +572,7 @@ struct op_minus
                         auto const lhs = a - b;
                         BitSet rhs;
                         std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK(lhs == rhs);
+                        BOOST_CHECK_EQUAL(lhs, rhs);
                 }
         }
 };
@@ -655,6 +655,7 @@ struct fn_disjoint
         template<class BitSet>
         constexpr auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
+                BOOST_CHECK_EQUAL(disjoint(a, b), none(a & b));
                 BOOST_CHECK_EQUAL(disjoint(a, b), !intersects(a, b));
         }
 };
