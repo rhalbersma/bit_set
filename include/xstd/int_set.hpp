@@ -934,7 +934,7 @@ private:
                                 ++i;
                                 n += block_size - offset;
                         }
-                        for (/* init before loop */; i < num_logical_blocks; ++i, n += block_size) {
+                        for (/* init-statement before loop */; i < num_logical_blocks; ++i, n += block_size) {
                                 if (auto const block = m_data[i]; block) {
                                         return n + builtin::clznz(block);
                                 }
@@ -958,7 +958,7 @@ private:
                                         --i;
                                         n -= block_size - offset;
                                 }
-                                for (/* init before loop */; i > 0; --i, n -= block_size) {
+                                for (/* init-statement before loop */; i > 0; --i, n -= block_size) {
                                         if (auto const block = m_data[i]; block) {
                                                 return n - builtin::ctznz(block);
                                         }
