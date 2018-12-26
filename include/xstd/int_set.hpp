@@ -934,7 +934,7 @@ private:
                                 ++i;
                                 n += block_size - offset;
                         }
-                        for (/* initialized before loop */; i < num_logical_blocks; ++i, n += block_size) {
+                        for (/* init before loop */; i < num_logical_blocks; ++i, n += block_size) {
                                 if (auto const block = m_data[i]; block) {
                                         return n + builtin::clznz(block);
                                 }
@@ -958,7 +958,7 @@ private:
                                         --i;
                                         n -= block_size - offset;
                                 }
-                                for (/* initialized before loop */; i > 0; --i, n -= block_size) {
+                                for (/* init before loop */; i > 0; --i, n -= block_size) {
                                         if (auto const block = m_data[i]; block) {
                                                 return n - builtin::ctznz(block);
                                         }
@@ -1403,7 +1403,7 @@ auto& operator>>(std::basic_istream<CharT, Traits>& istr, int_set<N, Block>& is)
         CharT c;
 
         istr >> c; assert(c == '[');
-        for (auto first = true; /* break inside loop */; /* first updated inside loop */) {
+        for (auto first = true; /* condition inside loop */; /* expression inside loop */) {
                 if (!first) {
                         istr >> c; assert(c == ',' || c == ']');
                         if (c != ',') {

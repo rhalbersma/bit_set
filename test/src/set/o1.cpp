@@ -33,6 +33,7 @@ using int_set_types = boost::mpl::vector
 ,       int_set< 15, uint8_t>
 ,       int_set< 16, uint8_t>
 ,       int_set< 17, uint8_t>
+,       int_set< 24, uint8_t>
 ,       int_set<  0, uint16_t>
 ,       int_set<  1, uint16_t>
 ,       int_set< 15, uint16_t>
@@ -41,6 +42,7 @@ using int_set_types = boost::mpl::vector
 ,       int_set< 31, uint16_t>
 ,       int_set< 32, uint16_t>
 ,       int_set< 33, uint16_t>
+,       int_set< 48, uint16_t>
 ,       int_set<  0, uint32_t>
 ,       int_set<  1, uint32_t>
 ,       int_set< 31, uint32_t>
@@ -55,9 +57,6 @@ using int_set_types = boost::mpl::vector
 ,       int_set< 63, uint64_t>
 ,       int_set< 64, uint64_t>
 ,       int_set< 65, uint64_t>
-,       int_set<127, uint64_t>
-,       int_set<128, uint64_t>
-,       int_set<129, uint64_t>
 #endif
 #if defined(__GNUG__)
 ,       int_set<  0, __uint128_t>
@@ -65,9 +64,6 @@ using int_set_types = boost::mpl::vector
 ,       int_set<127, __uint128_t>
 ,       int_set<128, __uint128_t>
 ,       int_set<129, __uint128_t>
-,       int_set<255, __uint128_t>
-,       int_set<256, __uint128_t>
-,       int_set<257, __uint128_t>
 #endif
 >;
 
@@ -142,7 +138,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         // boost::container::flat_set<int>::erase invalidates iterators
         if constexpr (!std::is_same_v<T, boost::container::flat_set<int>>) {
                 full_set<T>([](auto& is) {
-                        for (auto first = is.begin(), last = is.end(); first != last; /* update inside loop */) {
+                        for (auto first = is.begin(), last = is.end(); first != last; /* expression inside loop */) {
                                 mem_erase{}(is, first++);
                         }
                 });

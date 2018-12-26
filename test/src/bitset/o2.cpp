@@ -29,39 +29,40 @@ BOOST_AUTO_TEST_SUITE(Quadratic)
 using namespace xstd;
 
 using bitset_types = boost::mpl::vector
-<       std::bitset<  0>
-,       std::bitset<  1>
-,       std::bitset< 31>
-,       std::bitset< 32>
-,       std::bitset< 33>
-,       std::bitset< 63>
-,       std::bitset< 64>
-,       std::bitset< 65>
+<       std::bitset< 0>
+,       std::bitset< 1>
+,       std::bitset<31>
+,       std::bitset<32>
+,       std::bitset<33>
+,       std::bitset<63>
+,       std::bitset<64>
+,       std::bitset<65>
 ,       boost::dynamic_bitset<>
-,       int_set<  0, uint8_t>
-,       int_set<  1, uint8_t>
-,       int_set<  7, uint8_t>
-,       int_set<  8, uint8_t>
-,       int_set<  9, uint8_t>
-,       int_set< 15, uint8_t>
-,       int_set< 16, uint8_t>
-,       int_set< 17, uint8_t>
-,       int_set<  0, uint16_t>
-,       int_set<  1, uint16_t>
-,       int_set< 15, uint16_t>
-,       int_set< 16, uint16_t>
-,       int_set< 17, uint16_t>
-,       int_set< 31, uint16_t>
-,       int_set< 32, uint16_t>
-,       int_set< 33, uint16_t>
-,       int_set<  0, uint32_t>
-,       int_set<  1, uint32_t>
-,       int_set< 31, uint32_t>
-,       int_set< 32, uint32_t>
-,       int_set< 33, uint32_t>
-,       int_set< 63, uint32_t>
-,       int_set< 64, uint32_t>
-,       int_set< 65, uint32_t>
+,       int_set< 0, uint8_t>
+,       int_set< 1, uint8_t>
+,       int_set< 7, uint8_t>
+,       int_set< 8, uint8_t>
+,       int_set< 9, uint8_t>
+,       int_set<15, uint8_t>
+,       int_set<16, uint8_t>
+,       int_set<17, uint8_t>
+,       int_set<24, uint8_t>
+,       int_set< 0, uint16_t>
+,       int_set< 1, uint16_t>
+,       int_set<15, uint16_t>
+,       int_set<16, uint16_t>
+,       int_set<17, uint16_t>
+,       int_set<31, uint16_t>
+,       int_set<32, uint16_t>
+,       int_set<33, uint16_t>
+,       int_set< 0, uint32_t>
+,       int_set< 1, uint32_t>
+,       int_set<31, uint32_t>
+,       int_set<32, uint32_t>
+,       int_set<33, uint32_t>
+,       int_set<63, uint32_t>
+,       int_set<64, uint32_t>
+,       int_set<65, uint32_t>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
