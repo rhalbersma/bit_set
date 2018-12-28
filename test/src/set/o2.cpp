@@ -87,6 +87,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
         }
 
+        all_doubleton_ilists<T>([](auto ilist2) {
+                empty_set<T>([=](auto& is0) {
+                        mem_erase{}(is0, ilist2);
+                });
+        });
+
         all_singleton_set_pairs<T>(mem_swap{});
 
         all_values<T>([](auto const& x) {

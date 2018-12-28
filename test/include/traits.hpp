@@ -29,6 +29,14 @@ constexpr static auto has_hinted_insert_v<IntSet, std::void_t<decltype(
 )>> = true;
 
 template<class IntSet, class = void>
+constexpr static auto has_ilist_erase_v = false;
+
+template<class IntSet>
+constexpr static auto has_ilist_erase_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>().erase(std::declval<std::initializer_list<typename IntSet::key_type>>())
+)>> = true;
+
+template<class IntSet, class = void>
 constexpr static auto has_op_minus_assign_v = false;
 
 template<class IntSet>

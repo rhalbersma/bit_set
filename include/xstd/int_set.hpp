@@ -532,6 +532,13 @@ public:
                 return last;
         }
 
+        constexpr auto erase(std::initializer_list<key_type> ilist) // Throws: Nothing.
+        {
+                std::for_each(ilist.begin(), ilist.end(), [&](auto const x) {
+                        erase(x);
+                });
+        }
+
         XSTD_PP_CONSTEXPR_SWAP auto swap(int_set& other [[maybe_unused]]) noexcept(num_logical_blocks == 0 || std::is_nothrow_swappable_v<value_type>)
         {
                 if constexpr (num_logical_blocks == 1) {
