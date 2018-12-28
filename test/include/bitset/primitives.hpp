@@ -665,7 +665,7 @@ struct fn_disjoint
 struct fn_iostream
 {
         template<class BitSet>
-        constexpr auto operator()(BitSet const& a) const noexcept
+        auto operator()(BitSet const& a) const noexcept
         {
                 std::stringstream sstr; sstr << a;
                 BitSet b;               sstr >> b;
