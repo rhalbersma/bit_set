@@ -1382,17 +1382,17 @@ template<int N, class Block>
 template<class CharT, class Traits, int N, class Block>
 auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, int_set<N, Block> const& is)
 {
-        ostr << '[';
+        ostr << ostr.widen('[');
         auto first = true;
         for (auto const x : is) {
                 if (!first) {
-                        ostr << ',';
+                        ostr << ostr.widen(',');
                 } else {
                         first = false;
                 }
                 ostr << x;
         }
-        ostr << ']';
+        ostr << ostr.widen(']');
         return ostr;
 }
 
@@ -1402,21 +1402,17 @@ auto& operator>>(std::basic_istream<CharT, Traits>& istr, int_set<N, Block>& is)
         typename int_set<N, Block>::value_type x;
         CharT c;
 
-        istr >> c; assert(c == '[');
-        for (auto first = true; /* condition inside loop */; /* expression inside loop */) {
-                if (!first) {
-                        istr >> c; assert(c == ',' || c == ']');
-                        if (c != ',') {
-                                istr.putback(c);
-                                break;
-                        }
-                } else {
+        istr >> c; assert(c == istr.widen('['));
+        istr >> c;
+        for (auto first = true; c != istr.widen(']'); istr >> c) {
+                assert(first == (c != istr.widen(',')));
+                if (first) {
+                        istr.putback(c);
                         first = false;
                 }
                 istr >> x; assert(0 <= x); assert(x < is.max_size());
                 is.insert(x);
         }
-        istr >> c; assert(c == ']');
         return istr;
 }
 

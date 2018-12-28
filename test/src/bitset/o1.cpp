@@ -170,6 +170,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 
         all_cardinality_sets<T>(fn_intersects{});
         all_singleton_sets<T>(fn_intersects{});
+
+        all_cardinality_sets<T>(fn_iostream{});
+        all_singleton_sets<T>(fn_iostream{});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

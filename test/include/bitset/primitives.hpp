@@ -14,7 +14,9 @@
 #include <iterator>                     // distance, inserter
 #include <memory>                       // addressof
 #include <set>                          // set
+#include <sstream>                      // stringstream
 #include <stdexcept>                    // out_of_range
+#include <iostream>
 
 namespace xstd {
 
@@ -660,6 +662,15 @@ struct fn_disjoint
         }
 };
 
-// [bitset.operators]/4-8 describe operator>> and operator<<
+struct fn_iostream
+{
+        template<class BitSet>
+        constexpr auto operator()(BitSet const& a) const noexcept
+        {
+                std::stringstream sstr; sstr << a;
+                BitSet b;               sstr >> b;
+                BOOST_CHECK_EQUAL(a, b);                                        // [bitset.operators]/4-8
+        }
+};
 
 }       // namespace xstd
