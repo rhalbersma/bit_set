@@ -467,14 +467,14 @@ public:
         }
 
         template<class InputIterator>
-        constexpr auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_ALGORITHM auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
         {
                 std::for_each(first, last, [&](auto const x) {
                         insert(x);
                 });
         }
 
-        constexpr auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_ALGORITHM auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
         {
                 insert(ilist.begin(), ilist.end());
         }
@@ -524,7 +524,7 @@ public:
                 return pos;
         }
 
-        constexpr auto erase(const_iterator first, const_iterator last) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_ALGORITHM auto erase(const_iterator first, const_iterator last) // Throws: Nothing.
         {
                 std::for_each(first, last, [&](auto const x) {
                         erase(x);
@@ -532,7 +532,7 @@ public:
                 return last;
         }
 
-        constexpr auto erase(std::initializer_list<key_type> ilist) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_ALGORITHM auto erase(std::initializer_list<key_type> ilist) // Throws: Nothing.
         {
                 std::for_each(ilist.begin(), ilist.end(), [&](auto const x) {
                         erase(x);

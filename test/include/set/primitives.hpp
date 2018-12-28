@@ -48,7 +48,7 @@ struct nested_types
 template<class X>
 struct constructor
 {
-        constexpr auto operator()() const
+        auto operator()() const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_default_constructible_v<typename X::key_compare>);
                 X u;
@@ -66,7 +66,7 @@ struct constructor
                 BOOST_CHECK(u == u1);
         }
 
-        constexpr auto operator()(std::initializer_list<typename X::value_type> il) const
+        auto operator()(std::initializer_list<typename X::value_type> il) const
         {                                                                       // [associative.reqmts] Table 90
                 X u(il);
                 X u1(il.begin(), il.end());
@@ -77,7 +77,7 @@ struct constructor
 struct op_assign
 {
         template<class X>
-        constexpr auto operator()(X& a, std::initializer_list<typename X::value_type> il) const
+        auto operator()(X& a, std::initializer_list<typename X::value_type> il) const
         {                                                                       // [associative.reqmts] Table 90
                 a = il;
                 X a1(il);
@@ -237,7 +237,7 @@ struct mem_insert
         }
 
         template<class X>
-        constexpr auto operator()(X& a, std::initializer_list<typename X::value_type> il) const
+        auto operator()(X& a, std::initializer_list<typename X::value_type> il) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(a.insert(il)), void>);
                 auto a1 = a;
@@ -278,7 +278,7 @@ struct mem_erase
         }
 
         template<class X>
-        constexpr auto operator()(X& a [[maybe_unused]], std::initializer_list<typename X::key_type> il [[maybe_unused]]) const
+        auto operator()(X& a [[maybe_unused]], std::initializer_list<typename X::key_type> il [[maybe_unused]]) const
         {
                 if constexpr (tti::has_ilist_erase_v<X>) {
                         static_assert(std::is_same_v<decltype(a.erase(il)), void>);
@@ -293,7 +293,7 @@ struct mem_erase
 struct mem_swap
 {
         template<class X>
-        constexpr auto operator()(X& a, X& b) const noexcept
+        auto operator()(X& a, X& b) const noexcept
         {                                                                       // [container.requirements.general] Table 83
                 auto a1 = a, b1 = b;
                 static_assert(std::is_same_v<decltype(a.swap(b)), void>);
@@ -500,7 +500,7 @@ struct op_greater_equal
 struct fn_swap
 {
         template<class X>
-        constexpr auto operator()(X& a, X& b) const noexcept
+        auto operator()(X& a, X& b) const noexcept
         {                                                                       // [container.requirements.general] Table 83
                 auto a1 = a, b1 = b;
                 auto a2 = a, b2 = b;
