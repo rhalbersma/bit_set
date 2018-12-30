@@ -11,7 +11,7 @@
 #include <initializer_list>     // initializer_list
 
 #if defined(_MSC_VER)
-        // sint_set<0> gives bogus "unreachable code" warnings
+        // sbit_set<0> gives bogus "unreachable code" warnings
         __pragma(warning(disable: 4702))
 #endif
 

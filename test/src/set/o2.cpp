@@ -11,7 +11,7 @@
 #include <set/primitives.hpp>                   // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
                                                 // mem_lower_bound, mem_upper_bound, mem_equal_range,
                                                 // op_equal, op_not_equal_to, op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
-#include <xstd/int_set.hpp>                     // int_set
+#include <xstd/bit_set.hpp>                     // bit_set
 #include <boost/container/flat_set.hpp>         // flat_set
 #include <boost/mpl/vector.hpp>                 // vector
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
@@ -26,32 +26,32 @@ using namespace xstd;
 using int_set_types = boost::mpl::vector
 <       std::set<int>
 ,       boost::container::flat_set<int>
-,       int_set< 0, uint8_t>
-,       int_set< 1, uint8_t>
-,       int_set< 7, uint8_t>
-,       int_set< 8, uint8_t>
-,       int_set< 9, uint8_t>
-,       int_set<15, uint8_t>
-,       int_set<16, uint8_t>
-,       int_set<17, uint8_t>
-,       int_set<24, uint8_t>
-,       int_set< 0, uint16_t>
-,       int_set< 1, uint16_t>
-,       int_set<15, uint16_t>
-,       int_set<16, uint16_t>
-,       int_set<17, uint16_t>
-,       int_set<31, uint16_t>
-,       int_set<32, uint16_t>
-,       int_set<33, uint16_t>
-,       int_set<48, uint16_t>
-,       int_set< 0, uint32_t>
-,       int_set< 1, uint32_t>
-,       int_set<31, uint32_t>
-,       int_set<32, uint32_t>
-,       int_set<33, uint32_t>
-,       int_set<63, uint32_t>
-,       int_set<64, uint32_t>
-,       int_set<65, uint32_t>
+,       bit_set< 0, uint8_t>
+,       bit_set< 1, uint8_t>
+,       bit_set< 7, uint8_t>
+,       bit_set< 8, uint8_t>
+,       bit_set< 9, uint8_t>
+,       bit_set<15, uint8_t>
+,       bit_set<16, uint8_t>
+,       bit_set<17, uint8_t>
+,       bit_set<24, uint8_t>
+,       bit_set< 0, uint16_t>
+,       bit_set< 1, uint16_t>
+,       bit_set<15, uint16_t>
+,       bit_set<16, uint16_t>
+,       bit_set<17, uint16_t>
+,       bit_set<31, uint16_t>
+,       bit_set<32, uint16_t>
+,       bit_set<33, uint16_t>
+,       bit_set<48, uint16_t>
+,       bit_set< 0, uint32_t>
+,       bit_set< 1, uint32_t>
+,       bit_set<31, uint32_t>
+,       bit_set<32, uint32_t>
+,       bit_set<33, uint32_t>
+,       bit_set<63, uint32_t>
+,       bit_set<64, uint32_t>
+,       bit_set<65, uint32_t>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
@@ -96,53 +96,53 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         all_singleton_set_pairs<T>(mem_swap{});
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& i1) {
-                        mem_find{}(i1, x);
+                all_singleton_sets<T>([&](auto& is1) {
+                        mem_find{}(is1, x);
                 });
-                all_singleton_sets<T>([&](auto const& i1) {
-                        mem_find{}(i1, x);
+                all_singleton_sets<T>([&](auto const& is1) {
+                        mem_find{}(is1, x);
                 });
         });
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto const& i1) {
-                        mem_count{}(i1, x);
+                all_singleton_sets<T>([&](auto const& is1) {
+                        mem_count{}(is1, x);
                 });
         });
 
         // std::set and boost::container::flat_set do not yet support contains() (added for C++2a)
         if constexpr (!(std::is_same_v<T, std::set<int>> || std::is_same_v<T, boost::container::flat_set<int>>)) {
                 all_values<T>([](auto const& x) {
-                        all_singleton_sets<T>([&](auto const& i1) {
-                                mem_contains{}(i1, x);
+                        all_singleton_sets<T>([&](auto const& is1) {
+                                mem_contains{}(is1, x);
                         });
                 });
         }
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& i1) {
-                        mem_lower_bound{}(i1, x);
+                all_singleton_sets<T>([&](auto& is1) {
+                        mem_lower_bound{}(is1, x);
                 });
-                all_singleton_sets<T>([&](auto const& i1) {
-                        mem_lower_bound{}(i1, x);
-                });
-        });
-
-        all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& i1) {
-                        mem_upper_bound{}(i1, x);
-                });
-                all_singleton_sets<T>([&](auto const& i1) {
-                        mem_upper_bound{}(i1, x);
+                all_singleton_sets<T>([&](auto const& is1) {
+                        mem_lower_bound{}(is1, x);
                 });
         });
 
         all_values<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& i1) {
-                        mem_equal_range{}(i1, x);
+                all_singleton_sets<T>([&](auto& is1) {
+                        mem_upper_bound{}(is1, x);
                 });
-                all_singleton_sets<T>([&](auto const& i1) {
-                        mem_equal_range{}(i1, x);
+                all_singleton_sets<T>([&](auto const& is1) {
+                        mem_upper_bound{}(is1, x);
+                });
+        });
+
+        all_values<T>([](auto const& x) {
+                all_singleton_sets<T>([&](auto& is1) {
+                        mem_equal_range{}(is1, x);
+                });
+                all_singleton_sets<T>([&](auto const& is1) {
+                        mem_equal_range{}(is1, x);
                 });
         });
 

@@ -29,12 +29,12 @@ struct nested_types
         static_assert(std::is_signed_v<typename X::difference_type>);
         static_assert(std::is_integral_v<typename X::difference_type>);
 
-        // we use a signed instead of an unsigned size_type for xstd::int_set
+        // we use a signed instead of an unsigned size_type for xstd::bit_set
         static_assert(std::is_integral_v<typename X::size_type>);
 
         static_assert(std::is_same_v<typename X::value_type, int>);
 
-        // we use a proxy reference for xstd::int_set which convertible to int const&, instead of the same as int const&
+        // we use a proxy reference for xstd::bit_set which convertible to int const&, instead of the same as int const&
         static_assert(std::is_convertible_v<typename X::const_reference, int const&>);
 
                                                                                 // [container.requirements.general] Table 84
@@ -88,10 +88,10 @@ struct op_assign
 struct mem_const_reference
 {
         template<class IntSet>
-        auto operator()(IntSet const& is) const noexcept
+        auto operator()(IntSet const& bs) const noexcept
         {
-                for (auto const ref : is) {
-                        BOOST_CHECK(is.count(ref));
+                for (auto const ref : bs) {
+                        BOOST_CHECK(bs.count(ref));
                 }
         }
 };
@@ -132,11 +132,11 @@ struct mem_const_iterator
 struct mem_front
 {
         template<class IntSet>
-        auto operator()(IntSet const& is [[maybe_unused]]) const noexcept
+        auto operator()(IntSet const& bs [[maybe_unused]]) const noexcept
         {
                 if constexpr (tti::has_front_v<IntSet>) {
-                        BOOST_CHECK(is.empty() || (is.front() == *is.cbegin()));
-                        BOOST_CHECK(is.empty() || (&is.front() == is.cbegin()));
+                        BOOST_CHECK(bs.empty() || (bs.front() == *bs.cbegin()));
+                        BOOST_CHECK(bs.empty() || (&bs.front() == bs.cbegin()));
                 }
         }
 };
@@ -144,11 +144,11 @@ struct mem_front
 struct mem_back
 {
         template<class IntSet>
-        auto operator()(IntSet const& is [[maybe_unused]]) const noexcept
+        auto operator()(IntSet const& bs [[maybe_unused]]) const noexcept
         {
                 if constexpr (tti::has_back_v<IntSet>) {
-                        BOOST_CHECK(is.empty() || (is.back() == *is.crbegin()));
-                        BOOST_CHECK(is.empty() || (&is.back() == std::next(is.crbegin()).base()));
+                        BOOST_CHECK(bs.empty() || (bs.back() == *bs.crbegin()));
+                        BOOST_CHECK(bs.empty() || (&bs.back() == std::next(bs.crbegin()).base()));
                 }
         }
 };

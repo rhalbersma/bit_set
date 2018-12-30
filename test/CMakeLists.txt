@@ -65,7 +65,7 @@ foreach(t ${targets})
     add_executable(${target_id} src/${t})
 
     target_link_libraries(${target_id} PRIVATE
-        int_set
+        bit_set
         Boost::unit_test_framework
         ${cxx_linker_options_coverage}
     )

@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <traits.hpp>
-#include <xstd/int_set.hpp>                     // int_set
+#include <xstd/bit_set.hpp>                     // bit_set
 #include <boost/dynamic_bitset.hpp>             // dynamic_bitset
 #include <boost/mpl/vector.hpp>                 // vector
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
@@ -22,11 +22,11 @@ using bitset_types = boost::mpl::vector
 ,       std::bitset< 64>
 ,       std::bitset<128>
 ,       std::bitset<256>
-,       int_set<  0>
-,       int_set< 32>
-,       int_set< 64>
-,       int_set<128>
-,       int_set<256>
+,       bit_set<  0>
+,       bit_set< 32>
+,       bit_set< 64>
+,       bit_set<128>
+,       bit_set<256>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsNothrowDefaultConstructible, T, bitset_types)

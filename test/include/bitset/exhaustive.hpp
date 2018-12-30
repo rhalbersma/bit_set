@@ -9,7 +9,7 @@
 #include <utility>      // declval
 
 #if defined(_MSC_VER)
-        // std::bitset<0> and int_set<0> give bogus "unreachable code" warnings
+        // std::bitset<0> and bit_set<0> give bogus "unreachable code" warnings
         __pragma(warning(disable: 4702))
 #endif
 
