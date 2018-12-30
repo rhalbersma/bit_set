@@ -19,7 +19,7 @@ As the quote from the first C++ Standard Committee paper on what would eventuall
 | Ordered set of integers | | Sequence of bits | | This library | |
 | :---------------------- |-| :--------------- |-| :----------- |-|
 | `std::set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/D5j68sUHu6XOUL3L) | `std::bitset<N>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/GjVDJtGl2qDzGsTu) | `xstd::bit_set<N>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/soZ9TbkG31Kmn1Fv) |
-| `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/lFMYEzerQpXOEDfH) | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/74IuX2Fw6AO70D4f) || |
+| `boost::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/lFMYEzerQpXOEDfH) | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/74IuX2Fw6AO70D4f) || |
 | `xstd::bit_set<N>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/mtoXa0DRLlWZR1wF) |||||
 
 The code below demonstrates how the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all primes below a compile time number `N` can be implemented using set algorithms for different interpretations of a set. The three code examples show how `xstd::bit_set<N>` can be used as a drop-in replacement for `std::set<int>`, including the full iterator manipulation for generating twin primes. In addition, `xstd::bit_set<N>` is also equally expressive and performant as `std::bitset<N>` through its bitwise operators and stack-based allocation.
@@ -82,12 +82,12 @@ int main()
     // pretty-print solution
     std::cout << '[';
     std::copy(primes.begin(), primes.end(),
-        std::experimental::ostream_joiner(std::cout, ',')
+        ostream_joiner(std::cout, ',')
     );
     std::cout << "]\n";
     std::cout << '[';
     std::copy(twins.begin(), twins.end(),
-        std::experimental::ostream_joiner(std::cout, ',')
+        ostream_joiner(std::cout, ',')
     );
     std::cout << "]\n";
 }
