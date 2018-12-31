@@ -6,7 +6,7 @@
 Rebooting the `std::bitset` franchise
 =====================================
 
-`xstd::bit_set<N>` is a modern and opiniated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less than `std::bitset<N>` (e.g. no bounds-checking and no exceptions) yet offers more (e.g. iterators to seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax**, identical to `std::set<int>`, typically leading to cleaner, more expressive code.
+`xstd::bit_set<N>` is a modern and opinionated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less than `std::bitset<N>` (e.g. no bounds-checking and no exceptions) yet offers more (e.g. iterators to seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax**, identical to `std::set<int>`, typically leading to cleaner, more expressive code.
 
 The `bitset` landscape
 ----------------------
