@@ -54,7 +54,7 @@
 
 #if defined(__GNUG__)
 
-#define XSTD_PP_CONSTEXPR_INTRINSIC     /* constexpr */
+#define XSTD_PP_CONSTEXPR_INTRINSIC     constexpr
 
 #elif defined(_MSC_VER)
 
