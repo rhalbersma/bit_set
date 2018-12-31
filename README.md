@@ -3,162 +3,40 @@
 [![License](https://img.shields.io/badge/license-Boost-blue.svg)](https://opensource.org/licenses/BSL-1.0)
 [![](https://tokei.rs/b1/github/rhalbersma/bit_set)](https://github.com/rhalbersma/bit_set)
 
-> "A `bitset` can be seen as either an array of bits or a set of integers."  
-> Chuck Allison, [ISO/WG21/N0075](http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/1991/WG21%201991/X3J16_91-0142%20WG21_N0075.pdf), November 25, 1991
-
 Rebooting the `std::bitset` franchise
 =====================================
 
 `xstd::bit_set<N>` is a modern and opiniated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less than `std::bitset<N>` (e.g. no bounds-checking and no exceptions) yet offers more (e.g. iterators to seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax**, identical to `std::set<int>`, typically leading to cleaner, more expressive code.
 
+The `bitset` landscape
+----------------------
+
+> "A `bitset` can be seen as either an array of bits or a set of integers."  
+> Chuck Allison, [ISO/WG21/N0075](http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/1991/WG21%201991/X3J16_91-0142%20WG21_N0075.pdf), November 25, 1991
+
+The above quote is from the first C++ Standard Committee paper on what would eventually become `std::bitset<N>`. It shows that one can take several perspectives on what a `bitset` actually represents.
+  - `std::bitset<N>` and `boost::dynamic_bitset<>` take the perspective of a sequence of bits, both in interface and implementation;
+  - `std::set<int>` and `boost::container::flat_set<int>` take the persective of an ordered set of integers, both in interface and implementation;
+  - `xstd::bit_set<N>` straddles both perspectives: it presents an interface of an ordered set of integers, implemented as a sequence of bits, combining the best of both worlds.
+
+The table below summarizes the landscape of `bitset` interpretations.
+
+| Interface               | Implementation          | Library                                                |
+| :--------               | :-------------          | :------                                                |
+| Sequence of bits        | Sequence of bits        | `std::bitset<N>` <br> `boost::dynamic_bitset<>`        |
+| Ordered set of integers | Sequence of bits        | `xstd::bit_set<N>`                                     |
+| Ordered set of integers | Ordered set of integers | `std::set<int>` <br> `boost::container::flat_set<int>` |
+
 Hello World
 ===========
 
-As the quote from the first C++ Standard Committee paper on what would eventually become `std::bitset<N>` shows, one can take several perspectives on what a bitset actually represents. `std::bitset<N>` mostly leans towards the sequence of bits perspective, emphasising compatibility with unsigned integers and bitstrings. In contrast, this library provides `xstd::bit_set<N>` as an ordered set of integers interface on top of a sequence of bits implementation, combining the best of both worlds. The table below summarizes the landscape of bitset interpretations.
+The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
 
-| Ordered set of integers | | Sequence of bits | | This library | |
-| :---------------------- |-| :--------------- |-| :----------- |-|
-| `std::set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/D5j68sUHu6XOUL3L) | `std::bitset<N>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/GjVDJtGl2qDzGsTu) | `xstd::bit_set<N>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/soZ9TbkG31Kmn1Fv) |
-| `boost::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/lFMYEzerQpXOEDfH) | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/74IuX2Fw6AO70D4f) || |
-| `xstd::bit_set<N>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/mtoXa0DRLlWZR1wF) |||||
-
-The code below demonstrates how the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all primes below a compile time number `N` can be implemented using set algorithms for different interpretations of a set. The three code examples show how `xstd::bit_set<N>` can be used as a drop-in replacement for `std::set<int>`, including the full iterator manipulation for generating twin primes. In addition, `xstd::bit_set<N>` is also equally expressive and performant as `std::bitset<N>` through its bitwise operators and stack-based allocation.
-
-> **Note**: we use a wrapper `xstd::for_each` around the `find_first()` and `find_next()` member functions of `boost::dynamic_bitset<>`.  
-> The GCC compiler provides `_Find_first()` and `_Find_next()` member functions as a similar extension for `std::bitset<N>`.
-
-<table>
-<tr>
-<th> Ordered set of integers </th>
-<th> Sequence of bits </th>
-<th> This library </th>
-</tr>
-<tr>
-<td valign="top">
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/6GmXBapKstWIY6rx)
 
 ```cpp
-#include <algorithm>
+#include "xstd/bit_set.hpp"
 #include <iostream>
-#include <experimental/iterator>
-#include <set>
-
-constexpr auto N = 100;
-using set_type = std::set<int>;
-
-int main()
-{
-    // initialize all numbers from [2, N)
-    set_type primes;
-    for (auto i = 2; i < N; ++i) {
-        primes.insert(i);
-    }
-
-    // find all primes below N
-    for (auto const& p : primes) {
-        auto const p_squared = p * p;
-        if (p_squared >= N) break;
-        for (auto n = p_squared; n < N; n += p) {
-            primes.erase(n);
-        }
-    }
-
-    // find all twin primes below N
-    set_type twins;
-    for (auto it = primes.begin();
-        it != primes.end()
-            && std::next(it) != primes.end()
-        ;
-    ) {
-        it = std::adjacent_find(it, primes.end(),
-            [](auto p, auto q) {
-                return q - p == 2;
-            }
-        );
-        if (it != primes.end()) {
-            twins.insert(*it++);
-        }
-    }
-
-    // pretty-print solution
-    std::cout << '[';
-    std::copy(primes.begin(), primes.end(),
-        ostream_joiner(std::cout, ',')
-    );
-    std::cout << "]\n";
-    std::cout << '[';
-    std::copy(twins.begin(), twins.end(),
-        ostream_joiner(std::cout, ',')
-    );
-    std::cout << "]\n";
-}
-```
-</td>
-<td valign="top">
-
-```cpp
-#include <xstd/for_each.hpp>
-#include <bitset>
-#include <iostream>
-
-
-constexpr auto N = 100;
-using set_type = std::bitset<N>;
-
-int main()
-{
-    // initialize all numbers from [2, N)
-    set_type primes;
-    primes.set();
-    primes.reset(0);
-    primes.reset(1);
-
-    // find all primes below N
-    xstd::for_each(primes, [&](auto const& p) {
-        auto const p_squared = p * p;
-        if (p_squared >= N) return;
-        for (auto n = p_squared; n < N; n += p) {
-            primes.reset(n);
-        }
-    });
-
-    // find all twin primes below N
-    auto const twins = primes & primes >> 2;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // pretty-print solution
-    std::cout << '[';
-    xstd::for_each(primes, [&](auto const& p) {
-        std::cout << p << ',';
-    });
-    std::cout << "]\n";
-    std::cout << '[';
-    xstd::for_each(twins, [&](auto const& t) {
-        std::cout << t << ',';
-    });
-    std::cout << "]\n";
-}
-```
-</td>
-<td  valign="top">
-
-```cpp
-#include <xstd/bit_set.hpp>
-#include <iostream>
-
-
 
 constexpr auto N = 100;
 using set_type = xstd::bit_set<N>;
@@ -167,58 +45,102 @@ int main()
 {
     // initialize all numbers from [2, N)
     set_type primes;
-    primes.fill();
-    primes.erase({0, 1});
-
+    primes.fill();                              // renamed set() member from std::bitset<N>
+    primes.erase({0, 1});                       // new erase() overload taking initializer_list<int>
 
     // find all primes below N
-    for (auto const& p : primes) {
+    for (auto const& p : primes) {              // range-for finds begin() / end() iterators
         auto const p_squared = p * p;
         if (p_squared >= N) break;
         for (auto n = p_squared; n < N; n += p) {
-            primes.erase(n);
+            primes.erase(n);                    // regular erase() overload from std::set<int>
         }
     }
 
     // find all twin primes below N
-    auto const twins = primes & primes >> 2;
+    auto const twins = primes & primes >> 2;    // bitwise operators from std::bitset<N>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // pretty-print solution
+    // pretty-print solution (similar to Ranges TS)
     std::cout << primes << '\n';
-
-
-
-
-    std::cout << twins << '\n';
-
-
-
-
+    std::cout << twins  << '\n';
 }
 ```
-</td>
-</tr>
-</table>
+
+which has as output:
+<pre>
+[2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97]
+[3,5,11,17,29,41,59,71]
+</pre>
+
+Sequence of bits
+----------------
+
+How would the Sieve of Eratosthenes code look when using a sequence of bits? The links in the table below provide the full code examples for `std::bitset<N>` and `boost::dynamic_bitset<>`.
+
+| Library                   | Try it online |
+| :------                   | :------------ |
+| `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/pCZBezV8DSbTdpYz) |
+| `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/LpQn81IIVm3qbOYN) |
+
+The essential difference (apart from differently member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-Standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of the existing `std::begin` and `std::end` entail **undefined behavior**, preventing range-for support for `std::bitset<N>`. The best one can do is a manual loop like below (or wrapped in a `for_each` non-member function)
+
+```cpp
+// find all primes below N
+for (auto p = primes._Find_first(); p < N; p = primes._Find_next(p)) {
+    // ...
+}
+```
+
+The output of these `bitset` implemenations gives a bitstring, to be read from right-to-left:
+<pre>
+0010000000100000100010000010100010000010100000100000100010100010000010100000100010100010100010101100
+0000000000000000000000000000100000000000100000000000000000100000000000100000000000100000100000101000
+</pre>
+
+Printing the actual bit indices requires a manual loop using the `_Find_first` and `_Find_next` extensions mentioned above.
+
+Ordered set of integers
+-----------------------
+
+How would the Sieve of Eratosthenes code look when using an ordered set of integers? The links in the table below provide the full code examples for `std::set<int>` and `boost::container::flat_set<int>`. It turns out that `xstd::bit_set<N>` is a **drop-in replacement** for either of these `set` implementations.
+
+| Library                           | Try it online |
+| :------                           | :------------ |
+| `std::set<int>`                   | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/Wqk9tsDYfSmb2RFN) |
+| `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/BSAu0BWw3St5TCdm) |
+| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/AGoQt2sTTf7V19a4) |
+
+The essential difference is the lack of bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. Printing the solution is also a little more involved, requiring the use of the still experimental `ostream_joiner` iterator.
+
+```cpp
+// find all twin primes below N
+set_type twins;
+for (auto it = primes.begin(); it != primes.end() && std::next(it) != primes.end();) {
+    it = std::adjacent_find(it, primes.end(), [](auto p, auto q) {
+        return q - p == 2;
+    });
+    if (it != primes.end()) {
+        twins.insert(*it++);
+    }
+}
+
+// print solution
+using namespace std::experimental;
+std::copy(primes.begin(), primes.end(), ostream_joiner(std::cout, ',')); std::cout << '\n';
+std::copy(twins .begin(), twins .end(), ostream_joiner(std::cout, ',')); std::cout << '\n';
+```
+
+which has as output:
+<pre>
+2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97
+3,5,11,17,29,41,59,71
+</pre>
 
 Documentation
 =============
 
 The interface for the class template `xstd::bit_set<N>` consist of three major pieces:
-  1. the member functions of [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) renamed to the naming conventions of [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
+  1. the member functions of [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) renamed to the vocabulary of [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
   2. the bitwise operators `&=`, `|=`, `^=`, `<<=`, `>>=`, `~`, `&`, `|`, `^`, `<<`, `>>` from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset);
   3. the set algorithms `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in [`boost::dynamic_bitset<>`](https://www.boost.org/doc/libs/1_67_0/libs/dynamic_bitset/dynamic_bitset.html);
 
@@ -236,21 +158,21 @@ Instead of throwing an `out_of_range` exception for argument values outside the 
 
 | Expression for `std::bitset<N>` | Expression for `xstd::bit_set<N>`            | Semantics for `xstd::bit_set<N>`                    |
 | :------------------------------ | :------------------------------------------- | :-------------------------------------------------- |
-| `bs.set()`                      | `bs.fill()`                                  | |
+| `bs.set()`                      | `bs.fill()`                                  | not a member of `std::set<int>`                     |
 | `bs.set(pos)`                   | `bs.insert(pos)`                             | does not do bounds-checking or throw `out_of_range` |
 | `bs.set(pos, val)`              | `val ? bs.insert(pos) : bs.erase(pos)`       | does not do bounds-checking or throw `out_of_range` |
-| `bs.reset()`                    | `bs.clear()`                                 | |
+| `bs.reset()`                    | `bs.clear()`                                 |                                                     |
 | `bs.reset(pos)`                 | `bs.erase(pos)`                              | does not do bounds-checking or throw `out_of_range` |
-| `bs.flip()`                     | `bs.complement()`                            | |
-| `bs.flip(pos)`                  | `bs.replace(pos)`                            | does not do bounds-checking or throw `out_of_range` |
+| `bs.flip()`                     | `bs.complement()`                            | not a member of `std::set<int>`                     |
+| `bs.flip(pos)`                  | `bs.replace(pos)`                            | does not do bounds-checking or throw `out_of_range` <br> not a member of `std::set<int>` |
 | `bs.count()`                    | `bs.size()`                                  | returns a signed `size_type`                        |
-| `bs.size()`                     | `bs.max_size()`                              | returns a signed `size_type`; is a `static` member  |
+| `bs.size()`                     | `bs.max_size()`                              | returns a signed `size_type` <br> is a `static` member |
 | `bs.test(pos)`                  | `bs.contains(pos)`                           | does not do bounds-checking or throw `out_of_range` |
-| `bs.all()`                      | `bs.full()`                                  | |
-| `bs.any()`                      | `!bs.empty()`                                | |
-| `bs.none()`                     | `bs.empty()`                                 | |
-| `bs[pos]`                       | `bs.contains(pos)`                           | |
-| `bs[pos] = val`                 | `val ? bs.insert(pos) : bs.erase(pos)`       | |
+| `bs.all()`                      | `bs.full()`                                  | not a member of `std:set<int>`                      |
+| `bs.any()`                      | `!bs.empty()`                                |                                                     |
+| `bs.none()`                     | `bs.empty()`                                 |                                                     |
+| `bs[pos]`                       | `bs.contains(pos)`                           | a member of `std::set<int>` as of C++20             |
+| `bs[pos] = val`                 | `val ? bs.insert(pos) : bs.erase(pos)`       |                                                     |
 
 Semantic differences for bitwise-shift operators
 ------------------------------------------------
@@ -267,61 +189,7 @@ The bitwise-shift operators in `std::bitset<N>` and `xstd::bit_set<N>` have **id
 Semantic differences for I/O streaming operators
 ------------------------------------------------
 
-The semantic differences between `std::bitset<N>` and `xstd::bitset<N>` are most visible in its overloaded I/O streaming `operator<<` and `operator>>`.
-
-<table>
-<tr>
-<th> Sequence of bits (right to left) </th>
-<th> Ordered set of integers (left to right) </th>
-</tr>
-<tr>
-<td  valign="top">
-
-```cpp
-#include <bitset>
-#include <iostream>
-
-constexpr auto N = 8;
-using set_type = std::bitset<N>;
-
-int main()
-{
-    set_type primes;
-    primes.set(2);
-    primes.set(3);
-    primes.set(5);
-    primes.set(7);
-    std::cout << primes << '\n';
-}
-```
-</td>
-
-<td  valign="top">
-
-```cpp
-#include "xstd/bit_set.hpp"
-#include <iostream>
-
-constexpr auto N = 8;
-using set_type = xstd::bit_set<N>;
-
-int main()
-{
-    set_type primes { 2, 3, 5, 7 };
-
-
-
-
-    std::cout << primes << '\n';
-}
-```
-</td>
-</tr>
-<tr>
-<td> <pre> 10101100 </pre> </td>
-<td> <pre> [2,3,5,7] </pre> </td>
-</tr>
-</table>
+The semantic differences between `std::bitset<N>` and `xstd::bitset<N>` are most visible in its overloaded I/O streaming `operator<<` and `operator>>`. The former reads and writes a bitstring from right-to-left, whereas the latter reads and writes an ordered set of integers from left-to-right, formatted as a comma-seperated sequence between brackets. Note that `std::set<int>` lacks overloaded I/O streaming operators.
 
 Functionality from `std::bitset<N>` that is not in `xstd::bit_set<N>`
 ---------------------------------------------------------------------
@@ -393,7 +261,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Platform | Compiler | Versions | Build |
 | :------- | :------- | :------- | :---- |
 | Linux    | Clang <br> GCC | 6.0, 7, 8-SVN<br> 7.3, 8.2 | [![codecov](https://codecov.io/gh/rhalbersma/bit_set/branch/master/graph/badge.svg)](https://codecov.io/gh/rhalbersma/bit_set) <br> [![Build Status](https://travis-ci.org/rhalbersma/bit_set.svg)](https://travis-ci.org/rhalbersma/bit_set) |
-| Windows  | Visual Studio  |                     15.9.4 | [![Build status](https://ci.appveyor.com/api/projects/status/hcuoesbavuw5v7y8?svg=true)](https://ci.appveyor.com/project/rhalbersma/int-set) |
+| Windows  | Visual Studio  |                     15.9.4 | [![Build status](https://ci.appveyor.com/api/projects/status/hcuoesbavuw5v7y8?svg=true)](https://ci.appveyor.com/project/rhalbersma/bit-set) |
 
 License
 =======
