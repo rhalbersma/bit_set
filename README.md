@@ -8,24 +8,24 @@ Rebooting the `std::bitset` franchise
 
 `xstd::bit_set<N>` is a modern and opinionated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less than `std::bitset<N>` (e.g. no bounds-checking and no exceptions) yet offers more (e.g. iterators to seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax**, identical to `std::set<int>`, typically leading to cleaner, more expressive code.
 
-The `bitset` landscape
+The current `bitset` landscape
 ----------------------
 
 > "A `bitset` can be seen as either an array of bits or a set of integers."  
 > Chuck Allison, [ISO/WG21/N0075](http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/1991/WG21%201991/X3J16_91-0142%20WG21_N0075.pdf), November 25, 1991
 
-The above quote is from the first C++ Standard Committee paper on what would eventually become `std::bitset<N>`. It shows that one can take several perspectives on what a `bitset` actually represents.
-  - `std::bitset<N>` and `boost::dynamic_bitset<>` take the perspective of a sequence of bits, both in interface and implementation;
-  - `std::set<int>` and `boost::container::flat_set<int>` take the persective of an ordered set of integers, both in interface and implementation;
-  - `xstd::bit_set<N>` straddles both perspectives: it presents an interface of an ordered set of integers, implemented as a sequence of bits, combining the best of both worlds.
-
-The table below summarizes the landscape of `bitset` interpretations.
+The above quote is from the first C++ Standard Committee paper on what would eventually become `std::bitset<N>`. The table below summarizes the current landscape of `bitset` interpretations.
 
 | Interface               | Implementation          | Library                                                |
 | :--------               | :-------------          | :------                                                |
 | Sequence of bits        | Sequence of bits        | `std::bitset<N>` <br> `boost::dynamic_bitset<>`        |
-| Ordered set of integers | Sequence of bits        | `xstd::bit_set<N>`                                     |
+| Ordered set of integers | Sequence of bits        | `xstd::bit_set<N>` (**this library**)                  |
 | Ordered set of integers | Ordered set of integers | `std::set<int>` <br> `boost::container::flat_set<int>` |
+
+It shows that one can take several perspectives on what a `bitset` actually represents.
+  - `std::bitset<N>` and `boost::dynamic_bitset<>` take the perspective of a sequence of bits, both in interface and implementation;
+  - `std::set<int>` and `boost::container::flat_set<int>` take the persective of an ordered set of integers, both in interface and implementation;
+  - `xstd::bit_set<N>` straddles both perspectives: it presents an interface of an ordered set of integers, implemented as a sequence of bits, combining the best of both worlds.
 
 Hello World
 ===========
@@ -82,7 +82,7 @@ How would the Sieve of Eratosthenes code look when using a sequence of bits? The
 | `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/pCZBezV8DSbTdpYz) |
 | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/LpQn81IIVm3qbOYN) |
 
-The essential difference (apart from differently member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-Standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of the existing `std::begin` and `std::end` entail **undefined behavior**, preventing range-for support for `std::bitset<N>`. The best one can do is a manual loop like below (or wrapped in a `for_each` non-member function)
+The essential difference (apart from differently member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of the existing `std::begin` and `std::end` entail **undefined behavior**, preventing range-for support for `std::bitset<N>`. The best one can do is a manual loop like below (or wrapped in a `for_each` non-member function)
 
 ```cpp
 // find all primes below N
@@ -102,7 +102,7 @@ Printing the actual bit indices requires a manual loop using the `_Find_first` a
 Ordered set of integers
 -----------------------
 
-How would the Sieve of Eratosthenes code look when using an ordered set of integers? The links in the table below provide the full code examples for `std::set<int>` and `boost::container::flat_set<int>`. It turns out that `xstd::bit_set<N>` is a **drop-in replacement** for either of these `set` implementations.
+How would the Sieve of Eratosthenes code look when using an ordered set of integers? The links in the table below provide the full code examples for `std::set<int>` and `boost::container::flat_set<int>`. By design, `xstd::bit_set<N>` is a **drop-in replacement** for either of these `set` implementations.
 
 | Library                           | Try it online |
 | :------                           | :------------ |
@@ -266,6 +266,6 @@ This single-header library has no other dependencies than the C++ Standard Libra
 License
 =======
 
-Copyright Rein Halbersma 2014-2018.
-Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/users/license.html).
+Copyright Rein Halbersma 2014-2018.  
+Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/users/license.html).  
 (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
