@@ -24,7 +24,7 @@ The above quote is from the first C++ Standard Committee paper on what would eve
 
 It shows that one can take several perspectives on what a `bitset` actually represents.
   - `std::bitset<N>` and `boost::dynamic_bitset<>` take the perspective of a sequence of bits, both in interface and implementation;
-  - `std::set<int>` and `boost::container::flat_set<int>` take the persective of an ordered set of integers, both in interface and implementation;
+  - `std::set<int>` and `boost::container::flat_set<int>` take the perspective of an ordered set of integers, both in interface and implementation;
   - `xstd::bit_set<N>` straddles both perspectives: it presents an interface of an ordered set of integers, implemented as a sequence of bits, combining the best of both worlds.
 
 Hello World
