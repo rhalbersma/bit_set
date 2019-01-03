@@ -54,11 +54,25 @@
 
 #if defined(__GNUG__)
 
-#define XSTD_PP_CONSTEXPR_INTRINSIC     constexpr
+#define XSTD_PP_CONSTEXPR_INTRINSIC     true
 
 #elif defined(_MSC_VER)
 
-#define XSTD_PP_CONSTEXPR_INTRINSIC     /* constexpr */
+#define XSTD_PP_CONSTEXPR_INTRINSIC     false
+
+#endif
+
+#if XSTD_PP_CONSTEXPR_INTRINSIC
+
+#define XSTD_PP_CONSTEXPR_INTRINSIC_FUN constexpr
+#define XSTD_PP_CONSTEXPR_INTRINSIC_MEM constexpr
+#define XSTD_PP_CONSTEXPR_INTRINSIC_VAR constexpr
+
+#else
+
+#define XSTD_PP_CONSTEXPR_INTRINSIC_FUN /* constexpr */
+#define XSTD_PP_CONSTEXPR_INTRINSIC_MEM inline const
+#define XSTD_PP_CONSTEXPR_INTRINSIC_VAR const
 
 #endif
 
@@ -86,7 +100,7 @@ constexpr auto get(__uint128_t const x) noexcept
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(T const x) // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto ctznz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
         if constexpr (sizeof(T) < sizeof(unsigned)) {
@@ -103,7 +117,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(T const x) // Throws: Nothing.
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(T const x) // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsfnz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
         return ctznz(x);
@@ -112,7 +126,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(T const x) // Throws: Nothing.
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(T const x) // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto clznz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
         if constexpr (sizeof(T) < sizeof(unsigned)) {
@@ -130,7 +144,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(T const x) // Throws: Nothing.
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(T const x) // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsrnz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
         return std::numeric_limits<T>::digits - 1 - clznz(x);
@@ -139,7 +153,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(T const x) // Throws: Nothing.
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(T const x) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto popcount(T const x) noexcept
 {
         if constexpr (sizeof(T) < sizeof(unsigned)) {
                 return __builtin_popcount(static_cast<unsigned>(x));
@@ -171,7 +185,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(T const x) noexcept
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(T const x) // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsfnz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
         unsigned long index;
@@ -188,7 +202,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto bsfnz(T const x) // Throws: Nothing.
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(T const x) // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto ctznz(T const x) // Throws: Nothing.
 {
         return bsfnz(x);
 }
@@ -196,7 +210,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto ctznz(T const x) // Throws: Nothing.
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(T const x) // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsrnz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
         unsigned long index;
@@ -213,7 +227,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto bsrnz(T const x) // Throws: Nothing.
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(T const x) // Throws: Nothing.
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto clznz(T const x) // Throws: Nothing.
 {
         assert(x != 0);
         return std::numeric_limits<T>::digits - 1 - bsrnz(x);
@@ -222,7 +236,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto clznz(T const x) // Throws: Nothing.
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(T const x) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto popcount(T const x) noexcept
 {
         if constexpr (sizeof(T) < sizeof(unsigned short)) {
                 return static_cast<int>(__popcnt16(static_cast<unsigned short>(x)));
@@ -240,7 +254,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto popcount(T const x) noexcept
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto ctz(T const x) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto ctz(T const x) noexcept
 {
         return x ? ctznz(x) : std::numeric_limits<T>::digits;
 }
@@ -248,7 +262,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto ctz(T const x) noexcept
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsf(T const x) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsf(T const x) noexcept
 {
         return x ? bsfnz(x) : std::numeric_limits<T>::digits;
 }
@@ -256,7 +270,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto bsf(T const x) noexcept
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto clz(T const x) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto clz(T const x) noexcept
 {
         return x ? clznz(x) : std::numeric_limits<T>::digits;
 }
@@ -264,7 +278,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC auto clz(T const x) noexcept
 template<class T, std::enable_if_t<
         std::is_unsigned_v<T> && std::is_integral_v<T>
 >...>
-XSTD_PP_CONSTEXPR_INTRINSIC auto bsr(T const x) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsr(T const x) noexcept
 {
         return x ? bsrnz(x) : -1;
 }
@@ -334,29 +348,29 @@ public:
                 return *this;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()         noexcept { return       iterator{this, find_first()}; }
-        XSTD_PP_CONSTEXPR_INTRINSIC auto begin()   const noexcept { return const_iterator{this, find_first()}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto begin()         noexcept { return       iterator{this, find_first()}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto begin()   const noexcept { return const_iterator{this, find_first()}; }
         constexpr                   auto end()           noexcept { return       iterator{this, N}; }
         constexpr                   auto end()     const noexcept { return const_iterator{this, N}; }
 
         constexpr                   auto rbegin()        noexcept { return       reverse_iterator{end()}; }
         constexpr                   auto rbegin()  const noexcept { return const_reverse_iterator{end()}; }
-        XSTD_PP_CONSTEXPR_INTRINSIC auto rend()          noexcept { return       reverse_iterator{begin()}; }
-        XSTD_PP_CONSTEXPR_INTRINSIC auto rend()    const noexcept { return const_reverse_iterator{begin()}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto rend()          noexcept { return       reverse_iterator{begin()}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto rend()    const noexcept { return const_reverse_iterator{begin()}; }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin()  const noexcept { return const_iterator{begin()}; }
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto cbegin()  const noexcept { return const_iterator{begin()}; }
         constexpr                   auto cend()    const noexcept { return const_iterator{end()};   }
         constexpr                   auto crbegin() const noexcept { return const_reverse_iterator{rbegin()}; }
-        XSTD_PP_CONSTEXPR_INTRINSIC auto crend()   const noexcept { return const_reverse_iterator{rend()};   }
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto crend()   const noexcept { return const_reverse_iterator{rend()};   }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto front() const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto front() const // Throws: Nothing.
                 -> const_reference
         {
                 assert(!empty());
                 return { *this, find_front() };
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto back() const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto back() const // Throws: Nothing.
                 -> const_reference
         {
                 assert(!empty());
@@ -409,7 +423,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto size() const noexcept
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto size() const noexcept
                 -> size_type
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -608,42 +622,42 @@ public:
                 return false;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto lower_bound(key_type const& x) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto lower_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
                 assert(0 <= x); assert(x < N);
                 return { this, find_first_from(x) };
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto lower_bound(key_type const& x) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto lower_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(0 <= x); assert(x < N);
                 return { this, find_first_from(x) };
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto upper_bound(key_type const& x) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto upper_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
                 assert(0 <= x); assert(x < N);
                 return { this, find_first_from(x + 1) };
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto upper_bound(key_type const& x) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto upper_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(0 <= x); assert(x < N);
                 return { this, find_first_from(x + 1) };
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto equal_range(key_type const& x) // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto equal_range(key_type const& x) // Throws: Nothing.
                 -> std::pair<iterator, iterator>
         {
                 assert(0 <= x); assert(x < N);
                 return { lower_bound(x), upper_bound(x) };
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto equal_range(key_type const& x) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto equal_range(key_type const& x) const // Throws: Nothing.
                 -> std::pair<const_iterator, const_iterator>
         {
                 assert(0 <= x); assert(x < N);
@@ -861,7 +875,7 @@ private:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto find_front() const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_front() const // Throws: Nothing.
         {
                 assert(!empty());
                 if constexpr (num_logical_blocks == 1) {
@@ -883,7 +897,7 @@ private:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto find_back() const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_back() const // Throws: Nothing.
         {
                 assert(!empty());
                 if constexpr (num_logical_blocks == 1) {
@@ -905,7 +919,7 @@ private:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto find_first() const noexcept
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_first() const noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
                         if (m_data[0]) {
@@ -922,7 +936,7 @@ private:
                 return N;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto find_first_from(int n) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_first_from(int n) const // Throws: Nothing.
         {
                 assert(0 <= n); assert(n <= N);
                 if (n == N) {
@@ -950,7 +964,7 @@ private:
                 return N;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC auto find_last_from(int n) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_last_from(int n) const // Throws: Nothing.
         {
                 assert(0 <= n); assert(n < N);
                 if constexpr (num_logical_blocks == 1) {
@@ -1050,7 +1064,7 @@ private:
                         return { *m_bs, m_value };
                 }
 
-                XSTD_PP_CONSTEXPR_INTRINSIC auto& operator++() // Throws: Nothing.
+                XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto& operator++() // Throws: Nothing.
                 {
                         assert(0 <= m_value); assert(m_value < N);
                         m_value = m_bs->find_first_from(m_value + 1);
@@ -1058,12 +1072,12 @@ private:
                         return *this;
                 }
 
-                XSTD_PP_CONSTEXPR_INTRINSIC auto operator++(int) // Throws: Nothing.
+                XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto operator++(int) // Throws: Nothing.
                 {
                         auto nrv = *this; ++*this; return nrv;
                 }
 
-                XSTD_PP_CONSTEXPR_INTRINSIC auto& operator--() // Throws: Nothing.
+                XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto& operator--() // Throws: Nothing.
                 {
                         assert(0 < m_value); assert(m_value <= N);
                         m_value = m_bs->find_last_from(m_value - 1);
@@ -1071,7 +1085,7 @@ private:
                         return *this;
                 }
 
-                XSTD_PP_CONSTEXPR_INTRINSIC auto operator--(int) // Throws: Nothing.
+                XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto operator--(int) // Throws: Nothing.
                 {
                         auto nrv = *this; --*this; return nrv;
                 }
@@ -1289,14 +1303,14 @@ XSTD_PP_CONSTEXPR_SWAP auto swap(bit_set<N, Block>& lhs, bit_set<N, Block>& rhs)
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto begin(bit_set<N, Block>& bs) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto begin(bit_set<N, Block>& bs) noexcept
         -> decltype(bs.begin())
 {
         return bs.begin();
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto begin(bit_set<N, Block> const& bs) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto begin(bit_set<N, Block> const& bs) noexcept
         -> decltype(bs.begin())
 {
         return bs.begin();
@@ -1331,21 +1345,21 @@ constexpr auto rbegin(bit_set<N, Block> const& bs) noexcept
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto rend(bit_set<N, Block>& bs) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto rend(bit_set<N, Block>& bs) noexcept
         -> decltype(bs.rend())
 {
         return bs.rend();
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto rend(bit_set<N, Block> const& bs) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto rend(bit_set<N, Block> const& bs) noexcept
         -> decltype(bs.rend())
 {
         return bs.rend();
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto cbegin(bit_set<N, Block> const& bs) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto cbegin(bit_set<N, Block> const& bs) noexcept
         -> decltype(xstd::begin(bs))
 {
         return xstd::begin(bs);
@@ -1366,7 +1380,7 @@ constexpr auto crbegin(bit_set<N, Block> const& bs) noexcept
 }
 
 template<int N, class Block>
-XSTD_PP_CONSTEXPR_INTRINSIC auto crend(bit_set<N, Block> const& bs) noexcept
+XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto crend(bit_set<N, Block> const& bs) noexcept
         -> decltype(xstd::rend(bs))
 {
         return xstd::rend(bs);
