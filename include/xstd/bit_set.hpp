@@ -93,7 +93,7 @@ namespace builtin {
 template<int N>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto get(__uint128_t x) noexcept
 {
-        static_assert(0 <= N); static_assert(N < 2);
+        static_assert(0 <= N && N < 2);
         return static_cast<uint64_t>(x >> (64 * N));
 }
 
@@ -296,16 +296,15 @@ template<int N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM bool intersects  (bit_s
 template<int N, class Block = std::size_t>
 class bit_set
 {
-        static_assert(0 <= N);
-        static_assert(std::is_unsigned_v<Block>);
-        static_assert(std::is_integral_v<Block>);
+        static_assert(0 <= N && N <= std::numeric_limits<int>::max());
+        static_assert(std::is_unsigned_v<Block> && std::is_integral_v<Block>);
 
         constexpr static auto block_size = std::numeric_limits<Block>::digits;
         constexpr static auto num_logical_blocks = (N - 1 + block_size) / block_size;
         constexpr static auto num_storage_blocks = std::max(num_logical_blocks, 1);
         constexpr static auto num_bits = num_logical_blocks * block_size;
         constexpr static auto num_excess_bits = num_bits - N;
-        static_assert(0 <= num_excess_bits); static_assert(num_excess_bits < block_size);
+        static_assert(0 <= num_excess_bits && num_excess_bits < block_size);
 
         class proxy_reference;
         class proxy_iterator;
@@ -424,7 +423,6 @@ public:
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto size() const noexcept
-                -> size_type
         {
                 if constexpr (num_logical_blocks == 0) {
                         return 0;
@@ -440,7 +438,6 @@ public:
         }
 
         constexpr static auto max_size() noexcept
-                -> size_type
         {
                 return N;
         }
@@ -462,7 +459,7 @@ public:
         constexpr auto insert(value_type const& x) // Throws: Nothing.
                 -> std::pair<iterator, bool>
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] |= single_bit_mask(where(x));
@@ -475,7 +472,7 @@ public:
         constexpr auto insert(const_iterator /* hint */, value_type const& x) // Throws: Nothing.
                 -> iterator
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 insert(x);
                 return { this, x };
         }
@@ -520,8 +517,9 @@ public:
         }
 
         constexpr auto erase(key_type const& x) // Throws: Nothing.
+                -> size_type
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] &= ~single_bit_mask(where(x));
@@ -581,12 +579,12 @@ public:
                 return *this;
         }
 
-        constexpr auto& replace(value_type const& n [[maybe_unused]]) // Throws: Nothing.
+        constexpr auto& replace(value_type const& x [[maybe_unused]]) // Throws: Nothing.
         {
-                assert(0 <= n); assert(n < N);
+                assert(is_valid(x));
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
-                        m_data[which(n)] ^= single_bit_mask(where(n));
+                        m_data[which(x)] ^= single_bit_mask(where(x));
                         PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 return *this;
@@ -594,26 +592,26 @@ public:
 
         constexpr auto find(key_type const& x) // Throws: Nothing.
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return contains(x) ? iterator{this, x} : end();
         }
 
         constexpr auto find(key_type const& x) const // Throws: Nothing.
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return contains(x) ? const_iterator{this, x} : cend();
         }
 
         constexpr auto count(key_type const& x) const // Throws: Nothing.
                 -> size_type
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return contains(x);
         }
 
         [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 if constexpr (num_logical_blocks >= 1) {
                         if (m_data[which(x)] & single_bit_mask(where(x))) {
                                 return true;
@@ -625,42 +623,42 @@ public:
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto lower_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return { this, find_first_from(x) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto lower_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return { this, find_first_from(x) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto upper_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return { this, find_first_from(x + 1) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto upper_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return { this, find_first_from(x + 1) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto equal_range(key_type const& x) // Throws: Nothing.
                 -> std::pair<iterator, iterator>
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto equal_range(key_type const& x) const // Throws: Nothing.
                 -> std::pair<const_iterator, const_iterator>
         {
-                assert(0 <= x); assert(x < N);
+                assert(is_valid(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
@@ -761,7 +759,7 @@ public:
 
         XSTD_PP_CONSTEXPR_ALGORITHM auto& operator<<=(size_type n [[maybe_unused]]) // Throws: Nothing.
         {
-                assert(0 <= n); assert(n < N);
+                assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] >>= n;
@@ -795,7 +793,7 @@ public:
 
         XSTD_PP_CONSTEXPR_ALGORITHM auto& operator>>=(size_type n [[maybe_unused]]) // Throws: Nothing.
         {
-                assert(0 <= n); assert(n < N);
+                assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] <<= n;
@@ -841,14 +839,24 @@ private:
         constexpr static auto single_bit_mask(value_type n) // Throws: Nothing.
         {
                 static_assert(num_logical_blocks >= 1);
-                assert(0 <= n); assert(n < block_size);
+                assert(0 <= n && n < block_size);
                 return static_cast<block_type>(unit >> n);
+        }
+
+        constexpr static auto is_valid(value_type n) noexcept
+        {
+                return 0 <= n && n < N;
+        }
+
+        constexpr static auto is_range(value_type n) noexcept
+        {
+                return 0 <= n && n <= N;
         }
 
         constexpr static auto which(value_type n [[maybe_unused]]) // Throws: Nothing.
         {
                 static_assert(num_logical_blocks >= 1);
-                assert(0 <= n); assert(n < N);
+                assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
                         return 0;
                 } else {
@@ -859,7 +867,7 @@ private:
         constexpr static auto where(value_type n) // Throws: Nothing.
         {
                 static_assert(num_logical_blocks >= 1);
-                assert(0 <= n); assert(n < N);
+                assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
                         return n;
                 } else {
@@ -938,7 +946,7 @@ private:
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_first_from(int n) const // Throws: Nothing.
         {
-                assert(0 <= n); assert(n <= N);
+                assert(is_range(n));
                 if (n == N) {
                         return N;
                 }
@@ -966,7 +974,7 @@ private:
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_last_from(int n) const // Throws: Nothing.
         {
-                assert(0 <= n); assert(n < N);
+                assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
                         return n - builtin::ctznz(static_cast<block_type>(m_data[0] >> (block_size - 1 - n)));
                 } else {
@@ -1007,7 +1015,7 @@ private:
                         m_bs{bs},
                         m_value{v}
                 {
-                        assert(0 <= m_value); assert(m_value < N);
+                        assert(is_valid(m_value));
                 }
 
                 constexpr auto operator&() const noexcept
@@ -1051,21 +1059,21 @@ private:
                         m_bs{bs},
                         m_value{v}
                 {
-                        assert(0 <= m_value); assert(m_value <= N);
+                        assert(is_range(m_value));
                 }
 
                 constexpr auto operator*() const // Throws: Nothing.
                         -> proxy_reference
                 {
-                        assert(0 <= m_value); assert(m_value < N);
+                        assert(is_valid(m_value));
                         return { *m_bs, m_value };
                 }
 
                 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto& operator++() // Throws: Nothing.
                 {
-                        assert(0 <= m_value); assert(m_value < N);
+                        assert(is_valid(m_value));
                         m_value = m_bs->find_first_from(m_value + 1);
-                        assert(0 < m_value); assert(m_value <= N);
+                        assert(is_valid(m_value - 1));
                         return *this;
                 }
 
@@ -1076,9 +1084,9 @@ private:
 
                 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto& operator--() // Throws: Nothing.
                 {
-                        assert(0 < m_value); assert(m_value <= N);
+                        assert(is_valid(m_value - 1));
                         m_value = m_bs->find_last_from(m_value - 1);
-                        assert(0 <= m_value); assert(m_value < N);
+                        assert(is_valid(m_value));
                         return *this;
                 }
 
@@ -1204,14 +1212,14 @@ constexpr auto operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& 
 template<int N, class Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto operator<<(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
-        assert(0 <= n); assert(n < N);
+        assert(0 <= n && n < N);
         auto nrv{lhs}; nrv <<= n; return nrv;
 }
 
 template<int N, class Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto operator>>(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
-        assert(0 <= n); assert(n < N);
+        assert(0 <= n && n < N);
         auto nrv{lhs}; nrv >>= n; return nrv;
 }
 
@@ -1301,56 +1309,48 @@ XSTD_PP_CONSTEXPR_SWAP auto swap(bit_set<N, Block>& lhs, bit_set<N, Block>& rhs)
 
 template<int N, class Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto begin(bit_set<N, Block>& bs) noexcept
-        -> decltype(bs.begin())
 {
         return bs.begin();
 }
 
 template<int N, class Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto begin(bit_set<N, Block> const& bs) noexcept
-        -> decltype(bs.begin())
 {
         return bs.begin();
 }
 
 template<int N, class Block>
 constexpr auto end(bit_set<N, Block>& bs) noexcept
-        -> decltype(bs.end())
 {
         return bs.end();
 }
 
 template<int N, class Block>
 constexpr auto end(bit_set<N, Block> const& bs) noexcept
-        -> decltype(bs.end())
 {
         return bs.end();
 }
 
 template<int N, class Block>
 constexpr auto rbegin(bit_set<N, Block>& bs) noexcept
-        -> decltype(bs.rbegin())
 {
         return bs.rbegin();
 }
 
 template<int N, class Block>
 constexpr auto rbegin(bit_set<N, Block> const& bs) noexcept
-        -> decltype(bs.rbegin())
 {
         return bs.rbegin();
 }
 
 template<int N, class Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto rend(bit_set<N, Block>& bs) noexcept
-        -> decltype(bs.rend())
 {
         return bs.rend();
 }
 
 template<int N, class Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto rend(bit_set<N, Block> const& bs) noexcept
-        -> decltype(bs.rend())
 {
         return bs.rend();
 }
@@ -1414,7 +1414,8 @@ auto& operator>>(std::basic_istream<CharT, Traits>& istr, bit_set<N, Block>& bs)
         typename bit_set<N, Block>::value_type x;
         CharT c;
 
-        istr >> c; assert(c == istr.widen('['));
+        istr >> c; 
+        assert(c == istr.widen('['));
         istr >> c;
         for (auto first = true; c != istr.widen(']'); istr >> c) {
                 assert(first == (c != istr.widen(',')));
@@ -1422,7 +1423,8 @@ auto& operator>>(std::basic_istream<CharT, Traits>& istr, bit_set<N, Block>& bs)
                         istr.putback(c);
                         first = false;
                 }
-                istr >> x; assert(0 <= x); assert(x < bs.max_size());
+                istr >> x; 
+                assert(0 <= x && x < bs.max_size());
                 bs.insert(x);
         }
         return istr;

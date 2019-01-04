@@ -186,7 +186,7 @@ public:
                 m_bs{bs},
                 m_value{v}
         {
-                assert(0 <= m_value); assert(m_value < bs.size());
+                assert(0 <= m_value && m_value < bs.size());
         }
 
         constexpr auto operator&() const noexcept
@@ -232,21 +232,21 @@ public:
                 m_bs{bs},
                 m_value{v}
         {
-                assert(0 <= m_value); assert(m_value < bs->size() || m_value == bs->npos);
+                assert(0 <= m_value && (m_value < bs->size() || m_value == bs->npos));
         }
 
         constexpr auto operator*() const // Throws: Nothing.
                 -> proxy_reference<Block, Allocator>
         {
-                assert(0 <= m_value); assert(m_value < m_bs->size());
+                assert(0 <= m_value && m_value < m_bs->size());
                 return { *m_bs, m_value };
         }
 
         auto& operator++() // Throws: Nothing.
         {
-                assert(0 <= m_value); assert(m_value < m_bs->size());
+                assert(0 <= m_value && m_value < m_bs->size());
                 m_value = m_bs->find_next(m_value);
-                assert(0 < m_value); assert(m_value < m_bs->size() || m_value == m_bs->npos);
+                assert(0 < m_value && (m_value < m_bs->size() || m_value == m_bs->npos));
                 return *this;
         }
 

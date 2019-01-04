@@ -106,7 +106,7 @@ struct op_shift_left_assign
         template<class BitSet, class SizeType>
         auto operator()(BitSet& bs, SizeType pos) const
         {
-                assert(0 <= pos); assert(pos < fn_size(bs));
+                assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
                 auto const& dst = bs <<= pos;
 
@@ -126,7 +126,7 @@ struct op_shift_right_assign
         template<class BitSet, class SizeType>
         auto operator()(BitSet& bs, SizeType pos) const
         {
-                assert(0 <= pos); assert(pos < fn_size(bs));
+                assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
                 auto const& dst = bs >>= pos;
 
@@ -156,7 +156,7 @@ struct mem_set
         template<class BitSet, class SizeType>
         auto operator()(BitSet& bs, SizeType pos) const
         {
-                assert(0 <= pos); assert(pos < fn_size(bs));
+                assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
                 auto const& dst = set(bs, pos);
 
@@ -196,7 +196,7 @@ struct mem_reset
         template<class BitSet, class SizeType>
         auto operator()(BitSet& bs, SizeType pos) const
         {
-                assert(0 <= pos); assert(pos < fn_size(bs));
+                assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
                 auto const& dst = reset(bs, pos);
 
@@ -250,7 +250,7 @@ struct mem_flip
         template<class BitSet, class SizeType>
         auto operator()(BitSet& bs, SizeType pos) const
         {
-                assert(0 <= pos); assert(pos < fn_size(bs));
+                assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
                 auto const& dst = flip(bs, pos);
                 for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
@@ -329,7 +329,7 @@ struct mem_test
         template<class BitSet, class SizeType>
         auto operator()(BitSet const& bs, SizeType pos) const noexcept
         {
-                assert(0 <= pos); assert(pos < fn_size(bs));
+                assert(0 <= pos && pos < fn_size(bs));
                 auto value = bs; reset(value); set(value, pos);
                 for (auto N = fn_size(bs), i = decltype(N){0}; i < N; ++i) {
                         BOOST_CHECK_EQUAL(test(value, i), i == pos);            // [bitset.members]/39
@@ -373,7 +373,7 @@ struct op_shift_left
         template<class BitSet, class SizeType>
         auto operator()(BitSet const& bs, SizeType pos) const
         {
-                assert(0 <= pos); assert(pos < fn_size(bs));
+                assert(0 <= pos && pos < fn_size(bs));
                 auto expected = bs; expected <<= pos;
                 BOOST_CHECK_EQUAL(bs << pos, expected);                         // [bitset.members]/43
 
@@ -396,7 +396,7 @@ struct op_shift_right
         template<class BitSet, class SizeType>
         auto operator()(BitSet const& bs, SizeType pos) const
         {
-                assert(0 <= pos); assert(pos < fn_size(bs));
+                assert(0 <= pos && pos < fn_size(bs));
                 auto expected = bs; expected >>= pos;
                 BOOST_CHECK_EQUAL(bs >> pos, expected);                         // [bitset.members]/44
 
