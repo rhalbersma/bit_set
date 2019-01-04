@@ -13,8 +13,7 @@
 #include <iterator>                     // distance, inserter, next, prev
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
-#include <set>                          // set
-#include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructrible_v, is_integral_v, is_same_v, is_signed_v,
+#include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructrible_v, is_integral_v, is_same_v, is_signed_v, is_unsigned_v
 #include <utility>                      // pair
 
 namespace xstd {
@@ -28,13 +27,12 @@ struct nested_types
         static_assert(std::is_same_v<typename X::const_iterator::value_type, typename X::value_type>);
         static_assert(std::is_signed_v<typename X::difference_type>);
         static_assert(std::is_integral_v<typename X::difference_type>);
-
-        // we use a signed instead of an unsigned size_type for xstd::bit_set
+        static_assert(std::is_unsigned_v<typename X::size_type>);
         static_assert(std::is_integral_v<typename X::size_type>);
 
         static_assert(std::is_same_v<typename X::value_type, int>);
 
-        // we use a proxy reference for xstd::bit_set which convertible to int const&, instead of the same as int const&
+        // we use a proxy reference for xstd::basic_bit_set which convertible to int const&, instead of the same as int const&
         static_assert(std::is_convertible_v<typename X::const_reference, int const&>);
 
                                                                                 // [container.requirements.general] Table 84

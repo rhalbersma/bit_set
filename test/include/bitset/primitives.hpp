@@ -5,18 +5,16 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bit_set.hpp>
 #include <traits.hpp>                   // has_forward_iterator_v, has_hinted_insert_v, has_op_minus_assign_v, has_resize_v
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_LE, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <algorithm>                    // copy_if, equal, find, includes, lexicographical_compare,
                                         // set_difference, set_intersection, set_symmetric_difference, set_union, transform
-#include <cstddef>                      // ptrdiff_t
+#include <cstddef>                      // ptrdiff_t, size_t
 #include <iterator>                     // distance, inserter
 #include <memory>                       // addressof
 #include <set>                          // set
 #include <sstream>                      // stringstream
 #include <stdexcept>                    // out_of_range
-#include <iostream>
 
 namespace xstd {
 
@@ -103,12 +101,12 @@ struct op_minus_assign
 
 struct op_shift_left_assign
 {
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
-                auto const& dst = bs <<= pos;
+                auto const& dst = left_shift_assign(bs, pos);
 
                 for (auto N = fn_size(src), I = decltype(N){0}; I < N; ++I) {
                         if (I < pos) {
@@ -123,12 +121,12 @@ struct op_shift_left_assign
 
 struct op_shift_right_assign
 {
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
-                auto const& dst = bs >>= pos;
+                auto const& dst = right_shift_assign(bs, pos);
 
                 for (auto N = fn_size(src), I = decltype(N){0}; I < N; ++I) {
                         if (pos >= N - I) {
@@ -153,8 +151,8 @@ struct mem_set
                 BOOST_CHECK_THROW(set(bs, fn_size(bs)), std::out_of_range);     // [bitset.members]/13
         }
 
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
@@ -167,8 +165,8 @@ struct mem_set
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/15
         }
 
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType pos, bool val) const
+        template<class BitSet>
+        auto operator()(BitSet& bs, std::size_t pos, bool val) const
         {
                 auto const src = bs;
                 auto const& dst = set(bs, pos, val);
@@ -193,8 +191,8 @@ struct mem_reset
                 BOOST_CHECK_THROW(reset(bs, fn_size(bs)), std::out_of_range);   // [bitset.members]/18
         }
 
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
@@ -247,8 +245,8 @@ struct mem_flip
                 BOOST_CHECK_THROW(flip(bs, fn_size(bs)), std::out_of_range);    // [bitset.members]/25
         }
 
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
                 auto const src = bs;
@@ -326,8 +324,8 @@ struct mem_test
                 BOOST_CHECK_THROW(test(bs, fn_size(bs)), std::out_of_range);    // [bitset.members]/38
         }
 
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet const& bs, SizeType pos) const noexcept
+        template<class BitSet>
+        auto operator()(BitSet const& bs, std::size_t pos) const noexcept
         {
                 assert(0 <= pos && pos < fn_size(bs));
                 auto value = bs; reset(value); set(value, pos);
@@ -370,21 +368,22 @@ struct mem_none
 
 struct op_shift_left
 {
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet const& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet const& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
-                auto expected = bs; expected <<= pos;
-                BOOST_CHECK_EQUAL(bs << pos, expected);                         // [bitset.members]/43
+                auto expected = bs; left_shift_assign(expected, pos);
+                BOOST_CHECK_EQUAL(left_shift(bs, pos), expected);               // [bitset.members]/43
 
                 if constexpr (tti::has_hinted_insert_v<BitSet>) {
-                        auto const lhs = bs << pos;
-                        std::set<int> tmp; BitSet rhs;
+                        auto const lhs = left_shift(bs, pos);
+                        std::set<int> tmp;
                         std::transform(bs.begin(), bs.end(), std::inserter(tmp, tmp.end()), [=](auto const x) {
-                                return x + pos;
+                                return x + static_cast<value_t<BitSet>>(pos);
                         });
+                        BitSet rhs;
                         std::copy_if(tmp.begin(), tmp.end(), std::inserter(rhs, rhs.end()), [&](auto const x) {
-                                return x < fn_size(bs);
+                                return x < static_cast<value_t<BitSet>>(fn_size(bs));
                         });
                         BOOST_CHECK_EQUAL_COLLECTIONS(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
                 }
@@ -393,19 +392,20 @@ struct op_shift_left
 
 struct op_shift_right
 {
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet const& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet const& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
-                auto expected = bs; expected >>= pos;
-                BOOST_CHECK_EQUAL(bs >> pos, expected);                         // [bitset.members]/44
+                auto expected = bs; right_shift_assign(expected, pos);
+                BOOST_CHECK_EQUAL(right_shift(bs, pos), expected);              // [bitset.members]/44
 
                 if constexpr (tti::has_hinted_insert_v<BitSet>) {
-                        auto const lhs = bs >> pos;
-                        std::set<int> tmp; BitSet rhs;
+                        auto const lhs = right_shift(bs, pos);
+                        std::set<int> tmp;
                         std::transform(bs.begin(), bs.end(), std::inserter(tmp, tmp.end()), [=](auto const x) {
-                                return x - pos;
+                                return x - static_cast<value_t<BitSet>>(pos);
                         });
+                        BitSet rhs;
                         std::copy_if(tmp.begin(), tmp.end(), std::inserter(rhs, rhs.end()), [](auto const x) {
                                 return 0 <= x;
                         });
@@ -416,24 +416,24 @@ struct op_shift_right
 
 struct op_at
 {
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet const& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet const& bs, std::size_t pos) const
         {
                 BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/45
                 BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/46
                                                                                 // [bitset.members]/47: at(bs, fn_size(bs)) does not throw
         }
 
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType pos) const
+        template<class BitSet>
+        auto operator()(BitSet& bs, std::size_t pos) const
         {
                 BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
                 BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/49
                                                                                 // [bitset.members]/50: at(bs, fn_size(bs), val) does not throw
         }
 
-        template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType pos, bool val) const
+        template<class BitSet>
+        auto operator()(BitSet& bs, std::size_t pos, bool val) const
         {
                 BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
                 auto src = bs; set(src, pos, val);

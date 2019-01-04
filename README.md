@@ -189,7 +189,7 @@ The bitwise-shift operators in `std::bitset<N>` and `xstd::bit_set<N>` have **id
 Semantic differences for I/O streaming operators
 ------------------------------------------------
 
-The semantic differences between `std::bitset<N>` and `xstd::bitset<N>` are most visible in its overloaded I/O streaming `operator<<` and `operator>>`. The former reads and writes a bitstring from right-to-left, whereas the latter reads and writes an ordered set of integers from left-to-right, formatted as a comma-seperated sequence between brackets. Note that `std::set<int>` lacks overloaded I/O streaming operators.
+The semantic differences between `std::bitset<N>` and `xstd::bit_set<N>` are most visible in its overloaded I/O streaming `operator<<` and `operator>>`. The former reads and writes a bitstring from right-to-left, whereas the latter reads and writes an ordered set of integers from left-to-right, formatted as a comma-seperated sequence between brackets. Note that `std::set<int>` lacks overloaded I/O streaming operators.
 
 Functionality from `std::bitset<N>` that is not in `xstd::bit_set<N>`
 ---------------------------------------------------------------------
@@ -250,8 +250,8 @@ Frequently Asked Questions
 **Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?  
 **A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.
 
-**Q**: So iterating over an `bit_set` is really fool-proof?  
-**A**: Yes, `bit_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
+**Q**: So iterating over an `xstd::bit_set<N>` is really fool-proof?  
+**A**: Yes, `xstd::bit_set<N>` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
 
 Requirements
 ============

@@ -8,22 +8,23 @@
 #include <algorithm>            // min
 #include <array>                // array
 #include <cassert>              // assert
+#include <cstddef>              // size_t
 #include <initializer_list>     // initializer_list
-
+#include <iostream>
 #if defined(_MSC_VER)
-        // sbit_set<0> gives bogus "unreachable code" warnings
+        // xstd::bit_set<0> gives bogus "unreachable code" warnings
         __pragma(warning(disable: 4702))
 #endif
 
 namespace xstd {
 
-template<class T, typename T::value_type L>
-inline auto const limit_v = static_cast<int>(std::min(static_cast<std::size_t>(L), static_cast<std::size_t>(T{}.max_size())));
+template<class T, std::size_t L>
+auto const limit_v = static_cast<int>(std::min(L, T{}.max_size()));
 
-constexpr auto L1 = 256;
-constexpr auto L2 = 128;
-constexpr auto L3 =  64;
-constexpr auto L4 =  32;
+inline constexpr auto L1 = 256;
+inline constexpr auto L2 = 128;
+inline constexpr auto L3 =  64;
+inline constexpr auto L4 =  32;
 
 // NOTE: these tests are O(1)
 

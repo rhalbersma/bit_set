@@ -19,6 +19,18 @@ auto resize(dynamic_bitset<Block, Allocator>& bs, std::size_t num_bits, bool val
 }
 
 template<class Block, class Allocator>
+auto& left_shift_assign(dynamic_bitset<Block, Allocator>& bs, std::size_t pos) // Throws: Nothing.
+{
+        return bs <<= pos;
+}
+
+template<class Block, class Allocator>
+auto& right_shift_assign(dynamic_bitset<Block, Allocator>& bs, std::size_t pos) // Throws: Nothing.
+{
+        return bs >>= pos;
+}
+
+template<class Block, class Allocator>
 auto& set(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
         return bs.set();
@@ -104,6 +116,18 @@ template<class Block, class Allocator>
 [[nodiscard]] auto none(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return bs.none();
+}
+
+template<class Block, class Allocator>
+auto left_shift(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
+{
+        return bs << pos;
+}
+
+template<class Block, class Allocator>
+auto right_shift(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
+{
+        return bs >> pos;
 }
 
 template<class Block, class Allocator>

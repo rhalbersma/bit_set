@@ -21,6 +21,18 @@ auto resize(std::bitset<N>& bs, std::size_t num_bits [[maybe_unused]], bool valu
 }
 
 template<std::size_t N>
+auto& left_shift_assign(std::bitset<N>& bs, std::size_t pos) noexcept
+{
+        return bs <<= pos;
+}
+
+template<std::size_t N>
+auto& right_shift_assign(std::bitset<N>& bs, std::size_t pos) noexcept
+{
+        return bs >>= pos;
+}
+
+template<std::size_t N>
 auto& set(std::bitset<N>& bs) noexcept
 {
         return bs.set();
@@ -90,6 +102,18 @@ template<std::size_t N>
 [[nodiscard]] auto none(std::bitset<N> const& bs) noexcept
 {
         return bs.none();
+}
+
+template<std::size_t N>
+auto left_shift(std::bitset<N> const& bs, std::size_t pos) noexcept
+{
+        return bs << pos;
+}
+
+template<std::size_t N>
+auto right_shift(std::bitset<N> const& bs, std::size_t pos) noexcept
+{
+        return bs >> pos;
 }
 
 template<std::size_t N>
