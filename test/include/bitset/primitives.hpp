@@ -334,7 +334,8 @@ struct mem_test
                 }
 
                 if constexpr (tti::has_forward_iterator_v<BitSet>) {
-                        BOOST_CHECK_EQUAL(test(bs, pos), std::find(begin(bs), end(bs), pos) != end(bs));
+                        using value_type = typename decltype(begin(bs))::value_type;
+                        BOOST_CHECK_EQUAL(test(bs, pos), std::find(begin(bs), end(bs), static_cast<value_type>(pos)) != end(bs));
                 }
         }
 };
