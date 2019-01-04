@@ -208,7 +208,7 @@ struct mem_emplace_hint
 struct mem_insert
 {
         template<class X>
-        auto operator()(X& a, typename X::value_type const t) const
+        auto operator()(X& a, typename X::value_type const& t) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(a.insert(t)), std::pair<typename X::iterator, bool>>);
                 auto r = a.insert(t);
@@ -216,7 +216,7 @@ struct mem_insert
         }
 
         template<class X>
-        auto operator()(X& a, typename X::iterator p, typename X::value_type const t) const
+        auto operator()(X& a, typename X::iterator p, typename X::value_type const& t) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(a.insert(p, t)), typename X::iterator>);
                 auto r = a.insert(p, t);

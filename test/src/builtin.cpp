@@ -40,7 +40,7 @@ template<class T> constexpr auto zero = static_cast<T>( 0);
 template<class T> constexpr auto ones = static_cast<T>(-1);
 
 template<class T>
-constexpr auto bit1(int const n)
+constexpr auto bit1(int n)
 {
         return static_cast<T>(static_cast<T>(1) << n);
 }

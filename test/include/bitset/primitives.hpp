@@ -104,7 +104,7 @@ struct op_minus_assign
 struct op_shift_left_assign
 {
         template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType const pos) const
+        auto operator()(BitSet& bs, SizeType pos) const
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto const src = bs;
@@ -124,7 +124,7 @@ struct op_shift_left_assign
 struct op_shift_right_assign
 {
         template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType const pos) const
+        auto operator()(BitSet& bs, SizeType pos) const
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto const src = bs;
@@ -154,7 +154,7 @@ struct mem_set
         }
 
         template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType const pos) const
+        auto operator()(BitSet& bs, SizeType pos) const
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto const src = bs;
@@ -168,7 +168,7 @@ struct mem_set
         }
 
         template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType const pos, bool const val) const
+        auto operator()(BitSet& bs, SizeType pos, bool val) const
         {
                 auto const src = bs;
                 auto const& dst = set(bs, pos, val);
@@ -194,7 +194,7 @@ struct mem_reset
         }
 
         template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType const pos) const
+        auto operator()(BitSet& bs, SizeType pos) const
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto const src = bs;
@@ -248,7 +248,7 @@ struct mem_flip
         }
 
         template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType const pos) const
+        auto operator()(BitSet& bs, SizeType pos) const
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto const src = bs;
@@ -327,7 +327,7 @@ struct mem_test
         }
 
         template<class BitSet, class SizeType>
-        auto operator()(BitSet const& bs, SizeType const pos) const noexcept
+        auto operator()(BitSet const& bs, SizeType pos) const noexcept
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto value = bs; reset(value); set(value, pos);
@@ -371,7 +371,7 @@ struct mem_none
 struct op_shift_left
 {
         template<class BitSet, class SizeType>
-        auto operator()(BitSet const& bs, SizeType const pos) const
+        auto operator()(BitSet const& bs, SizeType pos) const
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto expected = bs; expected <<= pos;
@@ -394,7 +394,7 @@ struct op_shift_left
 struct op_shift_right
 {
         template<class BitSet, class SizeType>
-        auto operator()(BitSet const& bs, SizeType const pos) const
+        auto operator()(BitSet const& bs, SizeType pos) const
         {
                 assert(0 <= pos); assert(pos < fn_size(bs));
                 auto expected = bs; expected >>= pos;
@@ -417,7 +417,7 @@ struct op_shift_right
 struct op_at
 {
         template<class BitSet, class SizeType>
-        auto operator()(BitSet const& bs, SizeType const pos) const
+        auto operator()(BitSet const& bs, SizeType pos) const
         {
                 BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/45
                 BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/46
@@ -425,7 +425,7 @@ struct op_at
         }
 
         template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType const pos) const
+        auto operator()(BitSet& bs, SizeType pos) const
         {
                 BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
                 BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/49
@@ -433,7 +433,7 @@ struct op_at
         }
 
         template<class BitSet, class SizeType>
-        auto operator()(BitSet& bs, SizeType const pos, bool const val) const
+        auto operator()(BitSet& bs, SizeType pos, bool val) const
         {
                 BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
                 auto src = bs; set(src, pos, val);

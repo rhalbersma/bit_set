@@ -11,7 +11,7 @@
 namespace xstd {
 
 template<std::size_t N>
-auto resize(std::bitset<N>& bs, std::size_t const num_bits [[maybe_unused]], bool const value = false) noexcept
+auto resize(std::bitset<N>& bs, std::size_t num_bits [[maybe_unused]], bool value = false) noexcept
 {
         if (value) {
                 bs.set();
@@ -27,7 +27,7 @@ auto& set(std::bitset<N>& bs) noexcept
 }
 
 template<std::size_t N>
-auto& set(std::bitset<N>& bs, std::size_t const pos, bool const val = true)
+auto& set(std::bitset<N>& bs, std::size_t pos, bool val = true)
 {
         return bs.set(pos, val);
 }
@@ -39,7 +39,7 @@ auto& reset(std::bitset<N>& bs) noexcept
 }
 
 template<std::size_t N>
-auto& reset(std::bitset<N>& bs, std::size_t const pos)
+auto& reset(std::bitset<N>& bs, std::size_t pos)
 {
         return bs.reset(pos);
 }
@@ -51,7 +51,7 @@ auto& flip(std::bitset<N>& bs) noexcept
 }
 
 template<std::size_t N>
-auto& flip(std::bitset<N>& bs, std::size_t const pos)
+auto& flip(std::bitset<N>& bs, std::size_t pos)
 {
         return bs.flip(pos);
 }
@@ -69,7 +69,7 @@ constexpr auto fn_size(std::bitset<N> const& bs) noexcept
 }
 
 template<std::size_t N>
-auto test(std::bitset<N> const& bs, std::size_t const pos)
+auto test(std::bitset<N> const& bs, std::size_t pos)
 {
         return bs.test(pos);
 }
@@ -93,19 +93,19 @@ template<std::size_t N>
 }
 
 template<std::size_t N>
-constexpr auto at(std::bitset<N> const& bs, std::size_t const pos) // Throws: Nothing.
+constexpr auto at(std::bitset<N> const& bs, std::size_t pos) // Throws: Nothing.
 {
         return bs[pos];
 }
 
 template<std::size_t N>
-auto at(std::bitset<N>& bs, std::size_t const pos) // Throws: Nothing.
+auto at(std::bitset<N>& bs, std::size_t pos) // Throws: Nothing.
 {
         return bs[pos];
 }
 
 template<std::size_t N>
-auto at(std::bitset<N>& bs, std::size_t const pos, bool const val) // Throws: Nothing.
+auto at(std::bitset<N>& bs, std::size_t pos, bool val) // Throws: Nothing.
 {
         return bs[pos] = val;
 }

@@ -13,7 +13,7 @@
 namespace boost {
 
 template<class Block, class Allocator>
-auto resize(dynamic_bitset<Block, Allocator>& bs, std::size_t const num_bits, bool const value = false) noexcept
+auto resize(dynamic_bitset<Block, Allocator>& bs, std::size_t num_bits, bool value = false) noexcept
 {
         bs.resize(num_bits, value);
 }
@@ -25,7 +25,7 @@ auto& set(dynamic_bitset<Block, Allocator>& bs) noexcept
 }
 
 template<class Block, class Allocator>
-auto& set(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos, bool const val = true)
+auto& set(dynamic_bitset<Block, Allocator>& bs, std::size_t pos, bool val = true)
 {
         if (pos >= bs.size()) {
                 throw std::out_of_range{""};
@@ -41,7 +41,7 @@ auto& reset(dynamic_bitset<Block, Allocator>& bs) noexcept
 }
 
 template<class Block, class Allocator>
-auto& reset(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
+auto& reset(dynamic_bitset<Block, Allocator>& bs, std::size_t pos)
 {
         if (pos >= bs.size()) {
                 throw std::out_of_range{""};
@@ -57,7 +57,7 @@ auto& flip(dynamic_bitset<Block, Allocator>& bs) noexcept
 }
 
 template<class Block, class Allocator>
-auto& flip(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos)
+auto& flip(dynamic_bitset<Block, Allocator>& bs, std::size_t pos)
 {
         if (pos >= bs.size()) {
                 throw std::out_of_range{""};
@@ -79,7 +79,7 @@ constexpr auto fn_size(dynamic_bitset<Block, Allocator> const& bs) noexcept
 }
 
 template<class Block, class Allocator>
-auto test(dynamic_bitset<Block, Allocator> const& bs, std::size_t const pos)
+auto test(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos)
 {
         if (pos >= bs.size()) {
                 throw std::out_of_range{""};
@@ -107,19 +107,19 @@ template<class Block, class Allocator>
 }
 
 template<class Block, class Allocator>
-auto at(dynamic_bitset<Block, Allocator> const& bs, std::size_t const pos) // Throws: Nothing.
+auto at(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
 {
         return bs[pos];
 }
 
 template<class Block, class Allocator>
-auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos) // Throws: Nothing.
+auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t pos) // Throws: Nothing.
 {
         return bs[pos];
 }
 
 template<class Block, class Allocator>
-auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t const pos, bool const val) // Throws: Nothing.
+auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t pos, bool val) // Throws: Nothing.
 {
         return bs[pos] = val;
 }
@@ -181,7 +181,7 @@ public:
 
         proxy_reference() = delete;
 
-        constexpr proxy_reference(dynamic_bitset<Block, Allocator> const& bs, value_type const v) noexcept
+        constexpr proxy_reference(dynamic_bitset<Block, Allocator> const& bs, value_type const& v) noexcept
         :
                 m_bs{bs},
                 m_value{v}
@@ -189,7 +189,11 @@ public:
                 assert(0 <= m_value); assert(m_value < bs.size());
         }
 
-        proxy_reference& operator=(value_type const) = delete;
+        constexpr auto operator&() const noexcept
+                -> proxy_iterator<Block, Allocator>
+        {
+                return { &m_bs, m_value };
+        }
 
         /* explicit(false) */ constexpr operator value_type() const noexcept
         {
@@ -203,12 +207,6 @@ public:
         /* explicit(false) */ constexpr operator T() const noexcept(noexcept(T(m_value)))
         {
                 return m_value;
-        }
-
-        constexpr auto operator&() const noexcept
-                -> proxy_iterator<Block, Allocator>
-        {
-                return { &m_bs, m_value };
         }
 };
 
@@ -229,7 +227,7 @@ private:
 public:
         proxy_iterator() = default;
 
-        constexpr proxy_iterator(dynamic_bitset<Block, Allocator> const* bs, value_type const v) // Throws: Nothing.
+        constexpr proxy_iterator(dynamic_bitset<Block, Allocator> const* bs, value_type const& v) // Throws: Nothing.
         :
                 m_bs{bs},
                 m_value{v}

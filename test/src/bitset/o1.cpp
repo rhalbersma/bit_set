@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 {
         all_cardinality_sets<T>(mem_set{});
         all_singleton_sets<T>(mem_set{});
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 empty_set<T>([&](auto& bs0) {
                         mem_set{}(bs0, pos);
                 });
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 
         all_cardinality_sets<T>(mem_reset{});
         all_singleton_sets<T>(mem_reset{});
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 full_set<T>([&](auto& bsN) {
                         mem_reset{}(bsN, pos);
                 });
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 
         all_cardinality_sets<T>(mem_flip{});
         all_singleton_sets<T>(mem_flip{});
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 empty_set<T>([&](auto& bs0) {
                         mem_flip{}(bs0, pos);
                 });
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
         all_singleton_sets<T>(mem_size{});
 
         all_singleton_sets<T>(mem_test{});
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 empty_set<T>([&](auto const& bs0) {
                         mem_test{}(bs0, pos);
                 });
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
         all_cardinality_sets<T>(mem_any{});
         all_cardinality_sets<T>(mem_none{});
 
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 empty_set<T>([&](auto const& bs0) {
                         op_at{}(bs0, pos);
                 });

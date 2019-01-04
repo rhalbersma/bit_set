@@ -14,7 +14,7 @@ template<class T>
 using size_t = typename T::size_type;
 
 template<int N, class Block>
-auto resize(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> const num_bits [[maybe_unused]], bool const value = false) noexcept
+auto resize(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> num_bits [[maybe_unused]], bool value = false) noexcept
 {
         if (value) {
                 bs.fill();
@@ -30,7 +30,7 @@ auto& set(bit_set<N, Block>& bs) noexcept
 }
 
 template<int N, class Block>
-auto& set(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> const pos, bool const val = true)
+auto& set(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> pos, bool val = true)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -50,7 +50,7 @@ auto& reset(bit_set<N, Block>& bs) noexcept
 }
 
 template<int N, class Block>
-auto& reset(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> const pos)
+auto& reset(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -66,7 +66,7 @@ auto& flip(bit_set<N, Block>& bs) noexcept
 }
 
 template<int N, class Block>
-auto& flip(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> const pos)
+auto& flip(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -87,7 +87,7 @@ constexpr auto fn_size(bit_set<N, Block> const& bs) noexcept
 }
 
 template<int N, class Block>
-auto test(bit_set<N, Block> const& bs, size_t<bit_set<N, Block>> const pos)
+auto test(bit_set<N, Block> const& bs, size_t<bit_set<N, Block>> pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -114,19 +114,19 @@ template<int N, class Block>
 }
 
 template<int N, class Block>
-constexpr auto at(bit_set<N, Block> const& bs, size_t<bit_set<N, Block>> const pos) // Throws: Nothing.
+constexpr auto at(bit_set<N, Block> const& bs, size_t<bit_set<N, Block>> pos) // Throws: Nothing.
 {
         return bs.contains(pos);
 }
 
 template<int N, class Block>
-constexpr auto at(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> const pos) // Throws: Nothing.
+constexpr auto at(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> pos) // Throws: Nothing.
 {
         return bs.contains(pos);
 }
 
 template<int N, class Block>
-constexpr auto at(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> const pos, bool const val) // Throws: Nothing.
+constexpr auto at(bit_set<N, Block>& bs, size_t<bit_set<N, Block>> pos, bool val) // Throws: Nothing.
 {
         if (val) {
                 bs.insert(pos);

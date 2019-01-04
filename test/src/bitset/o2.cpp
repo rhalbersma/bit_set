@@ -72,13 +72,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
         all_singleton_set_pairs<T>(op_xor_assign{});
         all_singleton_set_pairs<T>(op_minus_assign{});
 
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto& bs1) {
                         op_shift_left_assign{}(bs1, pos);
                 });
         });
 
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto& bs1) {
                         op_shift_right_assign{}(bs1, pos);
                 });
@@ -89,13 +89,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
         all_singleton_set_pairs<T>(op_equal_to{});
         all_singleton_set_pairs<T>(op_not_equal_to{});
 
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
                         op_shift_left{}(bs1, pos);
                 });
         });
 
-        all_values<T>([](auto const pos) {
+        all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
                         op_shift_right{}(bs1, pos);
                 });
