@@ -1414,7 +1414,7 @@ auto& operator>>(std::basic_istream<CharT, Traits>& istr, bit_set<N, Block>& bs)
         typename bit_set<N, Block>::value_type x;
         CharT c;
 
-        istr >> c; 
+        istr >> c;
         assert(c == istr.widen('['));
         istr >> c;
         for (auto first = true; c != istr.widen(']'); istr >> c) {
@@ -1423,7 +1423,7 @@ auto& operator>>(std::basic_istream<CharT, Traits>& istr, bit_set<N, Block>& bs)
                         istr.putback(c);
                         first = false;
                 }
-                istr >> x; 
+                istr >> x;
                 assert(0 <= x && x < bs.max_size());
                 bs.insert(x);
         }
