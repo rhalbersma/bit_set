@@ -78,6 +78,13 @@ using bitset_types = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 {
+        all_singleton_sets<T>([&](auto& bs1) {
+                op_shift_left_assign{}(bs1);
+        });
+        all_singleton_sets<T>([&](auto& bs1) {
+                op_shift_right_assign{}(bs1);
+        });
+
         all_cardinality_sets<T>(mem_set{});
         all_singleton_sets<T>(mem_set{});
         all_values<T>([](auto pos) {
@@ -132,6 +139,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
         all_cardinality_sets<T>(mem_all{});
         all_cardinality_sets<T>(mem_any{});
         all_cardinality_sets<T>(mem_none{});
+
+        all_singleton_sets<T>([&](auto const& bs1) {
+                op_shift_left{}(bs1);
+        });
+        all_singleton_sets<T>([&](auto const& bs1) {
+                op_shift_right{}(bs1);
+        });
 
         all_values<T>([](auto pos) {
                 empty_set<T>([&](auto const& bs0) {

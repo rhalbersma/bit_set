@@ -102,6 +102,14 @@ struct op_minus_assign
 struct op_shift_left_assign
 {
         template<class BitSet>
+        auto operator()(BitSet& bs) const
+        {
+                auto N = fn_size(bs);
+                left_shift_assign(bs, N);                                       // [bitset.members]/7.1
+                BOOST_CHECK(none(bs));
+        }
+
+        template<class BitSet>
         auto operator()(BitSet& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
@@ -121,6 +129,14 @@ struct op_shift_left_assign
 
 struct op_shift_right_assign
 {
+        template<class BitSet>
+        auto operator()(BitSet& bs) const
+        {
+                auto N = fn_size(bs);
+                right_shift_assign(bs, N);                                      // [bitset.members]/9.1
+                BOOST_CHECK(none(bs));
+        }
+
         template<class BitSet>
         auto operator()(BitSet& bs, std::size_t pos) const
         {
@@ -370,6 +386,13 @@ struct mem_none
 struct op_shift_left
 {
         template<class BitSet>
+        auto operator()(BitSet const& bs) const
+        {
+                auto N = fn_size(bs);
+                BOOST_CHECK(none(left_shift(bs, N)));                           // [bitset.members]/43
+        }
+
+        template<class BitSet>
         auto operator()(BitSet const& bs, std::size_t pos) const
         {
                 assert(0 <= pos && pos < fn_size(bs));
@@ -393,6 +416,13 @@ struct op_shift_left
 
 struct op_shift_right
 {
+        template<class BitSet>
+        auto operator()(BitSet const& bs) const
+        {
+                auto N = fn_size(bs);
+                BOOST_CHECK(none(right_shift(bs, N)));                          // [bitset.members]/44
+        }
+
         template<class BitSet>
         auto operator()(BitSet const& bs, std::size_t pos) const
         {

@@ -77,7 +77,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                         op_shift_left_assign{}(bs1, pos);
                 });
         });
-
         all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto& bs1) {
                         op_shift_right_assign{}(bs1, pos);
@@ -94,7 +93,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                         op_shift_left{}(bs1, pos);
                 });
         });
-
         all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
                         op_shift_right{}(bs1, pos);
