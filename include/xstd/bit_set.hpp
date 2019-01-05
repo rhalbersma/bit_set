@@ -324,7 +324,6 @@ public:
         using reference              = proxy_reference;
         using const_reference        = proxy_reference;
         using size_type              = std::size_t;
-        using ssize_type             = std::ptrdiff_t;
         using difference_type        = std::ptrdiff_t;
         using iterator               = proxy_iterator;
         using const_iterator         = proxy_iterator;
@@ -428,7 +427,6 @@ public:
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto ssize() const noexcept
-                -> ssize_type
         {
                 if constexpr (num_logical_blocks == 0) {
                         return 0;
@@ -448,8 +446,13 @@ public:
                 return static_cast<size_type>(ssize());
         }
 
+        constexpr static auto max_ssize() noexcept
+        {
+                return M;
+        }
+
         constexpr static auto max_size() noexcept
-         {
+        {
                 return N;
         }
 
