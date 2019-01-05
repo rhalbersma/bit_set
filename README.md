@@ -150,7 +150,6 @@ Porting `std::bitset<N>` code to `xstd::bit_set<N>`
 Most `std::bitset<N>` expressions have **a direct translation** to an equivalent `xstd::bit_set<N>` expression. With the exception of the member functions `fill`, `complement`, `replace` and `full`, the renamed `xstd::bit_set<N>` functionality is named after the corresponding `std::set<int>` functionality.
 
 The semantic differences are that `xstd::bit_set<N>`:
-  - has a signed integral `size_type`;
   - has a `static` member function `max_size()` returning `N`;
   - does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`.
 
@@ -161,12 +160,12 @@ Instead of throwing an `out_of_range` exception for argument values outside the 
 | `bs.set()`                      | `bs.fill()`                                  | not a member of `std::set<int>`                     |
 | `bs.set(pos)`                   | `bs.insert(pos)`                             | does not do bounds-checking or throw `out_of_range` |
 | `bs.set(pos, val)`              | `val ? bs.insert(pos) : bs.erase(pos)`       | does not do bounds-checking or throw `out_of_range` |
-| `bs.reset()`                    | `bs.clear()`                                 |                                                     |
+| `bs.reset()`                    | `bs.clear()`                                 | also returns `*this`, not `void` as for `std::set<int>` |
 | `bs.reset(pos)`                 | `bs.erase(pos)`                              | does not do bounds-checking or throw `out_of_range` |
 | `bs.flip()`                     | `bs.complement()`                            | not a member of `std::set<int>`                     |
 | `bs.flip(pos)`                  | `bs.replace(pos)`                            | does not do bounds-checking or throw `out_of_range` <br> not a member of `std::set<int>` |
-| `bs.count()`                    | `bs.size()`                                  | returns a signed `size_type`                        |
-| `bs.size()`                     | `bs.max_size()`                              | returns a signed `size_type` <br> is a `static` member |
+| `bs.count()`                    | `bs.size()`                                  |                                                     |
+| `bs.size()`                     | `bs.max_size()`                              | is a `static` member                                |
 | `bs.test(pos)`                  | `bs.contains(pos)`                           | does not do bounds-checking or throw `out_of_range` |
 | `bs.all()`                      | `bs.full()`                                  | not a member of `std:set<int>`                      |
 | `bs.any()`                      | `!bs.empty()`                                |                                                     |
@@ -177,14 +176,14 @@ Instead of throwing an `out_of_range` exception for argument values outside the 
 Semantic differences for bitwise-shift operators
 ------------------------------------------------
 
-The bitwise-shift operators in `std::bitset<N>` and `xstd::bit_set<N>` have **identical syntax**. The only semantic difference is that `xstd::bit_set<N>` does not do bounds-checking for its bitwise-shift operators. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this **behavior is undefined**.
+The bitwise-shift operators in `std::bitset<N>` and `xstd::bit_set<N>` have **identical syntax**. The only semantic difference is that `xstd::bit_set<N>` does not support bit-shifting for lengths `>= N`. Instead of calling `clear()` for argument values outside the range `[0, N)`, this **behavior is undefined**. Note that these semantics are identical to bit-shifting on native unsigned integers.
 
-| Expression    | Semantics for `xstd::bit_set<N>`                    |
-| :------------ | :-------------------------------------------------- |
-| `bs <<= pos`  | does not do bounds-checking or throw `out_of_range` |
-| `bs >>= pos`  | does not do bounds-checking or throw `out_of_range` |
-| `bs << pos`   | does not do bounds-checking or throw `out_of_range` |
-| `bs >> pos`   | does not do bounds-checking or throw `out_of_range` |
+| Expression    | Semantics for `xstd::bit_set<N>`  |
+| :------------ | :-------------------------------  |
+| `bs <<= pos`  | does not `clear()` for `pos >= N` |
+| `bs >>= pos`  | does not `clear()` for `pos >= N` |
+| `bs << pos`   | does not `clear()` for `pos >= N` |
+| `bs >> pos`   | does not `clear()` for `pos >= N` |
 
 Semantic differences for I/O streaming operators
 ------------------------------------------------
@@ -206,8 +205,8 @@ Functionality from `std::set<int>` that is not in `xstd::bit_set<N>`
 `xstd::bit_set<N>` provides the same functionality as `std::set<int, std::less<int>, Allocator>`, where `Allocator` statically allocates contiguous memory to store `N` integers. This means that `xstd::bit_set<N>` does **not provide**:
 
   - **Customized key comparison**: `xstd::bit_set<N>` uses `std::less<int>` as its default comparator.
-  - **Allocator support**: `xstd::bit_set<N>` is a fixed-size set of non-negative integers and does not dynamically allocate memory. In particular, `xstd::bit_set<N>` does **not provided a `get_allocator()` member function and its constructors do not take an allocator argument.
-  - **Splicing**: `xstd::bit_set<N>` is **not a node-based container**, and does not provide the splicing operatorions as defined in [P0083R3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `xstd::bit_set<N>` does not provide the nested type `node_type`, the `extract()` or `merge()` member functions, or the `insert()` overloads taking a node handle.
+  - **Allocator support**: `xstd::bit_set<N>` is a fixed-size set of non-negative integers and does not dynamically allocate memory. In particular, `xstd::bit_set<N>` does **not provide** a `get_allocator()` member function and its constructors do not take an allocator argument.
+  - **Splicing**: `xstd::bit_set<N>` is **not a node-based container**, and does not provide the splicing operatorions as defined in [P0083R3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `xstd::bit_set<N>` does **not provide** the nested type `node_type`, the `extract()` or `merge()` member functions, or the `insert()` overloads taking a node handle.
 
 Composable data-parallel set algorithms on sorted ranges
 --------------------------------------------------------
