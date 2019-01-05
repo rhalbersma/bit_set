@@ -698,8 +698,10 @@ struct fn_iostream
         template<class BitSet>
         auto operator()(BitSet const& a) const noexcept
         {
-                std::stringstream sstr; sstr << a;
-                BitSet b;               sstr >> b;
+                std::stringstream sstr;
+                BitSet b;
+                sstr << a;
+                sstr >> b;
                 BOOST_CHECK_EQUAL(a, b);                                        // [bitset.operators]/4-8
         }
 };
