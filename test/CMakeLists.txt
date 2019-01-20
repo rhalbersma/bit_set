@@ -19,6 +19,7 @@ set(cxx_compile_options_warnings
     >
     $<$<CXX_COMPILER_ID:Clang>:
         -Weverything
+        -Wno-unknown-warning-option
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
         -Wno-disabled-macro-expansion
