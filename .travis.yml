@@ -12,7 +12,15 @@ matrix:
       addons: { apt: { packages: ["clang-7", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-7"] } }
 
     - env: CXX_COMPILER=clang++-8 CXX=g++-7
-      addons: { apt: { packages: ["clang-8", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-8"] } }
+      addons:
+        apt:
+          packages:
+            - clang-8
+            - g++-7
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-8 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
     - env: CXX_COMPILER=clang++-9 CXX=g++-7
       addons: { apt: { packages: ["clang-9", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty"] } }
@@ -46,7 +54,7 @@ install:
 # Install the latest CMake
 ################################################################################
 - |
-  CMAKE_VERSION=3.13.2
+  CMAKE_VERSION=3.13.3
   CMAKE_DIR=${THIRD_PARTY_DIR}/cmake-${CMAKE_VERSION}
   CMAKE_URL="http://www.cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}
