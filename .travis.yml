@@ -11,8 +11,8 @@ matrix:
     - env: CXX_COMPILER=clang++-7 CXX=g++-7
       addons: { apt: { packages: ["clang-7", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-7"] } }
 
-#    - env: CXX_COMPILER=clang++-8 CXX=g++-7
-#      addons: { apt: { packages: ["clang-8", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-8"] } }
+    - env: CXX_COMPILER=clang++-8 CXX=g++-7
+      addons: { apt: { packages: ["clang-8", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty-8"] } }
 
     - env: CXX_COMPILER=clang++-9 CXX=g++-7
       addons: { apt: { packages: ["clang-9", "g++-7"], sources: ["ubuntu-toolchain-r-test", "llvm-toolchain-trusty"] } }
