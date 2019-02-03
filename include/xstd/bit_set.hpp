@@ -456,6 +456,12 @@ public:
                 return N;
         }
 
+        constexpr static auto capacity() noexcept
+                -> size_type
+        {
+                return num_bits;
+        }
+
         template<class... Args>
         constexpr auto emplace(Args&&... args) // Throws: Nothing.
         {

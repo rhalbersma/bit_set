@@ -101,6 +101,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         all_cardinality_sets<T>(mem_empty{});
         all_cardinality_sets<T>(mem_size{});
         all_cardinality_sets<T>(mem_max_size{});
+        all_cardinality_sets<T>(mem_capacity{});
 
         all_values<T>([](auto const& t) {
                 empty_set<T>([=](auto& is0) {

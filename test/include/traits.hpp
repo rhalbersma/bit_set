@@ -68,5 +68,13 @@ constexpr static auto has_back_v<IntSet, std::void_t<decltype(
         std::declval<IntSet>().back()
 )>> = true;
 
+template<class IntSet, class = void>
+constexpr static auto has_capacity_v = false;
+
+template<class IntSet>
+constexpr static auto has_capacity_v<IntSet, std::void_t<decltype(
+        std::declval<IntSet>().capacity()
+)>> = true;
+
 }       // namespace tti
 }       // namespace xstd
