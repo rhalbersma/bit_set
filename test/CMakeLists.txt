@@ -5,7 +5,6 @@ find_package(Boost COMPONENTS
 set(cxx_compile_definitions
     BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
     BOOST_ALL_NO_LIB
-    BOOST_ALL_DYN_LINK
     BOOST_TEST_MAIN
     $<$<CXX_COMPILER_ID:MSVC>:
         _SCL_SECURE_NO_WARNINGS
@@ -46,6 +45,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(cxx_compile_options_coverage
         -g
         --coverage
+	-Wa,-mbig-obj
     )
 
     set(cxx_linker_options_coverage
@@ -84,5 +84,5 @@ foreach(t ${targets})
         ${cxx_compile_options_coverage}
     )
 
-    add_test(${target_id} ${target_id} --report_level=detailed)
+    add_test(${target_id} ${target_id})
 endforeach()
