@@ -48,7 +48,7 @@ install:
   BOOST_DIR=${THIRD_PARTY_DIR}/boost-${BOOST_VERSION}
   BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.bz2"
   mkdir -p ${BOOST_DIR} && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xj -C ${BOOST_DIR}
-  cd ${BOOST_DIR} && ./bootstrap.sh --with-libraries=test && ./b2 -d0 link=static runtime-link=static threading=multi variant=release install
+  cd ${BOOST_DIR} && ./bootstrap.sh --with-libraries=test && sudo ./b2 install -d0 link=static runtime-link=static threading=multi variant=release
 
 ################################################################################
 # Install the latest CMake
