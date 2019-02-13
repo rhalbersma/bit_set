@@ -61,16 +61,21 @@ before_script:
 - |
   cd ${TRAVIS_BUILD_DIR}
   mkdir build && cd build
-  cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DBOOST_ROOT="${BOOST_DIR}" -DBOOST_LIBRARYDIR="${BOOST_DIR}/stage/lib"
- 
-script: 
+  if [[ "${CODE_COVERAGE}" == "true" ]]; then
+    cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DBOOST_ROOT="${BOOST_DIR}" -DBOOST_LIBRARYDIR="${BOOST_DIR}/stage/lib" -DCMAKE_CXX_FLAGS="--coverage" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+  else
+    cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DBOOST_ROOT="${BOOST_DIR}" -DBOOST_LIBRARYDIR="${BOOST_DIR}/stage/lib"
+  fi
+
+script:
 - |
   cmake --build .
   ctest
 
 after_success:
 - |
-  if [[ "${CXX_COMPILER}" == "g++-8" ]]; then
+  if [[ "${CODE_COVERAGE}" == "true" ]]; then
+    sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-8 10
     bash <(curl -s https://codecov.io/bash)
   fi
 
