@@ -1,3 +1,5 @@
+set(Boost_USE_STATIC_LIBS ON)
+
 find_package(Boost COMPONENTS
     unit_test_framework
 )
@@ -41,13 +43,20 @@ set(cxx_compile_options_warnings
     >
 )
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(cxx_compile_options_coverage
+set(cxx_compile_options_mbig_obj
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
+	    -Wa,-mbig-obj
+    >
+)
+
+set(cxx_compile_options_coverage
+    $<$<CXX_COMPILER_ID:GNU>:
         -g
         --coverage
-	-Wa,-mbig-obj
-    )
+    >
+)
 
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     set(cxx_linker_options_coverage
         --coverage
     )
@@ -81,6 +90,7 @@ foreach(t ${targets})
 
     target_compile_options(${target_id} PRIVATE
         ${cxx_compile_options_warnings}
+        ${cxx_compile_options_mbig_obj}
         ${cxx_compile_options_coverage}
     )
 
