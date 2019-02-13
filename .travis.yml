@@ -25,12 +25,13 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=g++-7 CODE_COVERAGE=true
-      addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
-
     - env: CXX_COMPILER=g++-8
       addons: { apt: { packages: ["g++-8"], sources: ["ubuntu-toolchain-r-test"] } }
    
+    # lcov on Ubuntu Xenial is incompatible with gcov-8, so we need g++-7 for code coverage
+    - env: CXX_COMPILER=g++-7 CODE_COVERAGE=true
+      addons: { apt: { packages: ["g++-7"], sources: ["ubuntu-toolchain-r-test"] } }
+
 install:
 
 ################################################################################
