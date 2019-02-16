@@ -644,28 +644,28 @@ public:
                 -> iterator
         {
                 assert(is_valid(x));
-                return { this, find_first_from(x) };
+                return { this, find_next(x) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto lower_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(is_valid(x));
-                return { this, find_first_from(x) };
+                return { this, find_next(x) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto upper_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
                 assert(is_valid(x));
-                return { this, find_first_from(x + 1) };
+                return { this, find_next(x + 1) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto upper_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(is_valid(x));
-                return { this, find_first_from(x + 1) };
+                return { this, find_next(x + 1) };
         }
 
         XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto equal_range(key_type const& x) // Throws: Nothing.
@@ -964,7 +964,7 @@ private:
                 return M;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_first_from(int n) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_next(int n) const // Throws: Nothing.
         {
                 assert(is_range(n));
                 if (n == M) {
@@ -992,7 +992,7 @@ private:
                 return M;
         }
 
-        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_last_from(int n) const // Throws: Nothing.
+        XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto find_prev(int n) const // Throws: Nothing.
         {
                 assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
@@ -1092,7 +1092,7 @@ private:
                 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto& operator++() // Throws: Nothing.
                 {
                         assert(is_valid(m_value));
-                        m_value = m_bs->find_first_from(m_value + 1);
+                        m_value = m_bs->find_next(m_value + 1);
                         assert(is_valid(m_value - 1));
                         return *this;
                 }
@@ -1105,7 +1105,7 @@ private:
                 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto& operator--() // Throws: Nothing.
                 {
                         assert(is_valid(m_value - 1));
-                        m_value = m_bs->find_last_from(m_value - 1);
+                        m_value = m_bs->find_prev(m_value - 1);
                         assert(is_valid(m_value));
                         return *this;
                 }
