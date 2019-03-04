@@ -1003,13 +1003,13 @@ private:
                                         ++i;
                                         n -= block_size - offset;
                                 }
-                                for (/* init-statement before loop */; i < num_logical_blocks - 1; ++i, n -= block_size) {
+                                for (/* init-statement before loop */; i < num_storage_blocks - 1; ++i, n -= block_size) {
                                         if (auto const block = m_data[i]; block) {
                                                 return n - builtin::ctznz(block);
                                         }
                                 }
                         }
-                        return n - builtin::ctznz(m_data[num_logical_blocks - 1]);
+                        return n - builtin::ctznz(m_data[num_storage_blocks - 1]);
                 }
         }
 
