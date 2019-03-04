@@ -388,7 +388,10 @@ public:
                 } else if constexpr (num_logical_blocks == 1) {
                         return !m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
-                        return !m_data[0] && !m_data[1];
+                        return !(
+                                m_data[0] ||
+                                m_data[1]
+                        );
                 } else if constexpr (num_logical_blocks >= 3) {
                         return std::none_of(std::begin(m_data), std::end(m_data), [](auto block) -> bool {
                                 return block;
@@ -584,12 +587,10 @@ public:
         XSTD_PP_CONSTEXPR_SWAP auto swap(basic_bit_set& other [[maybe_unused]]) noexcept(num_logical_blocks == 0 || std::is_nothrow_swappable_v<value_type>)
         {
                 if constexpr (num_logical_blocks == 1) {
-                        using std::swap;
-                        swap(m_data[0], other.m_data[0]);
+                        std::swap(m_data[0], other.m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
-                        using std::swap;
-                        swap(m_data[0], other.m_data[0]);
-                        swap(m_data[1], other.m_data[1]);
+                        std::swap(m_data[0], other.m_data[0]);
+                        std::swap(m_data[1], other.m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
                         std::swap_ranges(std::begin(m_data), std::end(m_data), std::begin(other.m_data));
                 }
@@ -1139,7 +1140,10 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(basic_bit_set<N, Block> const& lhs [
                 return lhs.m_data[0] == rhs.m_data[0];
         } else if constexpr (num_logical_blocks == 2) {
                 constexpr auto tied = [](auto const& bs) {
-                        return std::tie(bs.m_data[0], bs.m_data[1]);
+                        return std::tie(
+                                bs.m_data[0],
+                                bs.m_data[1]
+                        );
                 };
                 return tied(lhs) == tied(rhs);
         } else if constexpr (num_logical_blocks >= 3) {
@@ -1166,7 +1170,10 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(basic_bit_set<N, Block> const& lhs [[
                 return rhs.m_data[0] < lhs.m_data[0];
         } else if constexpr (num_logical_blocks == 2) {
                 constexpr auto tied = [](auto const& bs) {
-                        return std::tie(bs.m_data[1], bs.m_data[0]);
+                        return std::tie(
+                                bs.m_data[1],
+                                bs.m_data[0]
+                        );
                 };
                 return tied(rhs) < tied(lhs);
         } else if constexpr (num_logical_blocks >= 3) {
