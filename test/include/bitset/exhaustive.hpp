@@ -5,7 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <traits.hpp>   // has_resize_v
+#include <traits.hpp>   // has_resize
 #include <cstddef>      // size_t
 #include <utility>      // declval
 
@@ -17,7 +17,7 @@
 namespace xstd {
 
 template<class T, std::size_t L>
-auto const limit_v = tti::has_resize_v<T> ? L : fn_size(T{});
+auto const limit_v = tti::has_resize<T> ? L : fn_size(T{});
 
 inline constexpr auto L0 = 256;
 inline constexpr auto L1 = 128;

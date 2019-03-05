@@ -46,12 +46,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsStandardLayout, T, bitset_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(HasNoResize, T, bitset_types)
 {
-        static_assert(!tti::has_resize_v<T>);
+        static_assert(!tti::has_resize<T>);
 }
 
 BOOST_AUTO_TEST_CASE(DynamicBitsetHasResize)
 {
-        static_assert(tti::has_resize_v<boost::dynamic_bitset<>>);
+        static_assert(tti::has_resize<boost::dynamic_bitset<>>);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -5,7 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <traits.hpp>                   // has_back_v, has_front_v
+#include <traits.hpp>                   // has_back, has_front
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
 #include <algorithm>                    // all_of, any_of, copy_if, count, equal, equal_range, find, for_each, includes, lexicographical_compare, lower_bound,
                                         // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform, upper_bound
@@ -132,7 +132,7 @@ struct mem_front
         template<class IntSet>
         auto operator()(IntSet const& bs [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_front_v<IntSet>) {
+                if constexpr (tti::has_front<IntSet>) {
                         BOOST_CHECK(bs.empty() || (bs.front() == *bs.cbegin()));
                         BOOST_CHECK(bs.empty() || (&bs.front() == bs.cbegin()));
                 }
@@ -144,7 +144,7 @@ struct mem_back
         template<class IntSet>
         auto operator()(IntSet const& bs [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_back_v<IntSet>) {
+                if constexpr (tti::has_back<IntSet>) {
                         BOOST_CHECK(bs.empty() || (bs.back() == *bs.crbegin()));
                         BOOST_CHECK(bs.empty() || (&bs.back() == std::next(bs.crbegin()).base()));
                 }
@@ -187,7 +187,7 @@ struct mem_capacity
         template<class X>
         auto operator()(X const& a) const noexcept
         {
-                if constexpr (tti::has_capacity_v<X>) {                         // [container.requirements.general] Table 83
+                if constexpr (tti::has_capacity<X>) {                         // [container.requirements.general] Table 83
                         static_assert(std::is_same_v<decltype(a.capacity()), typename X::size_type>);
                         BOOST_CHECK_LE(a.size(), a.capacity());
                 }
@@ -291,7 +291,7 @@ struct mem_erase
         template<class X>
         auto operator()(X& a [[maybe_unused]], std::initializer_list<typename X::key_type> il [[maybe_unused]]) const
         {
-                if constexpr (tti::has_ilist_erase_v<X>) {
+                if constexpr (tti::has_ilist_erase<X>) {
                         static_assert(std::is_same_v<decltype(a.erase(il)), void>);
                         auto const a1 = a;
                         a.insert(il);
