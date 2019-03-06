@@ -54,7 +54,7 @@ matrix:
           packages:
             - clang-9
             - libc++-9-dev
-            - lc++abi-9-dev
+            - libc++abi-9-dev
           sources:
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
