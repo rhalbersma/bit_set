@@ -115,14 +115,6 @@ install:
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}
   export PATH=${CMAKE_DIR}/bin:${PATH}
 
-################################################################################
-# Install the dependent GitHub repositories xstd and bit_set
-################################################################################
-- |
-  cd ${THIRD_PARTY_DIR}/..
-  git clone https://github.com/rhalbersma/xstd.git
-  git clone https://github.com/rhalbersma/bit_set.git
-
 before_script:
 - |
   cd ${TRAVIS_BUILD_DIR}
