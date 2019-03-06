@@ -48,20 +48,30 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=g++-8
+    - env: CXX_COMPILER=clang++-9 STDLIB=libc++
       addons:
         apt:
           packages:
-            - g++-8
+            - clang-9
+            - libc++-9-dev
+            - libc++abi-9-dev
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
-   
-    # lcov on Ubuntu Xenial is incompatible with gcov-8, so we need g++-7 for code coverage
-    - env: CXX_COMPILER=g++-7 CODE_COVERAGE=true
+            - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+
+    - env: CXX_COMPILER=g++-7 CXX=g++-7 CODE_COVERAGE=true
       addons:
         apt:
           packages:
             - g++-7
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+
+    - env: CXX_COMPILER=g++-8 CXX=g++-8
+      addons:
+        apt:
+          packages:
+            - g++-8
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
@@ -73,16 +83,27 @@ install:
 - |
   THIRD_PARTY_DIR="${TRAVIS_BUILD_DIR}/../third_party"
   mkdir -p ${THIRD_PARTY_DIR}
-  
+
 ################################################################################
-# Install the latest Boost and build Boost.Test (compiled with gcc)
+# Install the latest Boost and build Boost.Test (compiled with g++-8)
 ################################################################################
 - |
   BOOST_VERSION=1.69.0
   BOOST_DIR=${THIRD_PARTY_DIR}/boost-${BOOST_VERSION}
   BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.bz2"
+  BOOST_LIBS="test"
+  BOOST_BUILD_TYPE="link=static variant=release"
   mkdir -p ${BOOST_DIR} && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xj -C ${BOOST_DIR}
-  cd ${BOOST_DIR} && ./bootstrap.sh --with-libraries=test && sudo ./b2 install -d0 link=static runtime-link=static threading=multi variant=release
+  cd ${BOOST_DIR}
+  if [[ "${STDLIB}" == "libc++" ]]; then
+    sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-9   90
+    sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-9 90
+    ./bootstrap.sh --with-toolset=clang --with-libraries=${BOOST_LIBS}
+    sudo ./b2 -d0 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++ -lc++abi"
+  else
+    ./bootstrap.sh --with-toolset=gcc   --with-libraries=${BOOST_LIBS}
+    sudo ./b2 -d0 -j10 install toolset=gcc   ${BOOST_BUILD_TYPE}
+  fi
 
 ################################################################################
 # Install the latest CMake
@@ -94,14 +115,31 @@ install:
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}
   export PATH=${CMAKE_DIR}/bin:${PATH}
 
+################################################################################
+# Install the dependent GitHub repositories xstd and bit_set
+################################################################################
+- |
+  cd ${THIRD_PARTY_DIR}/..
+  git clone https://github.com/rhalbersma/xstd.git
+  git clone https://github.com/rhalbersma/bit_set.git
+
 before_script:
 - |
   cd ${TRAVIS_BUILD_DIR}
   mkdir build && cd build
-  if [[ "${CODE_COVERAGE}" == "true" ]]; then
-    cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER} -DCMAKE_CXX_FLAGS="--coverage" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+  if [[ "${STDLIB}" == "libc++" ]]; then
+    cmake .. \
+      -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+      -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+      -DCMAKE_CXX_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi"
+  elif [[ "${CODE_COVERAGE}" == "true" ]]; then
+    cmake .. \
+      -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+      -DCMAKE_CXX_FLAGS="--coverage" \
+      -DCMAKE_EXE_LINKER_FLAGS="--coverage"
   else
-    cmake .. -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
+    cmake .. \
+      -DCMAKE_CXX_COMPILER=${CXX_COMPILER}
   fi
 
 script:
