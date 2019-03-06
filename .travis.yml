@@ -54,7 +54,6 @@ matrix:
           packages:
             - clang-9
             - libc++-9-dev
-            - libc++abi-9-dev
           sources:
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
@@ -99,7 +98,7 @@ install:
     sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-9   90
     sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-9 90
     ./bootstrap.sh --with-toolset=clang --with-libraries=${BOOST_LIBS}
-    sudo ./b2 -d0 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++" linkflags="-stdlib=libc++ -lc++abi"
+    sudo ./b2 -d0 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
   else
     ./bootstrap.sh --with-toolset=gcc   --with-libraries=${BOOST_LIBS}
     sudo ./b2 -d0 -j10 install toolset=gcc   ${BOOST_BUILD_TYPE}
@@ -122,8 +121,7 @@ before_script:
   if [[ "${STDLIB}" == "libc++" ]]; then
     cmake .. \
       -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
-      -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
-      -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi"
+      -DCMAKE_CXX_FLAGS="-stdlib=libc++"
   elif [[ "${CODE_COVERAGE}" == "true" ]]; then
     cmake .. \
       -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
