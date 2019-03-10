@@ -27,20 +27,20 @@ auto resize(basic_bit_set<N, Block>& bs, std::size_t num_bits [[maybe_unused]], 
 template<std::size_t N, class Block>
 auto& left_shift_assign(basic_bit_set<N, Block>& bs, std::size_t pos) noexcept
 {
-        using value_type = value_t<basic_bit_set<N, Block>>;
         if (pos >= N) {
                 return bs.clear();
         }
+        using value_type = value_t<basic_bit_set<N, Block>>;
         return bs <<= static_cast<value_type>(pos);
 }
 
 template<std::size_t N, class Block>
 auto& right_shift_assign(basic_bit_set<N, Block>& bs, std::size_t pos) noexcept
 {
-        using value_type = value_t<basic_bit_set<N, Block>>;
         if (pos >= N) {
                 return bs.clear();
         }
+        using value_type = value_t<basic_bit_set<N, Block>>;
         return bs >>= static_cast<value_type>(pos);
 }
 
@@ -53,10 +53,10 @@ auto& set(basic_bit_set<N, Block>& bs) noexcept
 template<std::size_t N, class Block>
 auto& set(basic_bit_set<N, Block>& bs, std::size_t pos, bool val = true)
 {
-        using value_type = value_t<basic_bit_set<N, Block>>;
         if (pos >= N) {
                 throw std::out_of_range{""};
         }
+        using value_type = value_t<basic_bit_set<N, Block>>;
         if (val) {
                 bs.insert(static_cast<value_type>(pos));
         } else {
@@ -74,10 +74,10 @@ auto& reset(basic_bit_set<N, Block>& bs) noexcept
 template<std::size_t N, class Block>
 auto& reset(basic_bit_set<N, Block>& bs, std::size_t pos)
 {
-        using value_type = value_t<basic_bit_set<N, Block>>;
         if (pos >= N) {
                 throw std::out_of_range{""};
         }
+        using value_type = value_t<basic_bit_set<N, Block>>;
         bs.erase(static_cast<value_type>(pos));
         return bs;
 }
@@ -91,10 +91,10 @@ auto& flip(basic_bit_set<N, Block>& bs) noexcept
 template<std::size_t N, class Block>
 auto& flip(basic_bit_set<N, Block>& bs, std::size_t pos)
 {
-        using value_type = value_t<basic_bit_set<N, Block>>;
         if (pos >= N) {
                 throw std::out_of_range{""};
         }
+        using value_type = value_t<basic_bit_set<N, Block>>;
         return bs.replace(static_cast<value_type>(pos));
 }
 
@@ -113,10 +113,10 @@ constexpr auto fn_size(basic_bit_set<N, Block> const& bs) noexcept
 template<std::size_t N, class Block>
 auto test(basic_bit_set<N, Block> const& bs, std::size_t pos)
 {
-        using value_type = value_t<basic_bit_set<N, Block>>;
         if (pos >= N) {
                 throw std::out_of_range{""};
         }
+        using value_type = value_t<basic_bit_set<N, Block>>;
         return bs.contains(static_cast<value_type>(pos));
 }
 
@@ -140,14 +140,24 @@ template<std::size_t N, class Block>
 
 template<std::size_t N, class Block>
 auto left_shift(basic_bit_set<N, Block> const& bs, std::size_t pos) noexcept
+        -> basic_bit_set<N, Block>
 {
-        auto nrv{bs}; left_shift_assign(nrv, pos); return nrv;
+        if (pos >= N) {
+                return {};
+        }
+        using value_type = value_t<basic_bit_set<N, Block>>;
+        return bs << static_cast<value_type>(pos);
 }
 
 template<std::size_t N, class Block>
 auto right_shift(basic_bit_set<N, Block> const& bs, std::size_t pos) noexcept
+        -> basic_bit_set<N, Block>
 {
-        auto nrv{bs}; right_shift_assign(nrv, pos); return nrv;
+        if (pos >= N) {
+                return {};
+        }
+        using value_type = value_t<basic_bit_set<N, Block>>;
+        return bs >> static_cast<value_type>(pos);
 }
 
 template<std::size_t N, class Block>

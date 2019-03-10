@@ -75,4 +75,20 @@ constexpr static auto has_resize<IntSet, std::void_t<decltype(
         std::declval<IntSet>().resize(std::declval<typename IntSet::size_type>(), std::declval<bool>())
 )>> = true;
 
+template<class Iterator, class = void>
+constexpr static auto is_dereferenceable = false;
+
+template<class Iterator>
+constexpr static auto is_dereferenceable<Iterator, std::void_t<
+        decltype(*std::declval<Iterator>())
+>> = true;
+
+template<class Iterator, class = void>
+constexpr static auto is_equality_comparable = false;
+
+template<class Iterator>
+constexpr static auto is_equality_comparable<Iterator, std::void_t<
+        decltype(std::declval<Iterator>() != std::declval<Iterator>())
+>> = true;
+
 }       // namespace xstd::tti

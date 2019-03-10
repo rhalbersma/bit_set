@@ -5,7 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <traits.hpp>                   // has_back, has_front
+#include <traits.hpp>                   // has_back, has_front, is_dereferencable
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
 #include <algorithm>                    // all_of, any_of, copy_if, count, equal, equal_range, find, for_each, includes, lexicographical_compare, lower_bound,
                                         // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform, upper_bound
@@ -101,6 +101,62 @@ struct mem_const_iterator
         {                                                                       // [container.requirements.general] Table 83
                 static_assert(std::is_same_v<decltype(a.begin()), typename X::iterator>);
                 static_assert(std::is_same_v<decltype(a.end())  , typename X::iterator>);
+
+                using Iterator = typename X::iterator;                          // [iterator.iterators] Table 94
+                using Reference = typename std::iterator_traits<Iterator>::reference;
+                using ValueType = typename std::iterator_traits<Iterator>::value_type;
+
+                static_assert(tti::is_dereferenceable<Iterator>);
+                static_assert(std::is_same_v<decltype(++std::declval<Iterator>()), Iterator&>);
+
+                using InputIterator = Iterator;                                // [input.iterators] Table 95
+                static_assert(tti::is_equality_comparable<InputIterator>);
+                {
+                        auto r = a.begin();
+                        auto s = a.end();
+                        BOOST_CHECK_EQUAL(r != s, !(r == s));
+                }
+                static_assert(std::is_same_v       <decltype(*std::declval<InputIterator>()), Reference>);
+                static_assert(std::is_convertible_v<decltype(*std::declval<InputIterator>()), ValueType>);
+                {
+                        if (a.begin() != a.end()) {
+                                auto r = a.begin();
+                                auto s = a.begin();
+                                r++;
+                                ++s;
+                                BOOST_CHECK(r == s);
+                        }
+                }
+                static_assert(std::is_convertible_v<decltype(*std::declval<InputIterator>()++), ValueType>);
+                {
+                        if (a.begin() != a.end()) {
+                                auto r = a.begin();
+                                auto s = a.begin();
+                                auto tmp = *s;
+                                ++s;
+                                BOOST_CHECK_EQUAL(*r++, tmp);
+                                BOOST_CHECK(r == s);
+                        }
+                }
+
+                using ForwardIterator = InputIterator;                          // [forward.iterators] Table 97
+                static_assert(std::is_convertible_v<decltype( std::declval<ForwardIterator>()++), ForwardIterator const&>);
+                static_assert(std::is_same_v       <decltype(*std::declval<ForwardIterator>()++), Reference>);
+
+                using BidirectionalIterator = ForwardIterator;                  // [bidrectional.iterators] Table 98
+                static_assert(std::is_same_v       <decltype(--std::declval<BidirectionalIterator>()  ), BidirectionalIterator&>);
+                static_assert(std::is_convertible_v<decltype(  std::declval<BidirectionalIterator>()--), BidirectionalIterator const&>);
+                static_assert(std::is_same_v       <decltype( *std::declval<BidirectionalIterator>()--), Reference>);
+                {
+                        if (a.begin() != a.end()) {
+                                auto r = a.end();
+                                auto s = a.end();
+                                auto tmp = s;
+                                --s;
+                                BOOST_CHECK(r-- == tmp);
+                                BOOST_CHECK(r == s);
+                        }
+                }
 
                                                                                 // [container.requirements.general] Table 84
                 static_assert(std::is_same_v<decltype(a.rbegin()), typename X::reverse_iterator>);
@@ -199,7 +255,7 @@ struct mem_emplace
         template<class X, class... Args>
         auto operator()(X& a, Args&&... args) const
         {                                                                       // [associative.reqmts] Table 90
-                static_assert(std::is_same_v<decltype(a.emplace(std::forward<Args>(args)...)), std::pair<typename X::iterator, bool>>); 
+                static_assert(std::is_same_v<decltype(a.emplace(std::forward<Args>(args)...)), std::pair<typename X::iterator, bool>>);
                 auto r = a.emplace(std::forward<Args>(args)...);
                 BOOST_CHECK(r == std::make_pair(a.find(typename X::value_type(std::forward<Args>(args)...)), true));
         }

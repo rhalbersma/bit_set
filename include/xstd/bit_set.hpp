@@ -466,7 +466,7 @@ public:
 
         constexpr static auto max_size() noexcept
         {
-                return N;
+                return static_cast<size_type>(max_ssize());
         }
 
         constexpr static auto capacity() noexcept
