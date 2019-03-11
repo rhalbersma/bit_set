@@ -143,7 +143,7 @@ struct mem_const_iterator
                 static_assert(std::is_convertible_v<decltype( std::declval<ForwardIterator>()++), ForwardIterator const&>);
                 static_assert(std::is_same_v       <decltype(*std::declval<ForwardIterator>()++), Reference>);
 
-                using BidirectionalIterator = ForwardIterator;                  // [bidrectional.iterators] Table 98
+                using BidirectionalIterator = ForwardIterator;                  // [bidirectional.iterators] Table 98
                 static_assert(std::is_same_v       <decltype(--std::declval<BidirectionalIterator>()  ), BidirectionalIterator&>);
                 static_assert(std::is_convertible_v<decltype(  std::declval<BidirectionalIterator>()--), BidirectionalIterator const&>);
                 static_assert(std::is_same_v       <decltype( *std::declval<BidirectionalIterator>()--), Reference>);
