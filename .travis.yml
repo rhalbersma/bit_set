@@ -85,7 +85,7 @@ install:
 - |
   THIRD_PARTY_DIR="${TRAVIS_BUILD_DIR}/../third_party"
   mkdir -p ${THIRD_PARTY_DIR}
-  cd {THIRD_PARTY_DIR}
+  cd ${THIRD_PARTY_DIR}
 
 ################################################################################
 # Install the latest gcc
