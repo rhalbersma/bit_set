@@ -93,8 +93,8 @@ install:
 
 - |
   if [[ "${CXX_COMPILER}" == "g++-9" ]]; then
-    wget http://kayari.org/gcc-latest_9.0.1-20190310svn269561.deb
-    sudo dpkg -i gcc-latest_9.0.1-20190310svn269561.deb
+    wget http://kayari.org/gcc-latest/gcc-latest.deb
+    sudo dpkg -i gcc-latest.deb
     sudo ln -s /opt/gcc-latest/bin/gcc /usr/bin/gcc-9
     sudo ln -s /opt/gcc-latest/bin/g++ /usr/bin/g++-9
     sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9
