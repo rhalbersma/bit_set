@@ -8,6 +8,7 @@
 #include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_AUTO_TEST_SUITE_END
 #include <limits>                               // digits
+#include <type_traits>                          // is_nothrow_swappable_v
 
 BOOST_AUTO_TEST_SUITE(Builtin)
 
@@ -149,6 +150,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Bit1, T, unsigned_integer_types)
                 // __uint128_t does not have output streaming operator<< required for BOOST_CHECK_EQUAL
                 BOOST_CHECK(b == static_cast<T>(1) << i);
         }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsNoThrowSwappable, T, unsigned_integer_types)
+{
+        // swap() is noexcept if-and-only-if the block_type is no-throw swappable
+        static_assert(std::is_nothrow_swappable_v<T>);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
