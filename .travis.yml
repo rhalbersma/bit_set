@@ -126,7 +126,7 @@ install:
 # Install the latest CMake
 ################################################################################
 - |
-  CMAKE_VERSION=3.14.0
+  CMAKE_VERSION=3.14.1
   CMAKE_DIR=${THIRD_PARTY_DIR}/cmake-${CMAKE_VERSION}
   CMAKE_URL="http://www.cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}

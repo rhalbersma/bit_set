@@ -584,7 +584,7 @@ public:
                 });
         }
 
-        XSTD_PP_CONSTEXPR_SWAP auto swap(basic_bit_set& other [[maybe_unused]]) noexcept(num_logical_blocks == 0 || std::is_nothrow_swappable_v<value_type>)
+        XSTD_PP_CONSTEXPR_SWAP auto swap(basic_bit_set& other [[maybe_unused]]) noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
                         std::swap(m_data[0], other.m_data[0]);
@@ -1325,7 +1325,7 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto disjoint(basic_bit_set<N, Block> const& lhs, ba
 }
 
 template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_SWAP auto swap(basic_bit_set<N, Block>& lhs, basic_bit_set<N, Block>& rhs) noexcept(noexcept(lhs.swap(rhs)))
+XSTD_PP_CONSTEXPR_SWAP auto swap(basic_bit_set<N, Block>& lhs, basic_bit_set<N, Block>& rhs) noexcept
 {
         lhs.swap(rhs);
 }
