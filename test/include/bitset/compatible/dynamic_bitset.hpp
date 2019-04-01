@@ -9,6 +9,7 @@
 #include <cstddef>                      // ptrdiff_t, size_t
 #include <iterator>                     // forward_iterator_tag
 #include <stdexcept>                    // out_of_range
+#include <type_traits>                  // is_class_v, is_constructible_v
 
 namespace boost {
 
@@ -225,8 +226,7 @@ public:
         }
 
         template<class T, std::enable_if_t<
-                std::is_class_v<T> &&
-                std::is_constructible_v<T, value_type>
+                std::is_class_v<T> && std::is_constructible_v<T, value_type>
         >...>
         /* explicit(false) */ constexpr operator T() const noexcept(noexcept(T(m_value)))
         {

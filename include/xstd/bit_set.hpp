@@ -16,7 +16,7 @@
 #include <limits>               // digits
 #include <numeric>              // accumulate
 #include <tuple>                // tie
-#include <type_traits>          // enable_if_t, is_integral_v, is_nothrow_swappable_v, is_unsigned_v
+#include <type_traits>          // enable_if_t, is_class_v, is_constructible_v, is_integral_v, is_unsigned_v
 #include <utility>              // forward, pair, swap
 
 #if defined(__GNUG__)
@@ -1139,12 +1139,7 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(basic_bit_set<N, Block> const& lhs [
         } else if constexpr (num_logical_blocks == 1) {
                 return lhs.m_data[0] == rhs.m_data[0];
         } else if constexpr (num_logical_blocks == 2) {
-                constexpr auto tied = [](auto const& bs) {
-                        return std::tie(
-                                bs.m_data[0],
-                                bs.m_data[1]
-                        );
-                };
+                constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[0], bs.m_data[1]); };
                 return tied(lhs) == tied(rhs);
         } else if constexpr (num_logical_blocks >= 3) {
                 return std::equal(
@@ -1169,12 +1164,7 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(basic_bit_set<N, Block> const& lhs [[
         } else if constexpr (num_logical_blocks == 1) {
                 return rhs.m_data[0] < lhs.m_data[0];
         } else if constexpr (num_logical_blocks == 2) {
-                constexpr auto tied = [](auto const& bs) {
-                        return std::tie(
-                                bs.m_data[1],
-                                bs.m_data[0]
-                        );
-                };
+                constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[1], bs.m_data[0]); };
                 return tied(rhs) < tied(lhs);
         } else if constexpr (num_logical_blocks >= 3) {
                 return std::lexicographical_compare(
@@ -1264,11 +1254,7 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(basic_bit_set<N, Block> const& lhs
                 return std::equal(
                         std::begin(lhs.m_data), std::end(lhs.m_data),
                         std::begin(rhs.m_data), std::end(rhs.m_data),
-                        [](auto wL, auto wR)
-                                -> bool
-                        {
-                                return !(wL & ~wR);
-                        }
+                        [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
                 );
         }
 }
@@ -1309,11 +1295,7 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(basic_bit_set<N, Block> const& lhs [
                 return !std::equal(
                         std::begin(lhs.m_data), std::end(lhs.m_data),
                         std::begin(rhs.m_data), std::end(rhs.m_data),
-                        [](auto wL, auto wR)
-                                -> bool
-                        {
-                                return !(wL & wR);
-                        }
+                        [](auto wL, auto wR) -> bool { return !(wL & wR); }
                 );
         }
 }
