@@ -13,7 +13,7 @@
 #include <iterator>                     // distance, inserter, next, prev
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
-#include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructrible_v, is_integral_v, is_same_v, is_signed_v, is_unsigned_v
+#include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructible_v, is_integral_v, is_same_v, is_signed_v, is_unsigned_v
 #include <utility>                      // pair
 
 namespace xstd {
