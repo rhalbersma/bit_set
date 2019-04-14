@@ -861,6 +861,7 @@ private:
         }
 
         constexpr static auto is_valid(value_type n) noexcept
+                -> bool
         {
                 return 0 <= n && n < M;
         }
