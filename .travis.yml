@@ -105,7 +105,7 @@ install:
 # Install the latest Boost and build Boost.Test (compiled with g++-8)
 ################################################################################
 - |
-  BOOST_VERSION=1.69.0
+  BOOST_VERSION=1.70.0
   BOOST_DIR=${THIRD_PARTY_DIR}/boost-${BOOST_VERSION}
   BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.bz2"
   BOOST_LIBS="test"
