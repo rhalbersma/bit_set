@@ -4,45 +4,45 @@ dist: xenial
 
 matrix:
   include:
-    - env: CXX_COMPILER=clang++-6.0 CXX=g++-8
+    - env: CXX_COMPILER=clang++-6.0 CXX=g++-9
       addons:
         apt:
           packages:
             - clang-6.0
-            - g++-8
+            - g++-9
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=clang++-7 CXX=g++-8
+    - env: CXX_COMPILER=clang++-7 CXX=g++-9
       addons:
         apt:
           packages:
             - clang-7
-            - g++-8
+            - g++-9
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=clang++-8 CXX=g++-8
+    - env: CXX_COMPILER=clang++-8 CXX=g++-9
       addons:
         apt:
           packages:
             - clang-8
-            - g++-8
+            - g++-9
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=clang++-9 CXX=g++-8
+    - env: CXX_COMPILER=clang++-9 CXX=g++-9
       addons:
         apt:
           packages:
             - clang-9
-            - g++-8
+            - g++-9
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'deb http://apt.llvm.org/xenial/ llvm-toolchain-xenial main'
@@ -76,6 +76,12 @@ matrix:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
     - env: CXX_COMPILER=g++-9 CXX=g++-9
+      addons:
+        apt:
+          packages:
+            - g++-9
+          sources:
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
 install:
 
@@ -88,21 +94,7 @@ install:
   cd ${THIRD_PARTY_DIR}
 
 ################################################################################
-# Install the latest gcc
-################################################################################
-
-- |
-  if [[ "${CXX_COMPILER}" == "g++-9" ]]; then
-    wget http://kayari.org/gcc-latest/gcc-latest.deb
-    sudo dpkg -i gcc-latest.deb
-    sudo ln -s /opt/gcc-latest/bin/gcc /usr/bin/gcc-9
-    sudo ln -s /opt/gcc-latest/bin/g++ /usr/bin/g++-9
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9
-    sudo ldconfig /opt/gcc-latest/lib64
-  fi
-
-################################################################################
-# Install the latest Boost and build Boost.Test (compiled with g++-8)
+# Install the latest Boost and build Boost.Test (compiled with g++-9)
 ################################################################################
 - |
   BOOST_VERSION=1.70.0
@@ -126,7 +118,7 @@ install:
 # Install the latest CMake
 ################################################################################
 - |
-  CMAKE_VERSION=3.14.1
+  CMAKE_VERSION=3.14.5
   CMAKE_DIR=${THIRD_PARTY_DIR}/cmake-${CMAKE_VERSION}
   CMAKE_URL="http://www.cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}

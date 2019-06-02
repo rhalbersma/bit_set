@@ -867,6 +867,7 @@ private:
         }
 
         constexpr static auto is_range(value_type n) noexcept
+                -> bool
         {
                 return 0 <= n && n <= M;
         }
@@ -883,6 +884,7 @@ private:
         }
 
         constexpr static auto where(value_type n) // Throws: Nothing.
+                -> value_type
         {
                 static_assert(num_logical_blocks >= 1);
                 assert(is_valid(n));
