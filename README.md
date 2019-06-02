@@ -272,10 +272,28 @@ Bit-ordering
 **A**: To efficiently satisfy the requirement `a < b == std::lexicographical_compare(begin(a), end(a), begin(b), end(b))`.
 
 **Q**: What do you mean with "efficient" lexicographical comparison?  
-**A**: `xstd::bitset<N>` implements `L < R` as a data-parallel lexicographical comparison on the array words `wL` and `wR`.
+**A**: `xstd::bit_set<N>` implements `L < R` as a data-parallel lexicographical comparison on the array words `wL` and `wR`.
 
 **Q**: How is this connected to the bit-ordering within words?  
 **A**: The array-word comparison is `wL > wR`, which starts with comparing the most significant bits of the two words.
+
+Storage type
+------------
+
+**Q**: What storage type does `xstd::bit_set<N>` use?  
+**A**: By default, `xstd::bit_set<N>` uses an array of `std::size_t` integers.  
+
+**Q**: Can I customize the storage type?  
+**A**: Yes, `xstd::bit_set<N>` is a template alias for `xstd::basic_bit_set<N, std::size_t>`.
+
+**Q**: What is `xstd::basic_bit_set<N, std::size_t>`?  
+**A**: An instantiation of the class template `template<std::size_t N, class Block = std::size_t> xstd::basic_bit_set`.
+
+**Q**: What other storage types can be used as template argument for `Block`?  
+**A**: Any unsigned integral type, including (for GCC and Clang) the non-Standard `__uint128_t`.
+
+**Q**: Does the `xstd::bit_set<N>` implementation optimize for the case of a small number of words of storage?  
+**A**: Yes, there are three special cases for 0, 1 and 2 words of storage, as well as the general case of 3 or more words.
 
 Requirements
 ============
