@@ -874,6 +874,7 @@ private:
         }
 
         static constexpr auto which(value_type n [[maybe_unused]]) // Throws: Nothing.
+                -> value_type
         {
                 static_assert(num_logical_blocks >= 1);
                 assert(is_valid(n));
