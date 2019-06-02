@@ -854,6 +854,7 @@ private:
         constexpr static auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
 
         constexpr static auto single_bit_mask(value_type n) // Throws: Nothing.
+                -> block_type
         {
                 static_assert(num_logical_blocks >= 1);
                 assert(0 <= n && n < block_size);
