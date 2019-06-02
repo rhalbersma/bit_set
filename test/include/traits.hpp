@@ -12,82 +12,82 @@
 namespace xstd::tti {
 
 template<class IntSet, class = void>
-constexpr static auto has_back = false;
+inline constexpr auto has_back = false;
 
 template<class IntSet>
-constexpr static auto has_back<IntSet, std::void_t<decltype(
+inline constexpr auto has_back<IntSet, std::void_t<decltype(
         std::declval<IntSet>().back()
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_capacity = false;
+inline constexpr auto has_capacity = false;
 
 template<class IntSet>
-constexpr static auto has_capacity<IntSet, std::void_t<decltype(
+inline constexpr auto has_capacity<IntSet, std::void_t<decltype(
         std::declval<IntSet>().capacity()
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_forward_iterator = false;
+inline constexpr auto has_forward_iterator = false;
 
 template<class IntSet>
-constexpr static auto has_forward_iterator<IntSet, std::void_t<decltype(
+inline constexpr auto has_forward_iterator<IntSet, std::void_t<decltype(
         ++begin(std::declval<IntSet>()) == end(std::declval<IntSet>())
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_front = false;
+inline constexpr auto has_front = false;
 
 template<class IntSet>
-constexpr static auto has_front<IntSet, std::void_t<decltype(
+inline constexpr auto has_front<IntSet, std::void_t<decltype(
         std::declval<IntSet>().front()
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_hinted_insert = false;
+inline constexpr auto has_hinted_insert = false;
 
 template<class IntSet>
-constexpr static auto has_hinted_insert<IntSet, std::void_t<decltype(
+inline constexpr auto has_hinted_insert<IntSet, std::void_t<decltype(
         std::declval<IntSet>().insert(std::declval<typename IntSet::iterator>(), std::declval<typename IntSet::value_type>())
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_ilist_erase = false;
+inline constexpr auto has_ilist_erase = false;
 
 template<class IntSet>
-constexpr static auto has_ilist_erase<IntSet, std::void_t<decltype(
+inline constexpr auto has_ilist_erase<IntSet, std::void_t<decltype(
         std::declval<IntSet>().erase(std::declval<std::initializer_list<typename IntSet::key_type>>())
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_op_minus_assign = false;
+inline constexpr auto has_op_minus_assign = false;
 
 template<class IntSet>
-constexpr static auto has_op_minus_assign<IntSet, std::void_t<decltype(
+inline constexpr auto has_op_minus_assign<IntSet, std::void_t<decltype(
         std::declval<IntSet>() -= std::declval<IntSet>()
 )>> = true;
 
 template<class IntSet, class = void>
-constexpr static auto has_resize = false;
+inline constexpr auto has_resize = false;
 
 template<class IntSet>
-constexpr static auto has_resize<IntSet, std::void_t<decltype(
+inline constexpr auto has_resize<IntSet, std::void_t<decltype(
         std::declval<IntSet>().resize(std::declval<typename IntSet::size_type>(), std::declval<bool>())
 )>> = true;
 
 template<class Iterator, class = void>
-constexpr static auto is_dereferenceable = false;
+inline constexpr auto is_dereferenceable = false;
 
 template<class Iterator>
-constexpr static auto is_dereferenceable<Iterator, std::void_t<
+inline constexpr auto is_dereferenceable<Iterator, std::void_t<
         decltype(*std::declval<Iterator>())
 >> = true;
 
 template<class Iterator, class = void>
-constexpr static auto is_equality_comparable = false;
+inline constexpr auto is_equality_comparable = false;
 
 template<class Iterator>
-constexpr static auto is_equality_comparable<Iterator, std::void_t<
+inline constexpr auto is_equality_comparable<Iterator, std::void_t<
         decltype(std::declval<Iterator>() != std::declval<Iterator>())
 >> = true;
 

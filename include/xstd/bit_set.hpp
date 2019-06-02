@@ -302,12 +302,12 @@ class basic_bit_set
         static_assert(0 <= N && N <= std::numeric_limits<int>::max());
         static_assert(std::is_unsigned_v<Block> && std::is_integral_v<Block>);
 
-        constexpr static auto M = static_cast<int>(N);  // keep size_t from spilling all over the code base
-        constexpr static auto block_size = std::numeric_limits<Block>::digits;
-        constexpr static auto num_logical_blocks = (M - 1 + block_size) / block_size;
-        constexpr static auto num_storage_blocks = std::max(num_logical_blocks, 1);
-        constexpr static auto num_bits = num_logical_blocks * block_size;
-        constexpr static auto num_excess_bits = num_bits - M;
+        static constexpr auto M = static_cast<int>(N);  // keep size_t from spilling all over the code base
+        static constexpr auto block_size = std::numeric_limits<Block>::digits;
+        static constexpr auto num_logical_blocks = (M - 1 + block_size) / block_size;
+        static constexpr auto num_storage_blocks = std::max(num_logical_blocks, 1);
+        static constexpr auto num_bits = num_logical_blocks * block_size;
+        static constexpr auto num_excess_bits = num_bits - M;
         static_assert(0 <= num_excess_bits && num_excess_bits < block_size);
 
         class proxy_reference;
@@ -459,17 +459,17 @@ public:
                 return static_cast<size_type>(ssize());
         }
 
-        constexpr static auto max_ssize() noexcept
+        static constexpr auto max_ssize() noexcept
         {
                 return M;
         }
 
-        constexpr static auto max_size() noexcept
+        static constexpr auto max_size() noexcept
         {
                 return static_cast<size_type>(max_ssize());
         }
 
-        constexpr static auto capacity() noexcept
+        static constexpr auto capacity() noexcept
                 -> size_type
         {
                 return num_bits;
@@ -843,17 +843,17 @@ public:
         }
 
 private:
-        constexpr static auto zero = static_cast<block_type>( 0);
-        constexpr static auto ones = static_cast<block_type>(-1);
+        static constexpr auto zero = static_cast<block_type>( 0);
+        static constexpr auto ones = static_cast<block_type>(-1);
 
         PRAGMA_VC_WARNING_PUSH_DISABLE(4309)
-        constexpr static auto no_excess_bits = static_cast<block_type>(ones << num_excess_bits);
+        static constexpr auto no_excess_bits = static_cast<block_type>(ones << num_excess_bits);
         PRAGMA_VC_WARNING_POP
 
         static_assert(num_excess_bits ^ (ones == no_excess_bits));
-        constexpr static auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
+        static constexpr auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
 
-        constexpr static auto single_bit_mask(value_type n) // Throws: Nothing.
+        static constexpr auto single_bit_mask(value_type n) // Throws: Nothing.
                 -> block_type
         {
                 static_assert(num_logical_blocks >= 1);
@@ -861,19 +861,19 @@ private:
                 return static_cast<block_type>(unit >> n);
         }
 
-        constexpr static auto is_valid(value_type n) noexcept
+        static constexpr auto is_valid(value_type n) noexcept
                 -> bool
         {
                 return 0 <= n && n < M;
         }
 
-        constexpr static auto is_range(value_type n) noexcept
+        static constexpr auto is_range(value_type n) noexcept
                 -> bool
         {
                 return 0 <= n && n <= M;
         }
 
-        constexpr static auto which(value_type n [[maybe_unused]]) // Throws: Nothing.
+        static constexpr auto which(value_type n [[maybe_unused]]) // Throws: Nothing.
         {
                 static_assert(num_logical_blocks >= 1);
                 assert(is_valid(n));
@@ -884,7 +884,7 @@ private:
                 }
         }
 
-        constexpr static auto where(value_type n) // Throws: Nothing.
+        static constexpr auto where(value_type n) // Throws: Nothing.
                 -> value_type
         {
                 static_assert(num_logical_blocks >= 1);

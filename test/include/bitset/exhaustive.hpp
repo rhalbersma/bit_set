@@ -17,7 +17,7 @@
 namespace xstd {
 
 template<class T, std::size_t L>
-auto const limit_v = tti::has_resize<T> ? L : fn_size(T{});
+inline auto const limit_v = tti::has_resize<T> ? L : fn_size(T{});
 
 inline constexpr auto L0 = 256;
 inline constexpr auto L1 = 128;
