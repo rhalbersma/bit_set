@@ -159,13 +159,17 @@ Instead of throwing an `out_of_range` exception for argument values outside the 
 | :------------------------------ | :------------------------------------------- | :-------------------------------------------------- |
 | `bs.set()`                      | `bs.fill()`                                  | not a member of `std::set<int>`                     |
 | `bs.set(pos)`                   | `bs.insert(pos)`                             | does not do bounds-checking or throw `out_of_range` |
+|                                 | `bs.insert(ilist)`                           | `insert` overload taking a `std::initalizer_list<int>` |
 | `bs.set(pos, val)`              | `val ? bs.insert(pos) : bs.erase(pos)`       | does not do bounds-checking or throw `out_of_range` |
 | `bs.reset()`                    | `bs.clear()`                                 | also returns `*this`, not `void` as for `std::set<int>` |
 | `bs.reset(pos)`                 | `bs.erase(pos)`                              | does not do bounds-checking or throw `out_of_range` |
+|                                 | `bs.erase(ilist)`                            | `erase` overload taking a `std::initializer_list<int>` <br> not a member of `std::set<int>` |
 | `bs.flip()`                     | `bs.complement()`                            | not a member of `std::set<int>`                     |
 | `bs.flip(pos)`                  | `bs.replace(pos)`                            | does not do bounds-checking or throw `out_of_range` <br> not a member of `std::set<int>` |
 | `bs.count()`                    | `bs.size()`                                  |                                                     |
+|                                 | `bs.ssize()`                                 | returns an `int` <br> not a member of `std::set<int>` |
 | `bs.size()`                     | `bs.max_size()`                              | is a `static` member                                |
+|                                 | `bs.max_ssize()`                             | returns an `int` <br> not a member of `std::set<int>` |
 | `bs.test(pos)`                  | `bs.contains(pos)`                           | does not do bounds-checking or throw `out_of_range` |
 | `bs.all()`                      | `bs.full()`                                  | not a member of `std:set<int>`                      |
 | `bs.any()`                      | `!bs.empty()`                                |                                                     |
