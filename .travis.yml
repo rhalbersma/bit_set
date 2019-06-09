@@ -83,6 +83,8 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
+    - env: CXX_COMPILER=g++-10 CXX=g++-10
+
 install:
 
 ################################################################################
@@ -92,6 +94,20 @@ install:
   THIRD_PARTY_DIR="${TRAVIS_BUILD_DIR}/../third_party"
   mkdir -p ${THIRD_PARTY_DIR}
   cd ${THIRD_PARTY_DIR}
+
+################################################################################
+# Install g++-10
+################################################################################
+
+- |
+  if [[ "${CXX_COMPILER}" == "g++-10" ]]; then
+    wget http://kayari.org/gcc-latest/gcc-latest.deb
+    sudo dpkg -i gcc-latest.deb
+    sudo ln -s /opt/gcc-latest/bin/gcc /usr/bin/gcc-10
+    sudo ln -s /opt/gcc-latest/bin/g++ /usr/bin/g++-10
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10
+    sudo ldconfig /opt/gcc-latest/lib64
+  fi
 
 ################################################################################
 # Install the latest Boost and build Boost.Test (compiled with g++-9)
@@ -105,11 +121,11 @@ install:
   mkdir -p ${BOOST_DIR} && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xj -C ${BOOST_DIR}
   cd ${BOOST_DIR}
   if [[ "${STDLIB}" == "libc++" ]]; then
-    sudo update-alternatives --install /usr/bin/clang   clang   /usr/bin/clang-9   90
-    sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-9 90
+    sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-9 90 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-9
     ./bootstrap.sh --with-toolset=clang --with-libraries=${BOOST_LIBS}
     sudo ./b2 -d0 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
   else
+    sudo update-alternatives --install /usr/bin/gcc   gcc   /usr/bin/gcc-9   90 --slave /usr/bin/g++     g++     /usr/bin/g++-9
     ./bootstrap.sh --with-toolset=gcc   --with-libraries=${BOOST_LIBS}
     sudo ./b2 -d0 -j10 install toolset=gcc   ${BOOST_BUILD_TYPE}
   fi
