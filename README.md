@@ -140,12 +140,12 @@ Documentation
 =============
 
 The interface for the class template `xstd::bit_set<N>` consist of three major pieces:
-  1. the member functions of [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) renamed to the vocabulary of [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
-  2. the bitwise operators `&=`, `|=`, `^=`, `<<=`, `>>=`, `~`, `&`, `|`, `^`, `<<`, `>>` from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset);
-  3. the set algorithms `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in [`boost::dynamic_bitset<>`](https://www.boost.org/doc/libs/1_69_0/libs/dynamic_bitset/dynamic_bitset.html);
+  1. member functions of [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset), renamed to the vocabulary of [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
+  2. bitwise operators from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) and [`boost::dynamic_bitset<>`](https://www.boost.org/doc/libs/1_69_0/libs/dynamic_bitset/dynamic_bitset.html), reimagined as composable and data-parallel versions of the set algorithms from the Standard Library `<algorithm>` header;
+  3. set algorithms `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in [`boost::dynamic_bitset<>`](https://www.boost.org/doc/libs/1_69_0/libs/dynamic_bitset/dynamic_bitset.html);
 
-Porting `std::bitset<N>` code to `xstd::bit_set<N>`
----------------------------------------------------
+1 Member functions of `std::bitset<N>` renamed to the vocabulary of `std::set<int>`
+-----------------------------------------------------------------------------------
 
 Most `std::bitset<N>` expressions have **a direct translation** to an equivalent `xstd::bit_set<N>` expression. With the exception of the member functions `fill`, `complement`, `replace` and `full`, the renamed `xstd::bit_set<N>` functionality is named after the corresponding `std::set<int>` functionality.
 
@@ -155,27 +155,47 @@ The semantic differences are that `xstd::bit_set<N>`:
 
 Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this **behavior is undefined**.
 
-| Expression for `std::bitset<N>` | Expression for `xstd::bit_set<N>`            | Semantics for `xstd::bit_set<N>`                    |
-| :------------------------------ | :------------------------------------------- | :-------------------------------------------------- |
-| `bs.set()`                      | `bs.fill()`                                  | not a member of `std::set<int>`                     |
-| `bs.set(pos)`                   | `bs.insert(pos)`                             | does not do bounds-checking or throw `out_of_range` |
-|                                 | `bs.insert(ilist)`                           | overload taking a `std::initalizer_list<int>`       |
-| `bs.set(pos, val)`              | `val ? bs.insert(pos) : bs.erase(pos)`       | does not do bounds-checking or throw `out_of_range` |
-| `bs.reset()`                    | `bs.clear()`                                 | also returns `*this`, not `void` as for `std::set<int>` |
-| `bs.reset(pos)`                 | `bs.erase(pos)`                              | does not do bounds-checking or throw `out_of_range` |
-|                                 | `bs.erase(ilist)`                            | overload taking a `std::initializer_list<int>` <br> not a member of `std::set<int>` |
-| `bs.flip()`                     | `bs.complement()`                            | not a member of `std::set<int>`                     |
-| `bs.flip(pos)`                  | `bs.replace(pos)`                            | does not do bounds-checking or throw `out_of_range` <br> not a member of `std::set<int>` |
-| `bs.count()`                    | `bs.size()`                                  |                                                     |
-|                                 | `bs.ssize()`                                 | returns an `int` <br> not a member of `std::set<int>` |
-| `bs.size()`                     | `bs.max_size()`                              | is a `static` member                                |
-|                                 | `bs.max_ssize()`                             | returns an `int` <br> not a member of `std::set<int>` |
-| `bs.test(pos)`                  | `bs.contains(pos)`                           | does not do bounds-checking or throw `out_of_range` |
-| `bs.all()`                      | `bs.full()`                                  | not a member of `std:set<int>`                      |
-| `bs.any()`                      | `!bs.empty()`                                |                                                     |
-| `bs.none()`                     | `bs.empty()`                                 |                                                     |
-| `bs[pos]`                       | `bs.contains(pos)`                           | a member of `std::set<int>` as of C++20             |
-| `bs[pos] = val`                 | `val ? bs.insert(pos) : bs.erase(pos)`       |                                                     |
+| `std::bitset<N>`   | `std::set<int>`                       | `xstd::bit_set<N>`                     | Notes                                               |
+| :---------------   | :--------------                       | :-----------------                     | :----                                               |
+| `bs.set()`         |                                       | `bs.fill()`                            | |
+| `bs.set(pos)`      | `s.insert(pos)`                       | `bs.insert(pos)`                       | does not do bounds-checking or throw `out_of_range` |
+|                    | `s.insert(ilist)`                     | `bs.insert(ilist)`                     | |
+| `bs.set(pos, val)` | `val ? s.insert(pos) : s.erase(pos)`  | `val ? bs.insert(pos) : bs.erase(pos)` | does not do bounds-checking or throw `out_of_range` |
+| `bs.reset()`       | `s.clear()`                           | `bs.clear()`                           | returns `*this`, not `void` as for `std::set<int>`  |
+| `bs.reset(pos)`    | `s.erase(pos)`                        | `bs.erase(pos)`                        | does not do bounds-checking or throw `out_of_range` |
+|                    |                                       | `bs.erase(ilist)`                      | |
+| `bs.flip()`        |                                       | `bs.complement()`                      | |
+| `bs.flip(pos)`     |                                       | `bs.replace(pos)`                      | does not do bounds-checking or throw `out_of_range` |
+| `bs.count()`       | `s.size()`                            | `bs.size()`                            | |
+|                    | `ssize(s)` (C++20)                    | `ssize(bs)`                            | |
+| `bs.size()`        | `s.max_size()`                        | `bs.max_size()`                        | is a `static` member                                |
+| `bs.test(pos)`     | `s.contains(pos)` (C++20)             | `bs.contains(pos)`                     | does not do bounds-checking or throw `out_of_range` |
+| `bs.all()`         |                                       | `bs.full()`                            | |
+| `bs.any()`         | `!s.empty()`                          | `!bs.empty()`                          | |
+| `bs.none()`        | `s.empty()`                           | `bs.empty()`                           | |
+| `bs[pos]`          | `s.contains(pos)` (C++20)             | `bs.contains(pos)`                     | |
+| `bs[pos] = val`    | `val ? s.insert(pos) : s.erase(pos)`  | `val ? bs.insert(pos) : bs.erase(pos)` | |
+
+2 Bitwise operators reimagined as composable data-parallel set algorithms from `<algorithm>`
+--------------------------------------------------------------------------------------------
+
+Many of the bitwise operators for `xstd::bit_set<N>` are equivalent to set algorithms on sorted ranges from the C++ Standard Library header `<algorithm>`.
+
+| Expression for `xstd::bit_set<N>` | Expression for `std::set<int>` |
+| :-------------------------------- | :----------------------------- |
+| `is_subset_of(a, b)`              | `includes(begin(a), end(a), begin(b), end(b))` |
+| `auto c = a & b;`                 | `set<int> c;` <br> `set_intersection(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
+| <code>auto c = a &#124; b;</code> | `set<int> c;` <br> `set_union(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
+| `auto c = a ^ b;`                 | `set<int> c;` <br> `set_symmetric_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
+| `auto c = a - b;`                 | `set<int> c;` <br> `set_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
+| `auto b = a << n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x) { return x + n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x) { return x < N; });` |
+| `auto b = a >> n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x) { return x - n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x) { return 0 <= x; });` |
+
+The difference with iterator-based algorithms on general sorted ranges is that the bitwise operators from `xstd::bit_set<N>` provide **composable** and **data-parallel** versions of these algorithms. 
+
+For the upcoming [Ranges TS](http://en.cppreference.com/w/cpp/experimental/ranges), these algorithms can also be formulated in a composable way, but without the data-parallellism that `xstd::bit_set<N>` provides. 
+
+Furthermore, `xstd::bit_set<N>` also uses the available **CPU-intrinsics** to efficiently find the first and last bit in a word (used in the iterator implementation), and to count the number of set bits (used in the `size()` member function).
 
 Semantic differences for bitwise-shift operators
 ------------------------------------------------
@@ -210,28 +230,9 @@ Functionality from `std::set<int>` that is not in `xstd::bit_set<N>`
 
   - **Customized key comparison**: `xstd::bit_set<N>` uses `std::less<int>` as its default comparator.
   - **Allocator support**: `xstd::bit_set<N>` is a fixed-size set of non-negative integers and does not dynamically allocate memory. In particular, `xstd::bit_set<N>` does **not provide** a `get_allocator()` member function and its constructors do not take an allocator argument.
-  - **Splicing**: `xstd::bit_set<N>` is **not a node-based container**, and does not provide the splicing operatorions as defined in [P0083R3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `xstd::bit_set<N>` does **not provide** the nested type `node_type`, the `extract()` or `merge()` member functions, or the `insert()` overloads taking a node handle.
+  - **Splicing**: `xstd::bit_set<N>` is **not a node-based container**, and does not provide the splicing operations as defined in [P0083R3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `xstd::bit_set<N>` does **not provide** the nested type `node_type`, the `extract()` or `merge()` member functions, or the `insert()` overloads taking a node handle.
 
-Composable data-parallel set algorithms on sorted ranges
---------------------------------------------------------
 
-Many of the bitwise operators for `xstd::bit_set<N>` are equivalent to set algorithms on sorted ranges from the C++ Standard Library header `<algorithm>`.
-
-| Expression for `xstd::bit_set<N>` | Expression for `std::set<int>` |
-| :-------------------------------- | :----------------------------- |
-| `is_subset_of(a, b)`              | `includes(begin(a), end(a), begin(b), end(b))` |
-| `auto c = a & b;`                 | `set<int> c;` <br> `set_intersection(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| <code>auto c = a &#124; b;</code> | `set<int> c;` <br> `set_union(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| `auto c = a ^ b;`                 | `set<int> c;` <br> `set_symmetric_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| `auto c = a - b;`                 | `set<int> c;` <br> `set_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| `auto b = a << n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x) { return x + n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x) { return x < N; });` |
-| `auto b = a >> n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x) { return x - n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x) { return 0 <= x; });` |
-
-The difference with iterator-based algorithms on general sorted ranges is that the bitwise operators from `xstd::bit_set<N>` provide **composable** and **data-parallel** versions of these algorithms. 
-
-For the upcoming [Ranges TS](http://en.cppreference.com/w/cpp/experimental/ranges), these algorithms can also be formulated in a composable way, but without the data-parallellism that `xstd::bit_set<N>` provides. 
-
-Furthermore, `xstd::bit_set<N>` also uses the available **CPU-intrinsics** to efficiently find the first and last bit in a word (used in the iterator implementation), and to count the number of set bits (used in the `size()` member function).
 
 Frequently Asked Questions
 ==========================
@@ -307,7 +308,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Platform | Compiler | Versions | Build |
 | :------- | :------- | :------- | :---- |
 | Linux    | Clang <br> GCC | 6.0, 7, 8, 9-SVN<br> 7.4, 8.3, 9.1, 10.0-SVN | [![codecov](https://codecov.io/gh/rhalbersma/bit_set/branch/master/graph/badge.svg)](https://codecov.io/gh/rhalbersma/bit_set) <br> [![Build Status](https://travis-ci.org/rhalbersma/bit_set.svg)](https://travis-ci.org/rhalbersma/bit_set) |
-| Windows  | Visual Studio  |                                      15.9.11 | [![Build status](https://ci.appveyor.com/api/projects/status/hcuoesbavuw5v7y8?svg=true)](https://ci.appveyor.com/project/rhalbersma/bit-set) |
+| Windows  | Visual Studio  |                                      15.9.14 | [![Build status](https://ci.appveyor.com/api/projects/status/hcuoesbavuw5v7y8?svg=true)](https://ci.appveyor.com/project/rhalbersma/bit-set) |
 
 License
 =======

@@ -6,10 +6,11 @@
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
+#include <set/compatible/iterator.hpp>          // ssize
 #include <set/exhaustive.hpp>                   // empty_set, full_set, all_values, all_cardinality_sets,
                                                 // all_singleton_arrays, all_singleton_ilists, all_singleton_sets
 #include <set/primitives.hpp>                   // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back, mem_empty, mem_size,
-                                                // mem_max_size, mem_insert, mem_erase, mem_clear, op_equal, op_less, fn_iterator, fn_size, fn_empty
+                                                // mem_max_size, mem_insert, mem_erase, mem_clear, op_equal, op_less, fn_iterator, fn_size, fn_ssize, fn_empty
 #include <xstd/bit_set.hpp>                     // basic_bit_set
 #include <boost/container/flat_set.hpp>         // flat_set
 #include <boost/mpl/vector.hpp>                 // vector
@@ -171,6 +172,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         });
 
         all_cardinality_sets<T>(fn_size{});
+        all_cardinality_sets<T>(fn_ssize{});
         all_cardinality_sets<T>(fn_empty{});
 }
 

@@ -16,7 +16,7 @@
 #include <limits>               // digits
 #include <numeric>              // accumulate
 #include <tuple>                // tie
-#include <type_traits>          // enable_if_t, is_class_v, is_constructible_v, is_integral_v, is_unsigned_v
+#include <type_traits>          // common_type_t, enable_if_t, is_class_v, is_constructible_v, is_integral_v, is_unsigned_v, make_signed_t
 #include <utility>              // forward, pair, swap
 
 #if defined(__GNUG__)
@@ -459,14 +459,9 @@ public:
                 return static_cast<size_type>(ssize());
         }
 
-        static constexpr auto max_ssize() noexcept
-        {
-                return M;
-        }
-
         static constexpr auto max_size() noexcept
         {
-                return static_cast<size_type>(max_ssize());
+                return N;
         }
 
         static constexpr auto capacity() noexcept
@@ -1393,6 +1388,13 @@ template<std::size_t N, class Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto size(basic_bit_set<N, Block> const& bs) noexcept
 {
         return bs.size();
+}
+
+template<std::size_t N, class Block>
+XSTD_PP_CONSTEXPR_ALGORITHM auto ssize(basic_bit_set<N, Block> const& bs) noexcept
+{
+        using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(bs.size())>>;
+        return static_cast<R>(bs.size());
 }
 
 template<std::size_t N, class Block>
