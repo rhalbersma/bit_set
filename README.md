@@ -6,33 +6,60 @@
 Rebooting the `std::bitset` franchise
 =====================================
 
-`xstd::bit_set<N>` is a modern and opinionated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less than `std::bitset<N>` (e.g. no bounds-checking and no exceptions) yet offers more (e.g. iterators to seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax**, identical to `std::set<int>`, typically leading to cleaner, more expressive code.
+`xstd::bit_set<N>` is a modern and opinionated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less work than `std::bitset<N>` (e.g. no bounds-checking and no `out_of_range` exceptions) yet offers more (e.g. bidirectional iterators over individual bits that seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax** (identical to `std::set<int>`), typically leading to cleaner, more expressive code.
 
-The current `bitset` landscape
-----------------------
+Design choices for a `bitset` data structure
+--------------------------------------------
 
-> "A `bitset` can be seen as either an array of bits or a set of integers."  
+> "A `bitset` can be seen as either an array of bits or a set of integers. [...] Common usage suggests that dynamic-length `bitsets` are seldom needed."  
 > Chuck Allison, [ISO/WG21/N0075](http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/1991/WG21%201991/X3J16_91-0142%20WG21_N0075.pdf), November 25, 1991
 
-The above quote is from the first C++ Standard Committee paper on what would eventually become `std::bitset<N>`. The table below summarizes the current landscape of `bitset` interpretations.
+The above quote is from the first C++ Standard Committee proposal on what would eventually become `std::bitset<N>`. The quote highlights two design choices to be made for a `bitset` data structure:
+1. a sequence of `bool` versus an ordered set of `int`;
+2. fixed-size versus variable-size storage.
 
-| Interface               | Implementation          | Library                                                |
-| :--------               | :-------------          | :------                                                |
-| Sequence of bits        | Sequence of bits        | `std::bitset<N>` <br> `boost::dynamic_bitset<>`        |
-| Ordered set of integers | Sequence of bits        | `xstd::bit_set<N>` (**this library**)                  |
-| Ordered set of integers | Ordered set of integers | `std::set<int>` <br> `boost::container::flat_set<int>` |
+A `bitset` should also optimize for both space (using contiguous storage) and time (using CPU-intrinsics for data-parallelism) wherever possible.
 
-It shows that one can take several perspectives on what a `bitset` actually represents.
-  - `std::bitset<N>` and `boost::dynamic_bitset<>` take the perspective of a sequence of bits, both in interface and implementation;
-  - `std::set<int>` and `boost::container::flat_set<int>` take the perspective of an ordered set of integers, both in interface and implementation;
-  - `xstd::bit_set<N>` straddles both perspectives: it presents an interface of an ordered set of integers, implemented as a sequence of bits, combining the best of both worlds.
+The current `bitset` landscape
+------------------------------
+
+The C++ Standard Library and Boost provide the following optimized data structures in the landscape spanned by the aforementioned design decisions and optimization directives, as shown in the table below.
+
+|                          | fixed-size         | variable-size                              |
+| :--------------------    | :---------         | :------------                              |
+| **sequence of `bool`**   | `std::bit_set<N>`  | `std::vector<bool, Allocator>` <br> `boost::dynamic_bit_set<Block, Allocator>` |
+| **ordered set of `int`** | `std::bit_set<N>`  | `boost::dynamic_bit_set<Block, Allocator>` (dense) <br> `boost::container::flat_set<int, Compare, Allocator>` (sparse) |
+
+Notes:
+1. Both `std::bitset` and `boost::dynamic_bitset` are not clear about the interface they provide. E.g. both offer a hybrid of sequence-like random element access (through `operator[]`) as well as primitives for set-like bidirectional iteration (using non-Standard GCC extensions `_Find_first` and `_Find_next` in the case of `std::bitset`).
+2. It [has been known](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2130.html#96) for over two decades that providing a variable-size sequence of `bool` through specializing `std::vector<bool>` was an unfortunate design choice.
+3. For ordered sets, there is a further design choice whether to optimize for **dense** sets or for **sparse** sets. Dense sets require a single bit per **potential** element, whereas sparse sets require a single `int` per **actual** element. For 32-bit integers, if less (more) than 1 in 32 elements (3.125%) are actually present in a set, a dense representation will be less (more) compact than a sparse representation.
+4. Only `boost::dynamic_bitset` allows storage configuration through its `Block` template parameter (defaulted to `unsigned long`).
+
+A reimagined `bitset` landscape
+-------------------------------
+
+The aforementioned issues with the current `bitset` landscape can be resolved by implementing a single-purpose container for each of the four quadrants in the design space.
+
+|                          | fixed-size                                   | variable-size                             |
+| :--------------------    | :---------                                   | :------------                             |
+| **sequence of `bool`**   | `xstd::bit_array<N, Block>`                  | `xstd::bit_vector<Block, Allocator>`      |
+| **ordered set of `int`** | `xstd::bit_set<N, Block>` (**this library**) | `xstd::dynamic_bit_set<Block, Allocator>` |
+
+Notes:
+1. Each data structure is clear about the interface it provides: sequences are random access containers and ordered sets are bidirectional containers.
+2. The variable-size sequence of `bool` is named `xstd::bit_vector` and decoupled from the general `std::vector` class template.
+3. All containers use a dense (single bit per element) representation. Variable-size sparse sets of `int` can continue to be provided by `boost::container::flat_set` or by a possible future C++ Standard Library addition (as proposed in [p1222r2](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1222r2.pdf)).
+4. All containers allow storage configuration through their `Block` template parameter (defaulted to `std::size_t`).
+
+This library provides one of the four outlined quadrants: `xstd::bit_set<N>` as a **fixed-size ordered set of `int`**. The other three quadrants are not yet implemented.
 
 Hello World
 ===========
 
 The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/kxVyP6ECZBl1aKQd)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/wy4cNjBZ8eky7rDY)
 
 ```cpp
 #include "xstd/bit_set.hpp"
@@ -82,7 +109,7 @@ How would the Sieve of Eratosthenes code look when using a sequence of bits? The
 | `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/pCZBezV8DSbTdpYz) |
 | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/LpQn81IIVm3qbOYN) |
 
-The essential difference (apart from differently member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of the existing `std::begin` and `std::end` entail **undefined behavior**, preventing range-for support for `std::bitset<N>`. The best one can do is a manual loop like below (or wrapped in a `for_each` non-member function)
+The essential difference (apart from differently member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into forward proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of `begin` and `end` inside `namespace std` entail **undefined behavior**, preventing range-for support for `std::bitset<N>`. The best one can do is a manual loop like below (or wrapped in a `for_each` non-member function)
 
 ```cpp
 // find all primes below N
@@ -102,13 +129,13 @@ Printing the actual bit indices requires a manual loop using the `_Find_first` a
 Ordered set of integers
 -----------------------
 
-How would the Sieve of Eratosthenes code look when using an ordered set of integers? The links in the table below provide the full code examples for `std::set<int>` and `boost::container::flat_set<int>`. By design, `xstd::bit_set<N>` is a **drop-in replacement** for either of these `set` implementations.
+How would the Sieve of Eratosthenes code look when using an ordered set of integers? The links in the table below provide the full code examples for `std::set<int>` and `boost::container::flat_set<int>`. By design, `xstd::bit_set<N>` is an almost **drop-in replacement** for either of these `set` implementations.
 
 | Library                           | Try it online |
 | :------                           | :------------ |
 | `std::set<int>`                   | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/Wqk9tsDYfSmb2RFN) |
 | `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/BSAu0BWw3St5TCdm) |
-| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/317JPAjOr5rJO2FT) |
+| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/QyjqwXgh4Ga5RQ7g) |
 
 The essential difference is the lack of bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. Printing the solution is also a little more involved, requiring the use of the still experimental `ostream_joiner` iterator.
 
@@ -139,51 +166,75 @@ which has as output:
 Documentation
 =============
 
-The interface for the class template `xstd::bit_set<N>` consist of three major pieces:
-  1. member functions of [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset), renamed to the vocabulary of [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set);
-  2. bitwise operators from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) and [`boost::dynamic_bitset<>`](https://www.boost.org/doc/libs/1_69_0/libs/dynamic_bitset/dynamic_bitset.html), reimagined as composable and data-parallel versions of the set algorithms from the Standard Library `<algorithm>` header;
-  3. set algorithms `is_subset_of`, `is_superset_of`, `is_proper_subset_of`, `is_proper_superset_of`, `intersects`, `disjoint`, many of which can also be found in [`boost::dynamic_bitset<>`](https://www.boost.org/doc/libs/1_69_0/libs/dynamic_bitset/dynamic_bitset.html);
+The interface for the class template `xstd::bit_set<N>` is the coherent union of the following five pieces:
+  1. An almost **drop-in** implementation of the full interface of `std::set<int>`.
+  2. An almost complete **translation** of the [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) member functions into [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set) equivalents.
+  3. The bitwise operators from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) and [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_69_0/libs/dynamic_bitset/dynamic_bitset.html) reimagined as composable and data-parallel **set algorithms**.
+  4. The **set predicate** member functions from [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_69_0/libs/dynamic_bitset/dynamic_bitset.html) as non-member functions.
+  5. Overloaded I/O streaming operators.
 
-1 Member functions of `std::bitset<N>` renamed to the vocabulary of `std::set<int>`
------------------------------------------------------------------------------------
+1 An almost drop-in replacement for `std::set<int>`
+---------------------------------------------------
 
-Most `std::bitset<N>` expressions have **a direct translation** to an equivalent `xstd::bit_set<N>` expression. With the exception of the member functions `fill`, `complement`, `replace` and `full`, the renamed `xstd::bit_set<N>` functionality is named after the corresponding `std::set<int>` functionality.
+`xstd::bit_set<N>` is a fixed-size ordered set of integers, providing conceptually the same functionality as `std::set<int, std::less<int>, Allocator>`, where `Allocator` statically allocates memory to store `N` integers. In particular, `xstd::bit_set<N>` does **not provide**:
+  - **Customized key comparison**: `xstd::bit_set` uses `std::less<int>` as its default comparator (accessible through its nested types `key_compare` and `value_compare`). In particular, the `xstd::bit_set` constructors do not take a comparator argument.
+  - **Allocator support**: `xstd::bit_set` is a fixed-size set of non-negative integers and does not dynamically allocate memory. In particular, `xstd::bit_set` does **not provide** a `get_allocator()` member function and its constructors do not take an allocator argument.
+  - **Splicing**: `xstd::bit_set` is **not a node-based container**, and does not provide the splicing operations as defined in [p0083r3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `xstd::bit_set` does **not provide** the nested types `node_type` and `insert_return_type`, the `extract()` or `merge()` member functions, or the `insert()` overloads taking a node handle.
 
-The semantic differences are that `xstd::bit_set<N>`:
-  - has a `static` member function `max_size()` returning `N`;
-  - does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`.
+Minor **semantic differences** between common functionality in `xstd::bit_set<N>` and `std::set<int>` are:
+  - the `xstd::bit_set` member fucntion `max_size` is a `static` member function (because `N` is a constant expression).
+  - the `xstd::bit_set` member function `clear` returns `*this` instead of `void` as for `std::set`, to allow better chaining of member functions (consisent with `std::bitset`).
+  - the `xstd::bit_set` iterators are **proxy iterators**, and taking their address yields **proxy references**. The difference is almost undetectable. See the FAQ at the end of this document.
 
-Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this **behavior is undefined**.
+With these caveats in mind, all fixed-size, defaulted comparing, non-allocating, non-splicing `std::set<int>` code in the wild should continue work out-of-the-box with `xstd::bit_set<N>`.
 
-| `std::bitset<N>`   | `std::set<int>`                       | `xstd::bit_set<N>`                     | Notes                                               |
-| :---------------   | :--------------                       | :-----------------                     | :----                                               |
-| `bs.set()`         |                                       | `bs.fill()`                            | |
-| `bs.set(pos)`      | `s.insert(pos)`                       | `bs.insert(pos)`                       | does not do bounds-checking or throw `out_of_range` |
-|                    | `s.insert(ilist)`                     | `bs.insert(ilist)`                     | |
-| `bs.set(pos, val)` | `val ? s.insert(pos) : s.erase(pos)`  | `val ? bs.insert(pos) : bs.erase(pos)` | does not do bounds-checking or throw `out_of_range` |
-| `bs.reset()`       | `s.clear()`                           | `bs.clear()`                           | returns `*this`, not `void` as for `std::set<int>`  |
-| `bs.reset(pos)`    | `s.erase(pos)`                        | `bs.erase(pos)`                        | does not do bounds-checking or throw `out_of_range` |
-|                    |                                       | `bs.erase(ilist)`                      | |
-| `bs.flip()`        |                                       | `bs.complement()`                      | |
-| `bs.flip(pos)`     |                                       | `bs.replace(pos)`                      | does not do bounds-checking or throw `out_of_range` |
-| `bs.count()`       | `s.size()`                            | `bs.size()`                            | |
-|                    | `ssize(s)` (C++20)                    | `ssize(bs)`                            | |
-| `bs.size()`        | `s.max_size()`                        | `bs.max_size()`                        | is a `static` member                                |
-| `bs.test(pos)`     | `s.contains(pos)` (C++20)             | `bs.contains(pos)`                     | does not do bounds-checking or throw `out_of_range` |
-| `bs.all()`         |                                       | `bs.full()`                            | |
-| `bs.any()`         | `!s.empty()`                          | `!bs.empty()`                          | |
-| `bs.none()`        | `s.empty()`                           | `bs.empty()`                           | |
-| `bs[pos]`          | `s.contains(pos)` (C++20)             | `bs.contains(pos)`                     | |
-| `bs[pos] = val`    | `val ? s.insert(pos) : s.erase(pos)`  | `val ? bs.insert(pos) : bs.erase(pos)` | |
+2 An almost complete translation of `std::bitset<N>`
+----------------------------------------------------
 
-2 Bitwise operators reimagined as composable data-parallel set algorithms from `<algorithm>`
---------------------------------------------------------------------------------------------
+Almost all `std::bitset<N>` expressions have **a direct translation** (i.e. achievable through search-and-replace) to an equivalent `std::set<int>` expression, that is fully supported by `xstd::bit_set<N>`.
 
-Many of the bitwise operators for `xstd::bit_set<N>` are equivalent to set algorithms on sorted ranges from the C++ Standard Library header `<algorithm>`.
+| `std::bitset<N>`   | `xstd::bit_set<N>`                     | Notes                                           |
+| :---------------   | :-----------------                     | :----                                           |
+| `bs.set()`         | `bs.fill()`                            | not a member of `std::set<int>`                 |
+| `bs.set(pos)`      | `bs.insert(pos)`                       | no bounds-checking or `out_of_range` exceptions |
+| `bs.set(pos, val)` | `val ? bs.insert(pos) : bs.erase(pos)` | no bounds-checking or `out_of_range` exceptions |
+| `bs.reset()`       | `bs.clear()`                           | returns `*this`, not `void` as `std::set<int>`  |
+| `bs.reset(pos)`    | `bs.erase(pos)`                        | no bounds-checking or `out_of_range` exceptions |
+| `bs.flip()`        | `bs.complement()`                      | not a member of `std::set<int>`                 |
+| `bs.flip(pos)`     | `bs.replace(pos)`                      | no bounds-checking or `out_of_range` exceptions <br> not a member of `std::set<int>` |
+| `bs.count()`       | `bs.size()`                            | |
+| `bs.size()`        | `bs.max_size()`                        | is a `static` member                            |
+| `bs.test(pos)`     | `bs.contains(pos)` (C++20)             | no bounds-checking or `out_of_range` exceptions |
+| `bs.all()`         | `bs.full()`                            | not a member of `std::set<int>`                 |
+| `bs.any()`         | `!bs.empty()`                          | |
+| `bs.none()`        | `bs.empty()`                           | |
+| `bs[pos]`          | `bs.contains(pos)` (C++20)             | |
+| `bs[pos] = val`    | `val ? bs.insert(pos) : bs.erase(pos)` | |
 
-| Expression for `xstd::bit_set<N>` | Expression for `std::set<int>` |
-| :-------------------------------- | :----------------------------- |
-| `is_subset_of(a, b)`              | `includes(begin(a), end(a), begin(b), end(b))` |
+The semantic differences between `xstd::bit_set<N>` and `std::bitset<N>` are:
+  - `xstd::bit_set` has a `static` member function `max_size()`;
+  - `xstd::bit_set` does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this **behavior is undefined**. This gives `xstd::bit_set<N>` a small performance benefit over `std::bitset<N>`.
+
+Functionality from `std::bitset<N>` that is not in `xstd::bit_set<N>`:
+  - **Constructors**: No construction from `unsigned long long`, `std::string` or `char const*`.
+  - **Conversion operators**: No conversion to `unsigned long`, `unsigned long long` or `std::string`.
+  - **Hashing**: No specialization for `std::hash<>`.
+
+The hashing functionality can be obtained through third-party libraries such as [N3980](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html) by streaming the `xstd::bit_set<N>` elements and size through an overloaded `hash_append` function.
+
+Note that the `xstd::bit_set` members `fill`, `complement`, `replace` and `full` do not exist for `std::set`. In other words: `std::set<int>` is not a drop-in replacment for `xstd::bit_set<N>` code that uses these member functions.
+
+3 The bitwise operators from `std::bitset` and `boost::dynamic_bitset` reimagined as set algorithms
+---------------------------------------------------------------------------------------------------
+
+The bitwise operators (`&=`, `|=`, `^=`, `-=`, `~`, `&`, `|`, `^`, `-`) from `std::bitset` and `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that the bitwise difference operators (`-=` and `-`) are not present in `std::bitset`.
+
+The bitwise-shift operators (`<<=`, `>>=`, `<<`, `>>`) from `std::bitset` and `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax**, but with the **semantic difference** that `xstd::bit_set<N>` does not support bit-shifting for lengths `>= N`. Instead of calling `clear()` for argument values outside the range `[0, N)`, this **behavior is undefined**. Note that these semantics for `xstd::bit_set<N>` are identical to bit-shifting on native unsigned integers. This gives `xstd::bit_set<N>` a small performance benefit over `std::bitset<N>`.
+
+With the exception of `operator~`, the non-member bitwise operators can be reimagined as **composable** and **data-parallel** versions of the set algorithms on sorted ranges from the C++ Standard Library header `<algorithm>`. For the upcoming [Ranges TS](http://en.cppreference.com/w/cpp/experimental/ranges), these algorithms can also be formulated in a composable way, but without the data-parallelism that `xstd::bit_set<N>` provides.
+
+| `xstd::bit_set<N>`                | `std::set<int>` |
+| :-----------------                | :-------------- |
 | `auto c = a & b;`                 | `set<int> c;` <br> `set_intersection(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
 | <code>auto c = a &#124; b;</code> | `set<int> c;` <br> `set_union(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
 | `auto c = a ^ b;`                 | `set<int> c;` <br> `set_symmetric_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
@@ -191,48 +242,13 @@ Many of the bitwise operators for `xstd::bit_set<N>` are equivalent to set algor
 | `auto b = a << n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x) { return x + n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x) { return x < N; });` |
 | `auto b = a >> n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x) { return x - n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x) { return 0 <= x; });` |
 
-The difference with iterator-based algorithms on general sorted ranges is that the bitwise operators from `xstd::bit_set<N>` provide **composable** and **data-parallel** versions of these algorithms. 
+4 Set predicates from `boost::dynamic_bitset`
+---------------------------------------------
 
-For the upcoming [Ranges TS](http://en.cppreference.com/w/cpp/experimental/ranges), these algorithms can also be formulated in a composable way, but without the data-parallellism that `xstd::bit_set<N>` provides. 
-
-Furthermore, `xstd::bit_set<N>` also uses the available **CPU-intrinsics** to efficiently find the first and last bit in a word (used in the iterator implementation), and to count the number of set bits (used in the `size()` member function).
-
-Semantic differences for bitwise-shift operators
-------------------------------------------------
-
-The bitwise-shift operators in `std::bitset<N>` and `xstd::bit_set<N>` have **identical syntax**. The only semantic difference is that `xstd::bit_set<N>` does not support bit-shifting for lengths `>= N`. Instead of calling `clear()` for argument values outside the range `[0, N)`, this **behavior is undefined**. Note that these semantics are identical to bit-shifting on native unsigned integers.
-
-| Expression    | Semantics for `xstd::bit_set<N>`  |
-| :------------ | :-------------------------------  |
-| `bs <<= pos`  | does not `clear()` for `pos >= N` |
-| `bs >>= pos`  | does not `clear()` for `pos >= N` |
-| `bs << pos`   | does not `clear()` for `pos >= N` |
-| `bs >> pos`   | does not `clear()` for `pos >= N` |
-
-Semantic differences for I/O streaming operators
-------------------------------------------------
+5 Overloaded I/O streaming operators
+------------------------------------
 
 The semantic differences between `std::bitset<N>` and `xstd::bit_set<N>` are most visible in its overloaded I/O streaming `operator<<` and `operator>>`. The former reads and writes a bitstring right-to-left, whereas the latter reads and writes an ordered set of integers left-to-right, formatted as a comma-separated sequence between brackets. Note that `std::set<int>` lacks overloaded I/O streaming operators.
-
-Functionality from `std::bitset<N>` that is not in `xstd::bit_set<N>`
----------------------------------------------------------------------
-
-  - **Constructors**: No construction from `unsigned long long`, `std::string` or `char const*`.
-  - **Conversion**: No conversion to `unsigned long`, `unsigned long long` or `std::string`.
-  - **Hashing**: No specialization for `std::hash<>`.
-
-The hashing functionality can be obtained through third-party libraries such as [N3980](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n3980.html) by streaming the `xstd::bit_set<N>` elements and size through an overloaded `hash_append` function.
-
-Functionality from `std::set<int>` that is not in `xstd::bit_set<N>`
---------------------------------------------------------------------
-
-`xstd::bit_set<N>` provides the same functionality as `std::set<int, std::less<int>, Allocator>`, where `Allocator` statically allocates contiguous memory to store `N` integers. This means that `xstd::bit_set<N>` does **not provide**:
-
-  - **Customized key comparison**: `xstd::bit_set<N>` uses `std::less<int>` as its default comparator.
-  - **Allocator support**: `xstd::bit_set<N>` is a fixed-size set of non-negative integers and does not dynamically allocate memory. In particular, `xstd::bit_set<N>` does **not provide** a `get_allocator()` member function and its constructors do not take an allocator argument.
-  - **Splicing**: `xstd::bit_set<N>` is **not a node-based container**, and does not provide the splicing operations as defined in [P0083R3](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0083r3.pdf). In particular, `xstd::bit_set<N>` does **not provide** the nested type `node_type`, the `extract()` or `merge()` member functions, or the `insert()` overloads taking a node handle.
-
-
 
 Frequently Asked Questions
 ==========================
@@ -289,10 +305,7 @@ Storage type
 **A**: By default, `xstd::bit_set<N>` uses an array of `std::size_t` integers.  
 
 **Q**: Can I customize the storage type?  
-**A**: Yes, `xstd::bit_set<N>` is a template alias for `xstd::basic_bit_set<N, std::size_t>`.
-
-**Q**: What is `xstd::basic_bit_set<N, std::size_t>`?  
-**A**: An instantiation of the class template `template<std::size_t N, class Block = std::size_t> xstd::basic_bit_set`.
+**A**: Yes, the actual type is `template<std::size_t N, class Block = std::size_t> xstd::bit_set`.
 
 **Q**: What other storage types can be used as template argument for `Block`?  
 **A**: Any unsigned integral type, including (for GCC and Clang) the non-Standard `__uint128_t`.

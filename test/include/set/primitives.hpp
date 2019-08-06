@@ -32,7 +32,7 @@ struct nested_types
 
         static_assert(std::is_same_v<typename X::value_type, int>);
 
-        // we use a proxy reference for xstd::basic_bit_set which convertible to int const&, instead of the same as int const&
+        // we use a proxy reference for xstd::bit_set which convertible to int const&, instead of the same as int const&
         static_assert(std::is_convertible_v<typename X::const_reference, int const&>);
 
                                                                                 // [container.requirements.general] Table 84
