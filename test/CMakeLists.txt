@@ -1,6 +1,6 @@
 set(Boost_USE_STATIC_LIBS ON)
 
-find_package(Boost 1.69.0 COMPONENTS
+find_package(Boost 1.68.0 COMPONENTS
     unit_test_framework
 )
 
