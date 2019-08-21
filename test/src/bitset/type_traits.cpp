@@ -4,13 +4,12 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <traits.hpp>
-#include <xstd/bit_set.hpp>                     // bit_set
-#include <boost/dynamic_bitset.hpp>             // dynamic_bitset
-#include <boost/mpl/vector.hpp>                 // vector
-#include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_AUTO_TEST_SUITE_END
-#include <bitset>                               // bitset
-#include <type_traits>                          // is_nothrow_default_constructible_v, is_trivially_copyable, is_standard_layout
+#include <xstd/bit_set.hpp>             // bit_set
+#include <boost/dynamic_bitset.hpp>     // dynamic_bitset
+#include <boost/mpl/vector.hpp>         // vector
+#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_CHECK, BOOST_CHECK_EQUAL
+#include <bitset>                       // bitset
+#include <type_traits>                  // is_nothrow_default_constructible_v, is_trivially_copyable, is_standard_layout
 
 BOOST_AUTO_TEST_SUITE(TypeTraits)
 

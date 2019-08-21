@@ -6,14 +6,13 @@
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
-#include <set/primitives.hpp>                   // constructor
-#include <xstd/bit_set.hpp>                     // bit_set
-#include <boost/container/flat_set.hpp>         // flat_set
-#include <boost/mpl/vector.hpp>                 // vector
-#include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
-#include <cstdint>                              // uint8_t, uint16_t, uint32_t, uint64_t
-#include <set>                                  // set
+#include <set/primitives.hpp>           // constructor
+#include <xstd/bit_set.hpp>             // bit_set
+#include <boost/container/flat_set.hpp> // flat_set
+#include <boost/mpl/vector.hpp>         // vector
+#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <set>                          // set
 
 BOOST_AUTO_TEST_SUITE(Constant)
 

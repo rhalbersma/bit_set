@@ -15,8 +15,7 @@
 #include <xstd/bit_set.hpp>                     // bit_set
 #include <boost/dynamic_bitset.hpp>             // dynamic_bitset
 #include <boost/mpl/vector.hpp>                 // vector
-#include <boost/test/test_case_template.hpp>    // BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <bitset>                               // bitset
 #include <cstdint>                              // uint8_t, uint16_t, uint32_t, uint64_t
 
