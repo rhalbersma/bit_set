@@ -149,12 +149,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
         }
 
-        all_singleton_ilists<T>([](auto ilist1) {
-                empty_set<T>([&](auto& is0) {
-                        mem_erase{}(is0, ilist1);
-                });
-        });
-
         all_cardinality_sets<T>(mem_clear{});
         all_singleton_sets<T>(mem_clear{});
 

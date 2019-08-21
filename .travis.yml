@@ -129,7 +129,7 @@ install:
 # Install the latest Boost and build Boost.Test (compiled with the latest gcc)
 ################################################################################
 - |
-  BOOST_VERSION=1.70.0
+  BOOST_VERSION=1.71.0
   BOOST_DIR=${THIRD_PARTY_DIR}/boost-${BOOST_VERSION}
   BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.bz2"
   BOOST_LIBS="test"
@@ -149,7 +149,7 @@ install:
 # Install the latest CMake
 ################################################################################
 - |
-  CMAKE_VERSION=3.14.5
+  CMAKE_VERSION=3.15.2
   CMAKE_DIR=${THIRD_PARTY_DIR}/cmake-${CMAKE_VERSION}
   CMAKE_URL="http://www.cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}

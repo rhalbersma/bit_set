@@ -6,7 +6,7 @@
 Rebooting the `std::bitset` franchise
 =====================================
 
-`xstd::bit_set<N>` is a modern and opinionated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less work than `std::bitset<N>` (e.g. no bounds-checking and no `out_of_range` exceptions) yet offers more (e.g. bidirectional iterators over individual bits that seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax** (identical to `std::set<int>`), typically leading to cleaner, more expressive code.
+`xstd::bit_set<N>` is a modern and opinionated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less work than `std::bitset` (e.g. no bounds-checking and no throwing of `out_of_range` exceptions) yet offers more (e.g. bidirectional iterators over individual bits that seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax** (identical to `std::set<int>`), typically leading to cleaner, more expressive code.
 
 Design choices for a `bitset` data structure
 --------------------------------------------
@@ -59,7 +59,7 @@ Hello World
 
 The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/wy4cNjBZ8eky7rDY)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/FQCBO9pjTlo1wvxI)
 
 ```cpp
 #include "xstd/bit_set.hpp"
@@ -73,14 +73,15 @@ int main()
     // initialize all numbers from [2, N)
     set_type primes;
     primes.fill();                              // renamed set() member from std::bitset<N>
-    primes.erase({0, 1});                       // new erase() overload taking initializer_list<int>
+    primes.erase(0);
+    primes.erase(1);
 
     // find all primes below N
     for (auto const& p : primes) {              // range-for finds begin() / end() iterators
         auto const p_squared = p * p;
         if (p_squared >= N) break;
         for (auto n = p_squared; n < N; n += p) {
-            primes.erase(n);                    // regular erase() overload from std::set<int>
+            primes.erase(n);
         }
     }
 
@@ -135,7 +136,7 @@ How would the Sieve of Eratosthenes code look when using an ordered set of integ
 | :------                           | :------------ |
 | `std::set<int>`                   | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/Wqk9tsDYfSmb2RFN) |
 | `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/BSAu0BWw3St5TCdm) |
-| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/QyjqwXgh4Ga5RQ7g) |
+| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/54aG3PgL22P1tDpY) |
 
 The essential difference is the lack of bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. Printing the solution is also a little more involved, requiring the use of the still experimental `ostream_joiner` iterator.
 
@@ -248,7 +249,7 @@ With the exception of `operator~`, the non-member bitwise operators can be reima
 5 Overloaded I/O streaming operators
 ------------------------------------
 
-The semantic differences between `std::bitset<N>` and `xstd::bit_set<N>` are most visible in its overloaded I/O streaming `operator<<` and `operator>>`. The former reads and writes a bitstring right-to-left, whereas the latter reads and writes an ordered set of integers left-to-right, formatted as a comma-separated sequence between brackets. Note that `std::set<int>` lacks overloaded I/O streaming operators.
+The semantic differences between `std::bitset` and `xstd::bit_set` are most visible in its overloaded I/O streaming `operator<<` and `operator>>`. The former reads and writes a bitstring right-to-left, whereas the latter reads and writes an ordered set of integers left-to-right, formatted as a comma-separated sequence between brackets. Note that `std::set<int>` lacks overloaded I/O streaming operators.
 
 Frequently Asked Questions
 ==========================
@@ -277,13 +278,13 @@ Iterators
 **Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?  
 **A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.
 
-**Q**: So iterating over an `xstd::bit_set<N>` is really fool-proof?  
-**A**: Yes, `xstd::bit_set<N>` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
+**Q**: So iterating over an `xstd::bit_set` is really fool-proof?  
+**A**: Yes, `xstd::bit_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
 
 Bit-ordering
 ------------
 
-**Q**: How is `xstd::bit_set<N>` implemented?    
+**Q**: How is `xstd::bit_set` implemented?  
 **A**: It uses a stack-allocated array of unsigned integers as bit storage.
 
 **Q**: What is the bit-ordering inside this array?  
@@ -293,7 +294,7 @@ Bit-ordering
 **A**: To efficiently satisfy the requirement `a < b == std::lexicographical_compare(begin(a), end(a), begin(b), end(b))`.
 
 **Q**: What do you mean with "efficient" lexicographical comparison?  
-**A**: `xstd::bit_set<N>` implements `L < R` as a data-parallel lexicographical comparison on the array words `wL` and `wR`.
+**A**: `xstd::bit_set` implements `L < R` as a data-parallel lexicographical comparison on the array words `wL` and `wR`.
 
 **Q**: How is this connected to the bit-ordering within words?  
 **A**: The array-word comparison is `wL > wR`, which starts with comparing the most significant bits of the two words.
@@ -301,16 +302,16 @@ Bit-ordering
 Storage type
 ------------
 
-**Q**: What storage type does `xstd::bit_set<N>` use?  
-**A**: By default, `xstd::bit_set<N>` uses an array of `std::size_t` integers.  
+**Q**: What storage type does `xstd::bit_set` use?  
+**A**: By default, `xstd::bit_set` uses an array of `std::size_t` integers.
 
 **Q**: Can I customize the storage type?  
-**A**: Yes, the actual type is `template<std::size_t N, class Block = std::size_t> xstd::bit_set`.
+**A**: Yes, the full class template signature is `template<std::size_t N, class Block = std::size_t> xstd::bit_set`.
 
 **Q**: What other storage types can be used as template argument for `Block`?  
 **A**: Any unsigned integral type, including (for GCC and Clang) the non-Standard `__uint128_t`.
 
-**Q**: Does the `xstd::bit_set<N>` implementation optimize for the case of a small number of words of storage?  
+**Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?  
 **A**: Yes, there are three special cases for 0, 1 and 2 words of storage, as well as the general case of 3 or more words.
 
 Requirements

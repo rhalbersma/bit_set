@@ -343,18 +343,6 @@ struct mem_erase
                 auto const returns = a.erase(q1, q2);
                 BOOST_CHECK(returns == expected);
         }
-
-        template<class X>
-        auto operator()(X& a [[maybe_unused]], std::initializer_list<typename X::key_type> il [[maybe_unused]]) const
-        {
-                if constexpr (tti::has_ilist_erase<X>) {
-                        static_assert(std::is_same_v<decltype(a.erase(il)), void>);
-                        auto const a1 = a;
-                        a.insert(il);
-                        a.erase(il);
-                        BOOST_CHECK(a == a1);
-                }
-        }
 };
 
 struct mem_swap

@@ -569,13 +569,6 @@ public:
                 return last;
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto erase(std::initializer_list<key_type> ilist) // Throws: Nothing.
-        {
-                std::for_each(ilist.begin(), ilist.end(), [&](auto const& x) {
-                        erase(x);
-                });
-        }
-
         XSTD_PP_CONSTEXPR_SWAP auto swap(bit_set& other [[maybe_unused]]) noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
