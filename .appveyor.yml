@@ -1,13 +1,15 @@
 image:
-  - Visual Studio 2017
+  - Visual Studio 2019
+  - Visual Studio 2019 Preview
 
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
+  GENERATOR_NAME: "Visual Studio 16 2019"
   matrix:
     - platform: x86
-      GENERATOR: "Visual Studio 15 2017"
+      PLATFORM_NAME: "Win32"
     - platform: x64
-      GENERATOR: "Visual Studio 15 2017 Win64"
+      PLATFORM_NAME: "x64"
 
 configuration:
   - Debug
@@ -27,7 +29,7 @@ before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir build
   - cd build
-  - cmake .. -G "%GENERATOR%"
+  - cmake .. -G "%GENERATOR_NAME%" -A %PLATFORM_NAME%
     "-DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
 build_script:
