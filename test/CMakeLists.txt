@@ -25,6 +25,7 @@ set(cxx_compile_options_warnings
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
         -Wno-disabled-macro-expansion
+        #-Wno-exit-time-destructors
         -Wno-global-constructors
         -Wno-used-but-marked-unused
     >
@@ -57,9 +58,9 @@ set(cxx_compile_options_mbig_obj
     >
 )
 
-set(test_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(test_source_dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
-file(GLOB_RECURSE targets RELATIVE ${test_source_dir} *.cpp)
+set(current_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(current_source_dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
+file(GLOB_RECURSE targets RELATIVE ${current_source_dir} *.cpp)
 
 foreach(t ${targets})
     get_filename_component(target_path ${t} PATH)
@@ -75,7 +76,7 @@ foreach(t ${targets})
     )
 
     target_include_directories(${target_id} PRIVATE
-        ${test_include_dir}
+        ${current_include_dir}
     )
 
     target_compile_definitions(${target_id} PRIVATE
