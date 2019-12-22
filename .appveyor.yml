@@ -15,6 +15,11 @@ configuration:
   - Debug
   - Release
 
+shallow_clone: true
+
+build:
+  verbosity: detailed
+
 cache:
   - c:\tools\vcpkg\installed\
 
@@ -29,6 +34,7 @@ before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
   - mkdir build
   - cd build
+  - cmake --version
   - cmake .. -G "%GENERATOR_NAME%" -A %PLATFORM_NAME%
     "-DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
 

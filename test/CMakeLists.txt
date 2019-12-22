@@ -1,6 +1,6 @@
 set(Boost_USE_STATIC_LIBS ON)
 
-find_package(Boost 1.71.0 COMPONENTS
+find_package(Boost 1.71.0 REQUIRED COMPONENTS
     unit_test_framework
 )
 
@@ -70,7 +70,7 @@ foreach(t ${targets})
     add_executable(${target_id} src/${t})
 
     target_link_libraries(${target_id} PRIVATE
-        bit_set
+        ${CMAKE_PROJECT_NAME}
         Boost::unit_test_framework
     )
 

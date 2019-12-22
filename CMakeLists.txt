@@ -6,9 +6,9 @@ set(project_include_dir
 	$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
 )
 
-add_library(bit_set INTERFACE)
-target_include_directories(bit_set INTERFACE ${project_include_dir})
-target_compile_features(bit_set INTERFACE cxx_std_17)
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} INTERFACE ${project_include_dir})
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
 include(CTest)
 add_subdirectory(test)
