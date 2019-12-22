@@ -165,6 +165,7 @@ install:
   CMAKE_URL="http://www.cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}
   export PATH=${CMAKE_DIR}/bin:${PATH}
+  cmake --version
 
 before_script:
 - |
