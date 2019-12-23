@@ -21,13 +21,13 @@ set(cxx_compile_options_warnings
     >
     $<$<CXX_COMPILER_ID:Clang>:
         -Weverything
-        -Wno-unknown-warning-option
+        -Wno-unknown-warning-option     # forward compatibility for new Clang warnings
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
-        -Wno-disabled-macro-expansion
-        #-Wno-exit-time-destructors
-        -Wno-global-constructors
-        -Wno-used-but-marked-unused
+        -Wno-disabled-macro-expansion   # triggered by Boost.Test
+        -Wno-global-constructors        # triggered by Boost.Test
+        -Wno-used-but-marked-unused     # triggered by Boost.Test
+        -Wno-padded                     # only affects performance
     >
     $<$<CXX_COMPILER_ID:GNU>:
         -Wall
@@ -42,7 +42,6 @@ set(cxx_compile_options_warnings
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -Werror
         -pedantic-errors
-        -Wno-padded
     >
 )
 

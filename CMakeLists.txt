@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 project(bit_set CXX)
 
 set(project_include_dir
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-	$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
 )
 
 add_library(${PROJECT_NAME} INTERFACE)
