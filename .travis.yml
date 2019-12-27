@@ -114,8 +114,9 @@ install:
   if [[ "${CXX_COMPILER}" == "g++-10" ]]; then
     wget http://kayari.org/gcc-latest/gcc-latest.deb
     sudo dpkg -i gcc-latest.deb
-    sudo ln -s /opt/gcc-latest/bin/gcc /usr/bin/gcc-10
-    sudo ln -s /opt/gcc-latest/bin/g++ /usr/bin/g++-10
+    sudo ln -s /opt/gcc-latest/bin/gcc  /usr/bin/gcc-10
+    sudo ln -s /opt/gcc-latest/bin/g++  /usr/bin/g++-10
+    sudo ln -s /opt/gcc-latest/bin/gcov /usr/bin/gcov-10
     sudo ldconfig /opt/gcc-latest/lib64
   fi
 
@@ -142,8 +143,8 @@ install:
   elif [[ "${CXX_STDLIB}" == "g++-10" ]]; then
     sudo update-alternatives \
     --install /usr/bin/gcc  gcc  /usr/bin/gcc-10 100 \
-    --slave   /usr/bin/g++  g++  /usr/bin/g++-10
-    # no gcov-10 available yet
+    --slave   /usr/bin/g++  g++  /usr/bin/g++-10 \
+    --slave   /usr/bin/gcov gcov /usr/bin/gcov-10
   fi
   gcc --version
   g++ --version
