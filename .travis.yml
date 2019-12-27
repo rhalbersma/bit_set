@@ -70,7 +70,7 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=g++-7 CXX_STDLIB=g++-7 CODE_COVERAGE=true
+    - env: CXX_COMPILER=g++-7 CXX_STDLIB=g++-7
       addons:
         apt:
           packages:
@@ -86,7 +86,7 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
-    - env: CXX_COMPILER=g++-9 CXX_STDLIB=g++-9
+    - env: CXX_COMPILER=g++-9 CXX_STDLIB=g++-9 CODE_COVERAGE=true
       addons:
         apt:
           packages:
@@ -120,21 +120,34 @@ install:
   fi
 
 ################################################################################
-# Set gcc to latest version that is installed
+# Set gcc, g++ and gcov to latest versions that are installed
 ################################################################################
 
 - |
   if [[ "${CXX_STDLIB}" == "g++-7" ]]; then
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 70 --slave /usr/bin/g++ g++ /usr/bin/g++-7
+    sudo update-alternatives \
+    --install /usr/bin/gcc  gcc  /usr/bin/gcc-7 70 \
+    --slave   /usr/bin/g++  g++  /usr/bin/g++-7 \
+    --slave   /usr/bin/gcov gcov /usr/bin/gcov-7
   elif [[ "${CXX_STDLIB}" == "g++-8" ]]; then
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 80 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+    sudo update-alternatives \
+    --install /usr/bin/gcc  gcc  /usr/bin/gcc-8 80 \
+    --slave   /usr/bin/g++  g++  /usr/bin/g++-8 \
+    --slave   /usr/bin/gcov gcov /usr/bin/gcov-8
   elif [[ "${CXX_STDLIB}" == "g++-9" ]]; then
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 --slave /usr/bin/g++ g++ /usr/bin/g++-9
+    sudo update-alternatives \
+    --install /usr/bin/gcc  gcc  /usr/bin/gcc-9 90 \
+    --slave   /usr/bin/g++  g++  /usr/bin/g++-9 \
+    --slave   /usr/bin/gcov gcov /usr/bin/gcov-9
   elif [[ "${CXX_STDLIB}" == "g++-10" ]]; then
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 --slave /usr/bin/g++ g++ /usr/bin/g++-10
+    sudo update-alternatives \
+    --install /usr/bin/gcc  gcc  /usr/bin/gcc-10 100 \
+    --slave   /usr/bin/g++  g++  /usr/bin/g++-10
+    # no gcov-10 available yet
   fi
   gcc --version
   g++ --version
+  gcov --version
 
 ################################################################################
 # Install the latest Boost and build Boost.Test (compiled with the latest gcc)
@@ -180,7 +193,6 @@ before_script:
     cmake .. \
       -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
       -DCMAKE_CXX_FLAGS="--coverage" \
-      -DCMAKE_EXE_LINKER_FLAGS="--coverage" \
       -DBoost_NO_BOOST_CMAKE=ON
   else
     cmake .. \
@@ -190,7 +202,7 @@ before_script:
 
 script:
 - |
-  cmake --build .
+  cmake --build . -v
   ctest
 
 after_success:

@@ -1,14 +1,21 @@
-image:
-  - Visual Studio 2019
-  - Visual Studio 2019 Preview
-
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
-  GENERATOR_NAME: "Visual Studio 16 2019"
   matrix:
-    - platform: x86
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR_NAME: "Visual Studio 15 2017"
+      platform: x86
       PLATFORM_NAME: "Win32"
-    - platform: x64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      GENERATOR_NAME: "Visual Studio 15 2017"
+      platform: x64
+      PLATFORM_NAME: "x64"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      GENERATOR_NAME: "Visual Studio 16 2019"
+      platform: x86
+      PLATFORM_NAME: "Win32"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      GENERATOR_NAME: "Visual Studio 16 2019"
+      platform: x64
       PLATFORM_NAME: "x64"
 
 configuration:
@@ -24,7 +31,7 @@ cache:
   - c:\tools\vcpkg\installed\
 
 install:
-  - vcpkg install --triplet "%platform%"-windows
+  - vcpkg install --triplet %platform%-windows
     boost-container
     boost-dynamic-bitset
     boost-mpl
@@ -39,7 +46,7 @@ before_build:
     "-DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
 build_script:
-  - cmake --build . --config %configuration%
+  - cmake --build . --config %configuration% -v
 
 test_script:
   - ctest
