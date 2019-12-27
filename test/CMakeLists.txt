@@ -46,12 +46,6 @@ set(cxx_compile_options_warnings
     >
 )
 
-set(cxx_compile_options_debugsym
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
-        -g
-    >
-)
-
 set(cxx_compile_options_mbig_obj
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
 	    -Wa,-mbig-obj
@@ -89,7 +83,6 @@ foreach(t ${targets})
     target_compile_options(
         ${target_id} PRIVATE
         ${cxx_compile_options_warnings}
-        ${cxx_compile_options_debugsym}
         ${cxx_compile_options_mbig_obj}
     )
 
