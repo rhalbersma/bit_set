@@ -170,6 +170,7 @@ install:
     ./bootstrap.sh --with-toolset=clang --with-libraries=${BOOST_LIBS}
     sudo ./b2 -d0 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
   fi
+  cd ${THIRD_PARTY_DIR}
 
 ################################################################################
 # Install the latest CMake
