@@ -190,7 +190,7 @@ install:
   LCOV_DIR=${THIRD_PARTY_DIR}/lcov-${LCOV_VERSION}
   LCOV_URL="http://downloads.sourceforge.net/ltp/lcov-${LCOV_VERSION}.tar.gz"
   mkdir -p ${LCOV_DIR} && travis_retry wget --quiet -O - ${LCOV_URL} | tar --strip-components=1 -xz -C ${LCOV_DIR}
-  export PATH=${CMAKE_DIR}/bin:${PATH}
+  export PATH=${LCOV_DIR}/bin:${PATH}
   lcov --version
 
 before_script:
