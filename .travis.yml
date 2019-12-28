@@ -182,6 +182,17 @@ install:
   export PATH=${CMAKE_DIR}/bin:${PATH}
   cmake --version
 
+################################################################################
+# Install the latest lcov
+################################################################################
+- |
+  LCOV_VERSION=1.14
+  LCOV_DIR=${THIRD_PARTY_DIR}/lcov-${LCOV_VERSION}
+  LCOV_URL="http://downloads.sourceforge.net/ltp/lcov-${LCOV_VERSION}.tar.gz"
+  mkdir -p ${LCOV_DIR} && travis_retry wget --quiet -O - ${LCOV_URL} | tar --strip-components=1 -xz -C ${LCOV_DIR}
+  export PATH=${CMAKE_DIR}/bin:${PATH}
+  lcov --version
+
 before_script:
 - |
   cd ${TRAVIS_BUILD_DIR}
@@ -215,6 +226,7 @@ script:
 after_success:
 - |
   if [[ "${CODE_COVERAGE}" == "true" ]]; then
+    lcov --directory . --capture --output-file coverage.info
     bash <(curl -s https://codecov.io/bash)
   fi
 
