@@ -188,8 +188,8 @@ install:
 - |
   if [[ "${CODE_COVERAGE}" == "true" ]]; then
     sudo apt-get install -y libjson-perl
-    LCOV_DIR=${THIRD_PARTY_DIR}/lcov
     git clone https://github.com/linux-test-project/lcov.git
+    LCOV_DIR=${THIRD_PARTY_DIR}/lcov
     export PATH=${LCOV_DIR}/bin:${PATH}
     lcov --version
   fi
