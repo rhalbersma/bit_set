@@ -4,7 +4,7 @@ dist: bionic
 
 matrix:
   include:
-    - env: CXX_COMPILER=clang++-6.0 CXX_STDLIB=g++-9
+    - env: TOOLSET=clang TOOLSET_VER=6.0 STDLIB=libstdc++ STDLIB_VER=9
       addons:
         apt:
           packages:
@@ -15,7 +15,7 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=clang++-7 CXX_STDLIB=g++-9
+    - env: TOOLSET=clang TOOLSET_VER=7 STDLIB=libstdc++ STDLIB_VER=9
       addons:
         apt:
           packages:
@@ -26,7 +26,7 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=clang++-8 CXX_STDLIB=g++-9
+    - env: TOOLSET=clang TOOLSET_VER=8 STDLIB=libstdc++ STDLIB_VER=9
       addons:
         apt:
           packages:
@@ -37,7 +37,7 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-8 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=clang++-9 CXX_STDLIB=g++-9
+    - env: TOOLSET=clang TOOLSET_VER=9 STDLIB=libstdc++ STDLIB_VER=9
       addons:
         apt:
           packages:
@@ -48,7 +48,7 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=clang++-10 CXX_STDLIB=g++-9
+    - env: TOOLSET=clang TOOLSET_VER=10 STDLIB=libstdc++ STDLIB_VER=9
       addons:
         apt:
           packages:
@@ -59,7 +59,7 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=clang++-10 CXX_STDLIB=libc++
+    - env: TOOLSET=clang TOOLSET_VER=10 STDLIB=libc++ STDLIB_VER=10
       addons:
         apt:
           packages:
@@ -70,7 +70,7 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: CXX_COMPILER=g++-7 CXX_STDLIB=g++-7 CODE_COVERAGE=true
+    - env: TOOLSET=gcc TOOLSET_VER=7 STDLIB=libstdc++ STDLIB_VER=7 CODE_COVERAGE=true
       addons:
         apt:
           packages:
@@ -78,7 +78,7 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
-    - env: CXX_COMPILER=g++-8 CXX_STDLIB=g++-8
+    - env: TOOLSET=gcc TOOLSET_VER=8 STDLIB=libstdc++ STDLIB_VER=8
       addons:
         apt:
           packages:
@@ -86,7 +86,7 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
-    - env: CXX_COMPILER=g++-9 CXX_STDLIB=g++-9
+    - env: TOOLSET=gcc TOOLSET_VER=9 STDLIB=libstdc++ STDLIB_VER=9
       addons:
         apt:
           packages:
@@ -94,7 +94,7 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
-    - env: CXX_COMPILER=g++-10 CXX_STDLIB=g++-10
+    - env: TOOLSET=gcc TOOLSET_VER=10 STDLIB=libstdc++ STDLIB_VER=10
 
 install:
 
@@ -107,48 +107,50 @@ install:
   cd ${THIRD_PARTY_DIR}
 
 ################################################################################
-# Install g++-10
+# Install gcc-latest
 ################################################################################
 
 - |
-  if [[ "${CXX_COMPILER}" == "g++-10" ]]; then
+  if [[ "${TOOLSET}" == "gcc" && "${TOOLSET_VER}" == "10" ]]; then
     wget http://kayari.org/gcc-latest/gcc-latest.deb
     sudo dpkg -i gcc-latest.deb
-    sudo ln -s /opt/gcc-latest/bin/gcc  /usr/bin/gcc-10
-    sudo ln -s /opt/gcc-latest/bin/g++  /usr/bin/g++-10
-    sudo ln -s /opt/gcc-latest/bin/gcov /usr/bin/gcov-10
+    sudo ln -s /opt/gcc-latest/bin/gcc        /usr/bin/gcc-${TOOLSET_VER}
+    sudo ln -s /opt/gcc-latest/bin/g++        /usr/bin/g++-${TOOLSET_VER}
+    sudo ln -s /opt/gcc-latest/bin/gcov       /usr/bin/gcov-${TOOLSET_VER}
+    sudo ln -s /opt/gcc-latest/bin/gcov-dump  /usr/bin/gcov-dump-${TOOLSET_VER}
+    sudo ln -s /opt/gcc-latest/bin/gcov-tool  /usr/bin/gcov-tool-${TOOLSET_VER}
+    sudo ln -s /opt/gcc-latest/bin/gcc-ar     /usr/bin/gcc-ar-${TOOLSET_VER}
+    sudo ln -s /opt/gcc-latest/bin/gcc-nm     /usr/bin/gcc-nm-${TOOLSET_VER}
+    sudo ln -s /opt/gcc-latest/bin/gcc-ranlib /usr/bin/gcc-ranlib-${TOOLSET_VER}
     sudo ldconfig /opt/gcc-latest/lib64
   fi
 
 ################################################################################
-# Set gcc, g++ and gcov to latest versions that are installed
+# Set clang, clang++, gcc, g++ and gcov to latest versions that are installed
 ################################################################################
 
 - |
-  if [[ "${CXX_STDLIB}" == "g++-7" ]]; then
-    sudo update-alternatives \
-    --install /usr/bin/gcc  gcc  /usr/bin/gcc-7 70 \
-    --slave   /usr/bin/g++  g++  /usr/bin/g++-7 \
-    --slave   /usr/bin/gcov gcov /usr/bin/gcov-7
-  elif [[ "${CXX_STDLIB}" == "g++-8" ]]; then
-    sudo update-alternatives \
-    --install /usr/bin/gcc  gcc  /usr/bin/gcc-8 80 \
-    --slave   /usr/bin/g++  g++  /usr/bin/g++-8 \
-    --slave   /usr/bin/gcov gcov /usr/bin/gcov-8
-  elif [[ "${CXX_STDLIB}" == "g++-9" ]]; then
-    sudo update-alternatives \
-    --install /usr/bin/gcc  gcc  /usr/bin/gcc-9 90 \
-    --slave   /usr/bin/g++  g++  /usr/bin/g++-9 \
-    --slave   /usr/bin/gcov gcov /usr/bin/gcov-9
-  elif [[ "${CXX_STDLIB}" == "g++-10" ]]; then
-    sudo update-alternatives \
-    --install /usr/bin/gcc  gcc  /usr/bin/gcc-10 100 \
-    --slave   /usr/bin/g++  g++  /usr/bin/g++-10 \
-    --slave   /usr/bin/gcov gcov /usr/bin/gcov-10
+  if [[ "${TOOLSET}" == "clang" ]]; then
+    sudo update-alternatives                                            \
+    --install /usr/bin/clang   clang   /usr/bin/clang-${TOOLSET_VER} 10 \
+    --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-${TOOLSET_VER}
+    clang   --version
+    clang++ --version
   fi
-  gcc --version
-  g++ --version
-  gcov --version
+  if [[ "${STDLIB}" == "libstdc++" ]]; then
+    sudo update-alternatives                                                  \
+    --install /usr/bin/gcc        gcc        /usr/bin/gcc-${STDLIB_VER} 10    \
+    --slave   /usr/bin/g++        g++        /usr/bin/g++-${STDLIB_VER}       \
+    --slave   /usr/bin/gcov       gcov       /usr/bin/gcov-${STDLIB_VER}      \
+    --slave   /usr/bin/gcov-dump  gcov-dump  /usr/bin/gcov-dump-${STDLIB_VER} \
+    --slave   /usr/bin/gcov-tool  gcov-tool  /usr/bin/gcov-tool-${STDLIB_VER} \
+    --slave   /usr/bin/gcc-ar     gcc-ar     /usr/bin/gcc-ar-${STDLIB_VER}    \
+    --slave   /usr/bin/gcc-nm     gcc-nm     /usr/bin/gcc-nm-${STDLIB_VER}    \
+    --slave   /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-${STDLIB_VER}
+    gcc  --version
+    g++  --version
+    gcov --version
+  fi
 
 ################################################################################
 # Install the latest Boost and build Boost.Test (compiled with the latest gcc)
@@ -161,13 +163,12 @@ install:
   BOOST_BUILD_TYPE="link=static variant=release"
   mkdir -p ${BOOST_DIR} && travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xj -C ${BOOST_DIR}
   cd ${BOOST_DIR}
-  if [[ "${CXX_STDLIB}" == "libc++" ]]; then
-    sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-10 100 --slave /usr/bin/clang++ clang++ /usr/bin/clang++-10
-    ./bootstrap.sh --with-toolset=clang --with-libraries=${BOOST_LIBS}
-    sudo ./b2 -d0 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
-  else
+  if [[ "${STDLIB}" == "libstdc++" ]]; then
     ./bootstrap.sh --with-toolset=gcc   --with-libraries=${BOOST_LIBS}
     sudo ./b2 -d0 -j10 install toolset=gcc   ${BOOST_BUILD_TYPE}
+  elif [[ "${STDLIB}" == "libc++" ]]; then
+    ./bootstrap.sh --with-toolset=clang --with-libraries=${BOOST_LIBS}
+    sudo ./b2 -d0 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
   fi
 
 ################################################################################
@@ -185,18 +186,23 @@ before_script:
 - |
   cd ${TRAVIS_BUILD_DIR}
   mkdir build && cd build
-  if [[ "${CXX_STDLIB}" == "libc++" ]]; then
-    cmake .. \
+  if [[ "${TOOLSET}" == "clang" ]]; then
+    CXX_COMPILER=clang++-${TOOLSET_VER}
+  elif [[ "${TOOLSET}" == "gcc" ]]; then
+    CXX_COMPILER=g++-${TOOLSET_VER}
+  fi
+  if [[ "${TOOLSET}" == "clang" && "${STDLIB}" == "libc++" ]]; then
+    cmake ..                               \
       -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
-      -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
+      -DCMAKE_CXX_FLAGS="-stdlib=libc++"   \
       -DBoost_NO_BOOST_CMAKE=ON
   elif [[ "${CODE_COVERAGE}" == "true" ]]; then
-    cmake .. \
-      -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+    cmake ..                                \
+      -DCMAKE_CXX_COMPILER=${CXX_COMPILER}  \
       -DCMAKE_CXX_FLAGS="-g -O0 --coverage" \
       -DBoost_NO_BOOST_CMAKE=ON
   else
-    cmake .. \
+    cmake ..                               \
       -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
       -DBoost_NO_BOOST_CMAKE=ON
   fi
