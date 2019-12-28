@@ -70,7 +70,7 @@ matrix:
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
-    - env: TOOLSET=gcc TOOLSET_VER=7 STDLIB=libstdc++ STDLIB_VER=7 CODE_COVERAGE=true
+    - env: TOOLSET=gcc TOOLSET_VER=7 STDLIB=libstdc++ STDLIB_VER=7
       addons:
         apt:
           packages:
@@ -86,7 +86,7 @@ matrix:
           sources:
             - sourceline: 'ppa:ubuntu-toolchain-r/test'
 
-    - env: TOOLSET=gcc TOOLSET_VER=9 STDLIB=libstdc++ STDLIB_VER=9
+    - env: TOOLSET=gcc TOOLSET_VER=9 STDLIB=libstdc++ STDLIB_VER=9 CODE_COVERAGE=true
       addons:
         apt:
           packages:
@@ -186,12 +186,13 @@ install:
 # Install the latest lcov
 ################################################################################
 - |
-  LCOV_VERSION=1.14
-  LCOV_DIR=${THIRD_PARTY_DIR}/lcov-${LCOV_VERSION}
-  LCOV_URL="http://downloads.sourceforge.net/ltp/lcov-${LCOV_VERSION}.tar.gz"
-  mkdir -p ${LCOV_DIR} && travis_retry wget --quiet -O - ${LCOV_URL} | tar --strip-components=1 -xz -C ${LCOV_DIR}
-  export PATH=${LCOV_DIR}/bin:${PATH}
-  lcov --version
+  if [[ "${CODE_COVERAGE}" == "true" ]]; then
+    sudo apt-get install -y libjson-perl
+    LCOV_DIR=${THIRD_PARTY_DIR}/lcov
+    git clone https://github.com/linux-test-project/lcov.git
+    export PATH=${LCOV_DIR}/bin:${PATH}
+    lcov --version
+  fi
 
 before_script:
 - |
@@ -227,7 +228,7 @@ after_success:
 - |
   if [[ "${CODE_COVERAGE}" == "true" ]]; then
     lcov --directory . --capture --output-file coverage.info
-    bash <(curl -s https://codecov.io/bash)
+    bash <(curl -s https://codecov.io/bash) -f coverage.info
   fi
 
 notifications:
