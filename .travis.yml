@@ -106,7 +106,10 @@ install:
     sudo update-alternatives                                            \
     --install /usr/bin/clang   clang   /usr/bin/clang-${TOOLSET_VER} 10 \
     --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-${TOOLSET_VER}
+    ECHO ${PATH}
+    update-alternatives --display clang
     ls -al /usr/local/bin/clang*
+    ls -al /usr/bin/clang*
     clang   --version
     clang++ --version
   fi
