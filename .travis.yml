@@ -37,7 +37,6 @@ matrix:
           packages:
             - clang-10
           sources:
-            - sourceline: 'ppa:ubuntu-toolchain-r/test'
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
@@ -113,6 +112,8 @@ install:
 
 - |
   if [[ "${TOOLSET}" == "clang" ]]; then
+    sudo update-alternatives --remove-all clang
+    sudo update-alternatives --remove-all clang++
     sudo update-alternatives                                            \
     --install /usr/bin/clang   clang   /usr/bin/clang-${TOOLSET_VER} 10 \
     --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-${TOOLSET_VER}
