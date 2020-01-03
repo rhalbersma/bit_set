@@ -106,6 +106,7 @@ install:
     sudo update-alternatives                                            \
     --install /usr/bin/clang   clang   /usr/bin/clang-${TOOLSET_VER} 10 \
     --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-${TOOLSET_VER}
+    ls -al /usr/local/bin/clang*
     clang   --version
     clang++ --version
   fi
@@ -139,8 +140,8 @@ install:
     ./bootstrap.sh --with-toolset=gcc   --with-libraries=${BOOST_LIBS}
     sudo ./b2 -d0 -j10 install toolset=gcc   ${BOOST_BUILD_TYPE}
   elif [[ "${STDLIB}" == "libc++" ]]; then
-    ./bootstrap.sh --with-toolset=clang-10 --with-libraries=${BOOST_LIBS}
-    sudo ./b2 -d0 -j10 install toolset=clang-10 ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
+    ./bootstrap.sh --with-toolset=clang --with-libraries=${BOOST_LIBS}
+    sudo ./b2 -d0 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
   fi
   cd ${THIRD_PARTY_DIR}
 
