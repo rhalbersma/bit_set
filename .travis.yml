@@ -137,10 +137,10 @@ install:
   cd ${BOOST_DIR}
   if [[ "${STDLIB}" == "libstdc++" ]]; then
     ./bootstrap.sh --with-toolset=gcc   --with-libraries=${BOOST_LIBS}
-    sudo ./b2 -d+7 -j10 install toolset=gcc   ${BOOST_BUILD_TYPE}
+    sudo ./b2 -d0 -j10 install toolset=gcc   ${BOOST_BUILD_TYPE}
   elif [[ "${STDLIB}" == "libc++" ]]; then
     ./bootstrap.sh --with-toolset=clang-10 --with-libraries=${BOOST_LIBS}
-    sudo ./b2 -d+7 -j10 install toolset=clang ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
+    sudo ./b2 -d0 -j10 install toolset=clang-10 ${BOOST_BUILD_TYPE} cxxflags="-stdlib=libc++"
   fi
   cd ${THIRD_PARTY_DIR}
 
