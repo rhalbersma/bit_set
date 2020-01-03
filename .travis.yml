@@ -106,10 +106,10 @@ install:
     sudo update-alternatives                                            \
     --install /usr/bin/clang   clang   /usr/bin/clang-${TOOLSET_VER} 10 \
     --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-${TOOLSET_VER}
-    echo ${PATH}
-    update-alternatives --display clang
-    which clang
-    which clang++
+
+# Extremely ugly hack, but Travis has put this in PATH with higher priority than /usr/bin
+    sudo rm -rf /usr/local/clang-7.0.0
+
     clang   --version
     clang++ --version
   fi
