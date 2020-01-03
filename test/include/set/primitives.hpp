@@ -10,7 +10,7 @@
 #include <algorithm>                    // all_of, any_of, copy_if, count, equal, equal_range, find, for_each, includes, lexicographical_compare, lower_bound,
                                         // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform, upper_bound
 #include <initializer_list>             // initializer_list
-#include <iterator>                     // distance, inserter, next, prev
+#include <iterator>                     // distance, empty, inserter, next, prev, size, ssize
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
 #include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructible_v, is_integral_v, is_same_v, is_signed_v, is_unsigned_v

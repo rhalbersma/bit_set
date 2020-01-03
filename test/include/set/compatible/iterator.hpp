@@ -10,11 +10,16 @@
 
 namespace xstd {
 
+#if (!defined(__clang__) && defined(__GNUC__) && (__GNUC__ < 10)) || (defined(__clang_major__) && (__clang_major__ < 10)) || defined(_MSC_VER)
+
+// std::ssize() is defined in <iterator> in C++20
 template<class C>
 constexpr auto ssize(C const& c) noexcept
 {
         using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
         return static_cast<R>(c.size());
 }
+
+#endif
 
 }       // namespace xstd
