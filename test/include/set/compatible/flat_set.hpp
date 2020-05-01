@@ -12,7 +12,8 @@
 namespace boost::container {
 
 // provided by <iterator> in C++20
-auto ssize(flat_set<int> const& is) noexcept
+template<class Compare, class Allocator>
+auto ssize(flat_set<int, Compare, Allocator> const& is) noexcept
 {
         using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(is.size())>>;
         return static_cast<R>(is.size());
