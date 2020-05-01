@@ -311,7 +311,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Platform | Compiler | Versions | Build |
 | :------- | :------- | :------- | :---- |
 | Linux    | Clang <br> GCC | 9, 10, 11-SVN<br> 9, 10, 11-SVN | [![codecov](https://codecov.io/gh/rhalbersma/bit_set/branch/master/graph/badge.svg)](https://codecov.io/gh/rhalbersma/bit_set) <br> [![Build Status](https://travis-ci.org/rhalbersma/bit_set.svg)](https://travis-ci.org/rhalbersma/bit_set) |
-| Windows  | Visual Studio  | 2017, 2019                      | [![Build status](https://ci.appveyor.com/api/projects/status/hcuoesbavuw5v7y8?svg=true)](https://ci.appveyor.com/project/rhalbersma/bit-set) |
+| Windows  | Visual Studio  | 2019                            | [![Build status](https://ci.appveyor.com/api/projects/status/hcuoesbavuw5v7y8?svg=true)](https://ci.appveyor.com/project/rhalbersma/bit-set) |
 
 ## License
 

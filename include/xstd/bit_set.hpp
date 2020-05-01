@@ -82,9 +82,6 @@
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0879r0.html
 #define XSTD_PP_CONSTEXPR_SWAP          /* constexpr */
 
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0892r2.html
-#define XSTD_PP_EXPLICIT_FALSE          /* explicit(false) */
-
 namespace xstd {
 namespace builtin {
 
@@ -1031,7 +1028,7 @@ private:
                         return { &m_bs, m_value };
                 }
 
-                XSTD_PP_EXPLICIT_FALSE constexpr operator value_type() const noexcept
+                explicit(false) constexpr operator value_type() const noexcept
                 {
                         return m_value;
                 }
@@ -1039,7 +1036,7 @@ private:
                 template<class T, std::enable_if_t<
                         std::is_class_v<T> && std::is_constructible_v<T, value_type>
                 >...>
-                XSTD_PP_EXPLICIT_FALSE constexpr operator T() const noexcept(noexcept(T(m_value)))
+                explicit(false) constexpr operator T() const noexcept(noexcept(T(m_value)))
                 {
                         return m_value;
                 }

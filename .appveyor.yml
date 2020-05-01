@@ -6,14 +6,6 @@
 environment:
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      GENERATOR_NAME: "Visual Studio 15 2017"
-      platform: x86
-      PLATFORM_NAME: "Win32"
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      GENERATOR_NAME: "Visual Studio 15 2017"
-      platform: x64
-      PLATFORM_NAME: "x64"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       GENERATOR_NAME: "Visual Studio 16 2019"
       platform: x86
