@@ -6,7 +6,8 @@
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
-#include <set/compatible/iterator.hpp>  // ssize
+#include <set/compatible/flat_set.hpp>  // ssize
+#include <set/compatible/set.hpp>       // ssize
 #include <set/exhaustive.hpp>           // empty_set, full_set, all_values, all_cardinality_sets,
                                         // all_singleton_arrays, all_singleton_ilists, all_singleton_sets
 #include <set/primitives.hpp>           // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back, mem_empty, mem_size,
