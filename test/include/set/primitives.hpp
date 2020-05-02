@@ -532,7 +532,7 @@ struct op_less
         auto operator()(X const& a, X const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 85
                 static_assert(std::is_convertible_v<decltype(a < b), bool>);
-                BOOST_CHECK_EQUAL(a < b, xstd::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
+                BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
                 BOOST_CHECK(!(a < b) || !(b < a));                              // asymmetric
         }
 
