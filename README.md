@@ -296,7 +296,7 @@ The semantic differences between `std::bitset` and `xstd::bit_set` are most visi
 **A**: By default, `xstd::bit_set` uses an array of `std::size_t` integers.
 
 **Q**: Can I customize the storage type?  
-**A**: Yes, the full class template signature is `template<std::size_t N, class Block = std::size_t> xstd::bit_set`.
+**A**: Yes, the full class template signature is `template<std::size_t N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.
 
 **Q**: What other storage types can be used as template argument for `Block`?  
 **A**: Any unsigned integral type, including (for GCC and Clang) the non-Standard `__uint128_t`.

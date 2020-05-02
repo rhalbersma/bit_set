@@ -7,6 +7,8 @@
 
 #include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, for_each, lexicographical_compare, max, none_of, swap_ranges
 #include <cassert>              // assert
+#include <compare>              // strong_ordering
+#include <concepts>             // constructible_from, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
 #include <cstdint>              // uint64_t
 #include <functional>           // less
@@ -16,9 +18,8 @@
 #include <limits>               // digits
 #include <numeric>              // accumulate
 #include <tuple>                // tie
-#include <type_traits>          // common_type_t, enable_if_t, is_class_v, is_constructible_v, is_integral_v, is_unsigned_v, make_signed_t
+#include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
-#include <compare>
 
 #if defined(__GNUG__)
 
@@ -95,9 +96,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto get(__uint128_t x) noexcept
         return static_cast<uint64_t>(x >> (64 * N));
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto ctznz(T x) // Throws: Nothing.
 {
         assert(x != 0);
@@ -112,18 +111,14 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto ctznz(T x) // Throws: Nothing.
         }
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsfnz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         return ctznz(x);
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto clznz(T x) // Throws: Nothing.
 {
         assert(x != 0);
@@ -139,18 +134,14 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto clznz(T x) // Throws: Nothing.
         }
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsrnz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         return std::numeric_limits<T>::digits - 1 - clznz(x);
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto popcount(T x) noexcept
 {
         if constexpr (sizeof(T) < sizeof(unsigned)) {
@@ -180,9 +171,7 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto popcount(T x) noexcept
 
 #endif
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsfnz(T x) // Throws: Nothing.
 {
         assert(x != 0);
@@ -197,17 +186,13 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsfnz(T x) // Throws: Nothing.
         return static_cast<int>(index);
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto ctznz(T x) // Throws: Nothing.
 {
         return bsfnz(x);
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsrnz(T x) // Throws: Nothing.
 {
         assert(x != 0);
@@ -222,18 +207,14 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsrnz(T x) // Throws: Nothing.
         return static_cast<int>(index);
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto clznz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         return std::numeric_limits<T>::digits - 1 - bsrnz(x);
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto popcount(T x) noexcept
 {
         if constexpr (sizeof(T) < sizeof(unsigned short)) {
@@ -249,33 +230,25 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto popcount(T x) noexcept
 
 #endif
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto ctz(T x) noexcept
 {
         return x ? ctznz(x) : std::numeric_limits<T>::digits;
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsf(T x) noexcept
 {
         return x ? bsfnz(x) : std::numeric_limits<T>::digits;
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto clz(T x) noexcept
 {
         return x ? clznz(x) : std::numeric_limits<T>::digits;
 }
 
-template<class T, std::enable_if_t<
-        std::is_unsigned_v<T> && std::is_integral_v<T>
->...>
+template<std::unsigned_integral T>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsr(T x) noexcept
 {
         return x ? bsrnz(x) : -1;
@@ -283,14 +256,10 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsr(T x) noexcept
 
 }       // namespace builtin
 
-template<std::size_t /* N */, class /* Block */>
-class bit_set;
-
-template<std::size_t N, class Block = std::size_t>
+template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
 {
         static_assert(0 <= N && N <= std::numeric_limits<int>::max());
-        static_assert(std::is_unsigned_v<Block> && std::is_integral_v<Block>);
 
         static constexpr auto M = static_cast<int>(N);  // keep size_t from spilling all over the code base
         static constexpr auto block_size = std::numeric_limits<Block>::digits;
@@ -825,7 +794,7 @@ public:
         {
                 if constexpr (num_logical_blocks == 0) {
                         return true;
-                } else if constexpr (num_logical_blocks == 1) {
+                } else if constexpr (num_logical_blocks <= 1) {
                         return m_data[0] == other.m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
                         constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[0], bs.m_data[1]); };
@@ -843,7 +812,7 @@ public:
         {
                 if constexpr (num_logical_blocks == 0) {
                         return std::strong_ordering::equal;
-                } else if constexpr (num_logical_blocks == 1) {
+                } else if constexpr (num_logical_blocks <= 1) {
                         return other.m_data[0] <=> m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
                         constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[1], bs.m_data[0]); };
@@ -1107,9 +1076,8 @@ private:
                         return m_value;
                 }
 
-                template<class T, std::enable_if_t<
-                        std::is_class_v<T> && std::is_constructible_v<T, value_type>
-                >...>
+                template<class T>
+                        requires std::is_class_v<T> && std::constructible_from<T, value_type>
                 explicit(false) constexpr operator T() const noexcept(noexcept(T(m_value)))
                 {
                         return m_value;
@@ -1182,172 +1150,172 @@ private:
         };
 };
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto operator~(bit_set<N, Block> const& lhs) noexcept
 {
         auto nrv{lhs}; nrv.complement(); return nrv;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto operator&(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv &= rhs; return nrv;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto operator|(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv |= rhs; return nrv;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto operator^(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv ^= rhs; return nrv;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv -= rhs; return nrv;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto operator<<(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
         assert(0 <= n && n < static_cast<int>(N));
         auto nrv{lhs}; nrv <<= n; return nrv;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto operator>>(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
         assert(0 <= n && n < static_cast<int>(N));
         auto nrv{lhs}; nrv >>= n; return nrv;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto is_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(rhs, lhs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_subset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(lhs, rhs) && !is_subset_of(rhs, lhs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto disjoint(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return !intersects(lhs, rhs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_SWAP auto swap(bit_set<N, Block>& lhs, bit_set<N, Block>& rhs) noexcept
 {
         lhs.swap(rhs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto begin(bit_set<N, Block>& bs) noexcept
 {
         return bs.begin();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto begin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.begin();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto end(bit_set<N, Block>& bs) noexcept
 {
         return bs.end();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto end(bit_set<N, Block> const& bs) noexcept
 {
         return bs.end();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto rbegin(bit_set<N, Block>& bs) noexcept
 {
         return bs.rbegin();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto rbegin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.rbegin();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto rend(bit_set<N, Block>& bs) noexcept
 {
         return bs.rend();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto rend(bit_set<N, Block> const& bs) noexcept
 {
         return bs.rend();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto cbegin(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::begin(bs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto cend(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::end(bs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto crbegin(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::rbegin(bs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto crend(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::rend(bs);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto size(bit_set<N, Block> const& bs) noexcept
 {
         return bs.size();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto ssize(bit_set<N, Block> const& bs) noexcept
 {
         using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(bs.size())>>;
         return static_cast<R>(bs.size());
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(bit_set<N, Block> const& bs) noexcept
 {
         return bs.empty();
 }
 
-template<class CharT, class Traits, std::size_t N, class Block>
+template<class CharT, class Traits, std::size_t N, std::unsigned_integral Block>
 auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, bit_set<N, Block> const& bs)
 {
         ostr << ostr.widen('[');
@@ -1364,7 +1332,7 @@ auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, bit_set<N, Block> cons
         return ostr;
 }
 
-template<class CharT, class Traits, std::size_t N, class Block>
+template<class CharT, class Traits, std::size_t N, std::unsigned_integral Block>
 auto& operator>>(std::basic_istream<CharT, Traits>& istr, bit_set<N, Block>& bs)
 {
         typename bit_set<N, Block>::value_type x;

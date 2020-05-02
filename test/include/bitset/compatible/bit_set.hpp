@@ -6,6 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bit_set.hpp>     // bit_set
+#include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <stdexcept>            // out_of_range
 
@@ -14,7 +15,7 @@ namespace xstd {
 template<class T>
 using value_t = typename T::value_type;
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto resize(bit_set<N, Block>& bs, std::size_t num_bits [[maybe_unused]], bool value = false) noexcept
 {
         if (value) {
@@ -24,7 +25,7 @@ auto resize(bit_set<N, Block>& bs, std::size_t num_bits [[maybe_unused]], bool v
         }
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto& left_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
 {
         if (pos >= N) {
@@ -34,7 +35,7 @@ auto& left_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
         return bs <<= static_cast<value_type>(pos);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto& right_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
 {
         if (pos >= N) {
@@ -44,13 +45,13 @@ auto& right_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
         return bs >>= static_cast<value_type>(pos);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto& set(bit_set<N, Block>& bs) noexcept
 {
         return bs.fill();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto& set(bit_set<N, Block>& bs, std::size_t pos, bool val = true)
 {
         if (pos >= N) {
@@ -65,13 +66,13 @@ auto& set(bit_set<N, Block>& bs, std::size_t pos, bool val = true)
         return bs;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto& reset(bit_set<N, Block>& bs) noexcept
 {
         return bs.clear();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto& reset(bit_set<N, Block>& bs, std::size_t pos)
 {
         if (pos >= N) {
@@ -82,13 +83,13 @@ auto& reset(bit_set<N, Block>& bs, std::size_t pos)
         return bs;
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto& flip(bit_set<N, Block>& bs) noexcept
 {
         return bs.complement();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto& flip(bit_set<N, Block>& bs, std::size_t pos)
 {
         if (pos >= N) {
@@ -98,19 +99,19 @@ auto& flip(bit_set<N, Block>& bs, std::size_t pos)
         return bs.replace(static_cast<value_type>(pos));
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto count(bit_set<N, Block> const& bs) noexcept
 {
         return bs.size();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto fn_size(bit_set<N, Block> const& bs) noexcept
 {
         return bs.max_size();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto test(bit_set<N, Block> const& bs, std::size_t pos)
 {
         if (pos >= N) {
@@ -120,25 +121,25 @@ auto test(bit_set<N, Block> const& bs, std::size_t pos)
         return bs.contains(static_cast<value_type>(pos));
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] auto all(bit_set<N, Block> const& bs) noexcept
 {
         return bs.full();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] auto any(bit_set<N, Block> const& bs) noexcept
 {
         return !bs.empty();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] auto none(bit_set<N, Block> const& bs) noexcept
 {
         return bs.empty();
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto left_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
         -> bit_set<N, Block>
 {
@@ -149,7 +150,7 @@ auto left_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
         return bs << static_cast<value_type>(pos);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto right_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
         -> bit_set<N, Block>
 {
@@ -160,21 +161,21 @@ auto right_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
         return bs >> static_cast<value_type>(pos);
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto at(bit_set<N, Block> const& bs, std::size_t pos) // Throws: Nothing.
 {
         using value_type = value_t<bit_set<N, Block>>;
         return bs.contains(static_cast<value_type>(pos));
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto at(bit_set<N, Block>& bs, std::size_t pos) // Throws: Nothing.
 {
         using value_type = value_t<bit_set<N, Block>>;
         return bs.contains(static_cast<value_type>(pos));
 }
 
-template<std::size_t N, class Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto at(bit_set<N, Block>& bs, std::size_t pos, bool val) // Throws: Nothing.
 {
         using value_type = value_t<bit_set<N, Block>>;
