@@ -5,6 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <set/compatible/algorithm.hpp> // lexicographical_compare_three_way
 #include <traits.hpp>                   // has_back, has_front, is_dereferencable, is_equality_comparable
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
 #include <algorithm>                    // all_of, any_of, copy_if, count, equal, equal_range, find, for_each, includes,
@@ -515,7 +516,7 @@ struct op_compare_three_way
         {                                                                       // [tab:container.opt] Table 76
                 static_assert(std::is_same_v<decltype(a <=> b), std::strong_ordering>);
                 // std::strong_ordering does not have output streaming operator<< required for BOOST_CHECK_EQUAL
-                BOOST_CHECK((a <=> b) == std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end()));
+                BOOST_CHECK((a <=> b) == xstd::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end()));
         }
 };
 
@@ -531,7 +532,7 @@ struct op_less
         auto operator()(X const& a, X const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 85
                 static_assert(std::is_convertible_v<decltype(a < b), bool>);
-                BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
+                BOOST_CHECK_EQUAL(a < b, xstd::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
                 BOOST_CHECK(!(a < b) || !(b < a));                              // asymmetric
         }
 
