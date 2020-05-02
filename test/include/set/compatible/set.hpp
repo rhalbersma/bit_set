@@ -5,8 +5,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <set>                          // set
-#include <set/compatible/algorithm.hpp> // lexicographical_compare_three_way
+#include <algorithm>    // lexicographical_compare_three_way
+#include <compare>      // strong_ordering
+#include <set>          // set
 
 namespace xstd {
 
@@ -15,7 +16,7 @@ template<class Compare, class Allocator>
 auto operator<=>(std::set<int, Compare, Allocator> const& lhs, std::set<int, Compare, Allocator> const& rhs) noexcept
         -> std::strong_ordering
 {
-        return xstd::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+        return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 }       // namespace xstd

@@ -5,7 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, for_each, lexicographical_compare, max, none_of, swap_ranges
+#include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, for_each, lexicographical_compare_three_way, max, none_of, swap_ranges
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, unsigned_integral
@@ -28,36 +28,6 @@
 #define XSTD_PP_CONSTEXPR_SWAP          /* constexpr */
 
 namespace xstd {
-namespace detail {
-
-#if __cpp_lib_three_way_comparison >= 201907L
-
-template< class InputIt1, class InputIt2>
-constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
-{
-        return std::lexicographical_compare_three_way(first1, last1, first2, last2);
-}
-
-#else
-
-template< class InputIt1, class InputIt2>
-constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
-{
-        for (/* no initalization */; first1 != last1 && first2 != last2; void(++first1), void(++first2) ) {
-                if (auto cmp = *first1 <=> *first2; cmp != 0) {
-                        return cmp;
-                }
-        }
-        return
-                first1 != last1 ? std::strong_ordering::greater :
-                first2 != last2 ? std::strong_ordering::less    :
-                                  std::strong_ordering::equal
-        ;
-}
-
-#endif
-
-}       // namespace detail
 
 #if defined(__GNUG__)
 
@@ -849,7 +819,7 @@ public:
                         constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[1], bs.m_data[0]); };
                         return tied(other) <=> tied(*this);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return detail::lexicographical_compare_three_way(
+                        return std::lexicographical_compare_three_way(
                                 std::rbegin(other.m_data), std::rend(other.m_data),
                                 std::rbegin(m_data), std::rend(m_data)
                         );
