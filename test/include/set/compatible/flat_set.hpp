@@ -6,8 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/container/flat_set.hpp> // flat_set
-#include <algorithm>                    // lexicographical_compare_three_way
-#include <compare>                      // strong_ordering
+#include <set/compatible/algorithm.hpp> // lexicographical_compare_three_way
 
 namespace boost::container {
 
@@ -15,7 +14,7 @@ template<class Compare, class Allocator>
 auto operator<=>(flat_set<int, Compare, Allocator> const& lhs, flat_set<int, Compare, Allocator> const& rhs) noexcept
         -> std::strong_ordering
 {
-        return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+        return xstd::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 }       // namespace boost::container
