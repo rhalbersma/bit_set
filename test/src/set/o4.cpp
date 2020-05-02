@@ -7,6 +7,8 @@
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
 #include <xstd/bit_set.hpp>             // bit_set
+#include <set/compatible/flat_set.hpp>  // op<=>
+#include <set/compatible/set.hpp>       // op<=>
 #include <set/exhaustive.hpp>           // all_doubleton_set_pairs
 #include <set/primitives.hpp>           // op_less
 #include <boost/container/flat_set.hpp> // flat_set

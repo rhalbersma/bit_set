@@ -313,6 +313,8 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Linux    | Clang <br> GCC | 10, 11-SVN<br> 10, 11-SVN | [![codecov](https://codecov.io/gh/rhalbersma/bit_set/branch/master/graph/badge.svg)](https://codecov.io/gh/rhalbersma/bit_set) <br> [![Build Status](https://travis-ci.org/rhalbersma/bit_set.svg)](https://travis-ci.org/rhalbersma/bit_set) |
 | Windows  | Visual Studio  | 2019                      | [![Build status](https://ci.appveyor.com/api/projects/status/hcuoesbavuw5v7y8?svg=true)](https://ci.appveyor.com/project/rhalbersma/bit-set) |
 
+Note that this library makes liberal use of C++20 features, in particular Concepts and the `<=>` operator for comparisons. Not all compilers and Standard Libraries support these yet. Libc++ does not support either of the mentioned C++20 features, so the Clang compiler is only tested with libstdc++. Visual Studio 2019 supports these features as of version 16.7, but on AppVeyor only version 16.5 is available so far.
+
 ## License
 
 Copyright Rein Halbersma 2014-2020.  
