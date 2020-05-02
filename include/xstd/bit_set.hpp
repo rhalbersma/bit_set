@@ -30,7 +30,7 @@
 namespace xstd {
 namespace detail {
 
-#if __cpp_lib_three_way_comparison >= 201711L
+#if __cpp_lib_three_way_comparison >= 201907L
 
 template< class InputIt1, class InputIt2>
 constexpr auto lexicographical_compare_three_way(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
