@@ -21,12 +21,6 @@
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
 
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0202r3.html
-#define XSTD_PP_CONSTEXPR_ALGORITHM     /* constexpr */
-
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0879r0.html
-#define XSTD_PP_CONSTEXPR_SWAP          /* constexpr */
-
 namespace xstd {
 
 #if defined(__GNUG__)
@@ -65,10 +59,14 @@ namespace xstd {
 #if defined(__GNUG__)
 
 #define XSTD_PP_CONSTEXPR_INTRINSIC     true
+#define XSTD_PP_CONSTEXPR_ALGORITHM     constexpr // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0202r3.html
+#define XSTD_PP_CONSTEXPR_SWAP          constexpr // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0879r0.html
 
 #elif defined(_MSC_VER)
 
 #define XSTD_PP_CONSTEXPR_INTRINSIC     false
+#define XSTD_PP_CONSTEXPR_ALGORITHM     /* constexpr */
+#define XSTD_PP_CONSTEXPR_SWAP          /* constexpr */
 
 #endif
 
