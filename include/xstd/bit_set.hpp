@@ -285,11 +285,6 @@ XSTD_PP_CONSTEXPR_INTRINSIC_FUN auto bsr(T x) noexcept
 template<std::size_t /* N */, class /* Block */>
 class bit_set;
 
-template<std::size_t N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM auto operator==  (bit_set<N, Block> const& /* lhs */, bit_set<N, Block> const& /* rhs */) noexcept;
-template<std::size_t N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM auto operator<   (bit_set<N, Block> const& /* lhs */, bit_set<N, Block> const& /* rhs */) noexcept;
-template<std::size_t N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM bool is_subset_of(bit_set<N, Block> const& /* lhs */, bit_set<N, Block> const& /* rhs */) noexcept;
-template<std::size_t N, class Block> XSTD_PP_CONSTEXPR_ALGORITHM bool intersects  (bit_set<N, Block> const& /* lhs */, bit_set<N, Block> const& /* rhs */) noexcept;
-
 template<std::size_t N, class Block = std::size_t>
 class bit_set
 {
@@ -824,6 +819,82 @@ public:
                 return *this;
         }
 
+        friend XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        {
+                if constexpr (num_logical_blocks == 0) {
+                        return true;
+                } else if constexpr (num_logical_blocks == 1) {
+                        return lhs.m_data[0] == rhs.m_data[0];
+                } else if constexpr (num_logical_blocks == 2) {
+                        constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[0], bs.m_data[1]); };
+                        return tied(lhs) == tied(rhs);
+                } else if constexpr (num_logical_blocks >= 3) {
+                        return std::equal(
+                                std::begin(lhs.m_data), std::end(lhs.m_data),
+                                std::begin(rhs.m_data), std::end(rhs.m_data)
+                        );
+                }
+        }
+
+        friend XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        {
+                if constexpr (num_logical_blocks == 0) {
+                        return false;
+                } else if constexpr (num_logical_blocks == 1) {
+                        return rhs.m_data[0] < lhs.m_data[0];
+                } else if constexpr (num_logical_blocks == 2) {
+                        constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[1], bs.m_data[0]); };
+                        return tied(rhs) < tied(lhs);
+                } else if constexpr (num_logical_blocks >= 3) {
+                        return std::lexicographical_compare(
+                                std::rbegin(rhs.m_data), std::rend(rhs.m_data),
+                                std::rbegin(lhs.m_data), std::rend(lhs.m_data)
+                        );
+                }
+        }
+
+        friend XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+                -> bool
+        {
+                if constexpr (num_logical_blocks == 0) {
+                        return true;
+                } else if constexpr (num_logical_blocks == 1) {
+                        return !(lhs.m_data[0] & ~rhs.m_data[0]);
+                } else if constexpr (num_logical_blocks == 2) {
+                        return
+                                !(lhs.m_data[0] & ~rhs.m_data[0]) &&
+                                !(lhs.m_data[1] & ~rhs.m_data[1])
+                        ;
+                } else if constexpr (num_logical_blocks >= 3) {
+                        return std::equal(
+                                std::begin(lhs.m_data), std::end(lhs.m_data),
+                                std::begin(rhs.m_data), std::end(rhs.m_data),
+                                [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
+                        );
+                }
+        }
+
+        friend XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+                -> bool
+        {
+                if constexpr (num_logical_blocks == 0) {
+                        return false;
+                } else if constexpr (num_logical_blocks == 1) {
+                        return lhs.m_data[0] & rhs.m_data[0];
+                } else if constexpr (num_logical_blocks == 2) {
+                        return
+                                (lhs.m_data[0] & rhs.m_data[0]) ||
+                                (lhs.m_data[1] & rhs.m_data[1])
+                        ;
+                } else if constexpr (num_logical_blocks >= 3) {
+                        return !std::equal(
+                                std::begin(lhs.m_data), std::end(lhs.m_data),
+                                std::begin(rhs.m_data), std::end(rhs.m_data),
+                                [](auto wL, auto wR) -> bool { return !(wL & wR); }
+                        );
+                }
+        }
+
 private:
         static constexpr auto zero = static_cast<block_type>( 0);
         static constexpr auto ones = static_cast<block_type>(-1);
@@ -1110,55 +1181,12 @@ private:
                         return !(lhs == rhs);
                 }
         };
-
-        friend XSTD_PP_CONSTEXPR_ALGORITHM auto operator==  <>(bit_set const& /* lhs */, bit_set const& /* rhs */) noexcept;
-        friend XSTD_PP_CONSTEXPR_ALGORITHM auto operator<   <>(bit_set const& /* lhs */, bit_set const& /* rhs */) noexcept;
-        friend XSTD_PP_CONSTEXPR_ALGORITHM bool is_subset_of<>(bit_set const& /* lhs */, bit_set const& /* rhs */) noexcept;
-        friend XSTD_PP_CONSTEXPR_ALGORITHM bool intersects  <>(bit_set const& /* lhs */, bit_set const& /* rhs */) noexcept;
 };
-
-template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(bit_set<N, Block> const& lhs [[maybe_unused]], bit_set<N, Block> const& rhs [[maybe_unused]]) noexcept
-{
-        constexpr auto num_logical_blocks = bit_set<N, Block>::num_logical_blocks;
-        if constexpr (num_logical_blocks == 0) {
-                return true;
-        } else if constexpr (num_logical_blocks == 1) {
-                return lhs.m_data[0] == rhs.m_data[0];
-        } else if constexpr (num_logical_blocks == 2) {
-                constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[0], bs.m_data[1]); };
-                return tied(lhs) == tied(rhs);
-        } else if constexpr (num_logical_blocks >= 3) {
-                return std::equal(
-                        std::begin(lhs.m_data), std::end(lhs.m_data),
-                        std::begin(rhs.m_data), std::end(rhs.m_data)
-                );
-        }
-}
 
 template<std::size_t N, class Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto operator!=(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return !(lhs == rhs);
-}
-
-template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(bit_set<N, Block> const& lhs [[maybe_unused]], bit_set<N, Block> const& rhs [[maybe_unused]]) noexcept
-{
-        constexpr auto num_logical_blocks = bit_set<N, Block>::num_logical_blocks;
-        if constexpr (num_logical_blocks == 0) {
-                return false;
-        } else if constexpr (num_logical_blocks == 1) {
-                return rhs.m_data[0] < lhs.m_data[0];
-        } else if constexpr (num_logical_blocks == 2) {
-                constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[1], bs.m_data[0]); };
-                return tied(rhs) < tied(lhs);
-        } else if constexpr (num_logical_blocks >= 3) {
-                return std::lexicographical_compare(
-                        std::rbegin(rhs.m_data), std::rend(rhs.m_data),
-                        std::rbegin(lhs.m_data), std::rend(lhs.m_data)
-                );
-        }
 }
 
 template<std::size_t N, class Block>
@@ -1224,29 +1252,6 @@ XSTD_PP_CONSTEXPR_ALGORITHM auto operator>>(bit_set<N, Block> const& lhs, int n)
 }
 
 template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(bit_set<N, Block> const& lhs [[maybe_unused]], bit_set<N, Block> const& rhs [[maybe_unused]]) noexcept
-        -> bool
-{
-        constexpr auto num_logical_blocks = bit_set<N, Block>::num_logical_blocks;
-        if constexpr (num_logical_blocks == 0) {
-                return true;
-        } else if constexpr (num_logical_blocks == 1) {
-                return !(lhs.m_data[0] & ~rhs.m_data[0]);
-        } else if constexpr (num_logical_blocks == 2) {
-                return
-                        !(lhs.m_data[0] & ~rhs.m_data[0]) &&
-                        !(lhs.m_data[1] & ~rhs.m_data[1])
-                ;
-        } else if constexpr (num_logical_blocks >= 3) {
-                return std::equal(
-                        std::begin(lhs.m_data), std::end(lhs.m_data),
-                        std::begin(rhs.m_data), std::end(rhs.m_data),
-                        [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
-                );
-        }
-}
-
-template<std::size_t N, class Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto is_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(rhs, lhs);
@@ -1262,29 +1267,6 @@ template<std::size_t N, class Block>
 XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
-}
-
-template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(bit_set<N, Block> const& lhs [[maybe_unused]], bit_set<N, Block> const& rhs [[maybe_unused]]) noexcept
-        -> bool
-{
-        constexpr auto num_logical_blocks = bit_set<N, Block>::num_logical_blocks;
-        if constexpr (num_logical_blocks == 0) {
-                return false;
-        } else if constexpr (num_logical_blocks == 1) {
-                return lhs.m_data[0] & rhs.m_data[0];
-        } else if constexpr (num_logical_blocks == 2) {
-                return
-                        (lhs.m_data[0] & rhs.m_data[0]) ||
-                        (lhs.m_data[1] & rhs.m_data[1])
-                ;
-        } else if constexpr (num_logical_blocks >= 3) {
-                return !std::equal(
-                        std::begin(lhs.m_data), std::end(lhs.m_data),
-                        std::begin(rhs.m_data), std::end(rhs.m_data),
-                        [](auto wL, auto wR) -> bool { return !(wL & wR); }
-                );
-        }
 }
 
 template<std::size_t N, class Block>
