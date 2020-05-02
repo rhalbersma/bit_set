@@ -279,15 +279,11 @@ public:
                 auto nrv = *this; ++*this; return nrv;
         }
 
-        friend constexpr auto operator==(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
+        constexpr auto operator==(proxy_iterator const& other) const noexcept
+                -> bool
         {
-                assert(lhs.m_bs == rhs.m_bs);
-                return lhs.m_value == rhs.m_value;
-        }
-
-        friend constexpr auto operator!=(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
-        {
-                return !(lhs == rhs);
+                assert(m_bs == other.m_bs);
+                return m_value == other.m_value;
         }
 };
 

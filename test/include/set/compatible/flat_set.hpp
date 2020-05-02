@@ -6,17 +6,16 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/container/flat_set.hpp> // flat_set
-#include <cstddef>                      // ptrdiff_t
-#include <type_traits>                  // commont_type_t, make_signed_t
+#include <algorithm>                    // lexicographical_compare_three_way
+#include <compare>                      // strong_ordering
 
 namespace boost::container {
 
-// provided by <iterator> in C++20
 template<class Compare, class Allocator>
-auto ssize(flat_set<int, Compare, Allocator> const& is) noexcept
+auto operator<=>(flat_set<int, Compare, Allocator> const& lhs, flat_set<int, Compare, Allocator> const& rhs) noexcept
+        -> std::strong_ordering
 {
-        using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(is.size())>>;
-        return static_cast<R>(is.size());
+        return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 }       // namespace boost::container

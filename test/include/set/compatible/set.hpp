@@ -5,18 +5,18 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <cstddef>      // ptrdiff_t
+#include <algorithm>    // lexicographical_compare_three_way
+#include <compare>      // strong_ordering
 #include <set>          // set
-#include <type_traits>  // commont_type_t, make_signed_t
 
 namespace xstd {
 
-// provided by <iterator> in C++20
+// provided by <set> in C++20
 template<class Compare, class Allocator>
-auto ssize(std::set<int, Compare, Allocator> const& is) noexcept
+auto operator<=>(std::set<int, Compare, Allocator> const& lhs, std::set<int, Compare, Allocator> const& rhs) noexcept
+        -> std::strong_ordering
 {
-        using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(is.size())>>;
-        return static_cast<R>(is.size());
+        return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 }       // namespace xstd

@@ -6,11 +6,13 @@
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
+#include <set/compatible/flat_set.hpp>  // op<=>
+#include <set/compatible/set.hpp>       // op<=>
 #include <set/exhaustive.hpp>           // all_values, all_singleton_sets, all_singleton_set_pairs,
                                         // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
 #include <set/primitives.hpp>           // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
-                                        // mem_lower_bound, mem_upper_bound, mem_equal_range,
-                                        // op_equal, op_not_equal_to, op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
+                                        // mem_lower_bound, mem_upper_bound, mem_equal_range, op_equal, op_not_equal_to,
+                                        // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set
 #include <boost/mpl/vector.hpp>         // vector
@@ -142,6 +144,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         all_singleton_set_pairs<T>(op_equal_to{});
         all_singleton_set_pairs<T>(op_not_equal_to{});
 
+        all_singleton_set_pairs<T>(op_compare_three_way{});
         all_singleton_set_pairs<T>(op_less{});
         all_singleton_set_pairs<T>(op_greater{});
         all_singleton_set_pairs<T>(op_less_equal{});

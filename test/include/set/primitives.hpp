@@ -7,8 +7,10 @@
 
 #include <traits.hpp>                   // has_back, has_front, is_dereferencable, is_equality_comparable
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <algorithm>                    // all_of, any_of, copy_if, count, equal, equal_range, find, for_each, includes, lexicographical_compare, lower_bound,
-                                        // none_of, set_difference, set_intersection, set_symmetric_difference, set_union, transform, upper_bound
+#include <algorithm>                    // all_of, any_of, copy_if, count, equal, equal_range, find, for_each, includes,
+                                        // lexicographical_compare, lexicographical_compare_three_way, lower_bound, none_of,
+                                        // set_difference, set_intersection, set_symmetric_difference, set_union, transform, upper_bound
+#include <compare>                      // strong_ordering
 #include <initializer_list>             // initializer_list
 #include <iterator>                     // distance, empty, inserter, next, prev, size, ssize
 #include <memory>                       // addressof
@@ -496,6 +498,24 @@ struct op_not_equal_to
         {                                                                       // [container.requirements.general] Table 83
                 static_assert(std::is_convertible_v<decltype(a != b), bool>);
                 BOOST_CHECK_EQUAL(a != b, !(a == b));
+        }
+};
+
+struct op_compare_three_way
+{
+        template<class X>
+        auto operator()(X const& a) const noexcept
+        {
+                // std::strong_ordering does not have output streaming operator<< required for BOOST_CHECK_EQUAL
+                BOOST_CHECK((a <=> a) == std::strong_ordering::equal);          // reflexive
+        }
+
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
+        {                                                                       // [tab:container.opt] Table 76
+                static_assert(std::is_same_v<decltype(a <=> b), std::strong_ordering>);
+                // std::strong_ordering does not have output streaming operator<< required for BOOST_CHECK_EQUAL
+                BOOST_CHECK((a <=> b) == std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end()));
         }
 };
 

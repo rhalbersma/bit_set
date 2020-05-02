@@ -18,6 +18,7 @@
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, enable_if_t, is_class_v, is_constructible_v, is_integral_v, is_unsigned_v, make_signed_t
 #include <utility>              // forward, pair, swap
+#include <compare>
 
 #if defined(__GNUG__)
 
@@ -320,7 +321,7 @@ public:
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
         using block_type             = Block;
 
-        bit_set() = default;                      // zero-initialization
+        bit_set() = default;                            // zero-initialization
 
         template<class InputIterator>
         constexpr bit_set(InputIterator first, InputIterator last) // Throws: Nothing.
@@ -819,36 +820,38 @@ public:
                 return *this;
         }
 
-        friend XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(bit_set const& other [[maybe_unused]]) const noexcept
+                -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
                         return true;
                 } else if constexpr (num_logical_blocks == 1) {
-                        return lhs.m_data[0] == rhs.m_data[0];
+                        return m_data[0] == other.m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
                         constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[0], bs.m_data[1]); };
-                        return tied(lhs) == tied(rhs);
+                        return tied(*this) == tied(other);
                 } else if constexpr (num_logical_blocks >= 3) {
                         return std::equal(
-                                std::begin(lhs.m_data), std::end(lhs.m_data),
-                                std::begin(rhs.m_data), std::end(rhs.m_data)
+                                std::begin(m_data), std::end(m_data),
+                                std::begin(other.m_data), std::end(other.m_data)
                         );
                 }
         }
 
-        friend XSTD_PP_CONSTEXPR_ALGORITHM auto operator<(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        XSTD_PP_CONSTEXPR_ALGORITHM auto operator<=>(bit_set const& other [[maybe_unused]]) const noexcept
+                -> std::strong_ordering
         {
                 if constexpr (num_logical_blocks == 0) {
-                        return false;
+                        return std::strong_ordering::equal;
                 } else if constexpr (num_logical_blocks == 1) {
-                        return rhs.m_data[0] < lhs.m_data[0];
+                        return other.m_data[0] <=> m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
                         constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[1], bs.m_data[0]); };
-                        return tied(rhs) < tied(lhs);
+                        return tied(other) <=> tied(*this);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return std::lexicographical_compare(
-                                std::rbegin(rhs.m_data), std::rend(rhs.m_data),
-                                std::rbegin(lhs.m_data), std::rend(lhs.m_data)
+                        return std::lexicographical_compare_three_way(
+                                std::rbegin(other.m_data), std::rend(other.m_data),
+                                std::rbegin(m_data), std::rend(m_data)
                         );
                 }
         }
@@ -1170,42 +1173,14 @@ private:
                         auto nrv = *this; --*this; return nrv;
                 }
 
-                friend constexpr auto operator==(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
+                constexpr auto operator==(proxy_iterator const& other) const noexcept
+                        -> bool
                 {
-                        assert(lhs.m_bs == rhs.m_bs);
-                        return lhs.m_value == rhs.m_value;
-                }
-
-                friend constexpr auto operator!=(proxy_iterator const& lhs, proxy_iterator const& rhs) noexcept
-                {
-                        return !(lhs == rhs);
+                        assert(m_bs == other.m_bs);
+                        return m_value == other.m_value;
                 }
         };
 };
-
-template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator!=(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
-{
-        return !(lhs == rhs);
-}
-
-template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator>(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
-{
-        return rhs < lhs;
-}
-
-template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator>=(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
-{
-        return !(lhs < rhs);
-}
-
-template<std::size_t N, class Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator<=(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
-{
-        return !(rhs < lhs);
-}
 
 template<std::size_t N, class Block>
 constexpr auto operator~(bit_set<N, Block> const& lhs) noexcept

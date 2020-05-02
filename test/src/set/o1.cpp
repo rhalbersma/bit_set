@@ -6,12 +6,13 @@
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
-#include <set/compatible/flat_set.hpp>  // ssize
-#include <set/compatible/set.hpp>       // ssize
+#include <set/compatible/flat_set.hpp>  // op<=>
+#include <set/compatible/set.hpp>       // op<=>
 #include <set/exhaustive.hpp>           // empty_set, full_set, all_values, all_cardinality_sets,
                                         // all_singleton_arrays, all_singleton_ilists, all_singleton_sets
-#include <set/primitives.hpp>           // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back, mem_empty, mem_size,
-                                        // mem_max_size, mem_insert, mem_erase, mem_clear, op_equal, op_less, fn_iterator, fn_size, fn_ssize, fn_empty
+#include <set/primitives.hpp>           // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
+                                        // mem_empty, mem_size, mem_max_size, mem_insert, mem_erase, mem_clear,
+                                        // op_equal, op_compare_three_way, fn_iterator, fn_size, fn_ssize, fn_empty
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set
 #include <boost/mpl/vector.hpp>         // vector
@@ -155,8 +156,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         all_cardinality_sets<T>(op_equal_to{});
         all_singleton_sets<T>(op_equal_to{});
 
-        all_cardinality_sets<T>(op_less{});
-        all_singleton_sets<T>(op_less{});
+        all_cardinality_sets<T>(op_compare_three_way{});
+        all_singleton_sets<T>(op_compare_three_way{});
 
         all_cardinality_sets<T>([](auto& is) {
                 fn_iterator{}(is);
