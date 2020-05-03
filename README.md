@@ -3,6 +3,7 @@
 [![Language](https://img.shields.io/badge/language-C++-blue.svg)](https://isocpp.org/)
 [![Standard](https://img.shields.io/badge/c%2B%2B-20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![License](https://img.shields.io/badge/license-Boost-blue.svg)](https://opensource.org/licenses/BSL-1.0)
+[![Lines of Code](https://tokei.rs/b1/github/rhalbersma/bit_set?category=code)](https://github.com/rhalbersma/bit_set)
 
 `xstd::bit_set<N>` is a modern and opinionated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less work than `std::bitset` (e.g. no bounds-checking and no throwing of `out_of_range` exceptions) yet offers more (e.g. bidirectional iterators over individual bits that seamlessly interact with the rest of the Standard Library). This enables **fixed-size bit-twiddling with set-like syntax** (identical to `std::set<int>`), typically leading to cleaner, more expressive code.
 
@@ -313,7 +314,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Linux    | Clang <br> GCC | 10, 11-SVN<br> 10, 11-SVN | [![codecov](https://codecov.io/gh/rhalbersma/bit_set/branch/master/graph/badge.svg)](https://codecov.io/gh/rhalbersma/bit_set) <br> [![Build Status](https://travis-ci.org/rhalbersma/bit_set.svg)](https://travis-ci.org/rhalbersma/bit_set) |
 | Windows  | Visual Studio  | 2019                      | [![Build status](https://ci.appveyor.com/api/projects/status/hcuoesbavuw5v7y8?svg=true)](https://ci.appveyor.com/project/rhalbersma/bit-set) |
 
-Note that this library makes liberal use of C++20 features, in particular Concepts and the `<=>` operator for comparisons. Not all compilers and Standard Libraries support these yet. Libc++ does not support either of the mentioned C++20 features, so the Clang compiler is only tested with libstdc++. Visual Studio 2019 supports these features as of version 16.7, but on AppVeyor only version 16.5 is available so far.
+Note that this library makes liberal use of C++20 features, in particular Concepts, `constexpr` algorithms and the `<=>` operator for comparisons. Not all compilers and Standard Libraries support these yet. Libc++ does not yet support most of the mentioned C++20 features, so the Clang compiler is only tested with libstdc++. Visual Studio 2019 supports these features as of version 16.7, but on AppVeyor only version 16.5 is available so far.
 
 ## License
 
