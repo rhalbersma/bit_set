@@ -11,7 +11,7 @@
 
 BOOST_AUTO_TEST_SUITE(Builtin)
 
-using unsigned_integer_types = boost::mpl::vector
+using unsigned_integral = boost::mpl::vector
 <       uint8_t
 ,       uint16_t
 ,       uint32_t
@@ -28,7 +28,7 @@ using namespace xstd::builtin;
 template<class T> inline constexpr auto zero = static_cast<T>( 0);
 template<class T> inline constexpr auto ones = static_cast<T>(-1);
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZerosNonZero, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZerosNonZero, T, unsigned_integral)
 {
         static_assert(ctznz(ones<T>) == 0);
         BOOST_CHECK_EQUAL(ctznz(ones<T>), 0);
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZerosNonZero, T, unsigned_integer_typ
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZerosNonZero, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZerosNonZero, T, unsigned_integral)
 {
         static_assert(clznz(ones<T>) == 0);
         BOOST_CHECK_EQUAL(clznz(ones<T>), 0);
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZerosNonZero, T, unsigned_integer_type
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Popcount, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Popcount, T, unsigned_integral)
 {
         static_assert(popcount(zero<T>) == 0);
         BOOST_CHECK_EQUAL(popcount(zero<T>), 0);
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Popcount, T, unsigned_integer_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForwardNonZero, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForwardNonZero, T, unsigned_integral)
 {
         static_assert(bsfnz(ones<T>) == 0);
         BOOST_CHECK_EQUAL(bsfnz(ones<T>), 0);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForwardNonZero, T, unsigned_integer_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverseNonZero, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverseNonZero, T, unsigned_integral)
 {
         static_assert(bsrnz(ones<T>) == std::numeric_limits<T>::digits - 1);
         BOOST_CHECK_EQUAL(bsrnz(ones<T>), std::numeric_limits<T>::digits - 1);
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverseNonZero, T, unsigned_integer_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZeros, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZeros, T, unsigned_integral)
 {
         static_assert(ctz(zero<T>) == std::numeric_limits<T>::digits);
         BOOST_CHECK_EQUAL(ctz(zero<T>), std::numeric_limits<T>::digits);
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZeros, T, unsigned_integer_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZeros, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZeros, T, unsigned_integral)
 {
         static_assert(clz(zero<T>) == std::numeric_limits<T>::digits);
         BOOST_CHECK_EQUAL(clz(zero<T>), std::numeric_limits<T>::digits);
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZeros, T, unsigned_integer_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForward, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForward, T, unsigned_integral)
 {
         static_assert(bsf(zero<T>) == std::numeric_limits<T>::digits);
         BOOST_CHECK_EQUAL(bsf(zero<T>), std::numeric_limits<T>::digits);
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForward, T, unsigned_integer_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverse, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverse, T, unsigned_integral)
 {
         static_assert(bsr(zero<T>) == -1);
         BOOST_CHECK_EQUAL(bsr(zero<T>), -1);
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverse, T, unsigned_integer_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Bit1, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Bit1, T, unsigned_integral)
 {
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
                 auto const b = bit1<T>(i);
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Bit1, T, unsigned_integer_types)
         }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsNoThrowSwappable, T, unsigned_integer_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsNoThrowSwappable, T, unsigned_integral)
 {
         // swap() is noexcept if-and-only-if the block_type is no-throw swappable
         static_assert(std::is_nothrow_swappable_v<T>);

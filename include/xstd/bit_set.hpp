@@ -56,18 +56,6 @@ namespace xstd {
 
 #endif
 
-#if defined(__GNUG__)
-
-#define XSTD_PP_CONSTEXPR_ALGORITHM     constexpr // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0202r3.html
-#define XSTD_PP_CONSTEXPR_SWAP          constexpr // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0879r0.html
-
-#elif defined(_MSC_VER)
-
-#define XSTD_PP_CONSTEXPR_ALGORITHM     /* constexpr */
-#define XSTD_PP_CONSTEXPR_SWAP          /* constexpr */
-
-#endif
-
 namespace builtin {
 
 template<std::unsigned_integral T>
@@ -325,7 +313,7 @@ public:
                 bit_set(ilist.begin(), ilist.end())
         {}
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto& operator=(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        constexpr auto& operator=(std::initializer_list<value_type> ilist) // Throws: Nothing.
         {
                 clear();
                 insert(ilist.begin(), ilist.end());
@@ -361,7 +349,7 @@ public:
                 return { *this, find_back() };
         }
 
-        [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty() const noexcept
+        [[nodiscard]] constexpr auto empty() const noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -380,7 +368,7 @@ public:
                 }
         }
 
-        [[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto full() const noexcept
+        [[nodiscard]] constexpr auto full() const noexcept
         {
                 if constexpr (num_excess_bits == 0) {
                         if constexpr (num_logical_blocks == 0) {
@@ -417,7 +405,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto ssize() const noexcept
+        constexpr auto ssize() const noexcept
         {
                 if constexpr (num_logical_blocks == 0) {
                         return 0;
@@ -435,7 +423,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto size() const noexcept
+        constexpr auto size() const noexcept
         {
                 return static_cast<size_type>(ssize());
         }
@@ -487,19 +475,19 @@ public:
         }
 
         template<class InputIterator>
-        XSTD_PP_CONSTEXPR_ALGORITHM auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
+        constexpr auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
         {
                 std::for_each(first, last, [&](auto const& x) {
                         insert(x);
                 });
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        constexpr auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
         {
                 insert(ilist.begin(), ilist.end());
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto& fill() noexcept
+        constexpr auto& fill() noexcept
         {
                 if constexpr (num_excess_bits == 0) {
                         if constexpr (num_logical_blocks == 1) {
@@ -545,7 +533,7 @@ public:
                 return pos;
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto erase(const_iterator first, const_iterator last) // Throws: Nothing.
+        constexpr auto erase(const_iterator first, const_iterator last) // Throws: Nothing.
         {
                 std::for_each(first, last, [&](auto const& x) {
                         erase(x);
@@ -553,7 +541,7 @@ public:
                 return last;
         }
 
-        XSTD_PP_CONSTEXPR_SWAP auto swap(bit_set& other [[maybe_unused]]) noexcept
+        constexpr auto swap(bit_set& other [[maybe_unused]]) noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
                         std::swap(m_data[0], other.m_data[0]);
@@ -565,7 +553,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto& clear() noexcept
+        constexpr auto& clear() noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] = zero;
@@ -744,7 +732,7 @@ public:
                 return *this;
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto& operator<<=(value_type n [[maybe_unused]]) // Throws: Nothing.
+        constexpr auto& operator<<=(value_type n [[maybe_unused]]) // Throws: Nothing.
         {
                 assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
@@ -778,7 +766,7 @@ public:
                 return *this;
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto& operator>>=(value_type n [[maybe_unused]]) // Throws: Nothing.
+        constexpr auto& operator>>=(value_type n [[maybe_unused]]) // Throws: Nothing.
         {
                 assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
@@ -811,7 +799,10 @@ public:
                 return *this;
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto operator==(bit_set const& other [[maybe_unused]]) const noexcept
+        // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94924
+        // constexpr bool operator==(bit_set const&) const noexcept = default;
+
+        constexpr auto operator==(bit_set const& other [[maybe_unused]]) const noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -829,7 +820,7 @@ public:
                 }
         }
 
-        XSTD_PP_CONSTEXPR_ALGORITHM auto operator<=>(bit_set const& other [[maybe_unused]]) const noexcept
+        constexpr auto operator<=>(bit_set const& other [[maybe_unused]]) const noexcept
                 -> std::strong_ordering
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -847,7 +838,7 @@ public:
                 }
         }
 
-        friend XSTD_PP_CONSTEXPR_ALGORITHM auto is_subset_of(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        friend constexpr auto is_subset_of(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -868,7 +859,7 @@ public:
                 }
         }
 
-        friend XSTD_PP_CONSTEXPR_ALGORITHM auto intersects(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        friend constexpr auto intersects(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -1203,45 +1194,45 @@ constexpr auto operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& 
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator<<(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
+constexpr auto operator<<(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
         assert(0 <= n && n < static_cast<int>(N));
         auto nrv{lhs}; nrv <<= n; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto operator>>(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
+constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
         assert(0 <= n && n < static_cast<int>(N));
         auto nrv{lhs}; nrv >>= n; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+constexpr auto is_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(rhs, lhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_subset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+constexpr auto is_proper_subset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(lhs, rhs) && !is_subset_of(rhs, lhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto is_proper_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+constexpr auto is_proper_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto disjoint(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+constexpr auto disjoint(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return !intersects(lhs, rhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_SWAP auto swap(bit_set<N, Block>& lhs, bit_set<N, Block>& rhs) noexcept
+constexpr auto swap(bit_set<N, Block>& lhs, bit_set<N, Block>& rhs) noexcept
 {
         lhs.swap(rhs);
 }
@@ -1319,20 +1310,20 @@ constexpr auto crend(bit_set<N, Block> const& bs) noexcept
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto size(bit_set<N, Block> const& bs) noexcept
+constexpr auto size(bit_set<N, Block> const& bs) noexcept
 {
         return bs.size();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-XSTD_PP_CONSTEXPR_ALGORITHM auto ssize(bit_set<N, Block> const& bs) noexcept
+constexpr auto ssize(bit_set<N, Block> const& bs) noexcept
 {
         using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(bs.size())>>;
         return static_cast<R>(bs.size());
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] XSTD_PP_CONSTEXPR_ALGORITHM auto empty(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto empty(bit_set<N, Block> const& bs) noexcept
 {
         return bs.empty();
 }
