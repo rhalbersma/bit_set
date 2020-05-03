@@ -11,42 +11,26 @@
 
 BOOST_AUTO_TEST_SUITE(Builtin)
 
+using unsigned_integer_types = boost::mpl::vector
+<       uint8_t
+,       uint16_t
+,       uint32_t
+#if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
+,       uint64_t
+#endif
 #if defined(__GNUG__)
-
-using unsigned_integer_types = boost::mpl::vector
-<       uint8_t
-,       uint16_t
-,       uint32_t
-,       uint64_t
 ,       __uint128_t
->;
-
-#elif defined(_MSC_VER)
-
-using unsigned_integer_types = boost::mpl::vector
-<       uint8_t
-,       uint16_t
-,       uint32_t
-#if defined(WIN64)
-,       uint64_t
 #endif
 >;
-
-#endif
 
 using namespace xstd::builtin;
 
 template<class T> inline constexpr auto zero = static_cast<T>( 0);
 template<class T> inline constexpr auto ones = static_cast<T>(-1);
 
-template<class T>
-constexpr auto bit1(int n)
-{
-        return static_cast<T>(static_cast<T>(1) << n);
-}
-
 BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZerosNonZero, T, unsigned_integer_types)
 {
+        static_assert(ctznz(ones<T>) == 0);
         BOOST_CHECK_EQUAL(ctznz(ones<T>), 0);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
@@ -57,6 +41,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZerosNonZero, T, unsigned_integer_typ
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZerosNonZero, T, unsigned_integer_types)
 {
+        static_assert(clznz(ones<T>) == 0);
         BOOST_CHECK_EQUAL(clznz(ones<T>), 0);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
@@ -67,7 +52,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZerosNonZero, T, unsigned_integer_type
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Popcount, T, unsigned_integer_types)
 {
+        static_assert(popcount(zero<T>) == 0);
         BOOST_CHECK_EQUAL(popcount(zero<T>), 0);
+
+        static_assert(popcount(ones<T>) == std::numeric_limits<T>::digits);
         BOOST_CHECK_EQUAL(popcount(ones<T>), std::numeric_limits<T>::digits);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
@@ -78,6 +66,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Popcount, T, unsigned_integer_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForwardNonZero, T, unsigned_integer_types)
 {
+        static_assert(bsfnz(ones<T>) == 0);
         BOOST_CHECK_EQUAL(bsfnz(ones<T>), 0);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
@@ -88,6 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForwardNonZero, T, unsigned_integer_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverseNonZero, T, unsigned_integer_types)
 {
+        static_assert(bsrnz(ones<T>) == std::numeric_limits<T>::digits - 1);
         BOOST_CHECK_EQUAL(bsrnz(ones<T>), std::numeric_limits<T>::digits - 1);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
@@ -98,7 +88,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverseNonZero, T, unsigned_integer_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZeros, T, unsigned_integer_types)
 {
+        static_assert(ctz(zero<T>) == std::numeric_limits<T>::digits);
         BOOST_CHECK_EQUAL(ctz(zero<T>), std::numeric_limits<T>::digits);
+
+        static_assert(ctz(ones<T>) == 0);
         BOOST_CHECK_EQUAL(ctz(ones<T>), 0);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
@@ -109,7 +102,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CountTrailingZeros, T, unsigned_integer_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZeros, T, unsigned_integer_types)
 {
+        static_assert(clz(zero<T>) == std::numeric_limits<T>::digits);
         BOOST_CHECK_EQUAL(clz(zero<T>), std::numeric_limits<T>::digits);
+
+        static_assert(clz(ones<T>) == 0);
         BOOST_CHECK_EQUAL(clz(ones<T>), 0);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
@@ -120,7 +116,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CountLeadingZeros, T, unsigned_integer_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForward, T, unsigned_integer_types)
 {
+        static_assert(bsf(zero<T>) == std::numeric_limits<T>::digits);
         BOOST_CHECK_EQUAL(bsf(zero<T>), std::numeric_limits<T>::digits);
+
+        static_assert(bsf(ones<T>) == 0);
         BOOST_CHECK_EQUAL(bsf(ones<T>), 0);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
@@ -131,7 +130,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanForward, T, unsigned_integer_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitScanReverse, T, unsigned_integer_types)
 {
+        static_assert(bsr(zero<T>) == -1);
         BOOST_CHECK_EQUAL(bsr(zero<T>), -1);
+
+        static_assert(bsr(ones<T>) == std::numeric_limits<T>::digits - 1);
         BOOST_CHECK_EQUAL(bsr(ones<T>), std::numeric_limits<T>::digits - 1);
 
         for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
