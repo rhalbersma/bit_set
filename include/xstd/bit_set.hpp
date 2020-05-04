@@ -279,7 +279,7 @@ class bit_set
         class proxy_reference;
         class proxy_iterator;
 
-        Block m_data[num_storage_blocks]{};             // zero-initialization
+        Block m_data[num_storage_blocks]{};     // zero-initialization
 public:
         using key_type               = int;
         using key_compare            = std::less<key_type>;
@@ -297,7 +297,7 @@ public:
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
         using block_type             = Block;
 
-        bit_set() = default;                            // zero-initialization
+        bit_set() = default;                    // zero-initialization
 
         template<class InputIterator>
         constexpr bit_set(InputIterator first, InputIterator last) // Throws: Nothing.
@@ -453,7 +453,7 @@ public:
         constexpr auto insert(value_type const& x) // Throws: Nothing.
                 -> std::pair<iterator, bool>
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] |= single_bit_mask(where(x));
@@ -466,7 +466,7 @@ public:
         constexpr auto insert(const_iterator /* hint */, value_type const& x) // Throws: Nothing.
                 -> iterator
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 insert(x);
                 return { this, x };
         }
@@ -513,7 +513,7 @@ public:
         constexpr auto erase(key_type const& x) // Throws: Nothing.
                 -> size_type
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] &= ~single_bit_mask(where(x));
@@ -566,7 +566,7 @@ public:
 
         constexpr auto& replace(value_type const& x [[maybe_unused]]) // Throws: Nothing.
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] ^= single_bit_mask(where(x));
@@ -577,26 +577,26 @@ public:
 
         constexpr auto find(key_type const& x) // Throws: Nothing.
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return contains(x) ? iterator{this, x} : end();
         }
 
         constexpr auto find(key_type const& x) const // Throws: Nothing.
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return contains(x) ? const_iterator{this, x} : cend();
         }
 
         constexpr auto count(key_type const& x) const // Throws: Nothing.
                 -> size_type
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return contains(x);
         }
 
         [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
                         if (m_data[which(x)] & single_bit_mask(where(x))) {
                                 return true;
@@ -608,47 +608,48 @@ public:
         constexpr auto lower_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return { this, find_next(x) };
         }
 
         constexpr auto lower_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return { this, find_next(x) };
         }
 
         constexpr auto upper_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return { this, find_next(x + 1) };
         }
 
         constexpr auto upper_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return { this, find_next(x + 1) };
         }
 
         constexpr auto equal_range(key_type const& x) // Throws: Nothing.
                 -> std::pair<iterator, iterator>
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
         constexpr auto equal_range(key_type const& x) const // Throws: Nothing.
                 -> std::pair<const_iterator, const_iterator>
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
         constexpr auto& complement() noexcept
         {
+                // static_cast to guard against integral promotions of block_type smaller than int.
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] = static_cast<block_type>(~m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
@@ -731,7 +732,7 @@ public:
 
         constexpr auto& operator<<=(value_type n [[maybe_unused]]) // Throws: Nothing.
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] >>= n;
@@ -749,6 +750,7 @@ public:
                         } else {
                                 auto const L_shift = block_size - R_shift;
 
+                                // static_cast to guard against integral promotions of block_type smaller than int.
                                 for (auto i = 0; i < num_logical_blocks - 1 - n_block; ++i) {
                                         m_data[i] =
                                                 static_cast<block_type>(m_data[i + n_block    ] >> R_shift) |
@@ -765,7 +767,7 @@ public:
 
         constexpr auto& operator>>=(value_type n [[maybe_unused]]) // Throws: Nothing.
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
                         PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] <<= n;
@@ -783,6 +785,7 @@ public:
                         } else {
                                 auto const R_shift = block_size - L_shift;
 
+                                // static_cast to guard against integral promotions of block_type smaller than int.
                                 for (auto i = num_logical_blocks - 1; i > n_block; --i) {
                                         m_data[i] =
                                                 static_cast<block_type>(m_data[i - n_block    ] << L_shift) |
@@ -878,6 +881,7 @@ public:
         }
 
 private:
+        // static_cast to guard against integral promotions of block_type smaller than int.
         static constexpr auto zero = static_cast<block_type>( 0);
         static constexpr auto ones = static_cast<block_type>(-1);
 
@@ -886,6 +890,9 @@ private:
         PRAGMA_VC_WARNING_POP
 
         static_assert(num_excess_bits ^ (ones == no_excess_bits));
+
+        // The inner static_cast guards against integer overflow of block_type larger than int.
+        // The outer static_cast guards against integral promotions of block_type smaller than int.
         static constexpr auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
 
         static constexpr auto single_bit_mask(value_type n) // Throws: Nothing.
@@ -893,16 +900,17 @@ private:
         {
                 static_assert(num_logical_blocks >= 1);
                 assert(0 <= n && n < block_size);
+                // static_cast to guard against integral promotions of block_type smaller than int.
                 return static_cast<block_type>(unit >> n);
         }
 
-        static constexpr auto is_valid(value_type n) noexcept
+        static constexpr auto is_valid_reference(value_type n) noexcept
                 -> bool
         {
                 return 0 <= n && n < M;
         }
 
-        static constexpr auto is_range(value_type n) noexcept
+        static constexpr auto is_valid_iterator(value_type n) noexcept
                 -> bool
         {
                 return 0 <= n && n <= M;
@@ -912,7 +920,7 @@ private:
                 -> value_type
         {
                 static_assert(num_logical_blocks >= 1);
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
                         return 0;
                 } else {
@@ -924,7 +932,7 @@ private:
                 -> value_type
         {
                 static_assert(num_logical_blocks >= 1);
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
                         return n;
                 } else {
@@ -1003,10 +1011,11 @@ private:
 
         constexpr auto find_next(int n) const // Throws: Nothing.
         {
-                assert(is_range(n));
+                assert(is_valid_iterator(n));
                 if (n == M) {
                         return M;
                 }
+                // static_cast to guard against integral promotions of block_type smaller than int.
                 if constexpr (num_logical_blocks == 1) {
                         if (auto const block = static_cast<block_type>(m_data[0] << n); block) {
                                 return n + builtin::clznz(block);
@@ -1031,7 +1040,8 @@ private:
 
         constexpr auto find_prev(int n) const // Throws: Nothing.
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
+                // static_cast to guard against integral promotions of block_type smaller than int.
                 if constexpr (num_logical_blocks == 1) {
                         return n - builtin::ctznz(static_cast<block_type>(m_data[0] >> (block_size - 1 - n)));
                 } else {
@@ -1072,7 +1082,7 @@ private:
                         m_bs{bs},
                         m_value{v}
                 {
-                        assert(is_valid(m_value));
+                        assert(is_valid_reference(m_value));
                 }
 
                 constexpr auto operator&() const noexcept
@@ -1115,21 +1125,21 @@ private:
                         m_bs{bs},
                         m_value{v}
                 {
-                        assert(is_range(m_value));
+                        assert(is_valid_iterator(m_value));
                 }
 
                 constexpr auto operator*() const // Throws: Nothing.
                         -> proxy_reference
                 {
-                        assert(is_valid(m_value));
+                        assert(is_valid_reference(m_value));
                         return { *m_bs, m_value };
                 }
 
                 constexpr auto& operator++() // Throws: Nothing.
                 {
-                        assert(is_valid(m_value));
+                        assert(is_valid_reference(m_value));
                         m_value = m_bs->find_next(m_value + 1);
-                        assert(is_valid(m_value - 1));
+                        assert(is_valid_reference(m_value - 1));
                         return *this;
                 }
 
@@ -1140,9 +1150,9 @@ private:
 
                 constexpr auto& operator--() // Throws: Nothing.
                 {
-                        assert(is_valid(m_value - 1));
+                        assert(is_valid_reference(m_value - 1));
                         m_value = m_bs->find_prev(m_value - 1);
-                        assert(is_valid(m_value));
+                        assert(is_valid_reference(m_value));
                         return *this;
                 }
 
