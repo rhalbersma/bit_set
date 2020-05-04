@@ -16,7 +16,7 @@ template<class T>
 using value_t = typename T::value_type;
 
 template<std::size_t N, std::unsigned_integral Block>
-auto resize(bit_set<N, Block>& bs, std::size_t num_bits [[maybe_unused]], bool value = false) noexcept
+constexpr auto resize(bit_set<N, Block>& bs, std::size_t num_bits [[maybe_unused]], bool value = false) noexcept
 {
         if (value) {
                 bs.fill();
@@ -26,7 +26,7 @@ auto resize(bit_set<N, Block>& bs, std::size_t num_bits [[maybe_unused]], bool v
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto& left_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
+constexpr auto& left_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
 {
         if (pos >= N) {
                 return bs.clear();
@@ -36,7 +36,7 @@ auto& left_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto& right_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
+constexpr auto& right_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
 {
         if (pos >= N) {
                 return bs.clear();
@@ -46,13 +46,13 @@ auto& right_shift_assign(bit_set<N, Block>& bs, std::size_t pos) noexcept
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto& set(bit_set<N, Block>& bs) noexcept
+constexpr auto& set(bit_set<N, Block>& bs) noexcept
 {
         return bs.fill();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto& set(bit_set<N, Block>& bs, std::size_t pos, bool val = true)
+constexpr auto& set(bit_set<N, Block>& bs, std::size_t pos, bool val = true)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -67,13 +67,13 @@ auto& set(bit_set<N, Block>& bs, std::size_t pos, bool val = true)
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto& reset(bit_set<N, Block>& bs) noexcept
+constexpr auto& reset(bit_set<N, Block>& bs) noexcept
 {
         return bs.clear();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto& reset(bit_set<N, Block>& bs, std::size_t pos)
+constexpr auto& reset(bit_set<N, Block>& bs, std::size_t pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -84,13 +84,13 @@ auto& reset(bit_set<N, Block>& bs, std::size_t pos)
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto& flip(bit_set<N, Block>& bs) noexcept
+constexpr auto& flip(bit_set<N, Block>& bs) noexcept
 {
         return bs.complement();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto& flip(bit_set<N, Block>& bs, std::size_t pos)
+constexpr auto& flip(bit_set<N, Block>& bs, std::size_t pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -112,7 +112,7 @@ constexpr auto fn_size(bit_set<N, Block> const& bs) noexcept
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto test(bit_set<N, Block> const& bs, std::size_t pos)
+constexpr auto test(bit_set<N, Block> const& bs, std::size_t pos)
 {
         if (pos >= N) {
                 throw std::out_of_range{""};
@@ -122,25 +122,25 @@ auto test(bit_set<N, Block> const& bs, std::size_t pos)
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] auto all(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto all(bit_set<N, Block> const& bs) noexcept
 {
         return bs.full();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] auto any(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto any(bit_set<N, Block> const& bs) noexcept
 {
         return !bs.empty();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] auto none(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto none(bit_set<N, Block> const& bs) noexcept
 {
         return bs.empty();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto left_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
+constexpr auto left_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
         -> bit_set<N, Block>
 {
         if (pos >= N) {
@@ -151,7 +151,7 @@ auto left_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-auto right_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
+constexpr auto right_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
         -> bit_set<N, Block>
 {
         if (pos >= N) {

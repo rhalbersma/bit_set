@@ -26,16 +26,16 @@ inline constexpr auto L3 =  32;
 
 // NOTE: these tests are O(1)
 
-template<class BitSet, class UnaryFunction>
-auto empty_set(UnaryFunction fun)
+template<class BitSet>
+auto empty_set(auto fun)
 {
         auto const N = limit_v<BitSet, L0>;
         BitSet bs0; resize(bs0, N);
         fun(bs0);
 }
 
-template<class BitSet, class UnaryFunction>
-auto full_set(UnaryFunction fun)
+template<class BitSet>
+auto full_set(auto fun)
 {
         auto const N = limit_v<BitSet, L0>;
         BitSet bsN; resize(bsN, N, true);
@@ -44,8 +44,8 @@ auto full_set(UnaryFunction fun)
 
 // NOTE: these tests are O(N)
 
-template<class BitSet, class UnaryFunction>
-auto all_values(UnaryFunction fun)
+template<class BitSet>
+auto all_values(auto fun)
 {
         auto const N = limit_v<BitSet, L1>;
         for (auto i = decltype(N){0}; i < N; ++i) {
@@ -53,8 +53,8 @@ auto all_values(UnaryFunction fun)
         }
 }
 
-template<class BitSet, class UnaryFunction>
-auto all_cardinality_sets(UnaryFunction fun)
+template<class BitSet>
+auto all_cardinality_sets(auto fun)
 {
         auto const N = limit_v<BitSet, L1>;
         for (auto i = decltype(N){0}; i <= N; ++i) {
@@ -67,8 +67,8 @@ auto all_cardinality_sets(UnaryFunction fun)
         }
 }
 
-template<class BitSet, class UnaryFunction>
-auto all_singleton_sets(UnaryFunction fun)
+template<class BitSet>
+auto all_singleton_sets(auto fun)
 {
         auto const N = limit_v<BitSet, L1>;
         for (auto i = decltype(N){0}; i < N; ++i) {
@@ -79,8 +79,8 @@ auto all_singleton_sets(UnaryFunction fun)
 
 // NOTE: these tests are O(N^2)
 
-template<class BitSet, class BinaryFunction>
-auto all_singleton_set_pairs(BinaryFunction fun)
+template<class BitSet>
+auto all_singleton_set_pairs(auto fun)
 {
         auto const N = limit_v<BitSet, L2>;
         for (auto i = decltype(N){0}; i < N; ++i) {
@@ -94,8 +94,8 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 
 // NOTE: this test is O(N^3)
 
-template<class BitSet, class TernaryFunction>
-auto all_singleton_set_triples(TernaryFunction fun)
+template<class BitSet>
+auto all_singleton_set_triples(auto fun)
 {
         auto const N = limit_v<BitSet, L3>;
         for (auto i = decltype(N){0}; i < N; ++i) {

@@ -61,8 +61,8 @@ namespace builtin {
 template<std::unsigned_integral T>
 constexpr auto bit1(int n)
 {
-        // The inner static_cast guards against integral underflow.
-        // The outer static_cast guards against integral promotions.
+        // The inner static_cast guards against integer overflow for types larger than int.
+        // The outer static_cast guards against integral promotions for types smaller than int.
         return static_cast<T>(static_cast<T>(1) << n);
 }
 
@@ -90,8 +90,7 @@ constexpr auto ctznz(T x) // Throws: Nothing.
         }
 }
 
-template<std::unsigned_integral T>
-constexpr auto bsfnz(T x) // Throws: Nothing.
+constexpr auto bsfnz(std::unsigned_integral auto x) // Throws: Nothing.
 {
         assert(x != 0);
         return ctznz(x);
@@ -175,8 +174,7 @@ constexpr auto bsfnz(T x) // Throws: Nothing.
         }
 }
 
-template<std::unsigned_integral T>
-constexpr auto ctznz(T x) // Throws: Nothing.
+constexpr auto ctznz(std::unsigned_integral auto x) // Throws: Nothing.
 {
         return bsfnz(x);
 }
@@ -257,8 +255,7 @@ constexpr auto clz(T x) noexcept
         return x ? clznz(x) : std::numeric_limits<T>::digits;
 }
 
-template<std::unsigned_integral T>
-constexpr auto bsr(T x) noexcept
+constexpr auto bsr(std::unsigned_integral auto x) noexcept
 {
         return x ? bsrnz(x) : -1;
 }

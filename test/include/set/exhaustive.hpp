@@ -10,7 +10,7 @@
 #include <cassert>              // assert
 #include <cstddef>              // size_t
 #include <initializer_list>     // initializer_list
-#include <iostream>
+
 #if defined(_MSC_VER)
         // xstd::bit_set<0> gives bogus "unreachable code" warnings
         __pragma(warning(disable: 4702))
@@ -28,16 +28,16 @@ inline constexpr auto L4 =  32;
 
 // NOTE: these tests are O(1)
 
-template<class IntSet, class UnaryFunction>
-auto empty_set(UnaryFunction fun)
+template<class IntSet>
+auto empty_set(auto fun)
 {
         IntSet is0;
         assert(is0.empty());
         fun(is0);
 }
 
-template<class IntSet, class UnaryFunction>
-auto full_set(UnaryFunction fun)
+template<class IntSet>
+auto full_set(auto fun)
 {
         auto const N = limit_v<IntSet, L1>;
         IntSet isN;
@@ -50,8 +50,8 @@ auto full_set(UnaryFunction fun)
 
 // NOTE: these tests are O(N)
 
-template<class IntSet, class UnaryFunction>
-auto all_values(UnaryFunction fun)
+template<class IntSet>
+auto all_values(auto fun)
 {
         auto const N = limit_v<IntSet, L1>;
         for (auto i = 0; i < N; ++i) {
@@ -59,8 +59,8 @@ auto all_values(UnaryFunction fun)
         }
 }
 
-template<class IntSet, class UnaryFunction>
-auto all_cardinality_sets(UnaryFunction fun)
+template<class IntSet>
+auto all_cardinality_sets(auto fun)
 {
         auto const N = limit_v<IntSet, L1>;
         for (auto i = 0; i <= N; ++i) {
@@ -72,8 +72,8 @@ auto all_cardinality_sets(UnaryFunction fun)
         }
 }
 
-template<class IntSet, class UnaryFunction>
-auto all_singleton_arrays(UnaryFunction fun)
+template<class IntSet>
+auto all_singleton_arrays(auto fun)
 {
         auto const N = limit_v<IntSet, L1>;
         for (auto i = 0; i < N; ++i) {
@@ -82,8 +82,8 @@ auto all_singleton_arrays(UnaryFunction fun)
         }
 }
 
-template<class IntSet, class UnaryFunction>
-auto all_singleton_ilists(UnaryFunction fun)
+template<class IntSet>
+auto all_singleton_ilists(auto fun)
 {
         auto const N = limit_v<IntSet, L1>;
         for (auto i = 0; i < N; ++i) {
@@ -92,8 +92,8 @@ auto all_singleton_ilists(UnaryFunction fun)
         }
 }
 
-template<class IntSet, class UnaryFunction>
-auto all_singleton_sets(UnaryFunction fun)
+template<class IntSet>
+auto all_singleton_sets(auto fun)
 {
         auto const N = limit_v<IntSet, L1>;
         for (auto i = 0; i < N; ++i) {
@@ -104,8 +104,8 @@ auto all_singleton_sets(UnaryFunction fun)
 
 // NOTE: these tests are O(N^2)
 
-template<class IntSet, class UnaryFunction>
-auto all_doubleton_arrays(UnaryFunction fun)
+template<class IntSet>
+auto all_doubleton_arrays(auto fun)
 {
         auto const N = limit_v<IntSet, L2>;
         for (auto j = 1; j < N; ++j) {
@@ -116,8 +116,8 @@ auto all_doubleton_arrays(UnaryFunction fun)
         }
 }
 
-template<class IntSet, class UnaryFunction>
-auto all_doubleton_ilists(UnaryFunction fun)
+template<class IntSet>
+auto all_doubleton_ilists(auto fun)
 {
         auto const N = limit_v<IntSet, L2>;
         for (auto j = 1; j < N; ++j) {
@@ -128,8 +128,8 @@ auto all_doubleton_ilists(UnaryFunction fun)
         }
 }
 
-template<class IntSet, class UnaryFunction>
-auto all_doubleton_sets(UnaryFunction fun)
+template<class IntSet>
+auto all_doubleton_sets(auto fun)
 {
         auto const N = limit_v<IntSet, L2>;
         for (auto j = 1; j < N; ++j) {
@@ -140,8 +140,8 @@ auto all_doubleton_sets(UnaryFunction fun)
         }
 }
 
-template<class IntSet, class BinaryFunction>
-auto all_singleton_set_pairs(BinaryFunction fun)
+template<class IntSet>
+auto all_singleton_set_pairs(auto fun)
 {
         auto const N = limit_v<IntSet, L2>;
         for (auto i = 0; i < N; ++i) {
@@ -155,8 +155,8 @@ auto all_singleton_set_pairs(BinaryFunction fun)
 
 // NOTE: this test is O(N^3)
 
-template<class IntSet, class TernaryFunction>
-auto all_singleton_set_triples(TernaryFunction fun)
+template<class IntSet>
+auto all_singleton_set_triples(auto fun)
 {
         auto const N = limit_v<IntSet, L3>;
         for (auto i = 0; i < N; ++i) {
@@ -173,8 +173,8 @@ auto all_singleton_set_triples(TernaryFunction fun)
 
 // NOTE: this test is O(N^4)
 
-template<class IntSet, class BinaryFunction>
-auto all_doubleton_set_pairs(BinaryFunction fun)
+template<class IntSet>
+auto all_doubleton_set_pairs(auto fun)
 {
         auto const N = limit_v<IntSet, L4>;
         for (auto j = 1; j < N; ++j) {
