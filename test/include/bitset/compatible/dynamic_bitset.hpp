@@ -207,7 +207,7 @@ public:
 
         proxy_reference() = delete;
 
-        constexpr proxy_reference(dynamic_bitset<Block, Allocator> const& bs, value_type const& v) noexcept
+        [[nodiscard]] constexpr proxy_reference(dynamic_bitset<Block, Allocator> const& bs, value_type const& v) noexcept
         :
                 m_bs{bs},
                 m_value{v}
@@ -251,7 +251,7 @@ private:
 public:
         proxy_iterator() = default;
 
-        constexpr proxy_iterator(dynamic_bitset<Block, Allocator> const* bs, value_type const& v) // Throws: Nothing.
+        [[nodiscard]] constexpr proxy_iterator(dynamic_bitset<Block, Allocator> const* bs, value_type const& v) // Throws: Nothing.
         :
                 m_bs{bs},
                 m_value{v}
@@ -259,7 +259,7 @@ public:
                 assert(0 <= m_value && (m_value < bs->size() || m_value == bs->npos));
         }
 
-        constexpr auto operator*() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto operator*() const // Throws: Nothing.
                 -> proxy_reference<Block, Allocator>
         {
                 assert(0 <= m_value && m_value < m_bs->size());
@@ -279,7 +279,7 @@ public:
                 auto nrv = *this; ++*this; return nrv;
         }
 
-        constexpr auto operator==(proxy_iterator const& other) const noexcept
+        [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
                 -> bool
         {
                 assert(m_bs == other.m_bs);
@@ -288,42 +288,42 @@ public:
 };
 
 template<std::unsigned_integral Block, class Allocator>
-auto begin(dynamic_bitset<Block, Allocator>& bs)
+[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& bs)
         -> proxy_iterator<Block, Allocator>
 {
         return { &bs, bs.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto begin(dynamic_bitset<Block, Allocator> const& bs)
+[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator> const& bs)
         -> proxy_iterator<Block, Allocator>
 {
         return { &bs, bs.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto end(dynamic_bitset<Block, Allocator>& bs)
+[[nodiscard]] auto end(dynamic_bitset<Block, Allocator>& bs)
         -> proxy_iterator<Block, Allocator>
 {
         return { &bs, bs.npos };
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto end(dynamic_bitset<Block, Allocator> const& bs)
+[[nodiscard]] auto end(dynamic_bitset<Block, Allocator> const& bs)
         -> proxy_iterator<Block, Allocator>
 {
         return { &bs, bs.npos };
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept(noexcept(boost::begin(bs)))
+[[nodiscard]] auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept(noexcept(boost::begin(bs)))
         -> decltype(boost::begin(bs))
 {
         return boost::begin(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept(noexcept(boost::end(bs)))
+[[nodiscard]] auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept(noexcept(boost::end(bs)))
         -> decltype(boost::end(bs))
 {
         return boost::end(bs);

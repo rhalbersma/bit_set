@@ -300,12 +300,12 @@ public:
         bit_set() = default;                    // zero-initialization
 
         template<class InputIterator>
-        constexpr bit_set(InputIterator first, InputIterator last) // Throws: Nothing.
+        [[nodiscard]] constexpr bit_set(InputIterator first, InputIterator last) // Throws: Nothing.
         {
                 insert(first, last);
         }
 
-        constexpr bit_set(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        [[nodiscard]] constexpr bit_set(std::initializer_list<value_type> ilist) // Throws: Nothing.
         :
                 bit_set(ilist.begin(), ilist.end())
         {}
@@ -1077,7 +1077,7 @@ private:
 
                 proxy_reference() = delete;
 
-                constexpr proxy_reference(bit_set const& bs, value_type const& v) noexcept
+                [[nodiscard]] constexpr proxy_reference(bit_set const& bs, value_type const& v) noexcept
                 :
                         m_bs{bs},
                         m_value{v}
@@ -1120,7 +1120,7 @@ private:
         public:
                 proxy_iterator() = default;
 
-                constexpr proxy_iterator(bit_set const* bs, value_type const& v) // Throws: Nothing.
+                [[nodiscard]] constexpr proxy_iterator(bit_set const* bs, value_type const& v) // Throws: Nothing.
                 :
                         m_bs{bs},
                         m_value{v}
