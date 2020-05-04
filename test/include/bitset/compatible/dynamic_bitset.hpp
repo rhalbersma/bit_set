@@ -81,13 +81,13 @@ auto& flip(dynamic_bitset<Block, Allocator>& bs, std::size_t pos)
 }
 
 template<std::unsigned_integral Block, class Allocator>
-constexpr auto count(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] constexpr auto count(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return bs.count();
 }
 
 template<std::unsigned_integral Block, class Allocator>
-constexpr auto fn_size(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] constexpr auto fn_size(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return bs.size();
 }
@@ -121,25 +121,25 @@ template<std::unsigned_integral Block, class Allocator>
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto left_shift(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
+[[nodiscard]] auto left_shift(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
 {
         return bs << pos;
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto right_shift(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
+[[nodiscard]] auto right_shift(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
 {
         return bs >> pos;
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto at(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
+[[nodiscard]] auto at(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
 {
         return bs[pos];
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t pos) // Throws: Nothing.
+[[nodiscard]] auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t pos) // Throws: Nothing.
 {
         return bs[pos];
 }
@@ -151,37 +151,37 @@ auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t pos, bool val) // Thro
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto is_subset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
+[[nodiscard]] auto is_subset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
         return lhs.is_subset_of(rhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto is_superset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
+[[nodiscard]] auto is_superset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
         return is_subset_of(rhs, lhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto is_proper_subset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
+[[nodiscard]] auto is_proper_subset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
         return lhs.is_proper_subset_of(rhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto is_proper_superset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
+[[nodiscard]] auto is_proper_superset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
         return rhs.is_proper_subset_of(lhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto intersects(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
+[[nodiscard]] auto intersects(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
         return lhs.intersects(rhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-auto disjoint(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
+[[nodiscard]] auto disjoint(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
         return !intersects(lhs, rhs);
 }
@@ -215,20 +215,20 @@ public:
                 assert(0 <= m_value && m_value < bs.size());
         }
 
-        constexpr auto operator&() const noexcept
+        [[nodiscard]] constexpr auto operator&() const noexcept
                 -> proxy_iterator<Block, Allocator>
         {
                 return { &m_bs, m_value };
         }
 
-        explicit(false) constexpr operator value_type() const noexcept
+        [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
         {
                 return m_value;
         }
 
         template<class T>
                 requires std::is_class_v<T> && std::constructible_from<T, value_type>
-        explicit(false) constexpr operator T() const noexcept(noexcept(T(m_value)))
+        [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_value)))
         {
                 return m_value;
         }

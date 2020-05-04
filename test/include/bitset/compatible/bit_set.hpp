@@ -100,13 +100,13 @@ constexpr auto& flip(bit_set<N, Block>& bs, std::size_t pos)
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto count(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto count(bit_set<N, Block> const& bs) noexcept
 {
         return bs.size();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto fn_size(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto fn_size(bit_set<N, Block> const& bs) noexcept
 {
         return bs.max_size();
 }
@@ -140,7 +140,7 @@ template<std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto left_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
+[[nodiscard]] constexpr auto left_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
         -> bit_set<N, Block>
 {
         if (pos >= N) {
@@ -151,7 +151,7 @@ constexpr auto left_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto right_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
+[[nodiscard]] constexpr auto right_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcept
         -> bit_set<N, Block>
 {
         if (pos >= N) {
@@ -162,14 +162,14 @@ constexpr auto right_shift(bit_set<N, Block> const& bs, std::size_t pos) noexcep
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto at(bit_set<N, Block> const& bs, std::size_t pos) // Throws: Nothing.
+[[nodiscard]] constexpr auto at(bit_set<N, Block> const& bs, std::size_t pos) // Throws: Nothing.
 {
         using value_type = value_t<bit_set<N, Block>>;
         return bs.contains(static_cast<value_type>(pos));
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto at(bit_set<N, Block>& bs, std::size_t pos) // Throws: Nothing.
+[[nodiscard]] constexpr auto at(bit_set<N, Block>& bs, std::size_t pos) // Throws: Nothing.
 {
         using value_type = value_t<bit_set<N, Block>>;
         return bs.contains(static_cast<value_type>(pos));

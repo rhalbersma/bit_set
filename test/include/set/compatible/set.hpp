@@ -13,7 +13,7 @@ namespace xstd {
 
 // provided by <set> in C++20
 template<class Compare, class Allocator>
-auto operator<=>(std::set<int, Compare, Allocator> const& lhs, std::set<int, Compare, Allocator> const& rhs) noexcept
+[[nodiscard]] auto operator<=>(std::set<int, Compare, Allocator> const& lhs, std::set<int, Compare, Allocator> const& rhs) noexcept
         -> std::strong_ordering
 {
         return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());

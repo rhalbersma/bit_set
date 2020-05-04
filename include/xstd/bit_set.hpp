@@ -59,7 +59,7 @@ namespace xstd {
 namespace builtin {
 
 template<std::unsigned_integral T>
-constexpr auto bit1(int n)
+[[nodiscard]] constexpr auto bit1(int n)
 {
         // The inner static_cast guards against integer overflow for types larger than int.
         // The outer static_cast guards against integral promotions for types smaller than int.
@@ -69,14 +69,14 @@ constexpr auto bit1(int n)
 #if defined(__GNUG__)
 
 template<std::size_t N>
-constexpr auto get(__uint128_t x) noexcept
+[[nodiscard]] constexpr auto get(__uint128_t x) noexcept
 {
         static_assert(0 <= N && N < 2);
         return static_cast<uint64_t>(x >> (64 * N));
 }
 
 template<std::unsigned_integral T>
-constexpr auto ctznz(T x) // Throws: Nothing.
+[[nodiscard]] constexpr auto ctznz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         if constexpr (sizeof(T) < sizeof(unsigned)) {
@@ -90,14 +90,14 @@ constexpr auto ctznz(T x) // Throws: Nothing.
         }
 }
 
-constexpr auto bsfnz(std::unsigned_integral auto x) // Throws: Nothing.
+[[nodiscard]] constexpr auto bsfnz(std::unsigned_integral auto x) // Throws: Nothing.
 {
         assert(x != 0);
         return ctznz(x);
 }
 
 template<std::unsigned_integral T>
-constexpr auto clznz(T x) // Throws: Nothing.
+[[nodiscard]] constexpr auto clznz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         if constexpr (sizeof(T) < sizeof(unsigned)) {
@@ -113,14 +113,14 @@ constexpr auto clznz(T x) // Throws: Nothing.
 }
 
 template<std::unsigned_integral T>
-constexpr auto bsrnz(T x) // Throws: Nothing.
+[[nodiscard]] constexpr auto bsrnz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         return std::numeric_limits<T>::digits - 1 - clznz(x);
 }
 
 template<std::unsigned_integral T>
-constexpr auto popcount(T x) noexcept
+[[nodiscard]] constexpr auto popcount(T x) noexcept
 {
         if constexpr (sizeof(T) < sizeof(unsigned)) {
                 return __builtin_popcount(static_cast<unsigned>(x));
@@ -150,7 +150,7 @@ constexpr auto popcount(T x) noexcept
 #endif
 
 template<std::unsigned_integral T>
-constexpr auto bsfnz(T x) // Throws: Nothing.
+[[nodiscard]] constexpr auto bsfnz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         if (std::is_constant_evaluated()) {
@@ -174,13 +174,13 @@ constexpr auto bsfnz(T x) // Throws: Nothing.
         }
 }
 
-constexpr auto ctznz(std::unsigned_integral auto x) // Throws: Nothing.
+[[nodiscard]] constexpr auto ctznz(std::unsigned_integral auto x) // Throws: Nothing.
 {
         return bsfnz(x);
 }
 
 template<std::unsigned_integral T>
-constexpr auto bsrnz(T x) // Throws: Nothing.
+[[nodiscard]] constexpr auto bsrnz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         if (std::is_constant_evaluated()) {
@@ -205,14 +205,14 @@ constexpr auto bsrnz(T x) // Throws: Nothing.
 }
 
 template<std::unsigned_integral T>
-constexpr auto clznz(T x) // Throws: Nothing.
+[[nodiscard]] constexpr auto clznz(T x) // Throws: Nothing.
 {
         assert(x != 0);
         return std::numeric_limits<T>::digits - 1 - bsrnz(x);
 }
 
 template<std::unsigned_integral T>
-constexpr auto popcount(T x) noexcept
+[[nodiscard]] constexpr auto popcount(T x) noexcept
 {
         if (std::is_constant_evaluated()) {
                 auto n = 0;
@@ -238,24 +238,24 @@ constexpr auto popcount(T x) noexcept
 #endif
 
 template<std::unsigned_integral T>
-constexpr auto ctz(T x) noexcept
+[[nodiscard]] constexpr auto ctz(T x) noexcept
 {
         return x ? ctznz(x) : std::numeric_limits<T>::digits;
 }
 
 template<std::unsigned_integral T>
-constexpr auto bsf(T x) noexcept
+[[nodiscard]] constexpr auto bsf(T x) noexcept
 {
         return x ? bsfnz(x) : std::numeric_limits<T>::digits;
 }
 
 template<std::unsigned_integral T>
-constexpr auto clz(T x) noexcept
+[[nodiscard]] constexpr auto clz(T x) noexcept
 {
         return x ? clznz(x) : std::numeric_limits<T>::digits;
 }
 
-constexpr auto bsr(std::unsigned_integral auto x) noexcept
+[[nodiscard]] constexpr auto bsr(std::unsigned_integral auto x) noexcept
 {
         return x ? bsrnz(x) : -1;
 }
@@ -317,29 +317,29 @@ public:
                 return *this;
         }
 
-        constexpr auto begin()         noexcept { return       iterator{this, find_first()}; }
-        constexpr auto begin()   const noexcept { return const_iterator{this, find_first()}; }
-        constexpr auto end()           noexcept { return       iterator{this, M}; }
-        constexpr auto end()     const noexcept { return const_iterator{this, M}; }
+        [[nodiscard]] constexpr auto begin()         noexcept { return       iterator{this, find_first()}; }
+        [[nodiscard]] constexpr auto begin()   const noexcept { return const_iterator{this, find_first()}; }
+        [[nodiscard]] constexpr auto end()           noexcept { return       iterator{this, M}; }
+        [[nodiscard]] constexpr auto end()     const noexcept { return const_iterator{this, M}; }
 
-        constexpr auto rbegin()        noexcept { return       reverse_iterator{end()}; }
-        constexpr auto rbegin()  const noexcept { return const_reverse_iterator{end()}; }
-        constexpr auto rend()          noexcept { return       reverse_iterator{begin()}; }
-        constexpr auto rend()    const noexcept { return const_reverse_iterator{begin()}; }
+        [[nodiscard]] constexpr auto rbegin()        noexcept { return       reverse_iterator{end()}; }
+        [[nodiscard]] constexpr auto rbegin()  const noexcept { return const_reverse_iterator{end()}; }
+        [[nodiscard]] constexpr auto rend()          noexcept { return       reverse_iterator{begin()}; }
+        [[nodiscard]] constexpr auto rend()    const noexcept { return const_reverse_iterator{begin()}; }
 
-        constexpr auto cbegin()  const noexcept { return const_iterator{begin()}; }
-        constexpr auto cend()    const noexcept { return const_iterator{end()};   }
-        constexpr auto crbegin() const noexcept { return const_reverse_iterator{rbegin()}; }
-        constexpr auto crend()   const noexcept { return const_reverse_iterator{rend()};   }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return const_iterator{begin()}; }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return const_iterator{end()};   }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator{rbegin()}; }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator{rend()};   }
 
-        constexpr auto front() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto front() const // Throws: Nothing.
                 -> const_reference
         {
                 assert(!empty());
                 return { *this, find_front() };
         }
 
-        constexpr auto back() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto back() const // Throws: Nothing.
                 -> const_reference
         {
                 assert(!empty());
@@ -402,7 +402,7 @@ public:
                 }
         }
 
-        constexpr auto ssize() const noexcept
+        [[nodiscard]] constexpr auto ssize() const noexcept
         {
                 if constexpr (num_logical_blocks == 0) {
                         return 0;
@@ -420,17 +420,17 @@ public:
                 }
         }
 
-        constexpr auto size() const noexcept
+        [[nodiscard]] constexpr auto size() const noexcept
         {
                 return static_cast<size_type>(ssize());
         }
 
-        static constexpr auto max_size() noexcept
+        [[nodiscard]] static constexpr auto max_size() noexcept
         {
                 return N;
         }
 
-        static constexpr auto capacity() noexcept
+        [[nodiscard]] static constexpr auto capacity() noexcept
                 -> size_type
         {
                 return num_bits;
@@ -575,19 +575,19 @@ public:
                 return *this;
         }
 
-        constexpr auto find(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto find(key_type const& x) // Throws: Nothing.
         {
                 assert(is_valid_reference(x));
                 return contains(x) ? iterator{this, x} : end();
         }
 
-        constexpr auto find(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find(key_type const& x) const // Throws: Nothing.
         {
                 assert(is_valid_reference(x));
                 return contains(x) ? const_iterator{this, x} : cend();
         }
 
-        constexpr auto count(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto count(key_type const& x) const // Throws: Nothing.
                 -> size_type
         {
                 assert(is_valid_reference(x));
@@ -605,42 +605,42 @@ public:
                 return false;
         }
 
-        constexpr auto lower_bound(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto lower_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
                 assert(is_valid_reference(x));
                 return { this, find_next(x) };
         }
 
-        constexpr auto lower_bound(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto lower_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(is_valid_reference(x));
                 return { this, find_next(x) };
         }
 
-        constexpr auto upper_bound(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto upper_bound(key_type const& x) // Throws: Nothing.
                 -> iterator
         {
                 assert(is_valid_reference(x));
                 return { this, find_next(x + 1) };
         }
 
-        constexpr auto upper_bound(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto upper_bound(key_type const& x) const // Throws: Nothing.
                 -> const_iterator
         {
                 assert(is_valid_reference(x));
                 return { this, find_next(x + 1) };
         }
 
-        constexpr auto equal_range(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto equal_range(key_type const& x) // Throws: Nothing.
                 -> std::pair<iterator, iterator>
         {
                 assert(is_valid_reference(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
-        constexpr auto equal_range(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto equal_range(key_type const& x) const // Throws: Nothing.
                 -> std::pair<const_iterator, const_iterator>
         {
                 assert(is_valid_reference(x));
@@ -802,7 +802,7 @@ public:
         // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94924
         // constexpr bool operator==(bit_set const&) const noexcept = default;
 
-        constexpr auto operator==(bit_set const& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr auto operator==(bit_set const& other [[maybe_unused]]) const noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -820,7 +820,7 @@ public:
                 }
         }
 
-        constexpr auto operator<=>(bit_set const& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr auto operator<=>(bit_set const& other [[maybe_unused]]) const noexcept
                 -> std::strong_ordering
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -838,7 +838,7 @@ public:
                 }
         }
 
-        friend constexpr auto is_subset_of(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        [[nodiscard]] friend constexpr auto is_subset_of(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -859,7 +859,7 @@ public:
                 }
         }
 
-        friend constexpr auto intersects(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        [[nodiscard]] friend constexpr auto intersects(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
@@ -895,7 +895,7 @@ private:
         // The outer static_cast guards against integral promotions of block_type smaller than int.
         static constexpr auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
 
-        static constexpr auto single_bit_mask(value_type n) // Throws: Nothing.
+        [[nodiscard]] static constexpr auto single_bit_mask(value_type n) // Throws: Nothing.
                 -> block_type
         {
                 static_assert(num_logical_blocks >= 1);
@@ -904,19 +904,19 @@ private:
                 return static_cast<block_type>(unit >> n);
         }
 
-        static constexpr auto is_valid_reference(value_type n) noexcept
+        [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
                 -> bool
         {
                 return 0 <= n && n < M;
         }
 
-        static constexpr auto is_valid_iterator(value_type n) noexcept
+        [[nodiscard]] static constexpr auto is_valid_iterator(value_type n) noexcept
                 -> bool
         {
                 return 0 <= n && n <= M;
         }
 
-        static constexpr auto which(value_type n [[maybe_unused]]) // Throws: Nothing.
+        [[nodiscard]] static constexpr auto which(value_type n [[maybe_unused]]) // Throws: Nothing.
                 -> value_type
         {
                 static_assert(num_logical_blocks >= 1);
@@ -928,7 +928,7 @@ private:
                 }
         }
 
-        static constexpr auto where(value_type n) // Throws: Nothing.
+        [[nodiscard]] static constexpr auto where(value_type n) // Throws: Nothing.
                 -> value_type
         {
                 static_assert(num_logical_blocks >= 1);
@@ -948,7 +948,7 @@ private:
                 }
         }
 
-        constexpr auto find_front() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_front() const // Throws: Nothing.
         {
                 assert(!empty());
                 if constexpr (num_logical_blocks == 1) {
@@ -970,7 +970,7 @@ private:
                 }
         }
 
-        constexpr auto find_back() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_back() const // Throws: Nothing.
         {
                 assert(!empty());
                 if constexpr (num_logical_blocks == 1) {
@@ -992,7 +992,7 @@ private:
                 }
         }
 
-        constexpr auto find_first() const noexcept
+        [[nodiscard]] constexpr auto find_first() const noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
                         if (m_data[0]) {
@@ -1009,7 +1009,7 @@ private:
                 return M;
         }
 
-        constexpr auto find_next(int n) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_next(int n) const // Throws: Nothing.
         {
                 assert(is_valid_iterator(n));
                 if (n == M) {
@@ -1038,7 +1038,7 @@ private:
                 return M;
         }
 
-        constexpr auto find_prev(int n) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_prev(int n) const // Throws: Nothing.
         {
                 assert(is_valid_reference(n));
                 // static_cast to guard against integral promotions of block_type smaller than int.
@@ -1085,20 +1085,20 @@ private:
                         assert(is_valid_reference(m_value));
                 }
 
-                constexpr auto operator&() const noexcept
+                [[nodiscard]] constexpr auto operator&() const noexcept
                         -> proxy_iterator
                 {
                         return { &m_bs, m_value };
                 }
 
-                explicit(false) constexpr operator value_type() const noexcept
+                [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
                 {
                         return m_value;
                 }
 
                 template<class T>
                         requires std::is_class_v<T> && std::constructible_from<T, value_type>
-                explicit(false) constexpr operator T() const noexcept(noexcept(T(m_value)))
+                [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_value)))
                 {
                         return m_value;
                 }
@@ -1128,7 +1128,7 @@ private:
                         assert(is_valid_iterator(m_value));
                 }
 
-                constexpr auto operator*() const // Throws: Nothing.
+                [[nodiscard]] constexpr auto operator*() const // Throws: Nothing.
                         -> proxy_reference
                 {
                         assert(is_valid_reference(m_value));
@@ -1161,7 +1161,7 @@ private:
                         auto nrv = *this; --*this; return nrv;
                 }
 
-                constexpr auto operator==(proxy_iterator const& other) const noexcept
+                [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
                         -> bool
                 {
                         assert(m_bs == other.m_bs);
@@ -1171,69 +1171,69 @@ private:
 };
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator~(bit_set<N, Block> const& lhs) noexcept
+[[nodiscard]] constexpr auto operator~(bit_set<N, Block> const& lhs) noexcept
 {
         auto nrv{lhs}; nrv.complement(); return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator&(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto operator&(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv &= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator|(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto operator|(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv |= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator^(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto operator^(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv ^= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv{lhs}; nrv -= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator<<(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
+[[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
         assert(0 <= n && n < static_cast<int>(N));
         auto nrv{lhs}; nrv <<= n; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
+[[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
         assert(0 <= n && n < static_cast<int>(N));
         auto nrv{lhs}; nrv >>= n; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto is_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto is_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(rhs, lhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto is_proper_subset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto is_proper_subset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_subset_of(lhs, rhs) && !is_subset_of(rhs, lhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto is_proper_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto is_proper_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto disjoint(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto disjoint(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         return !intersects(lhs, rhs);
 }
@@ -1245,85 +1245,85 @@ constexpr auto swap(bit_set<N, Block>& lhs, bit_set<N, Block>& rhs) noexcept
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto begin(bit_set<N, Block>& bs) noexcept
+[[nodiscard]] constexpr auto begin(bit_set<N, Block>& bs) noexcept
 {
         return bs.begin();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto begin(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto begin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.begin();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto end(bit_set<N, Block>& bs) noexcept
+[[nodiscard]] constexpr auto end(bit_set<N, Block>& bs) noexcept
 {
         return bs.end();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto end(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto end(bit_set<N, Block> const& bs) noexcept
 {
         return bs.end();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto rbegin(bit_set<N, Block>& bs) noexcept
+[[nodiscard]] constexpr auto rbegin(bit_set<N, Block>& bs) noexcept
 {
         return bs.rbegin();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto rbegin(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto rbegin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.rbegin();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto rend(bit_set<N, Block>& bs) noexcept
+[[nodiscard]] constexpr auto rend(bit_set<N, Block>& bs) noexcept
 {
         return bs.rend();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto rend(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto rend(bit_set<N, Block> const& bs) noexcept
 {
         return bs.rend();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto cbegin(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto cbegin(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::begin(bs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto cend(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto cend(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::end(bs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto crbegin(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto crbegin(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::rbegin(bs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto crend(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto crend(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::rend(bs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto size(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto size(bit_set<N, Block> const& bs) noexcept
 {
         return bs.size();
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-constexpr auto ssize(bit_set<N, Block> const& bs) noexcept
+[[nodiscard]] constexpr auto ssize(bit_set<N, Block> const& bs) noexcept
 {
         using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(bs.size())>>;
         return static_cast<R>(bs.size());

@@ -12,7 +12,7 @@
 namespace boost::container {
 
 template<class Compare, class Allocator>
-auto operator<=>(flat_set<int, Compare, Allocator> const& lhs, flat_set<int, Compare, Allocator> const& rhs) noexcept
+[[nodiscard]] auto operator<=>(flat_set<int, Compare, Allocator> const& lhs, flat_set<int, Compare, Allocator> const& rhs) noexcept
         -> std::strong_ordering
 {
         return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
