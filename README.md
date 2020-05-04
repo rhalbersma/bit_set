@@ -9,7 +9,8 @@
 
 ## Design choices for a `bitset` data structure
 
-> "A `bitset` can be seen as either an array of bits or a set of integers. [...] Common usage suggests that dynamic-length `bitsets` are seldom needed."  
+> "A `bitset` can be seen as either an array of bits or a set of integers. [...]  
+> Common usage suggests that dynamic-length `bitsets` are seldom needed."  
 > Chuck Allison, [ISO/WG21/N0075](http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/1991/WG21%201991/X3J16_91-0142%20WG21_N0075.pdf), November 25, 1991
 
 The above quote is from the first C++ Standard Committee proposal on what would eventually become `std::bitset<N>`. The quote highlights two design choices to be made for a `bitset` data structure:
@@ -274,22 +275,31 @@ The semantic differences between `std::bitset` and `xstd::bit_set` are most visi
 **Q**: So iterating over an `xstd::bit_set` is really fool-proof?  
 **A**: Yes, `xstd::bit_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
 
-### Bit-ordering
+### Bit-layout
 
 **Q**: How is `xstd::bit_set` implemented?  
 **A**: It uses a stack-allocated array of unsigned integers as bit storage.
 
-**Q**: What is the bit-ordering inside this array?  
-**A**: The lowest (highest) set-value correspond to the most (least) significant bits of the highest (lowest) array word.
+**Q**: How is the set ordering mapped to the array's bit layout?  
+**A**: The most significant bit of the last array word maps onto set value `0`.  
+**A**: The least significant bit of the first array word maps onto set value `N - 1`.  
 
-**Q**: Why was this bit-ordering chosen?  
-**A**: To efficiently satisfy the requirement `a < b == std::lexicographical_compare(begin(a), end(a), begin(b), end(b))`.
+**Q**: I'm visually oriented, can you draw a diagram?  
+**A**: Sure, it looks like this for `bit_set<16, uint8_t>`:
 
-**Q**: What do you mean with "efficient" lexicographical comparison?  
-**A**: `xstd::bit_set` implements `L < R` as a data-parallel lexicographical comparison on the array words `wL` and `wR`.
+|value |01234567|89ABCDEF|
+|:---- |-------:|-------:|
+|word  |       1|       0|
+|offset|76543210|76543210|
 
-**Q**: How is this connected to the bit-ordering within words?  
-**A**: The array-word comparison is `wL > wR`, which starts with comparing the most significant bits of the two words.
+**Q**: Why is the set order reversely mapped onto the array's bit-layout?  
+**A**: To be able to use **data-parallelism** for `(a < b) == std::lexicographical_compare(begin(a), end(a), begin(b), end(b))`.
+
+**Q**: How is efficient set comparison connected to the bit-ordering within words?  
+**A**: Take `bit_set<8, uint8_t>` and consider when `sL < sR` for ordered sets of integers `sL` and `sR`.
+
+**Q**: Ah, lexicographical set comparison corresponds to bit comparison from most to least significant.  
+**A**: Indeed, and this is equivalent to doing the integer comparison `wL > wR` on the underlying words `wL` and `wR`.  
 
 ### Storage type
 
@@ -300,7 +310,7 @@ The semantic differences between `std::bitset` and `xstd::bit_set` are most visi
 **A**: Yes, the full class template signature is `template<std::size_t N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.
 
 **Q**: What other storage types can be used as template argument for `Block`?  
-**A**: Any unsigned integral type, including (for GCC and Clang) the non-Standard `__uint128_t`.
+**A**: Any type modelling the Standard Library `unsigned_integral` concept, which includes (for GCC and Clang) the non-Standard `__uint128_t`.
 
 **Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?  
 **A**: Yes, there are three special cases for 0, 1 and 2 words of storage, as well as the general case of 3 or more words.
