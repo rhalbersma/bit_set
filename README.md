@@ -59,7 +59,7 @@ This library provides one of the four outlined quadrants: `xstd::bit_set<N>` as 
 
 The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/FQCBO9pjTlo1wvxI)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/7l8zA6n0g0Vg1BEN)
 
 ```cpp
 #include "xstd/bit_set.hpp"
@@ -134,7 +134,7 @@ How would the Sieve of Eratosthenes code look when using an ordered set of integ
 | :------                           | :------------ |
 | `std::set<int>`                   | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/Wqk9tsDYfSmb2RFN) |
 | `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/BSAu0BWw3St5TCdm) |
-| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/54aG3PgL22P1tDpY) |
+| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/x6s4zvQRapWcbMCp) |
 
 The essential difference is the lack of bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. Printing the solution is also a little more involved, requiring the use of the still experimental `ostream_joiner` iterator.
 
@@ -229,7 +229,7 @@ Note that the `xstd::bit_set` members `fill`, `complement`, `replace` and `full`
 
 ### 3 Set predicates from `boost::dynamic_bitset`
 
-The set predicates `is_subset`, `is_proper_subset` and `intersects` from `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that these set predicates are not present in `std::bitset`. Emulation of these set predicates for `std::bitset` is not possible using **single-pass** and **short-circuiting** semantics. In addition, `xstd::bit_set` comes with a non-member function set predicate `disjoint`.
+The set predicates `is_subset`, `is_proper_subset` and `intersects` from `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that these set predicates are not present in `std::bitset`. Emulation of these set predicates for `std::bitset` is not possible using **single-pass** and **short-circuiting** semantics. In addition, `xstd::bit_set` comes with set predicates `is_superset_of`, `is_proper_superset_of` and `disjoint`.
 
 | `boost::dynamic_bitset<>`  | `std::bitset<N>`            | `xstd::bit_set<N>`           |
 | :------------------------  | :---------------            | :-----------------           |
