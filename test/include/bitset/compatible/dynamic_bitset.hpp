@@ -159,7 +159,7 @@ template<std::unsigned_integral Block, class Allocator>
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto is_superset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
-        return is_subset_of(rhs, lhs);
+        return rhs.is_subset_of(lhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
@@ -181,9 +181,9 @@ template<std::unsigned_integral Block, class Allocator>
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto disjoint(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
+[[nodiscard]] auto is_disjoint(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
-        return !intersects(lhs, rhs);
+        return !lhs.intersects(rhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>

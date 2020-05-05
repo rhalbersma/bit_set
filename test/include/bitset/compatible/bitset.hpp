@@ -21,6 +21,12 @@ auto resize(std::bitset<N>& bs, std::size_t num_bits [[maybe_unused]], bool valu
 }
 
 template<std::size_t N>
+auto& operator-=(std::bitset<N>& lhs, std::bitset<N> const& rhs) noexcept
+{
+        return lhs &= ~rhs;
+}
+
+template<std::size_t N>
 auto& left_shift_assign(std::bitset<N>& bs, std::size_t pos) noexcept
 {
         return bs <<= pos;
@@ -137,7 +143,7 @@ auto at(std::bitset<N>& bs, std::size_t pos, bool val) // Throws: Nothing.
 template<std::size_t N>
 auto operator-(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return lhs & ~rhs;
+        auto nrv{lhs}; nrv -= rhs; return nrv;
 }
 
 template<std::size_t N>
@@ -149,19 +155,19 @@ auto is_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 template<std::size_t N>
 auto is_superset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return is_subset_of(rhs, lhs);
+        return (rhs & ~lhs).none();
 }
 
 template<std::size_t N>
 auto is_proper_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return is_subset_of(lhs, rhs) && lhs != rhs;
+        return (lhs | ~rhs).none();
 }
 
 template<std::size_t N>
 auto is_proper_superset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return is_superset_of(lhs, rhs) && lhs != rhs;
+        return (rhs | ~lhs).none();
 }
 
 template<std::size_t N>
@@ -171,9 +177,9 @@ auto intersects(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 }
 
 template<std::size_t N>
-auto disjoint(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
+auto is_disjoint(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return !intersects(lhs, rhs);
+        return (lhs & rhs).none();
 }
 
 }       // namespace xstd

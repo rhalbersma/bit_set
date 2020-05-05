@@ -5,7 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <traits.hpp>                   // has_forward_iterator, has_hinted_insert, has_op_minus_assign, has_resize
+#include <traits.hpp>                   // has_forward_iterator, has_hinted_insert, has_resize
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_LE, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <algorithm>                    // copy_if, equal, find, includes, lexicographical_compare,
                                         // set_difference, set_intersection, set_symmetric_difference, set_union, transform
@@ -80,19 +80,16 @@ struct op_xor_assign
 
 struct op_minus_assign
 {
-        template<class BitSet>
-        auto operator()(BitSet& lhs [[maybe_unused]], BitSet const& rhs [[maybe_unused]]) const noexcept
+        auto operator()(auto& lhs, auto const& rhs) const noexcept
         {
-                if constexpr (tti::has_op_minus_assign<BitSet>) {
-                        BOOST_CHECK_EQUAL(fn_size(lhs), fn_size(rhs));
-                        auto const src = lhs;
-                        auto const& dst = lhs -= rhs;
+                BOOST_CHECK_EQUAL(fn_size(lhs), fn_size(rhs));
+                auto const src = lhs;
+                auto const& dst = lhs -= rhs;
 
-                        for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
-                                BOOST_CHECK_EQUAL(at(dst, i), at(rhs, i) ? false : at(src, i));
-                        }
-                        BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));
+                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
+                        BOOST_CHECK_EQUAL(at(dst, i), at(rhs, i) ? false : at(src, i));
                 }
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));
         }
 };
 
@@ -555,10 +552,8 @@ struct op_minus
         template<class BitSet>
         auto operator()(BitSet const& a, BitSet const& b) const noexcept
         {
-                if constexpr (tti::has_op_minus_assign<BitSet>) {
-                        auto expected = a; expected -= b;
-                        BOOST_CHECK_EQUAL(a - b, expected);
-                }
+                auto expected = a; expected -= b;
+                BOOST_CHECK_EQUAL(a - b, expected);
 
                 BOOST_CHECK_EQUAL(a - b, (a & ~b));
                 BOOST_CHECK_EQUAL(~(a - b), (~a | b));
@@ -566,7 +561,7 @@ struct op_minus
                 BOOST_CHECK_EQUAL(a - b, (a | b) - b);
                 BOOST_CHECK_EQUAL(a - b, a - (a & b));
                 BOOST_CHECK(is_subset_of(a - b, a));
-                BOOST_CHECK(disjoint(a - b, b));
+                BOOST_CHECK(is_disjoint(a - b, b));
 
                 if constexpr (tti::has_hinted_insert<BitSet>) {
                         auto const lhs = a - b;
@@ -577,7 +572,7 @@ struct op_minus
         }
 };
 
-struct fn_is_subset_of
+struct mem_is_subset_of
 {
         auto operator()(auto const& a) const noexcept
         {
@@ -593,6 +588,8 @@ struct fn_is_subset_of
                         expected &= !at(a, i) || at(b, i);
                 }
                 BOOST_CHECK_EQUAL(is_subset_of(a, b), expected);
+                BOOST_CHECK_EQUAL(is_subset_of(a, b), none(a - b));
+                BOOST_CHECK_EQUAL(is_subset_of(a, b), (a & b) == a);
 
                 if constexpr (tti::has_forward_iterator<BitSet>) {
                         BOOST_CHECK_EQUAL(is_subset_of(a, b), std::includes(begin(a), end(a), begin(b), end(b)));
@@ -605,7 +602,7 @@ struct fn_is_subset_of
         }
 };
 
-struct fn_is_superset_of
+struct mem_is_superset_of
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
@@ -613,15 +610,16 @@ struct fn_is_superset_of
         }
 };
 
-struct fn_is_proper_subset_of
+struct mem_is_proper_subset_of
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(is_proper_subset_of(a, b), is_subset_of(a, b) && !is_subset_of(b, a));
+                BOOST_CHECK_EQUAL(is_proper_subset_of(a, b), is_subset_of(a, b) && a != b);
         }
 };
 
-struct fn_is_proper_superset_of
+struct mem_is_proper_superset_of
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
@@ -629,7 +627,7 @@ struct fn_is_proper_superset_of
         }
 };
 
-struct fn_intersects
+struct mem_intersects
 {
         auto operator()(auto const& a) const noexcept
         {
@@ -643,12 +641,12 @@ struct fn_intersects
         }
 };
 
-struct fn_disjoint
+struct fn_is_disjoint
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(disjoint(a, b), none(a & b));
-                BOOST_CHECK_EQUAL(disjoint(a, b), !intersects(a, b));
+                BOOST_CHECK_EQUAL(is_disjoint(a, b), none(a & b));
+                BOOST_CHECK_EQUAL(is_disjoint(a, b), !intersects(a, b));
         }
 };
 

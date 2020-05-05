@@ -187,4 +187,34 @@ constexpr auto at(bit_set<N, Block>& bs, std::size_t pos, bool val) // Throws: N
         return bs;
 }
 
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] auto is_subset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+{
+        return lhs.is_subset_of(rhs);
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] auto is_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+{
+        return lhs.is_superset_of(rhs);
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] auto is_proper_subset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+{
+        return lhs.is_proper_subset_of(rhs);
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] auto is_proper_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+{
+        return lhs.is_proper_superset_of(rhs);
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] auto intersects(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+{
+        return lhs.intersects(rhs);
+}
+
 }       // namespace xstd

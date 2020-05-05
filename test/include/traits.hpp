@@ -60,14 +60,6 @@ inline constexpr auto has_ilist_erase<IntSet, std::void_t<decltype(
 )>> = true;
 
 template<class IntSet, class = void>
-inline constexpr auto has_op_minus_assign = false;
-
-template<class IntSet>
-inline constexpr auto has_op_minus_assign<IntSet, std::void_t<decltype(
-        std::declval<IntSet>() -= std::declval<IntSet>()
-)>> = true;
-
-template<class IntSet, class = void>
 inline constexpr auto has_resize = false;
 
 template<class IntSet>

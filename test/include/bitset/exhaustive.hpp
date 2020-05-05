@@ -6,6 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <traits.hpp>   // has_resize
+#include <cassert>      // assert
 #include <cstddef>      // size_t
 #include <utility>      // declval
 
@@ -23,6 +24,7 @@ inline constexpr auto L0 = 256;
 inline constexpr auto L1 = 128;
 inline constexpr auto L2 =  64;
 inline constexpr auto L3 =  32;
+inline constexpr auto L4 =  16;
 
 // NOTE: these tests are O(1)
 
@@ -30,7 +32,7 @@ template<class BitSet>
 auto empty_set(auto fun)
 {
         auto const N = limit_v<BitSet, L0>;
-        BitSet bs0; resize(bs0, N);
+        BitSet bs0; resize(bs0, N); assert(count(bs0) == 0);
         fun(bs0);
 }
 
@@ -38,7 +40,7 @@ template<class BitSet>
 auto full_set(auto fun)
 {
         auto const N = limit_v<BitSet, L0>;
-        BitSet bsN; resize(bsN, N, true);
+        BitSet bsN; resize(bsN, N, true); assert(count(bsN) == N);
         fun(bsN);
 }
 
@@ -72,7 +74,7 @@ auto all_singleton_sets(auto fun)
 {
         auto const N = limit_v<BitSet, L1>;
         for (auto i = decltype(N){0}; i < N; ++i) {
-                BitSet bs1; resize(bs1, N); set(bs1, i);
+                BitSet bs1; resize(bs1, N); set(bs1, i); assert(count(bs1) == 1);
                 fun(bs1);
         }
 }
@@ -84,9 +86,9 @@ auto all_singleton_set_pairs(auto fun)
 {
         auto const N = limit_v<BitSet, L2>;
         for (auto i = decltype(N){0}; i < N; ++i) {
-                BitSet bs1_i; resize(bs1_i, N); set(bs1_i, i);
+                BitSet bs1_i; resize(bs1_i, N); set(bs1_i, i); assert(count(bs1_i) == 1);
                 for (auto j = decltype(N){0}; j < N; ++j) {
-                        BitSet bs1_j; resize(bs1_j, N); set(bs1_j, j);
+                        BitSet bs1_j; resize(bs1_j, N); set(bs1_j, j); assert(count(bs1_j) == 1);
                         fun(bs1_i, bs1_j);
                 }
         }
@@ -99,12 +101,31 @@ auto all_singleton_set_triples(auto fun)
 {
         auto const N = limit_v<BitSet, L3>;
         for (auto i = decltype(N){0}; i < N; ++i) {
-                BitSet bs1_i; resize(bs1_i, N); set(bs1_i, i);
+                BitSet bs1_i; resize(bs1_i, N); set(bs1_i, i); assert(count(bs1_i) == 1);
                 for (auto j = decltype(N){0}; j < N; ++j) {
-                        BitSet bs1_j; resize(bs1_j, N); set(bs1_j, j);
+                        BitSet bs1_j; resize(bs1_j, N); set(bs1_j, j); assert(count(bs1_j) == 1);
                         for (auto k = decltype(N){0}; k < N; ++k) {
-                                BitSet bs1_k; resize(bs1_k, N); set(bs1_k, k);
+                                BitSet bs1_k; resize(bs1_k, N); set(bs1_k, k); assert(count(bs1_k) == 1);
                                 fun(bs1_i, bs1_j, bs1_k);
+                        }
+                }
+        }
+}
+
+// NOTE: this test is O(N^4)
+
+template<class BitSet>
+auto all_doubleton_set_pairs(auto fun)
+{
+        auto const N = limit_v<BitSet, L4>;
+        for (auto j = decltype(N){1}; j < N; ++j) {
+                for (auto i = decltype(N){0}; i < j; ++i) {
+                        BitSet bs2_ij; resize(bs2_ij, N); set(bs2_ij, i); set(bs2_ij, j); assert(count(bs2_ij) == 2);
+                        for (auto n = decltype(N){1}; n < N; ++n) {
+                                for (auto m = decltype(N){0}; m < n; ++m) {
+                                        BitSet bs2_mn; resize(bs2_mn, N); set(bs2_mn, m); set(bs2_mn, n); assert(count(bs2_mn) == 2);
+                                        fun(bs2_ij, bs2_mn);
+                                }
                         }
                 }
         }

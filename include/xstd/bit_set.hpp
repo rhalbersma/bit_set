@@ -838,43 +838,80 @@ public:
                 }
         }
 
-        [[nodiscard]] friend constexpr auto is_subset_of(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        [[nodiscard]] constexpr auto is_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
                         return true;
                 } else if constexpr (num_logical_blocks == 1) {
-                        return !(lhs.m_data[0] & ~rhs.m_data[0]);
+                        return !(m_data[0] & ~other.m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
                         return
-                                !(lhs.m_data[0] & ~rhs.m_data[0]) &&
-                                !(lhs.m_data[1] & ~rhs.m_data[1])
+                                !(m_data[0] & ~other.m_data[0]) &&
+                                !(m_data[1] & ~other.m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
                         return std::equal(
-                                std::begin(lhs.m_data), std::end(lhs.m_data),
-                                std::begin(rhs.m_data), std::end(rhs.m_data),
+                                std::begin(m_data), std::end(m_data),
+                                std::begin(other.m_data), std::end(other.m_data),
                                 [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
                         );
                 }
         }
 
-        [[nodiscard]] friend constexpr auto intersects(bit_set const& lhs [[maybe_unused]], bit_set const& rhs [[maybe_unused]]) noexcept
+        [[nodiscard]] constexpr auto is_superset_of(bit_set const& other) const noexcept
+        {
+                return other.is_subset_of(*this);
+        }
+
+        [[nodiscard]] constexpr auto is_proper_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
+                -> bool
+        {
+                if constexpr (num_logical_blocks < 3) {
+                        return is_subset_of(other) && !other.is_subset_of(*this);
+                } else {
+                        auto i = 0;
+                        for (/* init-statement before loop */; i < num_logical_blocks; ++i) {
+                                if (m_data[i] & ~other.m_data[i]) {
+                                        return false;
+                                }
+                                if (~m_data[i] & other.m_data[i]) {
+                                        break;
+                                }
+                        }
+                        if (i == num_logical_blocks) {
+                                return false;
+                        }
+                        ++i;
+                        return std::equal(
+                                std::next(std::begin(m_data), i), std::end(m_data),
+                                std::next(std::begin(other.m_data), i), std::end(other.m_data),
+                                [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
+                        );
+                }
+        }
+
+        [[nodiscard]] constexpr auto is_proper_superset_of(bit_set const& other) const noexcept
+        {
+                return other.is_proper_subset_of(*this);
+        }
+
+        [[nodiscard]] constexpr auto intersects(bit_set const& other [[maybe_unused]]) const noexcept
                 -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
                         return false;
                 } else if constexpr (num_logical_blocks == 1) {
-                        return lhs.m_data[0] & rhs.m_data[0];
+                        return m_data[0] & other.m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
                         return
-                                (lhs.m_data[0] & rhs.m_data[0]) ||
-                                (lhs.m_data[1] & rhs.m_data[1])
+                                (m_data[0] & other.m_data[0]) ||
+                                (m_data[1] & other.m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
                         return !std::equal(
-                                std::begin(lhs.m_data), std::end(lhs.m_data),
-                                std::begin(rhs.m_data), std::end(rhs.m_data),
+                                std::begin(m_data), std::end(m_data),
+                                std::begin(other.m_data), std::end(other.m_data),
                                 [](auto wL, auto wR) -> bool { return !(wL & wR); }
                         );
                 }
@@ -1215,27 +1252,9 @@ template<std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto is_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr auto is_disjoint(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
-        return is_subset_of(rhs, lhs);
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto is_proper_subset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
-{
-        return is_subset_of(lhs, rhs) && !is_subset_of(rhs, lhs);
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto is_proper_superset_of(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
-{
-        return is_superset_of(lhs, rhs) && !is_superset_of(rhs, lhs);
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto disjoint(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
-{
-        return !intersects(lhs, rhs);
+        return !lhs.intersects(rhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>

@@ -14,8 +14,8 @@
                                                 // op_shift_left_assign, op_shift_right_assign, op_compl,
                                                 // op_equal_to, op_not_equal_to, op_less, op_greater, op_greater_equal, op_less_equal,
                                                 // op_shift_left, op_shift_right, op_bitand, op_bitor, op_xor, op_minus,
-                                                // fn_is_subset_of, fn_is_superset_of, fn_is_proper_subset_of, fn_is_proper_superset_of,
-                                                // fn_intersect, fn_disjoint
+                                                // mem_is_subset_of, mem_is_superset_of, mem_is_proper_subset_of, mem_is_proper_superset_of,
+                                                // mem_intersect, fn_is_disjoint
 #include <xstd/bit_set.hpp>                     // bit_set
 #include <boost/dynamic_bitset.hpp>             // dynamic_bitset
 #include <boost/mpl/vector.hpp>                 // vector
@@ -103,13 +103,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
         all_singleton_set_pairs<T>(op_xor{});
         all_singleton_set_pairs<T>(op_minus{});
 
-        all_singleton_set_pairs<T>(fn_is_subset_of{});
-        all_singleton_set_pairs<T>(fn_is_superset_of{});
-        all_singleton_set_pairs<T>(fn_is_proper_subset_of{});
-        all_singleton_set_pairs<T>(fn_is_proper_superset_of{});
+        all_singleton_set_pairs<T>(mem_is_subset_of{});
+        all_singleton_set_pairs<T>(mem_is_superset_of{});
+        all_singleton_set_pairs<T>(mem_is_proper_subset_of{});
+        all_singleton_set_pairs<T>(mem_is_proper_superset_of{});
 
-        all_singleton_set_pairs<T>(fn_intersects{});
-        all_singleton_set_pairs<T>(fn_disjoint{});
+        all_singleton_set_pairs<T>(mem_intersects{});
+        all_singleton_set_pairs<T>(fn_is_disjoint{});
 }
 
 BOOST_AUTO_TEST_SUITE_END()

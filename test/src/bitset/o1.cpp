@@ -11,7 +11,7 @@
 #include <bitset/compatible/dynamic_bitset.hpp> // dynamic_bitset
 #include <bitset/exhaustive.hpp>                // empty_set, full_set, all_values, all_cardinality_sets, all_singleton_sets
 #include <bitset/primitives.hpp>                // mem_set, mem_reset, op_compl, mem_flip, mem_count, mem_size, mem_test, mem_all, mem_any, mem_none
-                                                // mem_at, op_bitand, op_bitor, op_xor, op_minus, fn_is_subset_of, fn_intersects
+                                                // mem_at, op_bitand, op_bitor, op_xor, op_minus, mem_is_subset_of, mem_intersects
 #include <xstd/bit_set.hpp>                     // bit_set
 #include <boost/dynamic_bitset.hpp>             // dynamic_bitset
 #include <boost/mpl/vector.hpp>                 // vector
@@ -178,11 +178,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
         all_singleton_sets<T>(op_xor{});
         all_singleton_sets<T>(op_minus{});
 
-        all_cardinality_sets<T>(fn_is_subset_of{});
-        all_singleton_sets<T>(fn_is_subset_of{});
+        all_cardinality_sets<T>(mem_is_subset_of{});
+        all_singleton_sets<T>(mem_is_subset_of{});
 
-        all_cardinality_sets<T>(fn_intersects{});
-        all_singleton_sets<T>(fn_intersects{});
+        all_cardinality_sets<T>(mem_intersects{});
+        all_singleton_sets<T>(mem_intersects{});
 
         all_cardinality_sets<T>(fn_iostream{});
         all_singleton_sets<T>(fn_iostream{});
