@@ -5,6 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <iostream.hpp>                 // operator<<, operator>>
 #include <traits.hpp>                   // has_forward_iterator, has_hinted_insert, has_resize
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_LE, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <algorithm>                    // copy_if, equal, find, includes, lexicographical_compare,

@@ -13,7 +13,6 @@
 #include <cstdint>              // uint64_t
 #include <functional>           // less
 #include <initializer_list>     // initializer_list
-#include <iosfwd>               // basic_ostream
 #include <iterator>             // bidirectional_iterator_tag, begin, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
@@ -872,18 +871,14 @@ public:
                 } else {
                         auto i = 0;
                         for (/* init-statement before loop */; i < num_logical_blocks; ++i) {
-                                if (m_data[i] & ~other.m_data[i]) {
-                                        return false;
-                                }
                                 if (~m_data[i] & other.m_data[i]) {
                                         break;
                                 }
+                                if (m_data[i] & ~other.m_data[i]) {
+                                        return false;
+                                }
                         }
-                        if (i == num_logical_blocks) {
-                                return false;
-                        }
-                        ++i;
-                        return std::equal(
+                        return (i == num_logical_blocks) ? false : std::equal(
                                 std::next(std::begin(m_data), i), std::end(m_data),
                                 std::next(std::begin(other.m_data), i), std::end(other.m_data),
                                 [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
@@ -1352,45 +1347,6 @@ template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto empty(bit_set<N, Block> const& bs) noexcept
 {
         return bs.empty();
-}
-
-template<class CharT, class Traits, std::size_t N, std::unsigned_integral Block>
-auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, bit_set<N, Block> const& bs)
-{
-        ostr << ostr.widen('[');
-        auto first = true;
-        for (auto const x : bs) {
-                if (!first) {
-                        ostr << ostr.widen(',');
-                } else {
-                        first = false;
-                }
-                ostr << x;
-        }
-        ostr << ostr.widen(']');
-        return ostr;
-}
-
-template<class CharT, class Traits, std::size_t N, std::unsigned_integral Block>
-auto& operator>>(std::basic_istream<CharT, Traits>& istr, bit_set<N, Block>& bs)
-{
-        typename bit_set<N, Block>::value_type x;
-        CharT c;
-
-        istr >> c;
-        assert(c == istr.widen('['));
-        istr >> c;
-        for (auto first = true; c != istr.widen(']'); istr >> c) {
-                assert(first == (c != istr.widen(',')));
-                if (first) {
-                        istr.putback(c);
-                        first = false;
-                }
-                istr >> x;
-                assert(0 <= x && x < static_cast<int>(bs.max_size()));
-                bs.insert(x);
-        }
-        return istr;
 }
 
 }       // namespace xstd
