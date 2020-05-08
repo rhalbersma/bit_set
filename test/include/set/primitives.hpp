@@ -13,7 +13,7 @@
                                         // set_difference, set_intersection, set_symmetric_difference, set_union, transform, upper_bound
 #include <compare>                      // strong_ordering
 #include <initializer_list>             // initializer_list
-#include <iterator>                     // distance, empty, inserter, next, prev, size, ssize
+#include <iterator>                     // distance, empty, next, prev, size, ssize
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
 #include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructible_v, is_integral_v, is_same_v, is_signed_v, is_unsigned_v
@@ -376,14 +376,14 @@ struct mem_find
         auto operator()(X& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.find(k)), typename X::iterator>);
-                BOOST_CHECK(b.find(k) == std::find(b.begin(), b.end(), k));
+                BOOST_CHECK(b.find(k) == std::ranges::find(b, k));
         }
 
         template<class X>
         auto operator()(X const& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.find(k)), typename X::const_iterator>);
-                BOOST_CHECK(b.find(k) == std::find(b.begin(), b.end(), k));
+                BOOST_CHECK(b.find(k) == std::ranges::find(b, k));
         }
 };
 
@@ -393,7 +393,7 @@ struct mem_count
         auto operator()(X const& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.count(k)), typename X::size_type>);
-                BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(b.count(k)), std::count(b.begin(), b.end(), k));
+                BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(b.count(k)), std::ranges::count(b, k));
         }
 };
 
@@ -413,14 +413,14 @@ struct mem_lower_bound
         auto operator()(X& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.lower_bound(k)), typename X::iterator>);
-                BOOST_CHECK(b.lower_bound(k) == std::lower_bound(b.begin(), b.end(), k));
+                BOOST_CHECK(b.lower_bound(k) == std::ranges::lower_bound(b, k));
         }
 
         template<class X>
         auto operator()(X const& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.lower_bound(k)), typename X::const_iterator>);
-                BOOST_CHECK(b.lower_bound(k) == std::lower_bound(b.begin(), b.end(), k));
+                BOOST_CHECK(b.lower_bound(k) == std::ranges::lower_bound(b, k));
         }
 };
 
@@ -430,14 +430,14 @@ struct mem_upper_bound
         auto operator()(X& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.upper_bound(k)), typename X::iterator>);
-                BOOST_CHECK(b.upper_bound(k) == std::upper_bound(b.begin(), b.end(), k));
+                BOOST_CHECK(b.upper_bound(k) == std::ranges::upper_bound(b, k));
         }
 
         template<class X>
         auto operator()(X const& b, typename X::key_type const& k) const
         {                                                                       // [associative.reqmts] Table 90
                 static_assert(std::is_same_v<decltype(b.upper_bound(k)), typename X::const_iterator>);
-                BOOST_CHECK(b.upper_bound(k) == std::upper_bound(b.begin(), b.end(), k));
+                BOOST_CHECK(b.upper_bound(k) == std::ranges::upper_bound(b, k));
         }
 };
 
@@ -449,7 +449,6 @@ struct mem_equal_range
                 using iterator = typename X::iterator;
                 static_assert(std::is_same_v<decltype(b.equal_range(k)), std::pair<iterator, iterator>>);
                 BOOST_CHECK(b.equal_range(k) == std::make_pair(b.lower_bound(k), b.upper_bound(k)));
-
                 BOOST_CHECK(b.equal_range(k) == std::equal_range(b.begin(), b.end(), k));
         }
 
@@ -459,7 +458,6 @@ struct mem_equal_range
                 using const_iterator = typename X::const_iterator;
                 static_assert(std::is_same_v<decltype(b.equal_range(k)), std::pair<const_iterator, const_iterator>>);
                 BOOST_CHECK(b.equal_range(k) == std::make_pair(b.lower_bound(k), b.upper_bound(k)));
-
                 BOOST_CHECK(b.equal_range(k) == std::equal_range(b.begin(), b.end(), k));
         }
 };
@@ -474,7 +472,7 @@ struct op_equal_to
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 83
                 static_assert(std::is_convertible_v<decltype(a == b), bool>);
-                BOOST_CHECK_EQUAL(a == b, std::equal(a.begin(), a.end(), b.begin(), b.end()));
+                BOOST_CHECK_EQUAL(a == b, std::ranges::equal(a, b));
                 BOOST_CHECK(!(a == b) || b == a);                               // symmetric
         }
 
@@ -519,7 +517,7 @@ struct op_less
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [container.requirements.general] Table 85
                 static_assert(std::is_convertible_v<decltype(a < b), bool>);
-                BOOST_CHECK_EQUAL(a < b, std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
+                BOOST_CHECK_EQUAL(a < b, std::ranges::lexicographical_compare(a, b));
                 BOOST_CHECK(!(a < b) || !(b < a));                              // asymmetric
         }
 

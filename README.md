@@ -236,17 +236,55 @@ The bitwise operators (`&=`, `|=`, `^=`, `-=`, `~`, `&`, `|`, `^`, `-`) from `st
 
 The bitwise-shift operators (`<<=`, `>>=`, `<<`, `>>`) from `std::bitset` and `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax**, but with the **semantic difference** that `xstd::bit_set<N>` does not support bit-shifting for lengths `>= N`. Instead of calling `clear()` for argument values outside the range `[0, N)`, this **behavior is undefined**. Note that these semantics for `xstd::bit_set<N>` are identical to bit-shifting on native unsigned integers. This gives `xstd::bit_set<N>` a small performance benefit over `std::bitset<N>`.
 
-With the exception of `operator~`, the non-member bitwise operators can be reimagined as **composable** and **data-parallel** versions of the set algorithms on sorted ranges from the C++ Standard Library header `<algorithm>`. For the upcoming [Ranges TS](http://en.cppreference.com/w/cpp/experimental/ranges), these algorithms can also be formulated in a composable way, but without the data-parallelism that `xstd::bit_set<N>` provides.
+With the exception of `operator~`, the non-member bitwise operators can be reimagined as **composable** and **data-parallel** versions of the set algorithms on sorted ranges from the C++ Standard Library header `<algorithm>`.
 
-| `xstd::bit_set<N>`                | `std::set<int>` and standard algorithms |
-| :-----------------                | :-------------- |
-| `a.is_subset_of(b)`               | `includes(begin(a), end(a), begin(b), end(b))`
-| `auto c = a & b;`                 | `set<int> c;` <br> `set_intersection(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| <code>auto c = a &#124; b;</code> | `set<int> c;` <br> `set_union(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| `auto c = a ^ b;`                 | `set<int> c;` <br> `set_symmetric_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| `auto c = a - b;`                 | `set<int> c;` <br> `set_difference(begin(a), end(a), begin(b), end(b), inserter(c, end(c)));` |
-| `auto b = a << n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x) { return x + n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x) { return x < N; });` |
-| `auto b = a >> n;`                | `set<int> tmp, b;` <br> `transform(begin(a), end(a), inserter(tmp, end(tmp)), [=](int x) { return x - n; });` <br> `copy_if(begin(tmp), end(tmp), inserter(b, end(b)), [](int x) { return 0 <= x; });` |
+| `xstd::bitset<N>`                 |  `std::set<int>` and constrained algorithms |
+| :----------------                 | :------------------------------------------ |
+| `a.is_subset_of(b)`               | `includes(a, b)`
+| `auto c = a & b;`                 | `set<int> c;` <br> `set_intersection(a, b, inserter(c, end(c)));` |
+| <code>auto c = a &#124; b;</code> | `set<int> c;` <br> `set_union(a, b, inserter(c, end(c)));` |
+| `auto c = a ^ b;`                 | `set<int> c;` <br> `set_symmetric_difference(a, b, inserter(c, end(c)));` |
+| `auto c = a - b;`                 | `set<int> c;` <br> `set_difference(a, b, inserter(c, end(c)));` |
+
+The bitwise shift operators can be reimagined as set **transformations** that add or subtract a non-negative constant to all set elements, followed by **filtering** out elements that would fall outside the range `[0, N)`. Using the C++20 constrained algorithms and range adaptors, including the proposed but not yet standardized `std::ranges::to`, this can also be formulated in a composable way for `std::set<int>`, albeit without the data-parallelism that `xstd::bit_set<N>` provides.
+
+<table>
+<tr>
+    <th> xstd::bit_set&ltN&gt                             </th>
+    <th> std::set&ltint&gt and constrained algorithms with <a href=http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1206r1.pdf>P1206</a> </th>
+</tr>
+<tr>
+<td>
+<pre lang="cpp">
+auto b = a << n;
+</pre>
+</td>
+<td>
+<pre lang="cpp">
+auto b = a
+    | transform([=](auto x) { return x + n; })
+    | filter([](auto x) { return x < N;  })
+    | to&ltstd::set&gt
+;
+</pre>
+</td>
+</tr>
+<tr>
+<td>
+<pre lang="cpp">
+auto b = a >> n;
+</pre>
+</td>
+<td>
+<pre lang="cpp">
+auto b = a
+    | transform([=](auto x) { return x - n; })
+    | filter([](auto x) { return 0 <= x;  })
+    | to&ltstd::set&gt
+;
+</pre>
+</td>
+</tr></table>
 
 ## Frequently Asked Questions
 

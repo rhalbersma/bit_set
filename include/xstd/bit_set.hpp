@@ -6,21 +6,20 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, for_each, lexicographical_compare_three_way, max, none_of, swap_ranges
+#include <bit>                  // countl_zero, countr_zero, popcount
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
-#include <cstdint>              // uint64_t
 #include <functional>           // less
 #include <initializer_list>     // initializer_list
 #include <iterator>             // bidirectional_iterator_tag, begin, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
+#include <ranges>               // drop, take
 #include <tuple>                // tie
-#include <type_traits>          // common_type_t, is_class_v, is_constant_evaluated, make_signed_t
+#include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
-
-namespace xstd {
 
 #if defined(__GNUG__)
 
@@ -55,211 +54,7 @@ namespace xstd {
 
 #endif
 
-namespace builtin {
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto bit1(int n)
-{
-        // The inner static_cast guards against integer overflow for types larger than int.
-        // The outer static_cast guards against integral promotions for types smaller than int.
-        return static_cast<T>(static_cast<T>(1) << n);
-}
-
-#if defined(__GNUG__)
-
-template<std::size_t N>
-[[nodiscard]] constexpr auto get(__uint128_t x) noexcept
-{
-        static_assert(0 <= N && N < 2);
-        return static_cast<uint64_t>(x >> (64 * N));
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto ctznz(T x) // Throws: Nothing.
-{
-        assert(x != 0);
-        if constexpr (sizeof(T) < sizeof(unsigned)) {
-                return __builtin_ctz(static_cast<unsigned>(x));
-        } else if constexpr (sizeof(T) == sizeof(unsigned)) {
-                return __builtin_ctz(x);
-        } else if constexpr (sizeof(T) == sizeof(unsigned long long)) {
-                return __builtin_ctzll(x);
-        } else if constexpr (sizeof(T) == 2 * sizeof(unsigned long long)) {
-                return get<0>(x) != 0 ? __builtin_ctzll(get<0>(x)) : __builtin_ctzll(get<1>(x)) + 64;
-        }
-}
-
-[[nodiscard]] constexpr auto bsfnz(std::unsigned_integral auto x) // Throws: Nothing.
-{
-        assert(x != 0);
-        return ctznz(x);
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto clznz(T x) // Throws: Nothing.
-{
-        assert(x != 0);
-        if constexpr (sizeof(T) < sizeof(unsigned)) {
-                constexpr auto padded_zeros = std::numeric_limits<unsigned>::digits - std::numeric_limits<T>::digits;
-                return __builtin_clz(static_cast<unsigned>(x)) - padded_zeros;
-        } else if constexpr (sizeof(T) == sizeof(unsigned)) {
-                return __builtin_clz(x);
-        } else if constexpr (sizeof(T) == sizeof(unsigned long long)) {
-                return __builtin_clzll(x);
-        } else if constexpr (sizeof(T) == 2 * sizeof(unsigned long long)) {
-                return get<1>(x) != 0 ? __builtin_clzll(get<1>(x)) : __builtin_clzll(get<0>(x)) + 64;
-        }
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto bsrnz(T x) // Throws: Nothing.
-{
-        assert(x != 0);
-        return std::numeric_limits<T>::digits - 1 - clznz(x);
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto popcount(T x) noexcept
-{
-        if constexpr (sizeof(T) < sizeof(unsigned)) {
-                return __builtin_popcount(static_cast<unsigned>(x));
-        } else if constexpr (sizeof(T) == sizeof(unsigned)) {
-                return __builtin_popcount(x);
-        } else if constexpr (sizeof(T) == sizeof(unsigned long long)) {
-                return __builtin_popcountll(x);
-        } else if constexpr (sizeof(T) == 2 * sizeof(unsigned long long)) {
-                return __builtin_popcountll(get<0>(x)) + __builtin_popcountll(get<1>(x));
-        }
-}
-
-#elif defined(_MSC_VER)
-
-#include <intrin.h>
-
-#pragma intrinsic(_BitScanForward)
-#pragma intrinsic(_BitScanReverse)
-#pragma intrinsic(__popcnt)
-
-#if defined(_WIN64)
-
-#pragma intrinsic(_BitScanForward64)
-#pragma intrinsic(_BitScanReverse64)
-#pragma intrinsic(__popcnt64)
-
-#endif
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto bsfnz(T x) // Throws: Nothing.
-{
-        assert(x != 0);
-        if (std::is_constant_evaluated()) {
-                for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
-                        if (x & bit1<T>(i)) {
-                                return i;
-                        }
-                }
-                assert(false);
-                return std::numeric_limits<T>::digits;
-        } else {
-                unsigned long index;
-                if constexpr (sizeof(T) < sizeof(unsigned long)) {
-                        _BitScanForward(&index, static_cast<unsigned long>(x));
-                } else if constexpr (sizeof(T) == sizeof(unsigned long)) {
-                        _BitScanForward(&index, x);
-                } else if constexpr (sizeof(T) == sizeof(uint64_t)) {
-                        _BitScanForward64(&index, x);
-                }
-                return static_cast<int>(index);
-        }
-}
-
-[[nodiscard]] constexpr auto ctznz(std::unsigned_integral auto x) // Throws: Nothing.
-{
-        return bsfnz(x);
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto bsrnz(T x) // Throws: Nothing.
-{
-        assert(x != 0);
-        if (std::is_constant_evaluated()) {
-                for (auto i = std::numeric_limits<T>::digits - 1; i >= 0; --i) {
-                        if (x & bit1<T>(i)) {
-                                return i;
-                        }
-                }
-                assert(false);
-                return -1;
-        } else {
-                unsigned long index;
-                if constexpr (sizeof(T) < sizeof(unsigned long)) {
-                        _BitScanReverse(&index, static_cast<unsigned long>(x));
-                } else if constexpr (sizeof(T) == sizeof(unsigned long)) {
-                        _BitScanReverse(&index, x);
-                } else if constexpr (sizeof(T) == sizeof(uint64_t)) {
-                        _BitScanReverse64(&index, x);
-                }
-                return static_cast<int>(index);
-        }
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto clznz(T x) // Throws: Nothing.
-{
-        assert(x != 0);
-        return std::numeric_limits<T>::digits - 1 - bsrnz(x);
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto popcount(T x) noexcept
-{
-        if (std::is_constant_evaluated()) {
-                auto n = 0;
-                for (auto i = 0; i < std::numeric_limits<T>::digits; ++i) {
-                        if (x & bit1<T>(i)) {
-                                ++n;
-                        }
-                }
-                return n;
-        } else {
-                if constexpr (sizeof(T) < sizeof(unsigned short)) {
-                        return static_cast<int>(__popcnt16(static_cast<unsigned short>(x)));
-                } else if constexpr (sizeof(T) == sizeof(unsigned short)) {
-                        return static_cast<int>(__popcnt16(x));
-                } else if constexpr (sizeof(T) == sizeof(unsigned)) {
-                        return static_cast<int>(__popcnt(x));
-                } else if constexpr (sizeof(T) == sizeof(uint64_t)) {
-                        return static_cast<int>(__popcnt64(x));
-                }
-        }
-}
-
-#endif
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto ctz(T x) noexcept
-{
-        return x ? ctznz(x) : std::numeric_limits<T>::digits;
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto bsf(T x) noexcept
-{
-        return x ? bsfnz(x) : std::numeric_limits<T>::digits;
-}
-
-template<std::unsigned_integral T>
-[[nodiscard]] constexpr auto clz(T x) noexcept
-{
-        return x ? clznz(x) : std::numeric_limits<T>::digits;
-}
-
-[[nodiscard]] constexpr auto bsr(std::unsigned_integral auto x) noexcept
-{
-        return x ? bsrnz(x) : -1;
-}
-
-}       // namespace builtin
+namespace xstd {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
@@ -358,7 +153,7 @@ public:
                                 m_data[1]
                         );
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return std::none_of(std::begin(m_data), std::end(m_data), [](auto block) -> bool {
+                        return std::ranges::none_of(m_data, [](auto block) -> bool {
                                 return block;
                         });
                 }
@@ -377,7 +172,7 @@ public:
                                         m_data[1] == ones
                                 ;
                         } else if constexpr (num_logical_blocks >= 3) {
-                                return std::all_of(std::begin(m_data), std::end(m_data), [](auto block) {
+                                return std::ranges::all_of(m_data, [](auto block) {
                                         return block == ones;
                                 });
                         }
@@ -393,7 +188,7 @@ public:
                         } else if constexpr (num_logical_blocks >= 3) {
                                 return
                                         m_data[0] == no_excess_bits &&
-                                        std::all_of(std::next(std::begin(m_data)), std::end(m_data), [](auto block) {
+                                        std::ranges::all_of(std::ranges::views::drop(m_data, 1), [](auto block) {
                                                 return block == ones;
                                         })
                                 ;
@@ -406,15 +201,16 @@ public:
                 if constexpr (num_logical_blocks == 0) {
                         return 0;
                 } else if constexpr (num_logical_blocks == 1) {
-                        return builtin::popcount(m_data[0]);
+                        return std::popcount(m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
                         return
-                                builtin::popcount(m_data[0]) +
-                                builtin::popcount(m_data[1])
+                                std::popcount(m_data[0]) +
+                                std::popcount(m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
+                        // Range version pending: http://open-std.org/JTC1/SC22/WG21/docs/papers/2019/p1813r0.pdf
                         return std::accumulate(std::begin(m_data), std::end(m_data), 0, [](auto sum, auto block) {
-                                return sum + builtin::popcount(block);
+                                return sum + std::popcount(block);
                         });
                 }
         }
@@ -545,7 +341,7 @@ public:
                         std::swap(m_data[0], other.m_data[0]);
                         std::swap(m_data[1], other.m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        std::swap_ranges(std::begin(m_data), std::end(m_data), std::begin(other.m_data));
+                        std::ranges::swap_ranges(m_data, other.m_data);
                 }
         }
 
@@ -780,7 +576,7 @@ public:
                         auto const L_shift = n % block_size;
 
                         if (L_shift == 0) {
-                                std::copy_backward(std::begin(m_data), std::prev(std::end(m_data), n_block), std::end(m_data));
+                                std::ranges::copy_backward(std::ranges::views::take(m_data, num_logical_blocks - n_block), std::end(m_data));
                         } else {
                                 auto const R_shift = block_size - L_shift;
 
@@ -812,10 +608,7 @@ public:
                         constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[0], bs.m_data[1]); };
                         return tied(*this) == tied(other);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return std::equal(
-                                std::begin(m_data), std::end(m_data),
-                                std::begin(other.m_data), std::end(other.m_data)
-                        );
+                        return std::ranges::equal(m_data, other.m_data);
                 }
         }
 
@@ -850,11 +643,9 @@ public:
                                 !(m_data[1] & ~other.m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return std::equal(
-                                std::begin(m_data), std::end(m_data),
-                                std::begin(other.m_data), std::end(other.m_data),
-                                [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
-                        );
+                        return std::ranges::equal(m_data, other.m_data, [](auto wL, auto wR) -> bool {
+                                return !(wL & ~wR);
+                        });
                 }
         }
 
@@ -878,9 +669,9 @@ public:
                                         return false;
                                 }
                         }
-                        return (i == num_logical_blocks) ? false : std::equal(
-                                std::next(std::begin(m_data), i), std::end(m_data),
-                                std::next(std::begin(other.m_data), i), std::end(other.m_data),
+                        return (i == num_logical_blocks) ? false : std::ranges::equal(
+                                std::ranges::views::drop(m_data, i),
+                                std::ranges::views::drop(other.m_data, i),
                                 [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
                         );
                 }
@@ -904,11 +695,9 @@ public:
                                 (m_data[1] & other.m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return !std::equal(
-                                std::begin(m_data), std::end(m_data),
-                                std::begin(other.m_data), std::end(other.m_data),
-                                [](auto wL, auto wR) -> bool { return !(wL & wR); }
-                        );
+                        return !std::ranges::equal(m_data, other.m_data, [](auto wL, auto wR) -> bool {
+                                return !(wL & wR);
+                        });
                 }
         }
 
@@ -984,21 +773,21 @@ private:
         {
                 assert(!empty());
                 if constexpr (num_logical_blocks == 1) {
-                        return builtin::clznz(m_data[0]);
+                        return std::countl_zero(m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
                         return
                                 m_data[1] ?
-                                builtin::clznz(m_data[1]) :
-                                builtin::clznz(m_data[0]) + block_size
+                                std::countl_zero(m_data[1]) :
+                                std::countl_zero(m_data[0]) + block_size
                         ;
                 } else {
                         auto n = 0;
                         for (auto i = num_storage_blocks - 1; i > 0; --i, n += block_size) {
                                 if (auto const block = m_data[i]; block) {
-                                        return n + builtin::clznz(block);
+                                        return n + std::countl_zero(block);
                                 }
                         }
-                        return n + builtin::clznz(m_data[0]);
+                        return n + std::countl_zero(m_data[0]);
                 }
         }
 
@@ -1006,21 +795,21 @@ private:
         {
                 assert(!empty());
                 if constexpr (num_logical_blocks == 1) {
-                        return num_bits - 1 - builtin::ctznz(m_data[0]);
+                        return num_bits - 1 - std::countr_zero(m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
                         return
                                 m_data[0] ?
-                                num_bits - 1 - builtin::ctznz(m_data[0]) :
-                                block_size - 1 - builtin::ctznz(m_data[1])
+                                num_bits - 1 - std::countr_zero(m_data[0]) :
+                                block_size - 1 - std::countr_zero(m_data[1])
                         ;
                 } else {
                         auto n = num_bits - 1;
                         for (auto i = 0; i < num_storage_blocks - 1; ++i, n -= block_size) {
                                 if (auto const block = m_data[i]; block) {
-                                        return n - builtin::ctznz(block);
+                                        return n - std::countr_zero(block);
                                 }
                         }
-                        return n - builtin::ctznz(m_data[num_storage_blocks - 1]);
+                        return n - std::countr_zero(m_data[num_storage_blocks - 1]);
                 }
         }
 
@@ -1028,13 +817,13 @@ private:
         {
                 if constexpr (num_logical_blocks == 1) {
                         if (m_data[0]) {
-                                return builtin::clznz(m_data[0]);
+                                return std::countl_zero(m_data[0]);
                         }
                 } else if constexpr (num_logical_blocks >= 2) {
                         auto n = 0;
                         for (auto i = num_logical_blocks - 1; i >= 0; --i, n += block_size) {
                                 if (auto const block = m_data[i]; block) {
-                                        return n + builtin::clznz(block);
+                                        return n + std::countl_zero(block);
                                 }
                         }
                 }
@@ -1050,20 +839,20 @@ private:
                 // static_cast to guard against integral promotions of block_type smaller than int.
                 if constexpr (num_logical_blocks == 1) {
                         if (auto const block = static_cast<block_type>(m_data[0] << n); block) {
-                                return n + builtin::clznz(block);
+                                return n + std::countl_zero(block);
                         }
                 } else if constexpr (num_logical_blocks >= 2) {
                         auto i = which(n);
                         if (auto const offset = where(n); offset) {
                                 if (auto const block = static_cast<block_type>(m_data[i] << offset); block) {
-                                        return n + builtin::clznz(block);
+                                        return n + std::countl_zero(block);
                                 }
                                 --i;
                                 n += block_size - offset;
                         }
                         for (/* init-statement before loop */; i >= 0; --i, n += block_size) {
                                 if (auto const block = m_data[i]; block) {
-                                        return n + builtin::clznz(block);
+                                        return n + std::countl_zero(block);
                                 }
                         }
                 }
@@ -1075,24 +864,24 @@ private:
                 assert(is_valid_reference(n));
                 // static_cast to guard against integral promotions of block_type smaller than int.
                 if constexpr (num_logical_blocks == 1) {
-                        return n - builtin::ctznz(static_cast<block_type>(m_data[0] >> (block_size - 1 - n)));
+                        return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (block_size - 1 - n)));
                 } else {
                         if constexpr (num_logical_blocks >= 2) {
                                 auto i = which(n);
                                 if (auto const offset = block_size - 1 - where(n); offset) {
                                         if (auto const block = static_cast<block_type>(m_data[i] >> offset); block) {
-                                                return n - builtin::ctznz(block);
+                                                return n - std::countr_zero(block);
                                         }
                                         ++i;
                                         n -= block_size - offset;
                                 }
                                 for (/* init-statement before loop */; i < num_storage_blocks - 1; ++i, n -= block_size) {
                                         if (auto const block = m_data[i]; block) {
-                                                return n - builtin::ctznz(block);
+                                                return n - std::countr_zero(block);
                                         }
                                 }
                         }
-                        return n - builtin::ctznz(m_data[num_storage_blocks - 1]);
+                        return n - std::countr_zero(m_data[num_storage_blocks - 1]);
                 }
         }
 

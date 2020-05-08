@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, int_set_types)
 {
         auto src = T { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };
         std::set<int_> dst;
-        std::copy(src.begin(), src.end(), std::inserter(dst, dst.end()));
+        std::ranges::copy(src, std::inserter(dst, dst.end()));
         BOOST_CHECK_EQUAL_COLLECTIONS(src.begin(), src.end(), dst.begin(), dst.end());
 }
 

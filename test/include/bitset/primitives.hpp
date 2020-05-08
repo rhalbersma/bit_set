@@ -13,6 +13,7 @@
 #include <cstddef>                      // ptrdiff_t, size_t
 #include <iterator>                     // distance, inserter
 #include <memory>                       // addressof
+#include <ranges>                       // filter, transform
 #include <set>                          // set
 #include <sstream>                      // stringstream
 #include <stdexcept>                    // out_of_range
@@ -300,7 +301,7 @@ struct op_equal_to
                 BOOST_CHECK_EQUAL(a == b, expected);                            // [bitset.members]/36
 
                 if constexpr (tti::has_forward_iterator<BitSet>) {
-                        BOOST_CHECK_EQUAL(a == b, std::equal(begin(a), end(a), begin(b), end(b)));
+                        BOOST_CHECK_EQUAL(a == b, std::ranges::equal(a, b));
                 }
         }
 };
@@ -331,7 +332,7 @@ struct mem_test
 
                 if constexpr (tti::has_forward_iterator<BitSet>) {
                         using value_type = typename decltype(begin(bs))::value_type;
-                        BOOST_CHECK_EQUAL(test(bs, pos), std::find(begin(bs), end(bs), static_cast<value_type>(pos)) != end(bs));
+                        BOOST_CHECK_EQUAL(test(bs, pos), std::ranges::find(bs, static_cast<value_type>(pos)) != end(bs));
                 }
         }
 };
@@ -377,14 +378,17 @@ struct op_shift_left
 
                 if constexpr (tti::has_hinted_insert<BitSet>) {
                         auto const lhs = left_shift(bs, pos);
-                        std::set<int> tmp;
-                        std::transform(bs.begin(), bs.end(), std::inserter(tmp, tmp.end()), [=](auto const x) {
-                                return x + static_cast<value_t<BitSet>>(pos);
-                        });
                         BitSet rhs;
-                        std::copy_if(tmp.begin(), tmp.end(), std::inserter(rhs, rhs.end()), [&](auto const x) {
-                                return x < static_cast<value_t<BitSet>>(fn_size(bs));
-                        });
+                        std::ranges::copy(
+                                bs |
+                                std::ranges::views::transform([=](auto x) {
+                                        return x + static_cast<value_t<BitSet>>(pos);
+                                }) |
+                                std::ranges::views::filter([&](auto x) {
+                                        return x < static_cast<value_t<BitSet>>(fn_size(bs));
+                                }),
+                                std::inserter(rhs, rhs.end())
+                        );
                         BOOST_CHECK_EQUAL_COLLECTIONS(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
                 }
         }
@@ -407,14 +411,17 @@ struct op_shift_right
 
                 if constexpr (tti::has_hinted_insert<BitSet>) {
                         auto const lhs = right_shift(bs, pos);
-                        std::set<int> tmp;
-                        std::transform(bs.begin(), bs.end(), std::inserter(tmp, tmp.end()), [=](auto const x) {
-                                return x - static_cast<value_t<BitSet>>(pos);
-                        });
                         BitSet rhs;
-                        std::copy_if(tmp.begin(), tmp.end(), std::inserter(rhs, rhs.end()), [](auto const x) {
-                                return 0 <= x;
-                        });
+                        std::ranges::copy(
+                                bs |
+                                std::ranges::views::transform([=](auto x) {
+                                        return x - static_cast<value_t<BitSet>>(pos);
+                                }) |
+                                std::ranges::views::filter([](auto x) {
+                                        return 0 <= x;
+                                }),
+                                std::inserter(rhs, rhs.end())
+                        );
                         BOOST_CHECK_EQUAL_COLLECTIONS(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
                 }
         }
@@ -468,7 +475,7 @@ struct op_bitand
                 if constexpr (tti::has_hinted_insert<BitSet>) {
                         auto const lhs = a & b;
                         BitSet rhs;
-                        std::set_intersection(a.cbegin(), a.cend(), b.cbegin(), b.cend(), std::inserter(rhs, rhs.end()));
+                        std::ranges::set_intersection(a, b, std::inserter(rhs, rhs.end()));
                         BOOST_CHECK_EQUAL(lhs, rhs);
                 }
         }
@@ -500,7 +507,7 @@ struct op_bitor
                 if constexpr (tti::has_hinted_insert<BitSet>) {
                         auto const lhs = a | b;
                         BitSet rhs;
-                        std::set_union(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
+                        std::ranges::set_union(a, b, std::inserter(rhs, rhs.end()));
                         BOOST_CHECK_EQUAL(lhs,rhs);
                 }
         }
@@ -531,7 +538,7 @@ struct op_xor
                 if constexpr (tti::has_hinted_insert<BitSet>) {
                         auto const lhs = a ^ b;
                         BitSet rhs;
-                        std::set_symmetric_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
+                        std::ranges::set_symmetric_difference(a, b, std::inserter(rhs, rhs.end()));
                         BOOST_CHECK_EQUAL(lhs, rhs);
                 }
         }
@@ -567,7 +574,7 @@ struct op_minus
                 if constexpr (tti::has_hinted_insert<BitSet>) {
                         auto const lhs = a - b;
                         BitSet rhs;
-                        std::set_difference(a.begin(), a.end(), b.begin(), b.end(), std::inserter(rhs, rhs.end()));
+                        std::ranges::set_difference(a, b, std::inserter(rhs, rhs.end()));
                         BOOST_CHECK_EQUAL(lhs, rhs);
                 }
         }
@@ -593,7 +600,7 @@ struct mem_is_subset_of
                 BOOST_CHECK_EQUAL(is_subset_of(a, b), (a & b) == a);
 
                 if constexpr (tti::has_forward_iterator<BitSet>) {
-                        BOOST_CHECK_EQUAL(is_subset_of(a, b), std::includes(begin(a), end(a), begin(b), end(b)));
+                        BOOST_CHECK_EQUAL(is_subset_of(a, b), std::ranges::includes(a, b));
                 }
         }
 
