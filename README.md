@@ -260,32 +260,32 @@ The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **tra
 <tr>
     <td>
         <pre lang="cpp">
-        auto b = a << n;
+auto b = a << n;
         </pre>
     </td>
     <td>
         <pre lang="cpp">
-        auto b = a
-            | transform([=](auto x) { return x + n; })
-            | filter([](auto x) { return x < N;  })
-            | to&ltstd::set&gt
-        ;
+auto b = a
+    | transform([=](auto x) { return x + n; })
+    | filter([](auto x) { return x < N;  })
+    | to&ltstd::set&gt
+;
         </pre>
     </td>
 </tr>
 <tr>
     <td>
         <pre lang="cpp">
-        auto b = a >> n;
+auto b = a >> n;
         </pre>
     </td>
     <td>
         <pre lang="cpp">
-        auto b = a
-            | transform([=](auto x) { return x - n; })
-            | filter([](auto x) { return 0 <= x;  })
-            | to&ltstd::set&gt
-        ;
+auto b = a
+    | transform([=](auto x) { return x - n; })
+    | filter([](auto x) { return 0 <= x;  })
+    | to&ltstd::set&gt
+;
         </pre>
     </td>
 </tr>
