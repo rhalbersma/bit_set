@@ -21,23 +21,6 @@
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
 
-#if defined(__GNUG__)
-
-#define DO_PRAGMA(X) _Pragma(#X)
-#define PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED(X)   \
-        _Pragma("GCC diagnostic push")          \
-        DO_PRAGMA(GCC diagnostic ignored X)
-
-#define PRAGMA_GCC_DIAGNOSTIC_POP               \
-        _Pragma("GCC diagnostic pop")
-
-#else
-
-#define PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED(X)
-#define PRAGMA_GCC_DIAGNOSTIC_POP
-
-#endif
-
 #if defined(_MSC_VER)
 
 #define PRAGMA_VC_WARNING_PUSH_DISABLE(X)       \
@@ -250,9 +233,7 @@ public:
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
-                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] |= single_bit_mask(where(x));
-                        PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 assert(contains(x));
                 return { { this, x }, true };
@@ -310,9 +291,8 @@ public:
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
-                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
-                        m_data[which(x)] &= ~single_bit_mask(where(x));
-                        PRAGMA_GCC_DIAGNOSTIC_POP
+                        // static_cast to guard against integral promotions of block_type smaller than int.
+                        m_data[which(x)] &= static_cast<block_type>(~single_bit_mask(where(x)));
                 }
                 assert(!contains(x));
                 return 1;
@@ -363,9 +343,7 @@ public:
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
-                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[which(x)] ^= single_bit_mask(where(x));
-                        PRAGMA_GCC_DIAGNOSTIC_POP
                 }
                 return *this;
         }
@@ -506,20 +484,15 @@ public:
 
         constexpr auto& operator-=(bit_set const& other [[maybe_unused]]) noexcept
         {
+                // static_cast to guard against integral promotions of block_type smaller than int.
                 if constexpr (num_logical_blocks == 1) {
-                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
-                        m_data[0] &= ~other.m_data[0];
-                        PRAGMA_GCC_DIAGNOSTIC_POP
+                        m_data[0] &= static_cast<block_type>(~other.m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
-                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
-                        m_data[0] &= ~other.m_data[0];
-                        m_data[1] &= ~other.m_data[1];
-                        PRAGMA_GCC_DIAGNOSTIC_POP
+                        m_data[0] &= static_cast<block_type>(~other.m_data[0]);
+                        m_data[1] &= static_cast<block_type>(~other.m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
                         for (auto i = 0; i < num_logical_blocks; ++i) {
-                                PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
-                                m_data[i] &= ~other.m_data[i];
-                                PRAGMA_GCC_DIAGNOSTIC_POP
+                                m_data[i] &= static_cast<block_type>(~other.m_data[i]);
                         }
                 }
                 return *this;
@@ -529,9 +502,7 @@ public:
         {
                 assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
-                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] >>= n;
-                        PRAGMA_GCC_DIAGNOSTIC_POP
                 } else if constexpr (num_logical_blocks >= 2) {
                         if (n == 0) {
                                 return *this;
@@ -564,9 +535,7 @@ public:
         {
                 assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
-                        PRAGMA_GCC_DIAGNOSTIC_PUSH_IGNORED("-Wconversion")
                         m_data[0] <<= n;
-                        PRAGMA_GCC_DIAGNOSTIC_POP
                 } else if constexpr (num_logical_blocks >= 2) {
                         if (n == 0) {
                                 return *this;
@@ -595,7 +564,7 @@ public:
         }
 
         // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94924
-        // constexpr bool operator==(bit_set const&) const noexcept = default;
+        // bool operator==(bit_set const&) const = default;
 
         [[nodiscard]] constexpr auto operator==(bit_set const& other [[maybe_unused]]) const noexcept
                 -> bool
@@ -605,7 +574,9 @@ public:
                 } else if constexpr (num_logical_blocks <= 1) {
                         return m_data[0] == other.m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
-                        constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[0], bs.m_data[1]); };
+                        constexpr auto tied = [](auto const& bs) {
+                                return std::tie(bs.m_data[0], bs.m_data[1]);
+                        };
                         return tied(*this) == tied(other);
                 } else if constexpr (num_logical_blocks >= 3) {
                         return std::ranges::equal(m_data, other.m_data);
@@ -620,7 +591,9 @@ public:
                 } else if constexpr (num_logical_blocks <= 1) {
                         return other.m_data[0] <=> m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
-                        constexpr auto tied = [](auto const& bs) { return std::tie(bs.m_data[1], bs.m_data[0]); };
+                        constexpr auto tied = [](auto const& bs) {
+                                return std::tie(bs.m_data[1], bs.m_data[0]);
+                        };
                         return tied(other) <=> tied(*this);
                 } else if constexpr (num_logical_blocks >= 3) {
                         return std::lexicographical_compare_three_way(
@@ -672,7 +645,9 @@ public:
                         return (i == num_logical_blocks) ? false : std::ranges::equal(
                                 std::ranges::views::drop(m_data, i),
                                 std::ranges::views::drop(other.m_data, i),
-                                [](auto wL, auto wR) -> bool { return !(wL & ~wR); }
+                                [](auto wL, auto wR) -> bool {
+                                        return !(wL & ~wR);
+                                }
                         );
                 }
         }
@@ -721,8 +696,7 @@ private:
         {
                 static_assert(num_logical_blocks >= 1);
                 assert(0 <= n && n < block_size);
-                // static_cast to guard against integral promotions of block_type smaller than int.
-                return static_cast<block_type>(unit >> n);
+                return unit >> n;
         }
 
         [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
