@@ -143,7 +143,7 @@ auto at(std::bitset<N>& bs, std::size_t pos, bool val) // Throws: Nothing.
 template<std::size_t N>
 auto operator-(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        auto nrv{lhs}; nrv -= rhs; return nrv;
+        auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
 template<std::size_t N>

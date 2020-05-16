@@ -41,12 +41,12 @@ using bitset_types = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsSubsetOf, T, bitset_types)
 {
-        all_doubleton_set_pairs<T>(mem_is_subset_of{});
+        all_doubleton_set_pairs<T>(mem_is_subset_of());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsProperSubsetOf, T, bitset_types)
 {
-        all_doubleton_set_pairs<T>(mem_is_proper_subset_of{});
+        all_doubleton_set_pairs<T>(mem_is_proper_subset_of());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -233,7 +233,7 @@ struct mem_max_size
         auto operator()(X const& a) const noexcept
         {                                                                       // [container.requirements.general] Table 83
                 static_assert(std::is_same_v<decltype(a.max_size()), typename X::size_type>);
-                BOOST_CHECK_EQUAL(a.max_size(), X{}.max_size());
+                BOOST_CHECK_EQUAL(a.max_size(), X().max_size());
                 BOOST_CHECK_LE(a.size(), a.max_size());
         }
 };

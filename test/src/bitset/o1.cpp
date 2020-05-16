@@ -78,114 +78,114 @@ using bitset_types = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 {
         all_singleton_sets<T>([&](auto& bs1) {
-                op_shift_left_assign{}(bs1);
+                op_shift_left_assign()(bs1);
         });
         all_singleton_sets<T>([&](auto& bs1) {
-                op_shift_right_assign{}(bs1);
+                op_shift_right_assign()(bs1);
         });
 
-        all_cardinality_sets<T>(mem_set{});
-        all_singleton_sets<T>(mem_set{});
+        all_cardinality_sets<T>(mem_set());
+        all_singleton_sets<T>(mem_set());
         all_values<T>([](auto pos) {
                 empty_set<T>([&](auto& bs0) {
-                        mem_set{}(bs0, pos);
+                        mem_set()(bs0, pos);
                 });
                 empty_set<T>([&](auto& bs0) {
-                        mem_set{}(bs0, pos, true);
+                        mem_set()(bs0, pos, true);
                 });
                 full_set<T>([&](auto& bsN) {
-                        mem_set{}(bsN, pos, false);
-                });
-        });
-
-        all_cardinality_sets<T>(mem_reset{});
-        all_singleton_sets<T>(mem_reset{});
-        all_values<T>([](auto pos) {
-                full_set<T>([&](auto& bsN) {
-                        mem_reset{}(bsN, pos);
+                        mem_set()(bsN, pos, false);
                 });
         });
 
-        all_cardinality_sets<T>(op_compl{});
-        all_singleton_sets<T>(op_compl{});
+        all_cardinality_sets<T>(mem_reset());
+        all_singleton_sets<T>(mem_reset());
+        all_values<T>([](auto pos) {
+                full_set<T>([&](auto& bsN) {
+                        mem_reset()(bsN, pos);
+                });
+        });
 
-        all_cardinality_sets<T>(mem_flip{});
-        all_singleton_sets<T>(mem_flip{});
+        all_cardinality_sets<T>(op_compl());
+        all_singleton_sets<T>(op_compl());
+
+        all_cardinality_sets<T>(mem_flip());
+        all_singleton_sets<T>(mem_flip());
         all_values<T>([](auto pos) {
                 empty_set<T>([&](auto& bs0) {
-                        mem_flip{}(bs0, pos);
+                        mem_flip()(bs0, pos);
                 });
                 full_set<T>([&](auto& bsN) {
-                        mem_flip{}(bsN, pos);
+                        mem_flip()(bsN, pos);
                 });
        });
 
-        all_cardinality_sets<T>(mem_count{});
+        all_cardinality_sets<T>(mem_count());
 
-        all_cardinality_sets<T>(mem_size{});
-        all_singleton_sets<T>(mem_size{});
+        all_cardinality_sets<T>(mem_size());
+        all_singleton_sets<T>(mem_size());
 
-        all_singleton_sets<T>(mem_test{});
+        all_singleton_sets<T>(mem_test());
         all_values<T>([](auto pos) {
                 empty_set<T>([&](auto const& bs0) {
-                        mem_test{}(bs0, pos);
+                        mem_test()(bs0, pos);
                 });
                 full_set<T>([&](auto const& bsN) {
-                        mem_test{}(bsN, pos);
+                        mem_test()(bsN, pos);
                 });
         });
 
-        all_cardinality_sets<T>(mem_all{});
-        all_cardinality_sets<T>(mem_any{});
-        all_cardinality_sets<T>(mem_none{});
+        all_cardinality_sets<T>(mem_all());
+        all_cardinality_sets<T>(mem_any());
+        all_cardinality_sets<T>(mem_none());
 
         all_singleton_sets<T>([&](auto const& bs1) {
-                op_shift_left{}(bs1);
+                op_shift_left()(bs1);
         });
         all_singleton_sets<T>([&](auto const& bs1) {
-                op_shift_right{}(bs1);
+                op_shift_right()(bs1);
         });
 
         all_values<T>([](auto pos) {
                 empty_set<T>([&](auto const& bs0) {
-                        op_at{}(bs0, pos);
+                        op_at()(bs0, pos);
                 });
                 full_set<T>([&](auto const& bsN) {
-                        op_at{}(bsN, pos);
+                        op_at()(bsN, pos);
                 });
                 empty_set<T>([&](auto& bs0) {
-                        op_at{}(bs0, pos);
+                        op_at()(bs0, pos);
                 });
                 empty_set<T>([&](auto& bs0) {
-                        op_at{}(bs0, pos, false);
+                        op_at()(bs0, pos, false);
                 });
                 empty_set<T>([&](auto& bs0) {
-                        op_at{}(bs0, pos, true);
+                        op_at()(bs0, pos, true);
                 });
                 full_set<T>([&](auto& bsN) {
-                        op_at{}(bsN, pos);
+                        op_at()(bsN, pos);
                 });
                 full_set<T>([&](auto& bsN) {
-                        op_at{}(bsN, pos, false);
+                        op_at()(bsN, pos, false);
                 });
                 full_set<T>([&](auto& bsN) {
-                        op_at{}(bsN, pos, true);
+                        op_at()(bsN, pos, true);
                 });
         });
 
-        all_singleton_sets<T>(op_bitand{});
-        all_singleton_sets<T>(op_bitor{});
-        all_singleton_sets<T>(op_xor{});
-        all_singleton_sets<T>(op_minus{});
+        all_singleton_sets<T>(op_bitand());
+        all_singleton_sets<T>(op_bitor());
+        all_singleton_sets<T>(op_xor());
+        all_singleton_sets<T>(op_minus());
 
-        all_cardinality_sets<T>(mem_is_subset_of{});
-        all_singleton_sets<T>(mem_is_subset_of{});
+        all_cardinality_sets<T>(mem_is_subset_of());
+        all_singleton_sets<T>(mem_is_subset_of());
 
-        all_cardinality_sets<T>(mem_intersects{});
-        all_singleton_sets<T>(mem_intersects{});
+        all_cardinality_sets<T>(mem_intersects());
+        all_singleton_sets<T>(mem_intersects());
 
-        all_cardinality_sets<T>(fn_iostream{});
-        all_singleton_sets<T>(fn_iostream{});
+        all_cardinality_sets<T>(fn_iostream());
+        all_singleton_sets<T>(fn_iostream());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

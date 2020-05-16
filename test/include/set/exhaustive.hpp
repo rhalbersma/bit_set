@@ -19,7 +19,7 @@
 namespace xstd {
 
 template<class T, std::size_t L>
-inline auto const limit_v = static_cast<int>(std::min(L, T{}.max_size()));
+inline auto const limit_v = static_cast<int>(std::min(L, T().max_size()));
 
 inline constexpr auto L1 = 256;
 inline constexpr auto L2 = 128;
@@ -97,7 +97,7 @@ auto all_singleton_sets(auto fun)
 {
         auto const N = limit_v<IntSet, L1>;
         for (auto i = 0; i < N; ++i) {
-                auto is1 = IntSet{ i };
+                auto is1 = IntSet({ i });
                 fun(is1);
         }
 }
@@ -134,7 +134,7 @@ auto all_doubleton_sets(auto fun)
         auto const N = limit_v<IntSet, L2>;
         for (auto j = 1; j < N; ++j) {
                 for (auto i = 0; i < j; ++i) {
-                        auto is2 = IntSet{ i, j };
+                        auto is2 = IntSet({ i, j });
                         fun(is2);
                 }
         }
@@ -145,9 +145,9 @@ auto all_singleton_set_pairs(auto fun)
 {
         auto const N = limit_v<IntSet, L2>;
         for (auto i = 0; i < N; ++i) {
-                auto is1_i = IntSet{ i };
+                auto is1_i = IntSet({ i });
                 for (auto j = 0; j < N; ++j) {
-                        auto is1_j = IntSet{ j };
+                        auto is1_j = IntSet({ j });
                         fun(is1_i, is1_j);
                 }
         }
@@ -160,11 +160,11 @@ auto all_singleton_set_triples(auto fun)
 {
         auto const N = limit_v<IntSet, L3>;
         for (auto i = 0; i < N; ++i) {
-                auto is1_i = IntSet{ i };
+                auto is1_i = IntSet({ i });
                 for (auto j = 0; j < N; ++j) {
-                        auto is1_j = IntSet{ j };
+                        auto is1_j = IntSet({ j });
                         for (auto k = 0; k < N; ++k) {
-                                auto is1_k = IntSet{ k };
+                                auto is1_k = IntSet({ k });
                                 fun(is1_i, is1_j, is1_k);
                         }
                 }
@@ -179,10 +179,10 @@ auto all_doubleton_set_pairs(auto fun)
         auto const N = limit_v<IntSet, L4>;
         for (auto j = 1; j < N; ++j) {
                 for (auto i = 0; i < j; ++i) {
-                        auto is2_ij = IntSet{ i, j };
+                        auto is2_ij = IntSet({ i, j });
                         for (auto n = 1; n < N; ++n) {
                                 for (auto m = 0; m < n; ++m) {
-                                        auto is2_mn = IntSet{ m, n };
+                                        auto is2_mn = IntSet({ m, n });
                                         fun(is2_ij, is2_mn);
                                 }
                         }

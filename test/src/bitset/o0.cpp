@@ -75,7 +75,7 @@ using bitset_types = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 {
-        constructor<T>{}();
+        constructor<T>()();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

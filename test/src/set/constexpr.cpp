@@ -61,8 +61,8 @@ using int_set_types = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Empty, T, int_set_types)
 {
-        constexpr auto b = T{};
-        static_assert(b == T{}.fill().clear());
+        constexpr auto b = T();
+        static_assert(b == T().fill().clear());
         static_assert(b.empty());
         static_assert(b.size() == 0);
         static_assert(b.begin() == b.end());
@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Empty, T, int_set_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Full, T, int_set_types)
 {
-        constexpr auto b = ~T{};
-        static_assert(b == T{}.fill());
+        constexpr auto b = ~T();
+        static_assert(b == T().fill());
         static_assert(b.full());
         static_assert(b.size() == b.max_size());
         static_assert(b.empty() || b.front() == *b.cbegin());

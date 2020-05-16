@@ -62,14 +62,14 @@ using bitset_types = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, bitset_types)
 {
-        all_singleton_set_triples<T>(mem_is_subset_of{});
+        all_singleton_set_triples<T>(mem_is_subset_of());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(AssociativityAndDistributivity, T, bitset_types)
 {
-        all_singleton_set_triples<T>(op_bitand{});
-        all_singleton_set_triples<T>(op_bitor{});
-        all_singleton_set_triples<T>(op_xor{});
+        all_singleton_set_triples<T>(op_bitand());
+        all_singleton_set_triples<T>(op_bitor());
+        all_singleton_set_triples<T>(op_xor());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

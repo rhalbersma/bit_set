@@ -16,7 +16,7 @@ auto& operator<<(std::basic_ostream<CharT, Traits>& ostr, bit_set<N, Block> cons
 {
         ostr << ostr.widen('{');
         auto first = true;
-        for (auto const x : bs) {
+        for (auto x : bs) {
                 if (!first) {
                         ostr << ostr.widen(',');
                 } else {

@@ -283,7 +283,7 @@ struct mem_size
         auto operator()(BitSet const& bs [[maybe_unused]]) const noexcept
         {
                 if constexpr (!tti::has_resize<BitSet>) {
-                        BOOST_CHECK_EQUAL(fn_size(bs), fn_size(BitSet{}));      // [bitset.members]/35
+                        BOOST_CHECK_EQUAL(fn_size(bs), fn_size(BitSet()));      // [bitset.members]/35
                 }
         }
 };

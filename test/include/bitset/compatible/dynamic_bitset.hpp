@@ -209,8 +209,8 @@ public:
 
         [[nodiscard]] constexpr proxy_reference(dynamic_bitset<Block, Allocator> const& bs, value_type const& v) noexcept
         :
-                m_bs{bs},
-                m_value{v}
+                m_bs(bs),
+                m_value(v)
         {
                 assert(0 <= m_value && m_value < bs.size());
         }
@@ -253,8 +253,8 @@ public:
 
         [[nodiscard]] constexpr proxy_iterator(dynamic_bitset<Block, Allocator> const* bs, value_type const& v) // Throws: Nothing.
         :
-                m_bs{bs},
-                m_value{v}
+                m_bs(bs),
+                m_value(v)
         {
                 assert(0 <= m_value && (m_value < bs->size() || m_value == bs->npos));
         }

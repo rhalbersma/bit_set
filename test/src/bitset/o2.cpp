@@ -66,50 +66,50 @@ using bitset_types = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 {
-        all_singleton_set_pairs<T>(op_bitand_assign{});
-        all_singleton_set_pairs<T>(op_bitor_assign{});
-        all_singleton_set_pairs<T>(op_xor_assign{});
-        all_singleton_set_pairs<T>(op_minus_assign{});
+        all_singleton_set_pairs<T>(op_bitand_assign());
+        all_singleton_set_pairs<T>(op_bitor_assign());
+        all_singleton_set_pairs<T>(op_xor_assign());
+        all_singleton_set_pairs<T>(op_minus_assign());
 
         all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto& bs1) {
-                        op_shift_left_assign{}(bs1, pos);
+                        op_shift_left_assign()(bs1, pos);
                 });
         });
         all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto& bs1) {
-                        op_shift_right_assign{}(bs1, pos);
+                        op_shift_right_assign()(bs1, pos);
                 });
         });
 
-        all_singleton_set_pairs<T>(op_compl{});
+        all_singleton_set_pairs<T>(op_compl());
 
-        all_singleton_set_pairs<T>(op_equal_to{});
-        all_singleton_set_pairs<T>(op_not_equal_to{});
+        all_singleton_set_pairs<T>(op_equal_to());
+        all_singleton_set_pairs<T>(op_not_equal_to());
 
         all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
-                        op_shift_left{}(bs1, pos);
+                        op_shift_left()(bs1, pos);
                 });
         });
         all_values<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
-                        op_shift_right{}(bs1, pos);
+                        op_shift_right()(bs1, pos);
                 });
         });
 
-        all_singleton_set_pairs<T>(op_bitand{});
-        all_singleton_set_pairs<T>(op_bitor{});
-        all_singleton_set_pairs<T>(op_xor{});
-        all_singleton_set_pairs<T>(op_minus{});
+        all_singleton_set_pairs<T>(op_bitand());
+        all_singleton_set_pairs<T>(op_bitor());
+        all_singleton_set_pairs<T>(op_xor());
+        all_singleton_set_pairs<T>(op_minus());
 
-        all_singleton_set_pairs<T>(mem_is_subset_of{});
-        all_singleton_set_pairs<T>(mem_is_superset_of{});
-        all_singleton_set_pairs<T>(mem_is_proper_subset_of{});
-        all_singleton_set_pairs<T>(mem_is_proper_superset_of{});
+        all_singleton_set_pairs<T>(mem_is_subset_of());
+        all_singleton_set_pairs<T>(mem_is_superset_of());
+        all_singleton_set_pairs<T>(mem_is_proper_subset_of());
+        all_singleton_set_pairs<T>(mem_is_proper_superset_of());
 
-        all_singleton_set_pairs<T>(mem_intersects{});
-        all_singleton_set_pairs<T>(fn_is_disjoint{});
+        all_singleton_set_pairs<T>(mem_intersects());
+        all_singleton_set_pairs<T>(fn_is_disjoint());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -50,13 +50,13 @@ class int_
 {
         int m_value;
 public:
-        explicit(false) constexpr int_(int v) noexcept : m_value{v} {}
+        explicit(false) constexpr int_(int v) noexcept : m_value(v) {}
         explicit(false) constexpr operator int() const noexcept { return m_value; }
 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, int_set_types)
 {
-        auto src = T { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 };
+        auto src = T({ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 });
         std::set<int_> dst;
         std::ranges::copy(src, std::inserter(dst, dst.end()));
         BOOST_CHECK_EQUAL_COLLECTIONS(src.begin(), src.end(), dst.begin(), dst.end());

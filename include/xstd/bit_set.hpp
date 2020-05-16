@@ -900,8 +900,8 @@ private:
 
                 [[nodiscard]] constexpr proxy_reference(bit_set const& bs, value_type const& v) noexcept
                 :
-                        m_bs{bs},
-                        m_value{v}
+                        m_bs(bs),
+                        m_value(v)
                 {
                         assert(is_valid_reference(m_value));
                 }
@@ -943,8 +943,8 @@ private:
 
                 [[nodiscard]] constexpr proxy_iterator(bit_set const* bs, value_type const& v) // Throws: Nothing.
                 :
-                        m_bs{bs},
-                        m_value{v}
+                        m_bs(bs),
+                        m_value(v)
                 {
                         assert(is_valid_iterator(m_value));
                 }
@@ -994,45 +994,45 @@ private:
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator~(bit_set<N, Block> const& lhs) noexcept
 {
-        auto nrv{lhs}; nrv.complement(); return nrv;
+        auto nrv = lhs; nrv.complement(); return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator&(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
-        auto nrv{lhs}; nrv &= rhs; return nrv;
+        auto nrv = lhs; nrv &= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator|(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
-        auto nrv{lhs}; nrv |= rhs; return nrv;
+        auto nrv = lhs; nrv |= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator^(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
-        auto nrv{lhs}; nrv ^= rhs; return nrv;
+        auto nrv = lhs; nrv ^= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
-        auto nrv{lhs}; nrv -= rhs; return nrv;
+        auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
         assert(0 <= n && n < static_cast<int>(N));
-        auto nrv{lhs}; nrv <<= n; return nrv;
+        auto nrv = lhs; nrv <<= n; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
 {
         assert(0 <= n && n < static_cast<int>(N));
-        auto nrv{lhs}; nrv >>= n; return nrv;
+        auto nrv = lhs; nrv >>= n; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>

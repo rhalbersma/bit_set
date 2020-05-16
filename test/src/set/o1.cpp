@@ -72,69 +72,69 @@ using int_set_types = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
 {
         all_singleton_arrays<T>([](auto const& a1) {
-                constructor<T>{}(a1.begin(), a1.end());
+                constructor<T>()(a1.begin(), a1.end());
         });
         all_singleton_ilists<T>([](auto ilist1) {
-                constructor<T>{}(ilist1);
+                constructor<T>()(ilist1);
         });
 
-        all_cardinality_sets<T>(mem_const_reference{});
-        all_singleton_sets<T>(mem_const_reference{});
+        all_cardinality_sets<T>(mem_const_reference());
+        all_singleton_sets<T>(mem_const_reference());
 
         all_cardinality_sets<T>([](auto& is) {
-                mem_const_iterator{}(is);
+                mem_const_iterator()(is);
         });
         all_cardinality_sets<T>([](auto const& is) {
-                mem_const_iterator{}(is);
+                mem_const_iterator()(is);
         });
         all_singleton_sets<T>([](auto& is1) {
-                mem_const_iterator{}(is1);
+                mem_const_iterator()(is1);
         });
         all_singleton_sets<T>([](auto const& is1) {
-                mem_const_iterator{}(is1);
+                mem_const_iterator()(is1);
         });
 
-        all_cardinality_sets<T>(mem_front{});
-        all_singleton_sets<T>(mem_front{});
+        all_cardinality_sets<T>(mem_front());
+        all_singleton_sets<T>(mem_front());
 
-        all_cardinality_sets<T>(mem_back{});
-        all_singleton_sets<T>(mem_back{});
+        all_cardinality_sets<T>(mem_back());
+        all_singleton_sets<T>(mem_back());
 
-        all_cardinality_sets<T>(mem_empty{});
-        all_cardinality_sets<T>(mem_size{});
-        all_cardinality_sets<T>(mem_max_size{});
-        all_cardinality_sets<T>(mem_capacity{});
+        all_cardinality_sets<T>(mem_empty());
+        all_cardinality_sets<T>(mem_size());
+        all_cardinality_sets<T>(mem_max_size());
+        all_cardinality_sets<T>(mem_capacity());
 
         all_values<T>([](auto const& t) {
                 empty_set<T>([=](auto& is0) {
-                        mem_emplace{}(is0, t);
+                        mem_emplace()(is0, t);
                 });
                 empty_set<T>([=](auto& is0) {
-                        mem_insert{}(is0, t);
+                        mem_insert()(is0, t);
                 });
         });
         all_values<T>([](auto const& t) {
                 empty_set<T>([=](auto& is0) {
-                        mem_emplace_hint{}(is0, is0.end(), t);
+                        mem_emplace_hint()(is0, is0.end(), t);
                 });
                 empty_set<T>([=](auto& is0) {
-                        mem_insert{}(is0, is0.end(), t);
+                        mem_insert()(is0, is0.end(), t);
                 });
         });
         all_singleton_arrays<T>([](auto const& a1) {
                 empty_set<T>([&](auto& is0) {
-                        mem_insert{}(is0, a1.begin(), a1.end());
+                        mem_insert()(is0, a1.begin(), a1.end());
                 });
         });
         all_singleton_ilists<T>([](auto ilist1) {
                 empty_set<T>([&](auto& is0) {
-                        mem_insert{}(is0, ilist1);
+                        mem_insert()(is0, ilist1);
                 });
         });
 
         full_set<T>([](auto& isN) {
                 all_values<T>([&](auto const& k) {
-                        mem_erase{}(isN, k);
+                        mem_erase()(isN, k);
                 });
         });
 
@@ -142,33 +142,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         if constexpr (!std::is_same_v<T, boost::container::flat_set<int>>) {
                 full_set<T>([](auto& isN) {
                         for (auto first = isN.begin(), last = isN.end(); first != last; /* expression inside loop */) {
-                                mem_erase{}(isN, first++);
+                                mem_erase()(isN, first++);
                         }
                 });
                 full_set<T>([](auto& isN) {
-                        mem_erase{}(isN, isN.begin(), isN.end());
+                        mem_erase()(isN, isN.begin(), isN.end());
                 });
         }
 
-        all_cardinality_sets<T>(mem_clear{});
-        all_singleton_sets<T>(mem_clear{});
+        all_cardinality_sets<T>(mem_clear());
+        all_singleton_sets<T>(mem_clear());
 
-        all_cardinality_sets<T>(op_equal_to{});
-        all_singleton_sets<T>(op_equal_to{});
+        all_cardinality_sets<T>(op_equal_to());
+        all_singleton_sets<T>(op_equal_to());
 
-        all_cardinality_sets<T>(op_compare_three_way{});
-        all_singleton_sets<T>(op_compare_three_way{});
+        all_cardinality_sets<T>(op_compare_three_way());
+        all_singleton_sets<T>(op_compare_three_way());
 
         all_cardinality_sets<T>([](auto& is) {
-                fn_iterator{}(is);
+                fn_iterator()(is);
         });
         all_cardinality_sets<T>([](auto const& is) {
-                fn_iterator{}(is);
+                fn_iterator()(is);
         });
 
-        all_cardinality_sets<T>(fn_size{});
-        all_cardinality_sets<T>(fn_ssize{});
-        all_cardinality_sets<T>(fn_empty{});
+        all_cardinality_sets<T>(fn_size());
+        all_cardinality_sets<T>(fn_ssize());
+        all_cardinality_sets<T>(fn_empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
