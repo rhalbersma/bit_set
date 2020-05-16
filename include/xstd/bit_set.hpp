@@ -111,20 +111,20 @@ public:
                 return *this;
         }
 
-        [[nodiscard]] constexpr auto begin()         noexcept { return       iterator{this, find_first()}; }
-        [[nodiscard]] constexpr auto begin()   const noexcept { return const_iterator{this, find_first()}; }
-        [[nodiscard]] constexpr auto end()           noexcept { return       iterator{this, M}; }
-        [[nodiscard]] constexpr auto end()     const noexcept { return const_iterator{this, M}; }
+        [[nodiscard]] constexpr auto begin()         noexcept { return       iterator(this, find_first()); }
+        [[nodiscard]] constexpr auto begin()   const noexcept { return const_iterator(this, find_first()); }
+        [[nodiscard]] constexpr auto end()           noexcept { return       iterator(this, M); }
+        [[nodiscard]] constexpr auto end()     const noexcept { return const_iterator(this, M); }
 
-        [[nodiscard]] constexpr auto rbegin()        noexcept { return       reverse_iterator{end()}; }
-        [[nodiscard]] constexpr auto rbegin()  const noexcept { return const_reverse_iterator{end()}; }
-        [[nodiscard]] constexpr auto rend()          noexcept { return       reverse_iterator{begin()}; }
-        [[nodiscard]] constexpr auto rend()    const noexcept { return const_reverse_iterator{begin()}; }
+        [[nodiscard]] constexpr auto rbegin()        noexcept { return       reverse_iterator(end()); }
+        [[nodiscard]] constexpr auto rbegin()  const noexcept { return const_reverse_iterator(end()); }
+        [[nodiscard]] constexpr auto rend()          noexcept { return       reverse_iterator(begin()); }
+        [[nodiscard]] constexpr auto rend()    const noexcept { return const_reverse_iterator(begin()); }
 
-        [[nodiscard]] constexpr auto cbegin()  const noexcept { return const_iterator{begin()}; }
-        [[nodiscard]] constexpr auto cend()    const noexcept { return const_iterator{end()};   }
-        [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator{rbegin()}; }
-        [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator{rend()};   }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return const_iterator(begin()); }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return const_iterator(end());   }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator(rbegin()); }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator(rend());   }
 
         [[nodiscard]] constexpr auto front() const // Throws: Nothing.
                 -> const_reference
@@ -373,13 +373,13 @@ public:
         [[nodiscard]] constexpr auto find(key_type const& x) // Throws: Nothing.
         {
                 assert(is_valid_reference(x));
-                return contains(x) ? iterator{this, x} : end();
+                return contains(x) ? iterator(this, x) : end();
         }
 
         [[nodiscard]] constexpr auto find(key_type const& x) const // Throws: Nothing.
         {
                 assert(is_valid_reference(x));
-                return contains(x) ? const_iterator{this, x} : cend();
+                return contains(x) ? const_iterator(this, x) : cend();
         }
 
         [[nodiscard]] constexpr auto count(key_type const& x) const // Throws: Nothing.
