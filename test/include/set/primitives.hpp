@@ -15,6 +15,7 @@
 #include <concepts>                     // signed_integral, unsigned_integral
 #include <initializer_list>             // initializer_list
 #include <iterator>                     // distance, empty, next, prev, size, ssize
+#include <limits>                       // max
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
 #include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructible_v, is_same_v
@@ -30,7 +31,9 @@ struct nested_types
         static_assert(std::is_same_v<typename X::      iterator::value_type, typename X::value_type>);
         static_assert(std::is_same_v<typename X::const_iterator::value_type, typename X::value_type>);
         static_assert(std::signed_integral<typename X::difference_type>);
+        static_assert(std::is_same_v<typename X::difference_type, typename std::iterator_traits<typename X::iterator>::difference_type>);
         static_assert(std::unsigned_integral<typename X::size_type>);
+        static_assert(std::numeric_limits<typename X::difference_type>::max() <= std::numeric_limits<typename X::size_type>::max());
 
         static_assert(std::is_same_v<typename X::value_type, int>);
 
@@ -499,8 +502,9 @@ struct op_compare_three_way
         }
 
         auto operator()(auto const& a, auto const& b) const noexcept
-        {                                                                       // [tab:container.opt]
+        {                                                                       // [tab:container.req]
                 static_assert(std::is_same_v<decltype(a <=> b), std::strong_ordering>);
+                                                                                // [tab:container.opt]
                 // std::strong_ordering does not have output streaming operator<< required for BOOST_CHECK_EQUAL
                 BOOST_CHECK((a <=> b) == std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end()));
         }

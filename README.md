@@ -337,7 +337,7 @@ auto b = a
 |offset|76543210|76543210|
 
 **Q**: Why is the set order reversely mapped onto the array's bit-layout?  
-**A**: To be able to use **data-parallelism** for `(a < b) == std::lexicographical_compare(begin(a), end(a), begin(b), end(b))`.
+**A**: To be able to use **data-parallelism** for `(a < b) == std::ranges::lexicographical_compare(a, b)`.
 
 **Q**: How is efficient set comparison connected to the bit-ordering within words?  
 **A**: Take `bit_set<8, uint8_t>` and consider when `sL < sR` for ordered sets of integers `sL` and `sR`.
