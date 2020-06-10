@@ -41,6 +41,7 @@ set(cxx_compile_options_warnings
         -Wextra
         -Wpedantic
         -Wconversion
+        -Wno-type-limits
         -Wshadow
         -Wsign-compare
         -Wsign-conversion
