@@ -27,8 +27,8 @@ The C++ Standard Library and Boost provide the following optimized data structur
 
 |                          | fixed-size         | variable-size                              |
 | :--------------------    | :---------         | :------------                              |
-| **sequence of `bool`**   | `std::bit_set<N>`  | `std::vector<bool, Allocator>` <br> `boost::dynamic_bit_set<Block, Allocator>` |
-| **ordered set of `int`** | `std::bit_set<N>`  | `boost::dynamic_bit_set<Block, Allocator>` (dense) <br> `boost::container::flat_set<int, Compare, Allocator>` (sparse) |
+| **sequence of `bool`**   | `std::bit_set<N>`  | `std::vector<bool, Allocator>` <br> `boost::dynamic_bitset<Block, Allocator>` |
+| **ordered set of `int`** | `std::bit_set<N>`  | `boost::dynamic_bitset<Block, Allocator>` (dense) <br> `boost::container::flat_set<int, Compare, Allocator>` (sparse) |
 
 Notes:
 
