@@ -8,9 +8,8 @@
 #include <iostream.hpp>                 // operator<<, operator>>
 #include <traits.hpp>                   // has_back, has_front, is_dereferencable, is_equality_comparable
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <algorithm>                    // all_of, any_of, copy_if, count, equal, equal_range, find, for_each, includes,
-                                        // lexicographical_compare, lexicographical_compare_three_way, lower_bound, none_of,
-                                        // set_difference, set_intersection, set_symmetric_difference, set_union, transform, upper_bound
+#include <algorithm>                    // count, equal, equal_range, find, for_each, lexicographical_compare,
+                                        // lexicographical_compare_three_way, lower_bound, upper_bound
 #include <compare>                      // strong_ordering
 #include <concepts>                     // signed_integral, unsigned_integral
 #include <initializer_list>             // initializer_list
