@@ -25,10 +25,10 @@ A `bitset` should also optimize for both space (using contiguous storage) and ti
 
 The C++ Standard Library and Boost provide the following optimized data structures in the landscape spanned by the aforementioned design decisions and optimization directives, as shown in the table below.
 
-|                          | fixed-size         | variable-size                              |
-| :--------------------    | :---------         | :------------                              |
-| **sequence of `bool`**   | `std::bit_set<N>`  | `std::vector<bool, Allocator>` <br> `boost::dynamic_bitset<Block, Allocator>` |
-| **ordered set of `int`** | `std::bit_set<N>`  | `boost::dynamic_bitset<Block, Allocator>` (dense) <br> `boost::container::flat_set<int, Compare, Allocator>` (sparse) |
+|                          | fixed-size        | variable-size |
+| :--------------------    | :---------        | :------------ |
+| **sequence of `bool`**   | `std::bitset<N>`  | `std::vector<bool, Allocator>` <br> `boost::dynamic_bitset<Block, Allocator>` |
+| **ordered set of `int`** | `std::bitset<N>`  | `boost::dynamic_bitset<Block, Allocator>` (dense) <br> `boost::container::flat_set<int, Compare, Allocator>` (sparse) |
 
 Notes:
 
