@@ -42,7 +42,7 @@ namespace xstd {
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
 {
-        static_assert(0 <= N && N <= std::numeric_limits<int>::max());
+        static_assert(N <= std::numeric_limits<int>::max());
 
         static constexpr auto M = static_cast<int>(N);  // keep size_t from spilling all over the code base
         static constexpr auto block_size = std::numeric_limits<Block>::digits;
