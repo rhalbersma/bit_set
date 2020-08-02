@@ -138,7 +138,7 @@ How would the Sieve of Eratosthenes code look when using an ordered set of integ
 | `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/52na7rrJVKD8As0Q) |
 | `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/anakzkISkkxxJ8xO) |
 
-The essential difference is the lack of bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. The proxy iterators of `xstd::bit_set` interact seamlessly with the `std::adjacent_find` algorithm.
+The essential difference is that `std::set<int>` and `boost::flat_set<int>` lack the bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. This style of programming is also supported by `xstd::bit_set` and its proxy iterators seamlessly interact with the `std::adjacent_find` algorithm.
 
 ```cpp
 // find all twin primes below N
@@ -162,7 +162,7 @@ The interface for the class template `xstd::bit_set<N>` is the coherent union of
 3. The single-pass and short-circuiting **set predicates** from [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_73_0/libs/dynamic_bitset/dynamic_bitset.html).
 4. The bitwise operators from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) and [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_73_0/libs/dynamic_bitset/dynamic_bitset.html) reimagined as composable and data-parallel **set algorithms**.
 
-Apart from the I/O streaming operators, the **full** interface of `xstd::bit_set` is `constexpr`, made possible by the great advancements of C++20 in this area (in particular `constexpr` standard algorithms).
+The **full** interface of `xstd::bit_set` is `constexpr`, made possible by the great advancements of C++20 in this area (in particular `constexpr` standard algorithms).
 
 ### 1 An almost drop-in replacement for `std::set<int>`
 
@@ -205,6 +205,7 @@ Almost all existing `std::bitset<N>` code has **a direct translation** (i.e. ach
 
 The semantic differences between `xstd::bit_set<N>` and `std::bitset<N>` are:
 
+- the **full** interface of `xstd::bit_set` is `constexpr`, in contrast to `std::bitset`;
 - `xstd::bit_set` has a `static` member function `max_size()`;
 - `xstd::bit_set` does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this **behavior is undefined**. This gives `xstd::bit_set<N>` a small performance benefit over `std::bitset<N>`.
 
@@ -238,13 +239,13 @@ The bitwise-shift operators (`<<=`, `>>=`, `<<`, `>>`) from `std::bitset` and `b
 
 With the exception of `operator~`, the non-member bitwise operators can be reimagined as **composable** and **data-parallel** versions of the set algorithms on sorted ranges from the C++ Standard Library header `<algorithm>`.
 
-| `xstd::bitset<N>`                 |  `std::set<int>` and constrained algorithms |
+| `xstd::bit_set<N>`                |  `std::set<int>` and constrained algorithms |
 | :----------------                 | :------------------------------------------ |
-| `a.is_subset_of(b)`               | `includes(a, b)`
-| `auto c = a & b;`                 | `set<int> c;` <br> `set_intersection(a, b, inserter(c, end(c)));` |
-| <code>auto c = a &#124; b;</code> | `set<int> c;` <br> `set_union(a, b, inserter(c, end(c)));` |
+| `a.is_subset_of(b)`               | `includes(a, b)`                                                          |
+| `auto c = a & b;`                 | `set<int> c;` <br> `set_intersection(a, b, inserter(c, end(c)));`         |
+| <code>auto c = a &#124; b;</code> | `set<int> c;` <br> `set_union(a, b, inserter(c, end(c)));`                |
 | `auto c = a ^ b;`                 | `set<int> c;` <br> `set_symmetric_difference(a, b, inserter(c, end(c)));` |
-| `auto c = a - b;`                 | `set<int> c;` <br> `set_difference(a, b, inserter(c, end(c)));` |
+| `auto c = a - b;`                 | `set<int> c;` <br> `set_difference(a, b, inserter(c, end(c)));`           |
 
 The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **transformations** that add or subtract a non-negative constant to all set elements, followed by **filtering** out elements that would fall outside the range `[0, N)`. Using the C++20 constrained algorithms and range adaptors, including the proposed but not yet standardized `std::ranges::to`, this can also be formulated in a composable way for `std::set<int>`, albeit without the data-parallelism that `xstd::bit_set<N>` provides.
 

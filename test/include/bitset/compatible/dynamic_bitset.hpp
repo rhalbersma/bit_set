@@ -259,6 +259,13 @@ public:
                 assert(m_value < bs->size() || m_value == bs->npos);
         }
 
+        [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
+                -> bool
+        {
+                assert(m_bs == other.m_bs);
+                return m_value == other.m_value;
+        }
+
         [[nodiscard]] constexpr auto operator*() const // Throws: Nothing.
                 -> proxy_reference<Block, Allocator>
         {
@@ -277,13 +284,6 @@ public:
         auto operator++(int) // Throws: Nothing.
         {
                 auto nrv = *this; ++*this; return nrv;
-        }
-
-        [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
-                -> bool
-        {
-                assert(m_bs == other.m_bs);
-                return m_value == other.m_value;
         }
 };
 
