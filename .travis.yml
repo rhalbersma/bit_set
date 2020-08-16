@@ -5,7 +5,7 @@
 
 language: cpp
 os: linux
-dist: bionic
+dist: focal
 
 matrix:
   include:
@@ -18,7 +18,7 @@ matrix:
     #         - g++-10
     #       sources:
     #         - sourceline: 'ppa:ubuntu-toolchain-r/test'
-    #         - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
+    #         - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-10 main'
     #           key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
     # - env: TOOLSET=clang TOOLSET_VER=11 STDLIB=libstdc++ STDLIB_VER=10
@@ -29,7 +29,7 @@ matrix:
     #         - g++-10
     #       sources:
     #         - sourceline: 'ppa:ubuntu-toolchain-r/test'
-    #         - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
+    #         - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal main'
     #           key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
     # Temporarily disabled until libc++ catches up with library support for Concepts and <=>
@@ -41,7 +41,7 @@ matrix:
     #         - libc++-11-dev
     #         - libc++abi-11-dev
     #       sources:
-    #         - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
+    #         - sourceline: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal main'
     #           key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
 
     - env: TOOLSET=gcc TOOLSET_VER=10 STDLIB=libstdc++ STDLIB_VER=10
@@ -123,7 +123,7 @@ install:
 # Install the latest Boost and build Boost.Test (compiled with the latest gcc)
 ################################################################################
 - |
-  BOOST_VERSION=1.73.0
+  BOOST_VERSION=1.74.0
   BOOST_DIR=${THIRD_PARTY_DIR}/boost-${BOOST_VERSION}
   BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.bz2"
   BOOST_LIBS="test"
@@ -143,7 +143,7 @@ install:
 # Install the latest CMake
 ################################################################################
 - |
-  CMAKE_VERSION=3.17.2
+  CMAKE_VERSION=3.18.1
   CMAKE_DIR=${THIRD_PARTY_DIR}/cmake-${CMAKE_VERSION}
   CMAKE_URL="http://www.cmake.org/files/v${CMAKE_VERSION%.[0-9]}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz"
   mkdir -p ${CMAKE_DIR} && travis_retry wget --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${CMAKE_DIR}
