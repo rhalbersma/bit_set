@@ -13,7 +13,7 @@
 namespace xstd {
 
 template<class T>
-using value_t = typename T::value_type;
+using value_t = T::value_type;
 
 template<std::size_t N, std::unsigned_integral Block>
 constexpr auto resize(bit_set<N, Block>& bs, std::size_t num_bits [[maybe_unused]], bool value = false) noexcept

@@ -21,10 +21,10 @@ namespace xstd {
 template<class T, std::size_t L>
 inline auto const limit_v = static_cast<int>(std::min(L, T().max_size()));
 
-inline constexpr auto L1 = 256;
-inline constexpr auto L2 = 128;
-inline constexpr auto L3 =  64;
-inline constexpr auto L4 =  32;
+inline constexpr auto L1 = 128;
+inline constexpr auto L2 =  64;
+inline constexpr auto L3 =  32;
+inline constexpr auto L4 =  16;
 
 // NOTE: these tests are O(1)
 
@@ -51,7 +51,7 @@ auto full_set(auto fun)
 // NOTE: these tests are O(N)
 
 template<class IntSet>
-auto all_values(auto fun)
+auto all_valid(auto fun)
 {
         auto const N = limit_v<IntSet, L1>;
         for (auto i = 0; i < N; ++i) {

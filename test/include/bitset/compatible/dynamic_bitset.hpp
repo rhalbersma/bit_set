@@ -195,7 +195,7 @@ class proxy_iterator;
 template<std::unsigned_integral Block, class Allocator>
 class proxy_reference
 {
-        using value_type = typename dynamic_bitset<Block, Allocator>::size_type;
+        using value_type = dynamic_bitset<Block, Allocator>::size_type;
         dynamic_bitset<Block, Allocator> const& m_bs;
         value_type const m_value;
 public:

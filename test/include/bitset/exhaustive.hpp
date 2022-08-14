@@ -5,10 +5,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <traits.hpp>   // has_resize
+#include <concepts.hpp> // resizeable
 #include <cassert>      // assert
 #include <cstddef>      // size_t
-#include <utility>      // declval
 
 #if defined(_MSC_VER)
         // std::bitset<0> and xstd::bit_set<0> give bogus "unreachable code" warnings
@@ -17,14 +16,14 @@
 
 namespace xstd {
 
-template<class T, std::size_t L>
-inline auto const limit_v = tti::has_resize<T> ? L : fn_size(T());
+template<class BitSet, std::size_t Limit>
+inline auto const limit_v = resizeable<BitSet> ? Limit : fn_size(BitSet());
 
-inline constexpr auto L0 = 256;
-inline constexpr auto L1 = 128;
-inline constexpr auto L2 =  64;
-inline constexpr auto L3 =  32;
-inline constexpr auto L4 =  16;
+inline constexpr auto L0 = 128;
+inline constexpr auto L1 =  64;
+inline constexpr auto L2 =  32;
+inline constexpr auto L3 =  16;
+inline constexpr auto L4 =   8;
 
 // NOTE: these tests are O(1)
 
@@ -47,10 +46,19 @@ auto full_set(auto fun)
 // NOTE: these tests are O(N)
 
 template<class BitSet>
-auto all_values(auto fun)
+auto all_valid(auto fun)
 {
         auto const N = limit_v<BitSet, L1>;
         for (auto i = decltype(N)(0); i < N; ++i) {
+                fun(i);
+        }
+}
+
+template<class BitSet>
+auto any_value(auto fun)
+{
+        auto const N = limit_v<BitSet, L1>;
+        for (auto i = decltype(N)(0); i <= N; ++i) {
                 fun(i);
         }
 }

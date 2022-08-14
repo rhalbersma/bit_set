@@ -5,15 +5,13 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <concepts.hpp>                 // insertable, resizeable
 #include <iostream.hpp>                 // operator<<, operator>>
-#include <traits.hpp>                   // has_forward_iterator, has_hinted_insert, has_resize
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_LE, BOOST_CHECK_NE, BOOST_CHECK_THROW
-#include <algorithm>                    // copy_if, equal, find, includes, lexicographical_compare,
-                                        // set_difference, set_intersection, set_symmetric_difference, set_union, transform
 #include <cstddef>                      // ptrdiff_t, size_t
 #include <iterator>                     // distance, inserter
 #include <memory>                       // addressof
-#include <ranges>                       // filter, transform
+#include <ranges>                       // copy, equal, find, includes, set_difference, set_intersection, set_symmetric_difference, set_union, views::filter, views::transform
 #include <set>                          // set
 #include <sstream>                      // stringstream
 #include <stdexcept>                    // out_of_range
@@ -40,7 +38,7 @@ struct op_bitand_assign
                 auto const src = lhs;
                 auto const& dst = lhs &= rhs;
 
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N)(0); i < N; ++i) {
                                                                                 // [bitset.members]/1
                         BOOST_CHECK_EQUAL(at(dst, i), !at(rhs, i) ? false : at(src, i));
                 }
@@ -56,7 +54,7 @@ struct op_bitor_assign
                 auto const src = lhs;
                 auto const& dst = lhs |= rhs;
 
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N)(0); i < N; ++i) {
                                                                                 // [bitset.members]/3
                         BOOST_CHECK_EQUAL(at(dst, i), at(rhs, i) ? true : at(src, i));
                 }
@@ -72,7 +70,7 @@ struct op_xor_assign
                 auto const src = lhs;
                 auto const& dst = lhs ^= rhs;
 
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N)(0); i < N; ++i) {
                                                                                 // [bitset.members]/5
                         BOOST_CHECK_EQUAL(at(dst, i), at(rhs, i) ? !at(src, i) : at(src, i));
                 }
@@ -88,7 +86,7 @@ struct op_minus_assign
                 auto const src = lhs;
                 auto const& dst = lhs -= rhs;
 
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N)(0); i < N; ++i) {
                         BOOST_CHECK_EQUAL(at(dst, i), at(rhs, i) ? false : at(src, i));
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));
@@ -97,20 +95,12 @@ struct op_minus_assign
 
 struct op_shift_left_assign
 {
-        auto operator()(auto& bs) const
-        {
-                auto N = fn_size(bs);
-                left_shift_assign(bs, N);                                       // [bitset.members]/7.1
-                BOOST_CHECK(none(bs));
-        }
-
         auto operator()(auto& bs, std::size_t pos) const
         {
-                assert(pos < fn_size(bs));
                 auto const src = bs;
                 auto const& dst = left_shift_assign(bs, pos);
 
-                for (auto N = fn_size(src), I = decltype(N){0}; I < N; ++I) {
+                for (auto N = fn_size(src), I = decltype(N)(0); I < N; ++I) {
                         if (I < pos) {
                                 BOOST_CHECK(!at(dst, I));                       // [bitset.members]/7.1
                         } else {                                                // [bitset.members]/7.2
@@ -123,20 +113,12 @@ struct op_shift_left_assign
 
 struct op_shift_right_assign
 {
-        auto operator()(auto& bs) const
-        {
-                auto N = fn_size(bs);
-                right_shift_assign(bs, N);                                      // [bitset.members]/9.1
-                BOOST_CHECK(none(bs));
-        }
-
         auto operator()(auto& bs, std::size_t pos) const
         {
-                assert(pos < fn_size(bs));
                 auto const src = bs;
                 auto const& dst = right_shift_assign(bs, pos);
 
-                for (auto N = fn_size(src), I = decltype(N){0}; I < N; ++I) {
+                for (auto N = fn_size(src), I = decltype(N)(0); I < N; ++I) {
                         if (pos >= N - I) {
                                 BOOST_CHECK(!at(dst, I));                       // [bitset.members]/9.1
                         } else {                                                // [bitset.members]/9.2
@@ -155,32 +137,22 @@ struct mem_set
 
                 BOOST_CHECK(all(bs));                                           // [bitset.members]/11
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/12
-                BOOST_CHECK_THROW(set(bs, fn_size(bs)), std::out_of_range);     // [bitset.members]/13
         }
 
-        auto operator()(auto& bs, std::size_t pos) const
+        auto operator()(auto& bs, std::size_t pos, bool val = true) const
         {
-                assert(pos < fn_size(bs));
-                auto const src = bs;
-                auto const& dst = set(bs, pos);
+                if (pos < fn_size(bs)) {
+                        auto const src = bs;
+                        auto const& dst = set(bs, pos, val);
 
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
-                                                                                // [bitset.members]/14
-                        BOOST_CHECK_EQUAL(at(dst, i), i == pos ? true : at(src, i));
+                        for (auto N = fn_size(src), i = decltype(N)(0); i < N; ++i) {
+                                                                                // [bitset.members]/13
+                                BOOST_CHECK_EQUAL(at(dst, i), i == pos ? val : at(src, i));
+                        }                                                       // [bitset.members]/14
+                        BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));
+                } else {                                                        // [bitset.members]/15
+                        BOOST_CHECK_THROW(set(bs, pos, val), std::out_of_range);                        
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/15
-        }
-
-        auto operator()(auto& bs, std::size_t pos, bool val) const
-        {
-                auto const src = bs;
-                auto const& dst = set(bs, pos, val);
-
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
-                                                                                // [bitset.members]/14
-                        BOOST_CHECK_EQUAL(at(dst, i), i == pos ? val : at(src, i));
-                }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/15
         }
 };
 
@@ -192,20 +164,22 @@ struct mem_reset
 
                 BOOST_CHECK(none(bs));                                          // [bitset.members]/16
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/17
-                BOOST_CHECK_THROW(reset(bs, fn_size(bs)), std::out_of_range);   // [bitset.members]/18
         }
 
         auto operator()(auto& bs, std::size_t pos) const
         {
-                assert(pos < fn_size(bs));
-                auto const src = bs;
-                auto const& dst = reset(bs, pos);
+                if (pos < fn_size(bs)) {
+                        auto const src = bs;
+                        auto const& dst = reset(bs, pos);
 
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
-                                                                                // [bitset.members]/19
-                        BOOST_CHECK_EQUAL(at(dst, i), i == pos ? false : at(src, i));
-                }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/20
+                        for (auto N = fn_size(src), i = decltype(N)(0); i < N; ++i) {
+                                                                                // [bitset.members]/18
+                                BOOST_CHECK_EQUAL(at(dst, i), i == pos ? false : at(src, i));
+                        }                                                       // [bitset.members]/19
+                        BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));
+                } else {                                                        
+                        BOOST_CHECK_THROW(reset(bs, pos), std::out_of_range);   // [bitset.members]/20
+                }                        
         }
 };
 
@@ -235,26 +209,28 @@ struct mem_flip
                 auto const src = bs;
                 auto const& dst = flip(bs);
 
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(src), i = decltype(N)(0); i < N; ++i) {
                         BOOST_CHECK_NE(at(dst, i), at(src, i));                 // [bitset.members]/23
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/24
 
                 flip(bs);
                 BOOST_CHECK_EQUAL(bs, src);                                     // involution
-                BOOST_CHECK_THROW(flip(bs, fn_size(bs)), std::out_of_range);    // [bitset.members]/25
         }
 
         auto operator()(auto& bs, std::size_t pos) const
         {
-                assert(pos < fn_size(bs));
-                auto const src = bs;
-                auto const& dst = flip(bs, pos);
-                for (auto N = fn_size(src), i = decltype(N){0}; i < N; ++i) {
-                                                                                // [bitset.members]/26
-                        BOOST_CHECK_EQUAL(at(dst, i), i == pos ? !at(src, i) : at(src, i));
+                if (pos < fn_size(bs)) {
+                        auto const src = bs;
+                        auto const& dst = flip(bs, pos);
+                        for (auto N = fn_size(src), i = decltype(N)(0); i < N; ++i) {
+                                                                                // [bitset.members]/25
+                                BOOST_CHECK_EQUAL(at(dst, i), i == pos ? !at(src, i) : at(src, i));
+                        }                                                       // [bitset.members]/26
+                        BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));
+                } else {
+                        BOOST_CHECK_THROW(flip(bs, pos), std::out_of_range);    // [bitset.members]/27
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/27
         }
 };
 
@@ -265,13 +241,13 @@ struct mem_count
         template<class BitSet>
         auto operator()(BitSet const& bs) const noexcept
         {
-                auto expected = decltype(count(bs)){0};
-                for (auto N = fn_size(bs), i = decltype(N){0}; i < N; ++i) {
+                auto expected = decltype(count(bs))(0);
+                for (auto N = fn_size(bs), i = decltype(N)(0); i < N; ++i) {
                         expected += at(bs, i);
                 }
                 BOOST_CHECK_EQUAL(count(bs), expected);                         // [bitset.members]/34
 
-                if constexpr (tti::has_forward_iterator<BitSet>) {
+                if constexpr (std::ranges::range<BitSet>) {
                         BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(count(bs)), std::distance(begin(bs), end(bs)));
                 }
         }
@@ -282,7 +258,7 @@ struct mem_size
         template<class BitSet>
         auto operator()(BitSet const& bs [[maybe_unused]]) const noexcept
         {
-                if constexpr (!tti::has_resize<BitSet>) {
+                if constexpr (!resizeable<BitSet>) {
                         BOOST_CHECK_EQUAL(fn_size(bs), fn_size(BitSet()));      // [bitset.members]/35
                 }
         }
@@ -295,45 +271,36 @@ struct op_equal_to
         {
                 BOOST_CHECK_EQUAL(fn_size(a), fn_size(b));
                 auto expected = true;
-                for (auto N = fn_size(a), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(a), i = decltype(N)(0); i < N; ++i) {
                         expected &= at(a, i) == at(b, i);
                 }
                 BOOST_CHECK_EQUAL(a == b, expected);                            // [bitset.members]/36
 
-                if constexpr (tti::has_forward_iterator<BitSet>) {
+                if constexpr (std::ranges::range<BitSet>) {
                         BOOST_CHECK_EQUAL(a == b, std::ranges::equal(a, b));
                 }
         }
 };
 
-struct op_not_equal_to
-{
-        auto operator()(auto const& a, auto const& b) const noexcept
-        {
-                BOOST_CHECK_EQUAL(a != b, !(a == b));                           // [bitset.members]/37
-        }
-};
-
 struct mem_test
 {
-        auto operator()(auto const& bs) const noexcept
-        {
-                BOOST_CHECK_THROW(test(bs, fn_size(bs)), std::out_of_range);    // [bitset.members]/38
-        }
-
         template<class BitSet>
         auto operator()(BitSet const& bs, std::size_t pos) const noexcept
         {
-                assert(pos < fn_size(bs));
-                auto value = bs; reset(value); set(value, pos);
-                for (auto N = fn_size(bs), i = decltype(N){0}; i < N; ++i) {
-                        BOOST_CHECK_EQUAL(test(value, i), i == pos);            // [bitset.members]/39
-                }
+                if (pos < fn_size(bs)) {
+                        auto value = bs; reset(value); set(value, pos);
+                        for (auto N = fn_size(bs), i = decltype(N)(0); i < N; ++i) {
+                                BOOST_CHECK_EQUAL(test(value, i), i == pos);    // [bitset.members]/37
+                        }
 
-                if constexpr (tti::has_forward_iterator<BitSet>) {
-                        using value_type = typename decltype(begin(bs))::value_type;
-                        BOOST_CHECK_EQUAL(test(bs, pos), std::ranges::find(bs, static_cast<value_type>(pos)) != end(bs));
+                        if constexpr (std::ranges::range<BitSet>) {
+                                using value_type = decltype(begin(bs))::value_type;
+                                BOOST_CHECK_EQUAL(test(bs, pos), std::ranges::find(bs, static_cast<value_type>(pos)) != end(bs));
+                        }
+                } else {
+                        BOOST_CHECK_THROW(test(bs, pos), std::out_of_range);    // [bitset.members]/38
                 }
+                 
         }
 };
 
@@ -341,7 +308,7 @@ struct mem_all
 {
         auto operator()(auto const& bs) const noexcept
         {
-                BOOST_CHECK_EQUAL(all(bs), count(bs) == fn_size(bs));           // [bitset.members]/40
+                BOOST_CHECK_EQUAL(all(bs), count(bs) == fn_size(bs));           // [bitset.members]/39
         }
 };
 
@@ -349,7 +316,7 @@ struct mem_any
 {
         auto operator()(auto const& bs) const noexcept
         {
-                BOOST_CHECK_EQUAL(any(bs), count(bs) != 0);                     // [bitset.members]/41
+                BOOST_CHECK_EQUAL(any(bs), count(bs) != 0);                     // [bitset.members]/40
         }
 };
 
@@ -357,34 +324,27 @@ struct mem_none
 {
         auto operator()(auto const& bs) const noexcept
         {
-                BOOST_CHECK_EQUAL(none(bs), count(bs) == 0);                    // [bitset.members]/42
+                BOOST_CHECK_EQUAL(none(bs), count(bs) == 0);                    // [bitset.members]/41
         }
 };
 
 struct op_shift_left
 {
-        auto operator()(auto const& bs) const
-        {
-                auto N = fn_size(bs);
-                BOOST_CHECK(none(left_shift(bs, N)));                           // [bitset.members]/43
-        }
-
         template<class BitSet>
         auto operator()(BitSet const& bs, std::size_t pos) const
         {
-                assert(pos < fn_size(bs));
                 auto expected = bs; left_shift_assign(expected, pos);
-                BOOST_CHECK_EQUAL(left_shift(bs, pos), expected);               // [bitset.members]/43
+                BOOST_CHECK_EQUAL(left_shift(bs, pos), expected);               // [bitset.members]/42
 
-                if constexpr (tti::has_hinted_insert<BitSet>) {
+                if constexpr (insertable<BitSet>) {
                         auto const lhs = left_shift(bs, pos);
                         BitSet rhs;
                         std::ranges::copy(
                                 bs |
-                                std::ranges::views::transform([=](auto x) {
+                                std::views::transform([=](auto x) {
                                         return x + static_cast<value_t<BitSet>>(pos);
                                 }) |
-                                std::ranges::views::filter([&](auto x) {
+                                std::views::filter([&](auto x) {
                                         return x < static_cast<value_t<BitSet>>(fn_size(bs));
                                 }),
                                 std::inserter(rhs, rhs.end())
@@ -396,28 +356,21 @@ struct op_shift_left
 
 struct op_shift_right
 {
-        auto operator()(auto const& bs) const
-        {
-                auto N = fn_size(bs);
-                BOOST_CHECK(none(right_shift(bs, N)));                          // [bitset.members]/44
-        }
-
         template<class BitSet>
         auto operator()(BitSet const& bs, std::size_t pos) const
         {
-                assert(pos < fn_size(bs));
                 auto expected = bs; right_shift_assign(expected, pos);
-                BOOST_CHECK_EQUAL(right_shift(bs, pos), expected);              // [bitset.members]/44
+                BOOST_CHECK_EQUAL(right_shift(bs, pos), expected);              // [bitset.members]/43
 
-                if constexpr (tti::has_hinted_insert<BitSet>) {
+                if constexpr (insertable<BitSet>) {
                         auto const lhs = right_shift(bs, pos);
                         BitSet rhs;
                         std::ranges::copy(
                                 bs |
-                                std::ranges::views::transform([=](auto x) {
+                                std::views::transform([=](auto x) {
                                         return x - static_cast<value_t<BitSet>>(pos);
                                 }) |
-                                std::ranges::views::filter([](auto x) {
+                                std::views::filter([](auto x) {
                                         return 0 <= x;
                                 }),
                                 std::inserter(rhs, rhs.end())
@@ -431,25 +384,25 @@ struct op_at
 {
         auto operator()(auto const& bs, std::size_t pos) const
         {
-                BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/45
-                BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/46
-                                                                                // [bitset.members]/47: at(bs, fn_size(bs)) does not throw
+                BOOST_CHECK(pos < fn_size(bs));                                 // [bitset.members]/44
+                BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/45
+                //BOOST_CHECK_NO_THROW(at(bs, pos));                              // [bitset.members]/46
         }
 
         auto operator()(auto& bs, std::size_t pos) const
         {
-                BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
-                BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/49
-                                                                                // [bitset.members]/50: at(bs, fn_size(bs), val) does not throw
+                BOOST_CHECK(fn_size(bs));                                       // [bitset.members]/47
+                BOOST_CHECK_EQUAL(at(bs, pos), test(bs, pos));                  // [bitset.members]/48
+                //BOOST_CHECK_NO_THROW(at(bs, pos));                              // [bitset.members]/49
         }
 
         auto operator()(auto& bs, std::size_t pos, bool val) const
         {
-                BOOST_CHECK(0 <= pos && pos < fn_size(bs));                     // [bitset.members]/48
+                BOOST_CHECK(pos < fn_size(bs));                                 // [bitset.members]/47
                 auto src = bs; set(src, pos, val);
                 at(bs, pos, val);
-                BOOST_CHECK_EQUAL(bs, src);                                     // [bitset.members]/49
-                                                                                // [bitset.members]/50: at(bs, fn_size(bs), val) does not throw
+                BOOST_CHECK_EQUAL(bs, src);                                     // [bitset.members]/48
+                //BOOST_CHECK_NO_THROW(at(bs, pos, val));                         // [bitset.members]/49
         }
 };
 
@@ -472,7 +425,7 @@ struct op_bitand
                 BOOST_CHECK(is_subset_of(a & b, b));
                 BOOST_CHECK_LE(count(a & b), std::min(count(a), count(b)));
 
-                if constexpr (tti::has_hinted_insert<BitSet>) {
+                if constexpr (insertable<BitSet>) {
                         auto const lhs = a & b;
                         BitSet rhs;
                         std::ranges::set_intersection(a, b, std::inserter(rhs, rhs.end()));
@@ -504,7 +457,7 @@ struct op_bitor
                 BOOST_CHECK(is_subset_of(b, a | b));
                 BOOST_CHECK_EQUAL(count(a | b), count(a) + count(b) - count(a & b));
 
-                if constexpr (tti::has_hinted_insert<BitSet>) {
+                if constexpr (insertable<BitSet>) {
                         auto const lhs = a | b;
                         BitSet rhs;
                         std::ranges::set_union(a, b, std::inserter(rhs, rhs.end()));
@@ -535,7 +488,7 @@ struct op_xor
                 BOOST_CHECK_EQUAL((a ^ b), ((a - b) | (b - a)));
                 BOOST_CHECK_EQUAL((a ^ b), (a | b) - (a & b));
 
-                if constexpr (tti::has_hinted_insert<BitSet>) {
+                if constexpr (insertable<BitSet>) {
                         auto const lhs = a ^ b;
                         BitSet rhs;
                         std::ranges::set_symmetric_difference(a, b, std::inserter(rhs, rhs.end()));
@@ -571,7 +524,7 @@ struct op_minus
                 BOOST_CHECK(is_subset_of(a - b, a));
                 BOOST_CHECK(is_disjoint(a - b, b));
 
-                if constexpr (tti::has_hinted_insert<BitSet>) {
+                if constexpr (insertable<BitSet>) {
                         auto const lhs = a - b;
                         BitSet rhs;
                         std::ranges::set_difference(a, b, std::inserter(rhs, rhs.end()));
@@ -592,14 +545,14 @@ struct mem_is_subset_of
         {
                 BOOST_CHECK_EQUAL(fn_size(a), fn_size(b));
                 auto expected = true;
-                for (auto N = fn_size(a), i = decltype(N){0}; i < N; ++i) {
+                for (auto N = fn_size(a), i = decltype(N)(0); i < N; ++i) {
                         expected &= !at(a, i) || at(b, i);
                 }
                 BOOST_CHECK_EQUAL(is_subset_of(a, b), expected);
                 BOOST_CHECK_EQUAL(is_subset_of(a, b), none(a - b));
                 BOOST_CHECK_EQUAL(is_subset_of(a, b), (a & b) == a);
 
-                if constexpr (tti::has_forward_iterator<BitSet>) {
+                if constexpr (std::ranges::range<BitSet>) {
                         BOOST_CHECK_EQUAL(is_subset_of(a, b), std::ranges::includes(a, b));
                 }
         }
@@ -651,6 +604,11 @@ struct mem_intersects
 
 struct fn_is_disjoint
 {
+        auto operator()(auto const& a) const noexcept
+        {
+                BOOST_CHECK(!is_disjoint(a, a) || none(a));
+        }
+
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(is_disjoint(a, b), none(a & b));

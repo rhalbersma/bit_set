@@ -6,18 +6,16 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <iostream.hpp>                 // operator<<, operator>>
-#include <traits.hpp>                   // has_back, has_front, is_dereferencable, is_equality_comparable
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <algorithm>                    // count, equal, equal_range, find, for_each, lexicographical_compare,
-                                        // lexicographical_compare_three_way, lower_bound, upper_bound
+#include <algorithm>                    // equal_range, for_each, lexicographical_compare_three_way
 #include <compare>                      // strong_ordering
-#include <concepts>                     // signed_integral, unsigned_integral
+#include <concepts>                     // convertible_to, default_initializable, equality_comparable, same_as, signed_integral, unsigned_integral
 #include <initializer_list>             // initializer_list
 #include <iterator>                     // distance, empty, next, prev, size, ssize
 #include <limits>                       // max
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
-#include <type_traits>                  // is_constructible_v, is_convertible_v, is_default_constructible_v, is_same_v
+#include <ranges>                       // count, equal, find, lexicographical_compare, lower_bound, upper_bound
 #include <utility>                      // pair
 
 namespace xstd {
@@ -26,25 +24,25 @@ template<class X>
 struct nested_types
 {
                                                                                 // [tab:container.req]
-        static_assert(std::is_convertible_v<typename X::iterator, typename X::const_iterator>);
-        static_assert(std::is_same_v<typename X::      iterator::value_type, typename X::value_type>);
-        static_assert(std::is_same_v<typename X::const_iterator::value_type, typename X::value_type>);
+        static_assert(std::convertible_to<typename X::iterator, typename X::const_iterator>);
+        static_assert(std::same_as<typename X::      iterator::value_type, typename X::value_type>);
+        static_assert(std::same_as<typename X::const_iterator::value_type, typename X::value_type>);
         static_assert(std::signed_integral<typename X::difference_type>);
-        static_assert(std::is_same_v<typename X::difference_type, typename std::iterator_traits<typename X::iterator>::difference_type>);
+        static_assert(std::same_as<typename X::difference_type, typename std::iterator_traits<typename X::iterator>::difference_type>);
         static_assert(std::unsigned_integral<typename X::size_type>);
         static_assert(std::numeric_limits<typename X::difference_type>::max() <= std::numeric_limits<typename X::size_type>::max());
 
-        static_assert(std::is_same_v<typename X::value_type, int>);
+        static_assert(std::same_as<typename X::value_type, int>);
 
         // we use a proxy reference for xstd::bit_set which convertible to int const&, instead of the same as int const&
-        static_assert(std::is_convertible_v<typename X::const_reference, int const&>);
+        static_assert(std::convertible_to<typename X::const_reference, int const&>);
 
                                                                                 // [tab:container.rev.req]
-        static_assert(std::is_same_v<typename X::      reverse_iterator, std::reverse_iterator<typename X::      iterator>>);
-        static_assert(std::is_same_v<typename X::const_reverse_iterator, std::reverse_iterator<typename X::const_iterator>>);
+        static_assert(std::same_as<typename X::      reverse_iterator, std::reverse_iterator<typename X::      iterator>>);
+        static_assert(std::same_as<typename X::const_reverse_iterator, std::reverse_iterator<typename X::const_iterator>>);
 
                                                                                 // [associative.reqmts]/6
-        static_assert(std::is_same_v<typename std::iterator_traits<typename X::iterator>::iterator_category, std::bidirectional_iterator_tag>);
+        static_assert(std::same_as<typename std::iterator_traits<typename X::iterator>::iterator_category, std::bidirectional_iterator_tag>);
 };
 
 template<class X>
@@ -52,7 +50,7 @@ struct constructor
 {
         auto operator()() const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_default_constructible_v<typename X::key_compare>);
+                static_assert(std::default_initializable<typename X::key_compare>);
                 X u;
                 BOOST_CHECK(u.empty());
                 BOOST_CHECK(X().empty());
@@ -60,7 +58,7 @@ struct constructor
 
         auto operator()(auto i, auto j) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_default_constructible_v<typename X::key_compare>);
+                static_assert(std::default_initializable<typename X::key_compare>);
                 X u(i, j);
                 X u1;
                 u1.insert(i, j);
@@ -100,26 +98,27 @@ struct mem_const_iterator
 {
         template<class X>
         auto operator()(X& a) const noexcept
-        {                                                                       // [tab:container.req]
-                static_assert(std::is_same_v<decltype(a.begin()), typename X::iterator>);
-                static_assert(std::is_same_v<decltype(a.end())  , typename X::iterator>);
+        {       
+                using Iterator = X::iterator;                                   // [iterator.iterators] Table 94
+                using Reference = std::iterator_traits<Iterator>::reference;
+                using ValueType = std::iterator_traits<Iterator>::value_type;
 
-                using Iterator = typename X::iterator;                          // [iterator.iterators] Table 94
-                using Reference = typename std::iterator_traits<Iterator>::reference;
-                using ValueType = typename std::iterator_traits<Iterator>::value_type;
+                                                                                // [tab:container.req]
+                static_assert(std::same_as<decltype(a.begin()), Iterator>);
+                static_assert(std::same_as<decltype(a.end())  , Iterator>);
 
-                static_assert(tti::is_dereferenceable<Iterator>);
-                static_assert(std::is_same_v<decltype(++std::declval<Iterator>()), Iterator&>);
+                static_assert(requires { *std::declval<Iterator>(); });
+                static_assert(std::same_as<decltype(++std::declval<Iterator>()), Iterator&>);
 
                 using InputIterator = Iterator;                                // [input.iterators] Table 95
-                static_assert(tti::is_equality_comparable<InputIterator>);
+                static_assert(std::equality_comparable<InputIterator>);
                 {
                         auto r = a.begin();
                         auto s = a.end();
                         BOOST_CHECK_EQUAL(r != s, !(r == s));
                 }
-                static_assert(std::is_same_v       <decltype(*std::declval<InputIterator>()), Reference>);
-                static_assert(std::is_convertible_v<decltype(*std::declval<InputIterator>()), ValueType>);
+                static_assert(std::same_as       <decltype(*std::declval<InputIterator>()), Reference>);
+                static_assert(std::convertible_to<decltype(*std::declval<InputIterator>()), ValueType>);
                 {
                         if (a.begin() != a.end()) {
                                 auto r = a.begin();
@@ -129,7 +128,7 @@ struct mem_const_iterator
                                 BOOST_CHECK(r == s);
                         }
                 }
-                static_assert(std::is_convertible_v<decltype(*std::declval<InputIterator>()++), ValueType>);
+                static_assert(std::convertible_to<decltype(*std::declval<InputIterator>()++), ValueType>);
                 {
                         if (a.begin() != a.end()) {
                                 auto r = a.begin();
@@ -142,13 +141,13 @@ struct mem_const_iterator
                 }
 
                 using ForwardIterator = InputIterator;                          // [forward.iterators] Table 97
-                static_assert(std::is_convertible_v<decltype( std::declval<ForwardIterator>()++), ForwardIterator const&>);
-                static_assert(std::is_same_v       <decltype(*std::declval<ForwardIterator>()++), Reference>);
+                static_assert(std::convertible_to<decltype( std::declval<ForwardIterator>()++), ForwardIterator const&>);
+                static_assert(std::same_as       <decltype(*std::declval<ForwardIterator>()++), Reference>);
 
                 using BidirectionalIterator = ForwardIterator;                  // [bidirectional.iterators] Table 98
-                static_assert(std::is_same_v       <decltype(--std::declval<BidirectionalIterator>()  ), BidirectionalIterator&>);
-                static_assert(std::is_convertible_v<decltype(  std::declval<BidirectionalIterator>()--), BidirectionalIterator const&>);
-                static_assert(std::is_same_v       <decltype( *std::declval<BidirectionalIterator>()--), Reference>);
+                static_assert(std::same_as       <decltype(--std::declval<BidirectionalIterator>()  ), BidirectionalIterator&>);
+                static_assert(std::convertible_to<decltype(  std::declval<BidirectionalIterator>()--), BidirectionalIterator const&>);
+                static_assert(std::same_as       <decltype( *std::declval<BidirectionalIterator>()--), Reference>);
                 {
                         if (a.begin() != a.end()) {
                                 auto r = a.end();
@@ -160,26 +159,27 @@ struct mem_const_iterator
                         }
                 }
 
-                                                                                // [tab:container.rev.req]
-                static_assert(std::is_same_v<decltype(a.rbegin()), typename X::reverse_iterator>);
-                static_assert(std::is_same_v<decltype(a.rend())  , typename X::reverse_iterator>);
+                using ReverseIterator = X::reverse_iterator;                    // [tab:container.rev.req]
+                static_assert(std::same_as<decltype(a.rbegin()), ReverseIterator>);
+                static_assert(std::same_as<decltype(a.rend())  , ReverseIterator>);
         }
 
         template<class X>
         auto operator()(X const& a) const noexcept
-        {                                                                       // [tab:container.req]
-                static_assert(std::is_same_v<decltype(a.begin()) , typename X::const_iterator>);
-                static_assert(std::is_same_v<decltype(a.end())   , typename X::const_iterator>);
-                static_assert(std::is_same_v<decltype(a.cbegin()), typename X::const_iterator>);
-                static_assert(std::is_same_v<decltype(a.cend())  , typename X::const_iterator>);
+        {                                                                       
+                using ConstIterator = X::const_iterator;                        // [tab:container.req]
+                static_assert(std::same_as<decltype(a.begin()) , ConstIterator>);
+                static_assert(std::same_as<decltype(a.end())   , ConstIterator>);
+                static_assert(std::same_as<decltype(a.cbegin()), ConstIterator>);
+                static_assert(std::same_as<decltype(a.cend())  , ConstIterator>);
                 BOOST_CHECK(a.cbegin() == const_cast<X const&>(a).begin());
                 BOOST_CHECK(a.cend()   == const_cast<X const&>(a).end()  );
-
-                                                                                // [tab:container.rev.req]
-                static_assert(std::is_same_v<decltype(a.rbegin()) , typename X::const_reverse_iterator>);
-                static_assert(std::is_same_v<decltype(a.rend())   , typename X::const_reverse_iterator>);
-                static_assert(std::is_same_v<decltype(a.crbegin()), typename X::const_reverse_iterator>);
-                static_assert(std::is_same_v<decltype(a.crend())  , typename X::const_reverse_iterator>);
+                                                                                
+                using ConstReverseIterator = X::const_reverse_iterator;         // [tab:container.rev.req]                                                                       
+                static_assert(std::same_as<decltype(a.rbegin()) , ConstReverseIterator>);
+                static_assert(std::same_as<decltype(a.rend())   , ConstReverseIterator>);
+                static_assert(std::same_as<decltype(a.crbegin()), ConstReverseIterator>);
+                static_assert(std::same_as<decltype(a.crend())  , ConstReverseIterator>);
                 BOOST_CHECK(a.crbegin() == const_cast<X const&>(a).rbegin());
                 BOOST_CHECK(a.crend()   == const_cast<X const&>(a).rend()  );
         }
@@ -190,7 +190,7 @@ struct mem_front
         template<class IntSet>
         auto operator()(IntSet const& bs [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_front<IntSet>) {
+                if constexpr (requires { bs.front(); }) {
                         BOOST_CHECK(bs.empty() || (bs.front() == *bs.cbegin()));
                         BOOST_CHECK(bs.empty() || (&bs.front() == bs.cbegin()));
                 }
@@ -202,9 +202,9 @@ struct mem_back
         template<class IntSet>
         auto operator()(IntSet const& bs [[maybe_unused]]) const noexcept
         {
-                if constexpr (tti::has_back<IntSet>) {
-                        BOOST_CHECK(bs.empty() || (bs.back() == *bs.crbegin()));
-                        BOOST_CHECK(bs.empty() || (&bs.back() == std::next(bs.crbegin()).base()));
+                if constexpr (requires { bs.back(); }) {
+                        BOOST_CHECK(bs.empty() || (bs.back() == *std::prev(bs.cend())));
+                        BOOST_CHECK(bs.empty() || (&bs.back() == std::prev(bs.cend())));
                 }
         }
 };
@@ -213,7 +213,7 @@ struct mem_empty
 {
         auto operator()(auto const& a) const noexcept
         {                                                                       // [tab:container.req]
-                static_assert(std::is_convertible_v<decltype(a.empty()), bool>);
+                static_assert(std::convertible_to<decltype(a.empty()), bool>);
                 BOOST_CHECK_EQUAL(a.empty(), a.begin() == a.end());
         }
 };
@@ -223,7 +223,7 @@ struct mem_size
         template<class X>
         auto operator()(X const& a) const noexcept
         {                                                                       // [tab:container.req]
-                static_assert(std::is_same_v<decltype(a.size()), typename X::size_type>);
+                static_assert(std::same_as<decltype(a.size()), typename X::size_type>);
                 BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(a.size()), std::distance(a.begin(), a.end()));
         }
 };
@@ -233,7 +233,7 @@ struct mem_max_size
         template<class X>
         auto operator()(X const& a) const noexcept
         {                                                                       // [tab:container.req]
-                static_assert(std::is_same_v<decltype(a.max_size()), typename X::size_type>);
+                static_assert(std::same_as<decltype(a.max_size()), typename X::size_type>);
                 BOOST_CHECK_EQUAL(a.max_size(), X().max_size());
                 BOOST_CHECK_LE(a.size(), a.max_size());
         }
@@ -244,8 +244,8 @@ struct mem_capacity
         template<class X>
         auto operator()(X const& a) const noexcept
         {
-                if constexpr (tti::has_capacity<X>) {                         // [tab:container.req]
-                        static_assert(std::is_same_v<decltype(a.capacity()), typename X::size_type>);
+                if constexpr (requires { a.capacity(); }) {                     // [tab:container.req]
+                        static_assert(std::same_as<decltype(a.capacity()), typename X::size_type>);
                         BOOST_CHECK_LE(a.size(), a.capacity());
                 }
         }
@@ -256,7 +256,7 @@ struct mem_emplace
         template<class X, class... Args>
         auto operator()(X& a, Args&&... args) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(a.emplace(std::forward<Args>(args)...)), std::pair<typename X::iterator, bool>>);
+                static_assert(std::same_as<decltype(a.emplace(std::forward<Args>(args)...)), std::pair<typename X::iterator, bool>>);
                 auto r = a.emplace(std::forward<Args>(args)...);
                 BOOST_CHECK(r == std::make_pair(a.find(typename X::value_type(std::forward<Args>(args)...)), true));
         }
@@ -265,9 +265,9 @@ struct mem_emplace
 struct mem_emplace_hint
 {
         template<class X, class... Args>
-        auto operator()(X& a, typename X::iterator p, Args&&... args) const
+        auto operator()(X& a, X::iterator p, Args&&... args) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(a.emplace_hint(p, std::forward<Args>(args)...)), typename X::iterator>);
+                static_assert(std::same_as<decltype(a.emplace_hint(p, std::forward<Args>(args)...)), typename X::iterator>);
                 auto r = a.emplace_hint(p, std::forward<Args>(args)...);
                 BOOST_CHECK(r == a.find(typename X::value_type(std::forward<Args>(args)...)));
         }
@@ -276,17 +276,17 @@ struct mem_emplace_hint
 struct mem_insert
 {
         template<class X>
-        auto operator()(X& a, typename X::value_type const& t) const
+        auto operator()(X& a, X::value_type const& t) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(a.insert(t)), std::pair<typename X::iterator, bool>>);
+                static_assert(std::same_as<decltype(a.insert(t)), std::pair<typename X::iterator, bool>>);
                 auto r = a.insert(t);
                 BOOST_CHECK(r == std::make_pair(a.find(t), true));
         }
 
         template<class X>
-        auto operator()(X& a, typename X::iterator p, typename X::value_type const& t) const
+        auto operator()(X& a, X::iterator p, X::value_type const& t) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(a.insert(p, t)), typename X::iterator>);
+                static_assert(std::same_as<decltype(a.insert(p, t)), typename X::iterator>);
                 auto r = a.insert(p, t);
                 BOOST_CHECK(r == a.find(t));
         }
@@ -294,8 +294,8 @@ struct mem_insert
         template<class X, class InputIterator>
         auto operator()(X& a, InputIterator i, InputIterator j) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_convertible_v<typename std::iterator_traits<InputIterator>::value_type, typename X::value_type>);
-                static_assert(std::is_same_v<decltype(a.insert(i, j)), void>);
+                static_assert(std::convertible_to<typename std::iterator_traits<InputIterator>::value_type, typename X::value_type>);
+                static_assert(std::same_as<decltype(a.insert(i, j)), void>);
                 auto a1 = a;
                 a.insert(i, j);
                 std::for_each(i, j, [&](auto const& t) {
@@ -307,7 +307,7 @@ struct mem_insert
         template<class X>
         auto operator()(X& a, std::initializer_list<typename X::value_type> il) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(a.insert(il)), void>);
+                static_assert(std::same_as<decltype(a.insert(il)), void>);
                 auto a1 = a;
                 a.insert(il);
                 a1.insert(il.begin(), il.end());
@@ -318,18 +318,18 @@ struct mem_insert
 struct mem_erase
 {
         template<class X>
-        auto operator()(X& a, typename X::key_type const& k) const
+        auto operator()(X& a, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(a.erase(k)), typename X::size_type>);
+                static_assert(std::same_as<decltype(a.erase(k)), typename X::size_type>);
                 auto const expected = a.count(k);
                 auto const returns = a.erase(k);
                 BOOST_CHECK(returns == expected);
         }
 
         template<class X>
-        auto operator()(X& a, typename X::const_iterator q) const
+        auto operator()(X& a, X::const_iterator q) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(a.erase(q)), typename X::iterator>);
+                static_assert(std::same_as<decltype(a.erase(q)), typename X::iterator>);
                 BOOST_CHECK(q != a.end());
                 auto const expected = std::next(q);                             // assumes erase does not invalidate iterators
                 auto const returns = a.erase(q);
@@ -337,9 +337,9 @@ struct mem_erase
         }
 
         template<class X>
-        auto operator()(X& a, typename X::const_iterator q1, typename X::const_iterator q2) const
+        auto operator()(X& a, X::const_iterator q1, X::const_iterator q2) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(a.erase(q1, q2)), typename X::iterator>);
+                static_assert(std::same_as<decltype(a.erase(q1, q2)), typename X::iterator>);
                 auto const expected = q2;                                       // assumes erase does not invalidate iterators
                 auto const returns = a.erase(q1, q2);
                 BOOST_CHECK(returns == expected);
@@ -351,7 +351,7 @@ struct mem_swap
         auto operator()(auto& a, auto& b) const noexcept
         {                                                                       // [tab:container.req]
                 auto a1 = a, b1 = b;
-                static_assert(std::is_same_v<decltype(a.swap(b)), void>);
+                static_assert(std::same_as<decltype(a.swap(b)), void>);
                 a1.swap(b1);
                 BOOST_CHECK(a1 == b);
                 BOOST_CHECK(b1 == a);
@@ -363,7 +363,7 @@ struct mem_clear
         auto operator()(auto& a) const noexcept
         {                                                                       // [tab:container.assoc.req]
                 auto a1 = a;
-                //static_assert(std::is_same_v<decltype(a.clear()), void>);
+                //static_assert(std::same_as<decltype(a.clear()), void>);
                 a.clear();
                 a1.erase(a1.begin(), a1.end());
                 BOOST_CHECK(a == a1);
@@ -374,16 +374,16 @@ struct mem_clear
 struct mem_find
 {
         template<class X>
-        auto operator()(X& b, typename X::key_type const& k) const
+        auto operator()(X& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(b.find(k)), typename X::iterator>);
+                static_assert(std::same_as<decltype(b.find(k)), typename X::iterator>);
                 BOOST_CHECK(b.find(k) == std::ranges::find(b, k));
         }
 
         template<class X>
-        auto operator()(X const& b, typename X::key_type const& k) const
+        auto operator()(X const& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(b.find(k)), typename X::const_iterator>);
+                static_assert(std::same_as<decltype(b.find(k)), typename X::const_iterator>);
                 BOOST_CHECK(b.find(k) == std::ranges::find(b, k));
         }
 };
@@ -391,9 +391,9 @@ struct mem_find
 struct mem_count
 {
         template<class X>
-        auto operator()(X const& b, typename X::key_type const& k) const
+        auto operator()(X const& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(b.count(k)), typename X::size_type>);
+                static_assert(std::same_as<decltype(b.count(k)), typename X::size_type>);
                 BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(b.count(k)), std::ranges::count(b, k));
         }
 };
@@ -401,26 +401,28 @@ struct mem_count
 struct mem_contains
 {
         template<class X>
-        auto operator()(X const& b, typename X::key_type const& k) const
+        auto operator()(X const& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(b.contains(k)), bool>);
-                BOOST_CHECK_EQUAL(b.contains(k), b.find(k) != b.end());
+                if constexpr (requires { b.contains(k); }) {
+                        static_assert(std::same_as<decltype(b.contains(k)), bool>);
+                        BOOST_CHECK_EQUAL(b.contains(k), b.find(k) != b.end());
+                }
         }
 };
 
 struct mem_lower_bound
 {
         template<class X>
-        auto operator()(X& b, typename X::key_type const& k) const
+        auto operator()(X& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(b.lower_bound(k)), typename X::iterator>);
+                static_assert(std::same_as<decltype(b.lower_bound(k)), typename X::iterator>);
                 BOOST_CHECK(b.lower_bound(k) == std::ranges::lower_bound(b, k));
         }
 
         template<class X>
-        auto operator()(X const& b, typename X::key_type const& k) const
+        auto operator()(X const& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(b.lower_bound(k)), typename X::const_iterator>);
+                static_assert(std::same_as<decltype(b.lower_bound(k)), typename X::const_iterator>);
                 BOOST_CHECK(b.lower_bound(k) == std::ranges::lower_bound(b, k));
         }
 };
@@ -428,16 +430,16 @@ struct mem_lower_bound
 struct mem_upper_bound
 {
         template<class X>
-        auto operator()(X& b, typename X::key_type const& k) const
+        auto operator()(X& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(b.upper_bound(k)), typename X::iterator>);
+                static_assert(std::same_as<decltype(b.upper_bound(k)), typename X::iterator>);
                 BOOST_CHECK(b.upper_bound(k) == std::ranges::upper_bound(b, k));
         }
 
         template<class X>
-        auto operator()(X const& b, typename X::key_type const& k) const
+        auto operator()(X const& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                static_assert(std::is_same_v<decltype(b.upper_bound(k)), typename X::const_iterator>);
+                static_assert(std::same_as<decltype(b.upper_bound(k)), typename X::const_iterator>);
                 BOOST_CHECK(b.upper_bound(k) == std::ranges::upper_bound(b, k));
         }
 };
@@ -445,21 +447,21 @@ struct mem_upper_bound
 struct mem_equal_range
 {
         template<class X>
-        auto operator()(X& b, typename X::key_type const& k) const
+        auto operator()(X& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                using iterator = typename X::iterator;
-                static_assert(std::is_same_v<decltype(b.equal_range(k)), std::pair<iterator, iterator>>);
+                using iterator = X::iterator;
+                static_assert(std::same_as<decltype(b.equal_range(k)), std::pair<iterator, iterator>>);
                 BOOST_CHECK(b.equal_range(k) == std::make_pair(b.lower_bound(k), b.upper_bound(k)));
-                BOOST_CHECK(b.equal_range(k) == std::equal_range(b.begin(), b.end(), k));
+                BOOST_CHECK(b.equal_range(k) == std::equal_range(b.begin(), b.end(), k)); // std::ranges::equal_range(b, k));
         }
 
         template<class X>
-        auto operator()(X const& b, typename X::key_type const& k) const
+        auto operator()(X const& b, X::key_type const& k) const
         {                                                                       // [tab:container.assoc.req]
-                using const_iterator = typename X::const_iterator;
-                static_assert(std::is_same_v<decltype(b.equal_range(k)), std::pair<const_iterator, const_iterator>>);
+                using const_iterator = X::const_iterator;
+                static_assert(std::same_as<decltype(b.equal_range(k)), std::pair<const_iterator, const_iterator>>);
                 BOOST_CHECK(b.equal_range(k) == std::make_pair(b.lower_bound(k), b.upper_bound(k)));
-                BOOST_CHECK(b.equal_range(k) == std::equal_range(b.begin(), b.end(), k));
+                BOOST_CHECK(b.equal_range(k) == std::equal_range(b.begin(), b.end(), k)); // std::ranges::equal_range(b, k));
         }
 };
 
@@ -472,7 +474,7 @@ struct op_equal_to
 
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [tab:container.req]
-                static_assert(std::is_convertible_v<decltype(a == b), bool>);
+                static_assert(std::convertible_to<decltype(a == b), bool>);
                 BOOST_CHECK_EQUAL(a == b, std::ranges::equal(a, b));
                 BOOST_CHECK(!(a == b) || b == a);                               // symmetric
         }
@@ -487,7 +489,7 @@ struct op_not_equal_to
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [tab:container.req]
-                static_assert(std::is_convertible_v<decltype(a != b), bool>);
+                static_assert(std::convertible_to<decltype(a != b), bool>);
                 BOOST_CHECK_EQUAL(a != b, !(a == b));
         }
 };
@@ -502,7 +504,7 @@ struct op_compare_three_way
 
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [tab:container.req]
-                static_assert(std::is_same_v<decltype(a <=> b), std::strong_ordering>);
+                static_assert(std::same_as<decltype(a <=> b), std::strong_ordering>);
                                                                                 // [tab:container.opt]
                 // std::strong_ordering does not have output streaming operator<< required for BOOST_CHECK_EQUAL
                 BOOST_CHECK((a <=> b) == std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end()));
@@ -518,7 +520,7 @@ struct op_less
 
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [tab:container.opt]
-                static_assert(std::is_convertible_v<decltype(a < b), bool>);
+                static_assert(std::convertible_to<decltype(a < b), bool>);
                 BOOST_CHECK_EQUAL(a < b, (a <=> b) < 0);
                 BOOST_CHECK_EQUAL(a < b, std::ranges::lexicographical_compare(a, b));
                 BOOST_CHECK(!(a < b) || !(b < a));                              // asymmetric
@@ -534,7 +536,7 @@ struct op_greater
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [tab:container.opt]
-                static_assert(std::is_convertible_v<decltype(a > b), bool>);
+                static_assert(std::convertible_to<decltype(a > b), bool>);
                 BOOST_CHECK_EQUAL(a > b, (a <=> b) > 0);
                 BOOST_CHECK_EQUAL(a > b, b < a);
         }
@@ -544,7 +546,7 @@ struct op_less_equal
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [tab:container.opt]
-                static_assert(std::is_convertible_v<decltype(a <= b), bool>);
+                static_assert(std::convertible_to<decltype(a <= b), bool>);
                 BOOST_CHECK_EQUAL(a <= b, (a <=> b) <= 0);
                 BOOST_CHECK_EQUAL(a <= b, !(b < a));
         }
@@ -554,7 +556,7 @@ struct op_greater_equal
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {                                                                       // [tab:container.opt]
-                static_assert(std::is_convertible_v<decltype(a >= b), bool>);
+                static_assert(std::convertible_to<decltype(a >= b), bool>);
                 BOOST_CHECK_EQUAL(a >= b, (a <=> b) >= 0);
                 BOOST_CHECK_EQUAL(a >= b, !(a < b));
         }
@@ -566,7 +568,7 @@ struct fn_swap
         {                                                                       // [tab:container.req]
                 auto a1 = a, b1 = b;
                 auto a2 = a, b2 = b;
-                static_assert(std::is_same_v<decltype(swap(a, b)), void>);
+                static_assert(std::same_as<decltype(swap(a, b)), void>);
                 swap(a1, b1); a2.swap(b2);
                 BOOST_CHECK(a1 == a2); BOOST_CHECK(b1 == b2);                   // [set.special]/1
         }

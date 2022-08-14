@@ -174,7 +174,7 @@ The **full** interface of `xstd::bit_set` is `constexpr`, made possible by the g
 
 Minor **semantic differences** between common functionality in `xstd::bit_set<N>` and `std::set<int>` are:
 
-- the `xstd::bit_set` member fucntion `max_size` is a `static` member function (because `N` is a constant expression).
+- the `xstd::bit_set` member function `max_size` is a `static` member function (because `N` is a constant expression).
 - the `xstd::bit_set` member function `clear` returns `*this` instead of `void` as for `std::set`, to allow better chaining of member functions (consisent with `std::bitset::reset`).
 - the `xstd::bit_set` iterators are **proxy iterators**, and taking their address yields **proxy references**. The difference should be undetectable. See the FAQ at the end of this document.
 - the `xstd::bit_set` members `fill`, `complement`, `replace` and `full` do not exist for `std::set`.
@@ -185,23 +185,23 @@ With these caveats in mind, all fixed-size, defaulted comparing, non-allocating,
 
 Almost all existing `std::bitset<N>` code has **a direct translation** (i.e. achievable through search-and-replace) to an equivalent `xstd::bit_set<N>` expression, with the same and familiar semantics as `std::set<int>` or `boost::flat_set<int>`.
 
-| `xstd::bit_set<N>`                     | `std::bitset<N>`   | Notes                                           |
-| :-----------------                     | :---------------   | :----                                           |
-| `bs.fill()`                            | `bs.set()`         | not a member of `std::set<int>`                 |
-| `bs.insert(pos)`                       | `bs.set(pos)`      | no bounds-checking or `out_of_range` exceptions |
-| `val ? bs.insert(pos) : bs.erase(pos)` | `bs.set(pos, val)` | no bounds-checking or `out_of_range` exceptions |
-| `bs.clear()`                           | `bs.reset()`       | returns `*this`, not `void` as `std::set<int>`  |
-| `bs.erase(pos)`                        | `bs.reset(pos)`    | no bounds-checking or `out_of_range` exceptions |
-| `bs.complement()`                      | `bs.flip()`        | not a member of `std::set<int>`                 |
-| `bs.replace(pos)`                      | `bs.flip(pos)`     | no bounds-checking or `out_of_range` exceptions <br> not a member of `std::set<int>` |
-| `bs.size()`                            | `bs.count()`       | |
-| `bs.max_size()`                        | `bs.size()`        | is a `static` member                            |
-| `bs.contains(pos)`                     | `bs.test(pos)`     | no bounds-checking or `out_of_range` exceptions |
-| `bs.full()`                            | `bs.all()`         | not a member of `std::set<int>`                 |
-| `!bs.empty()`                          | `bs.any()`         | |
-| `bs.empty()`                           | `bs.none()`        | |
-| `bs.contains(pos)`                     | `bs[pos]`          | |
-| `val ? bs.insert(pos) : bs.erase(pos)` | `bs[pos] = val`    | |
+| `std::bitset<N>`   | `xstd::bit_set<N>`                     | Notes                                           |
+| :---------------   | :-----------------                     | :----                                           |
+| `bs.set()`         | `bs.fill()`                            | not a member of `std::set<int>`                 |
+| `bs.set(pos)`      | `bs.insert(pos)`                       | no bounds-checking or `out_of_range` exceptions |
+| `bs.set(pos, val)` | `val ? bs.insert(pos) : bs.erase(pos)` | no bounds-checking or `out_of_range` exceptions |
+| `bs.reset()`       | `bs.clear()`                           | returns `*this`, not `void` as `std::set<int>`  |
+| `bs.reset(pos)`    | `bs.erase(pos)`                        | no bounds-checking or `out_of_range` exceptions |
+| `bs.flip()`        | `bs.complement()`                      | not a member of `std::set<int>`                 |
+| `bs.flip(pos)`     | `bs.replace(pos)`                      | no bounds-checking or `out_of_range` exceptions <br> not a member of `std::set<int>` |
+| `bs.count()`       | `bs.size()`                            | |
+| `bs.size()`        | `bs.max_size()`                        | is a `static` member                            |
+| `bs.test(pos)`     | `bs.contains(pos)`                     | no bounds-checking or `out_of_range` exceptions |
+| `bs.all()`         | `bs.full()`                            | not a member of `std::set<int>`                 |
+| `bs.any()`         | `!bs.empty()`                          | |
+| `bs.none()`        | `bs.empty()`                           | |
+| `bs[pos]`          | `bs.contains(pos)`                     | |
+| `bs[pos] = val`    | `val ? bs.insert(pos) : bs.erase(pos)` | |
 
 The semantic differences between `xstd::bit_set<N>` and `std::bitset<N>` are:
 
@@ -220,7 +220,7 @@ I/O functionality can be obtained through third-party libraries such as [{fmt}](
 
 ### 3 Set predicates from `boost::dynamic_bitset`
 
-The set predicates `is_subset`, `is_proper_subset` and `intersects` from `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that these set predicates are not present in `std::bitset`. Efficient emulation of these set predicates for `std::bitset` is not possible using **single-pass** and **short-circuiting** semantics. In addition, `xstd::bit_set` comes with convenient set predicates `is_superset_of`, `is_proper_superset_of` and `disjoint`.
+The set predicates `is_subset`, `is_proper_subset` and `intersects` from `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that these set predicates are not present in `std::bitset`. Efficient emulation of these set predicates for `std::bitset` is not possible using **single-pass** and **short-circuiting** semantics. In addition, `xstd::bit_set` comes with convenient set predicates `is_superset_of`, `is_proper_superset_of` and `is_disjoint`.
 
 | `xstd::bit_set<N>`           | `boost::dynamic_bitset<>`  | `std::bitset<N>`            |
 | :-----------------           | :------------------------  | :---------------            |
