@@ -185,23 +185,21 @@ With these caveats in mind, all fixed-size, defaulted comparing, non-allocating,
 
 Almost all existing `std::bitset<N>` code has **a direct translation** (i.e. achievable through search-and-replace) to an equivalent `xstd::bit_set<N>` expression, with the same and familiar semantics as `std::set<int>` or `boost::flat_set<int>`.
 
-| `std::bitset<N>`   | `xstd::bit_set<N>`                     | Notes                                           |
-| :---------------   | :-----------------                     | :----                                           |
-| `bs.set()`         | `bs.fill()`                            | not a member of `std::set<int>`                 |
-| `bs.set(pos)`      | `bs.insert(pos)`                       | no bounds-checking or `out_of_range` exceptions |
-| `bs.set(pos, val)` | `val ? bs.insert(pos) : bs.erase(pos)` | no bounds-checking or `out_of_range` exceptions |
-| `bs.reset()`       | `bs.clear()`                           | returns `*this`, not `void` as `std::set<int>`  |
-| `bs.reset(pos)`    | `bs.erase(pos)`                        | no bounds-checking or `out_of_range` exceptions |
-| `bs.flip()`        | `bs.complement()`                      | not a member of `std::set<int>`                 |
-| `bs.flip(pos)`     | `bs.replace(pos)`                      | no bounds-checking or `out_of_range` exceptions <br> not a member of `std::set<int>` |
-| `bs.count()`       | `bs.size()`                            | |
-| `bs.size()`        | `bs.max_size()`                        | is a `static` member                            |
-| `bs.test(pos)`     | `bs.contains(pos)`                     | no bounds-checking or `out_of_range` exceptions |
-| `bs.all()`         | `bs.full()`                            | not a member of `std::set<int>`                 |
-| `bs.any()`         | `!bs.empty()`                          | |
-| `bs.none()`        | `bs.empty()`                           | |
-| `bs[pos]`          | `bs.contains(pos)`                     | |
-| `bs[pos] = val`    | `val ? bs.insert(pos) : bs.erase(pos)` | |
+| `std::bitset<N>`                | `xstd::bit_set<N>`              | Notes                                           |
+| :---------------                | :-----------------              | :----                                           |
+| `bs.set()`                      | `bs.fill()`                     | not a member of `std::set<int>`                 |
+| `bs.set(n)`                     | `bs.add(n)` <br> `bs.insert(n)` | no bounds-checking or `out_of_range` exceptions, <br> the former returns `*this`, the latter `pair<iterator, bool>` |
+| `bs.set(n, v)` <br> `bs[n] = v` | `v ? bs.add(n) : bs.pop(n)`     | no bounds-checking or `out_of_range` exceptions |
+| `bs.reset()`                    | `bs.clear()`                    | returns `*this`, not `void` as `std::set<int>`  |
+| `bs.reset(n)`                   | `bs.pop(n)` <br> `bs.erase(n)`  | no bounds-checking or `out_of_range` exceptions, <br> the former returns `*this`, the latter `size_type`            |
+| `bs.flip()`                     | `bs.complement()`               | not a member of `std::set<int>`                 |
+| `bs.flip(n)`                    | `bs.replace(n)`                 | no bounds-checking or `out_of_range` exceptions <br> not a member of `std::set<int>` |
+| `bs.count()`                    | `bs.size()`                     | |
+| `bs.size()`                     | `bs.max_size()`                 | a `static` member                               |
+| `bs.test(n)` <br> `bs[n]`       | `bs.contains(n)`                | no bounds-checking or `out_of_range` exceptions |
+| `bs.all()`                      | `bs.full()`                     | not a member of `std::set<int>`                 |
+| `bs.any()`                      | `!bs.empty()`                   | |
+| `bs.none()`                     | `bs.empty()`                    | |
 
 The semantic differences between `xstd::bit_set<N>` and `std::bitset<N>` are:
 

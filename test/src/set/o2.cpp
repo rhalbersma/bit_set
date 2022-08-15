@@ -61,11 +61,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 empty_set<T>([&](auto& is0) {
                         mem_insert()(is0, a2.begin(), a2.end());
                 });
+                full_set<T>([&](auto& isN) {
+                        mem_insert()(isN, a2.begin(), a2.end());
+                });                
         });
         all_doubleton_ilists<T>([](auto ilist2) {
                 empty_set<T>([=](auto& is0) {
                         mem_insert()(is0, ilist2);
                 });
+                full_set<T>([=](auto& isN) {
+                        mem_insert()(isN, ilist2);
+                });                
         });
 
         // boost::container::flat_set<int>::erase invalidates iterators

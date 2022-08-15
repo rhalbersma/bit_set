@@ -59,11 +59,10 @@ constexpr auto& set(bit_set<N, Block>& bs, std::size_t pos, bool val = true)
         }
         using value_type = value_t<bit_set<N, Block>>;
         if (val) {
-                bs.insert(static_cast<value_type>(pos));
+                return bs.add(static_cast<value_type>(pos));
         } else {
-                bs.erase(static_cast<value_type>(pos));
+                return bs.pop(static_cast<value_type>(pos));
         }
-        return bs;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
@@ -79,8 +78,7 @@ constexpr auto& reset(bit_set<N, Block>& bs, std::size_t pos)
                 throw std::out_of_range{""};
         }
         using value_type = value_t<bit_set<N, Block>>;
-        bs.erase(static_cast<value_type>(pos));
-        return bs;
+        return bs.pop(static_cast<value_type>(pos));
 }
 
 template<std::size_t N, std::unsigned_integral Block>

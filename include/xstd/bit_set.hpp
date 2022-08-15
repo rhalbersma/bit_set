@@ -274,15 +274,31 @@ public:
                 return insert(hint, value_type(std::forward<Args>(args)...));
         }
 
-        constexpr auto insert(value_type const& x) // Throws: Nothing.
-                -> std::pair<iterator, bool>
+        constexpr auto& add(value_type x) // Throws: Nothing.
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
                         m_data[which(x)] |= single_bit_mask(where(x));
                 }
                 assert(contains(x));
-                return { { this, x }, true };
+                return *this;
+        }
+        
+        constexpr auto insert(value_type const& x) // Throws: Nothing.
+                -> std::pair<iterator, bool>
+        {
+                assert(is_valid_reference(x));
+                if constexpr (num_logical_blocks >= 1) {
+                        auto& block = m_data[which(x)]; 
+                        auto const mask = single_bit_mask(where(x));
+                        if (!(block & mask)) {
+                                block |= mask;
+                                assert(contains(x));
+                                return { { this, x }, true };
+                        }
+                }
+                assert(contains(x));
+                return { { this, x }, false };
         }
 
         constexpr auto insert(const_iterator /* hint */, value_type const& x) // Throws: Nothing.
@@ -297,6 +313,14 @@ public:
         constexpr auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
         {
                 std::for_each(first, last, [&](auto const& x) {
+                        insert(x);
+                });
+        }
+
+        template<class Range>
+        constexpr auto insert_range(Range&& rg) // Throws: Nothing.
+        {
+                std::ranges::for_each(rg, [&](auto const& x) {
                         insert(x);
                 });
         }
@@ -332,8 +356,7 @@ public:
                 return *this;
         }
 
-        constexpr auto erase(key_type const& x) // Throws: Nothing.
-                -> size_type
+        constexpr auto& pop(key_type x) // Throws: Nothing.
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
@@ -341,7 +364,25 @@ public:
                         m_data[which(x)] &= static_cast<block_type>(~single_bit_mask(where(x)));
                 }
                 assert(!contains(x));
-                return 1;
+                return *this;
+        }
+
+        constexpr auto erase(key_type const& x) // Throws: Nothing.
+                -> size_type
+        {
+                assert(is_valid_reference(x));
+                if constexpr (num_logical_blocks >= 1) {
+                        auto& block = m_data[which(x)];
+                        auto const mask = single_bit_mask(where(x));
+                        if (block & mask) {
+                                // static_cast to guard against integral promotions of block_type smaller than int.
+                                block &= static_cast<block_type>(~mask);
+                                assert(!contains(x));
+                                return 1;
+                        }
+                }
+                assert(!contains(x));
+                return 0;
         }
 
         constexpr auto erase(const_iterator pos) // Throws: Nothing.

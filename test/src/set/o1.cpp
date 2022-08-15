@@ -81,31 +81,52 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 empty_set<T>([=](auto& is0) {
                         mem_emplace()(is0, t);
                 });
+                full_set<T>([=](auto& isN) {
+                        mem_emplace()(isN, t);
+                });
                 empty_set<T>([=](auto& is0) {
                         mem_insert()(is0, t);
                 });
+                full_set<T>([=](auto& isN) {
+                        mem_insert()(isN, t);
+                });                
         });
         all_valid<T>([](auto const& t) {
                 empty_set<T>([=](auto& is0) {
                         mem_emplace_hint()(is0, is0.end(), t);
                 });
+                full_set<T>([=](auto& isN) {
+                        mem_emplace_hint()(isN, isN.end(), t);
+                });                
                 empty_set<T>([=](auto& is0) {
                         mem_insert()(is0, is0.end(), t);
                 });
+                full_set<T>([=](auto& isN) {
+                        mem_emplace_hint()(isN, isN.end(), t);
+                });                
         });
         all_singleton_arrays<T>([](auto const& a1) {
                 empty_set<T>([&](auto& is0) {
                         mem_insert()(is0, a1.begin(), a1.end());
                 });
+                full_set<T>([&](auto& isN) {
+                        mem_insert()(isN, a1.begin(), a1.end());
+                });                
         });
         all_singleton_ilists<T>([](auto ilist1) {
                 empty_set<T>([&](auto& is0) {
                         mem_insert()(is0, ilist1);
                 });
+                full_set<T>([&](auto& isN) {
+                        mem_insert()(isN, ilist1);
+                });                
         });
 
-        full_set<T>([](auto& isN) {
-                all_valid<T>([&](auto const& k) {
+        all_valid<T>([](auto const& k) {
+                empty_set<T>([&](auto& is0) {
+                        mem_erase()(is0, k);
+                });                
+                full_set<T>([&](auto& isN) {
                         mem_erase()(isN, k);
                 });
         });
