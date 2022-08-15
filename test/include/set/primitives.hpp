@@ -319,8 +319,9 @@ struct mem_insert
                 BOOST_CHECK(a == a1);                                           // [associative.reqmts.general]/77
         }
 
-        template<class X>
-        auto operator()(X& a, auto&& rg) const
+        template<class X, class Range>
+                requires std::ranges::range<Range>
+        auto operator()(X& a, Range&& rg) const
         {                                                                       // [associative.reqmts.general]/79
                 static_assert(std::same_as<decltype(a.insert_range(rg)), void>);
                                                                                 // [associative.reqmts.general]/80

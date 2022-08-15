@@ -16,7 +16,7 @@
 #include <iterator>             // bidirectional_iterator_tag, begin, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
-#include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, swap_ranges, views::drop, views::take
+#include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, swap_ranges, views::drop, views::take
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
@@ -318,6 +318,7 @@ public:
         }
 
         template<class Range>
+                requires std::ranges::range<Range> && std::constructible_from<value_type, typename Range::value_type>
         constexpr auto insert_range(Range&& rg) // Throws: Nothing.
         {
                 std::ranges::for_each(rg, [&](auto const& x) {
