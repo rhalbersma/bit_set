@@ -379,6 +379,6 @@ Note that this library makes liberal use of C++20 features, in particular Concep
 
 ## License
 
-Copyright Rein Halbersma 2014-2021.  
+Copyright Rein Halbersma 2014-2022.  
 Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/users/license.html).  
 (See accompanying file LICENSE_1_0.txt or copy at [http://www.boost.org/LICENSE_1_0.txt](http://www.boost.org/LICENSE_1_0.txt))
