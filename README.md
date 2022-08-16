@@ -371,11 +371,12 @@ auto b = a
 
 This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++20](http://www.open-std.org/jtc1/sc22/wg21/prot/14882fdis/n4860.pdf) compilers:
 
-| Platform | Compiler | Versions | Build |
-| :------- | :------- | :------- | :---- |
-| Linux    | GCC | 11, 12, 13-SVN | CI currently being ported to GitHub Actions |
+| Platform | Compiler   | Versions       | Build |
+| :------- | :-------   | :-------       | :---- |
+| Linux    | GCC        | 11, 12, 13-SVN | CI currently being ported to GitHub Actions |
+| Windows  | Visual C++ | 17.3           | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. Only GCC >= 11 is supported at the moment. Clang and Visual Studio are catching up fast, and will be added as soon as possible.
+Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. Both GCC 11 and Visual C++ 17.3 and higher are supported at the moment. Clang is still missing some C++20 features, and will be added whenever possible.
 
 ## License
 

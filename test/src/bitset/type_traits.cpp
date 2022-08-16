@@ -3,9 +3,6 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-#define BOOST_MPL_LIMIT_VECTOR_SIZE 50
-
 #include <concepts.hpp>                 // resizeable
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
@@ -55,26 +52,6 @@ using bitset_types = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, bitset_types)
 {
         static_assert(std::regular<T>);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsStandardLayout, T, bitset_types)
-{
-        static_assert(std::is_standard_layout_v<T>);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsTriviallyCopyable, T, bitset_types)
-{
-        static_assert(std::is_trivially_copyable_v<T> == !std::same_as<T, boost::dynamic_bitset<>>);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsNothrowDefaultConstructible, T, bitset_types)
-{
-        static_assert(std::is_nothrow_default_constructible_v<T> == !std::same_as<T, boost::dynamic_bitset<>>);
-}
-
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsResizeable, T, bitset_types)
-{
-        static_assert(resizeable<T> == std::same_as<T, boost::dynamic_bitset<>>);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
