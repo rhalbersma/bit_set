@@ -94,25 +94,7 @@ public:
                 return *this;
         }
 
-        // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94924
-        // bool operator==(bit_set const&) const = default;
-
-        [[nodiscard]] constexpr auto operator==(bit_set const& other [[maybe_unused]]) const noexcept
-                -> bool
-        {
-                if constexpr (num_logical_blocks == 0) {
-                        return true;
-                } else if constexpr (num_logical_blocks <= 1) {
-                        return m_data[0] == other.m_data[0];
-                } else if constexpr (num_logical_blocks == 2) {
-                        constexpr auto tied = [](auto const& bs) {
-                                return std::tie(bs.m_data[0], bs.m_data[1]);
-                        };
-                        return tied(*this) == tied(other);
-                } else if constexpr (num_logical_blocks >= 3) {
-                        return std::ranges::equal(m_data, other.m_data);
-                }
-        }
+        bool operator==(bit_set const&) const = default;
 
         [[nodiscard]] constexpr auto operator<=>(bit_set const& other [[maybe_unused]]) const noexcept
                 -> std::strong_ordering

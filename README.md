@@ -373,9 +373,9 @@ This single-header library has no other dependencies than the C++ Standard Libra
 
 | Platform | Compiler | Versions | Build |
 | :------- | :------- | :------- | :---- |
-| Linux    | GCC | 10, 11-SVN | [![codecov](https://codecov.io/gh/rhalbersma/bit_set/branch/master/graph/badge.svg)](https://codecov.io/gh/rhalbersma/bit_set) <br> [![Build Status](https://travis-ci.org/rhalbersma/bit_set.svg)](https://travis-ci.org/rhalbersma/bit_set) |
+| Linux    | GCC | 11, 12, 13-SVN | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. Only GCC >= 10 is supported at the moment. Clang and Visual Studio are catching up fast, and will be added as soon as possible.
+Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. Only GCC >= 11 is supported at the moment. Clang and Visual Studio are catching up fast, and will be added as soon as possible.
 
 ## License
 
