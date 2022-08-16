@@ -176,9 +176,12 @@ public:
                                 m_data[1]
                         );
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return std::ranges::none_of(m_data, [](auto block) -> bool {
-                                return block;
-                        });
+                        return std::ranges::none_of(
+                                m_data, 
+                                [](auto const& block) -> bool {
+                                        return block;
+                                }
+                        );
                 }
         }
 
@@ -195,9 +198,12 @@ public:
                                         m_data[1] == ones
                                 ;
                         } else if constexpr (num_logical_blocks >= 3) {
-                                return std::ranges::all_of(m_data, [](auto block) {
-                                        return block == ones;
-                                });
+                                return std::ranges::all_of(
+                                        m_data, 
+                                        [](auto const& block) {
+                                                return block == ones;
+                                        }
+                                );
                         }
                 } else {
                         static_assert(num_logical_blocks >= 1);
@@ -213,7 +219,7 @@ public:
                                         m_data[0] == no_excess_bits &&
                                         std::ranges::all_of(
                                                 m_data | std::views::drop(1), 
-                                                [](auto block) {
+                                                [](auto const& block) {
                                                         return block == ones;
                                                 }
                                         )
@@ -234,10 +240,10 @@ public:
                                 std::popcount(m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
-                        // Range version pending: http://open-std.org/JTC1/SC22/WG21/docs/papers/2019/p1813r0.pdf
+                        // C++23: http://open-std.org/JTC1/SC22/WG21/docs/papers/2019/p1813r0.pdf
                         return std::accumulate(
                                 std::begin(m_data), std::end(m_data), 0, 
-                                [](auto sum, auto block) {
+                                [](auto sum, auto const& block) {
                                         return sum + std::popcount(block);
                                 }
                         );
@@ -318,8 +324,8 @@ public:
         }
 
         template<class Range>
-                requires std::ranges::range<Range> && std::constructible_from<value_type, typename Range::value_type>
         constexpr auto insert_range(Range&& rg) // Throws: Nothing.
+                requires std::ranges::range<Range> && std::constructible_from<value_type, decltype(*rg.begin())>
         {
                 std::ranges::for_each(rg, [&](auto const& x) {
                         insert(x);
@@ -517,9 +523,9 @@ public:
                         m_data[0] = static_cast<block_type>(~m_data[0]);
                         m_data[1] = static_cast<block_type>(~m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        for (auto& block : m_data) {
+                        std::ranges::for_each(m_data, [](auto& block) {
                                 block = static_cast<block_type>(~block);
-                        }
+                        });
                 }
                 clear_excess_bits();
                 return *this;
@@ -533,6 +539,7 @@ public:
                         this->m_data[0] &= other.m_data[0];
                         this->m_data[1] &= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
+                        // C++23: std::ranges::for_each(std::views::zip(this->m_data, other.m_data), op);
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] &= other.m_data[i];
                         }
@@ -548,6 +555,7 @@ public:
                         this->m_data[0] |= other.m_data[0];
                         this->m_data[1] |= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
+                        // C++23: std::ranges::for_each(std::views::zip(this->m_data, other.m_data), op);
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] |= other.m_data[i];
                         }
@@ -563,6 +571,7 @@ public:
                         this->m_data[0] ^= other.m_data[0];
                         this->m_data[1] ^= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
+                        // C++23: std::ranges::for_each(std::views::zip(this->m_data, other.m_data), op);
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] ^= other.m_data[i];
                         }
@@ -579,6 +588,7 @@ public:
                         this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
                         this->m_data[1] &= static_cast<block_type>(~other.m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
+                        // C++23: std::ranges::for_each(std::views::zip(this->m_data, other.m_data), op);
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] &= static_cast<block_type>(~other.m_data[i]);
                         }
@@ -659,16 +669,16 @@ public:
                 } else if constexpr (num_logical_blocks == 1) {
                         return !(this->m_data[0] & ~other.m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
-                        return
-                                !(this->m_data[0] & ~other.m_data[0]) &&
-                                !(this->m_data[1] & ~other.m_data[1])
-                        ;
+                        return !(
+                                (this->m_data[0] & ~other.m_data[0]) ||
+                                (this->m_data[1] & ~other.m_data[1])
+                        );
                 } else if constexpr (num_logical_blocks >= 3) {
+                        // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data), pred);
                         return std::ranges::equal(
-                                this->m_data, 
-                                other.m_data, 
-                                [](auto wL, auto wR) -> bool {
-                                        return !(wL & ~wR);
+                                this->m_data, other.m_data, 
+                                [](auto const& L, auto const& R) -> bool {
+                                        return !(L & ~R);
                                 }
                         );
                 }
@@ -683,22 +693,22 @@ public:
                 -> bool
         {
                 if constexpr (num_logical_blocks < 3) {
-                        return is_subset_of(other) && !other.is_subset_of(*this);
+                        return this->is_subset_of(other) && !other.is_subset_of(*this);
                 } else {
                         auto i = 0;
                         for (/* init-statement before loop */; i < num_logical_blocks; ++i) {
-                                if (other.m_data[i] & ~this->m_data[i]) {
-                                        break;
-                                }
                                 if (this->m_data[i] & ~other.m_data[i]) {
                                         return false;
                                 }
+                                if (other.m_data[i] & ~this->m_data[i]) {
+                                        break;
+                                }
                         }
                         return (i == num_logical_blocks) ? false : std::ranges::equal(
-                                this->m_data | std::views::drop(i),
-                                other.m_data | std::views::drop(i),
-                                [](auto wL, auto wR) -> bool {
-                                        return !(wL & ~wR);
+                                // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data) | std::views::drop(i), pred);
+                                this->m_data | std::views::drop(i), other.m_data | std::views::drop(i),
+                                [](auto const& L, auto const& R) -> bool {
+                                        return !(L & ~R);
                                 }
                         );
                 }
@@ -723,10 +733,10 @@ public:
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
                         return !std::ranges::equal(
-                                this->m_data, 
-                                other.m_data, 
-                                [](auto wL, auto wR) -> bool {
-                                        return !(wL & wR);
+                                // C++23: std::ranges::any_of(std::views::zip(this->m_data, other.m_data), pred);
+                                this->m_data, other.m_data, 
+                                [](auto const& L, auto const& R) -> bool {
+                                        return !(L & R);
                                 }
                         );
                 }
@@ -860,7 +870,7 @@ private:
                 return M;
         }
 
-        [[nodiscard]] constexpr auto find_next(int n) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_next(value_type n) const // Throws: Nothing.
         {
                 assert(is_valid_iterator(n));
                 if (n == M) {
@@ -889,7 +899,7 @@ private:
                 return M;
         }
 
-        [[nodiscard]] constexpr auto find_prev(int n) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_prev(value_type n) const // Throws: Nothing.
         {
                 assert(is_valid_reference(n));
                 // static_cast to guard against integral promotions of block_type smaller than int.
