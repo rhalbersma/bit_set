@@ -431,10 +431,8 @@ struct mem_contains
         template<class X>
         auto operator()(X const& b, X::key_type const& k) const
         {                                                                       
-                if constexpr (requires { b.contains(k); }) {                    // [associative.reqmts.general]/153
-                        static_assert(std::same_as<decltype(b.contains(k)), bool>);
-                        BOOST_CHECK_EQUAL(b.contains(k), b.find(k) != b.end()); // [associative.reqmts.general]/154
-                }
+                static_assert(std::same_as<decltype(b.contains(k)), bool>);
+                BOOST_CHECK_EQUAL(b.contains(k), b.find(k) != b.end()); // [associative.reqmts.general]/154
         }
 };
 
