@@ -47,6 +47,10 @@ set(cxx_compile_options_warnings
         -Wsign-conversion
         -Wsign-promo
     >
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:Release>>:
+        -Wno-array-bounds                   # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode 
+        -Wno-stringop-overflow              # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode 
+    >
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -Werror
         -pedantic-errors

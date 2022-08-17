@@ -432,7 +432,7 @@ struct mem_contains
         auto operator()(X const& b, X::key_type const& k) const
         {                                                                       
                 static_assert(std::same_as<decltype(b.contains(k)), bool>);
-                BOOST_CHECK_EQUAL(b.contains(k), b.find(k) != b.end()); // [associative.reqmts.general]/154
+                BOOST_CHECK_EQUAL(b.contains(k), b.find(k) != b.end());         // [associative.reqmts.general]/154
         }
 };
 

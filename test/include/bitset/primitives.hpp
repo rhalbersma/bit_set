@@ -461,7 +461,7 @@ struct op_bitor
                         auto const lhs = a | b;
                         BitSet rhs;
                         std::ranges::set_union(a, b, std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK_EQUAL(lhs,rhs);
+                        BOOST_CHECK_EQUAL(lhs, rhs);
                 }
         }
 
