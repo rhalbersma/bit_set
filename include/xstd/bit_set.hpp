@@ -160,7 +160,7 @@ public:
                 } else if constexpr (num_logical_blocks >= 3) {
                         return std::ranges::none_of(
                                 m_data, 
-                                [](auto const& block) -> bool {
+                                [](auto block) -> bool { 
                                         return block;
                                 }
                         );
@@ -182,7 +182,7 @@ public:
                         } else if constexpr (num_logical_blocks >= 3) {
                                 return std::ranges::all_of(
                                         m_data, 
-                                        [](auto const& block) {
+                                        [](auto block) {
                                                 return block == ones;
                                         }
                                 );
@@ -201,7 +201,7 @@ public:
                                         m_data[0] == no_excess_bits &&
                                         std::ranges::all_of(
                                                 m_data | std::views::drop(1), 
-                                                [](auto const& block) {
+                                                [](auto block) {
                                                         return block == ones;
                                                 }
                                         )
@@ -225,7 +225,7 @@ public:
                         // C++23: http://open-std.org/JTC1/SC22/WG21/docs/papers/2019/p1813r0.pdf
                         return std::accumulate(
                                 std::begin(m_data), std::end(m_data), 0, 
-                                [](auto sum, auto const& block) {
+                                [](auto sum, auto block) {
                                         return sum + std::popcount(block);
                                 }
                         );
@@ -659,8 +659,8 @@ public:
                         // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data), pred);
                         return std::ranges::equal(
                                 this->m_data, other.m_data, 
-                                [](auto const& L, auto const& R) -> bool {
-                                        return !(L & ~R);
+                                [](auto lhs, auto rhs) -> bool {
+                                        return !(lhs & ~rhs);
                                 }
                         );
                 }
@@ -689,8 +689,8 @@ public:
                         return (i == num_logical_blocks) ? false : std::ranges::equal(
                                 // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data) | std::views::drop(i), pred);
                                 this->m_data | std::views::drop(i), other.m_data | std::views::drop(i),
-                                [](auto const& L, auto const& R) -> bool {
-                                        return !(L & ~R);
+                                [](auto lhs, auto rhs) -> bool {
+                                        return !(lhs & ~rhs);
                                 }
                         );
                 }
@@ -717,8 +717,8 @@ public:
                         return !std::ranges::equal(
                                 // C++23: std::ranges::any_of(std::views::zip(this->m_data, other.m_data), pred);
                                 this->m_data, other.m_data, 
-                                [](auto const& L, auto const& R) -> bool {
-                                        return !(L & R);
+                                [](auto lhs, auto rhs) -> bool {
+                                        return !(lhs & rhs);
                                 }
                         );
                 }
