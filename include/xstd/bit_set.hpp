@@ -392,12 +392,12 @@ public:
         constexpr auto swap(bit_set& other [[maybe_unused]]) noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
-                        std::swap(m_data[0], other.m_data[0]);
+                        std::swap(this->m_data[0], other.m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
-                        std::swap(m_data[0], other.m_data[0]);
-                        std::swap(m_data[1], other.m_data[1]);
+                        std::swap(this->m_data[0], other.m_data[0]);
+                        std::swap(this->m_data[1], other.m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        std::ranges::swap_ranges(m_data, other.m_data);
+                        std::ranges::swap_ranges(this->m_data, other.m_data);
                 }
         }
 
@@ -974,8 +974,8 @@ private:
                 [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
                         -> bool
                 {
-                        assert(m_bs == other.m_bs);
-                        return m_value == other.m_value;
+                        assert(this->m_bs == other.m_bs);
+                        return this->m_value == other.m_value;
                 }
 
                 [[nodiscard]] constexpr auto operator*() const // Throws: Nothing.
