@@ -13,7 +13,7 @@
 #include <cstddef>              // ptrdiff_t, size_t
 #include <functional>           // less
 #include <initializer_list>     // initializer_list
-#include <iterator>             // bidirectional_iterator_tag, begin, end, next, prev, rbegin, rend, reverse_iterator
+#include <iterator>             // begin, bidirectional_iterator_tag, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
 #include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, swap_ranges, views::drop, views::take
@@ -77,17 +77,17 @@ public:
         bit_set() = default;                    // zero-initialization
 
         template<class InputIterator>
-        [[nodiscard]] constexpr bit_set(InputIterator first, InputIterator last) // Throws: Nothing.
+        [[nodiscard]] constexpr bit_set(InputIterator first, InputIterator last) noexcept
         {
                 insert(first, last);
         }
 
-        [[nodiscard]] constexpr bit_set(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        [[nodiscard]] constexpr bit_set(std::initializer_list<value_type> ilist) noexcept
         :
                 bit_set(ilist.begin(), ilist.end())
         {}
 
-        constexpr auto& operator=(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        constexpr auto& operator=(std::initializer_list<value_type> ilist) noexcept
         {
                 clear();
                 insert(ilist.begin(), ilist.end());
@@ -131,14 +131,14 @@ public:
         [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator(rbegin()); }
         [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator(rend());   }
 
-        [[nodiscard]] constexpr auto front() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto front() const noexcept
                 -> const_reference
         {
                 assert(!empty());
                 return { *this, find_front() };
         }
 
-        [[nodiscard]] constexpr auto back() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto back() const noexcept
                 -> const_reference
         {
                 assert(!empty());
@@ -249,20 +249,20 @@ public:
         }
 
         template<class... Args>
-        constexpr auto emplace(Args&&... args) // Throws: Nothing.
+        constexpr auto emplace(Args&&... args) noexcept
         {
                 static_assert(sizeof...(Args) == 1);
                 return insert(value_type(std::forward<Args>(args)...));
         }
 
         template<class... Args>
-        constexpr auto emplace_hint(const_iterator hint, Args&&... args) // Throws: Nothing.
+        constexpr auto emplace_hint(const_iterator hint, Args&&... args) noexcept
         {
                 static_assert(sizeof...(Args) == 1);
                 return insert(hint, value_type(std::forward<Args>(args)...));
         }
 
-        constexpr auto& add(value_type x) // Throws: Nothing.
+        constexpr auto& add(value_type x) noexcept
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
@@ -272,7 +272,7 @@ public:
                 return *this;
         }
         
-        constexpr auto insert(value_type const& x) // Throws: Nothing.
+        constexpr auto insert(value_type const& x) noexcept
                 -> std::pair<iterator, bool>
         {
                 assert(is_valid_reference(x));
@@ -289,7 +289,7 @@ public:
                 return { { this, x }, false };
         }
 
-        constexpr auto insert(const_iterator /* hint */, value_type const& x) // Throws: Nothing.
+        constexpr auto insert(const_iterator /* hint */, value_type const& x) noexcept
                 -> iterator
         {
                 assert(is_valid_reference(x));
@@ -298,7 +298,7 @@ public:
         }
 
         template<class InputIterator>
-        constexpr auto insert(InputIterator first, InputIterator last) // Throws: Nothing.
+        constexpr auto insert(InputIterator first, InputIterator last) noexcept
         {
                 std::for_each(first, last, [&](auto const& x) {
                         insert(x);
@@ -306,7 +306,7 @@ public:
         }
 
         template<class Range>
-        constexpr auto insert_range(Range&& rg) // Throws: Nothing.
+        constexpr auto insert_range(Range&& rg) noexcept
                 requires std::ranges::range<Range> && std::constructible_from<value_type, decltype(*rg.begin())>
         {
                 std::ranges::for_each(rg, [&](auto const& x) {
@@ -314,7 +314,7 @@ public:
                 });
         }
 
-        constexpr auto insert(std::initializer_list<value_type> ilist) // Throws: Nothing.
+        constexpr auto insert(std::initializer_list<value_type> ilist) noexcept
         {
                 insert(ilist.begin(), ilist.end());
         }
@@ -345,7 +345,7 @@ public:
                 return *this;
         }
 
-        constexpr auto& pop(key_type x) // Throws: Nothing.
+        constexpr auto& pop(key_type x) noexcept
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
@@ -356,7 +356,7 @@ public:
                 return *this;
         }
 
-        constexpr auto erase(key_type const& x) // Throws: Nothing.
+        constexpr auto erase(key_type const& x) noexcept
                 -> size_type
         {
                 assert(is_valid_reference(x));
@@ -374,14 +374,14 @@ public:
                 return 0;
         }
 
-        constexpr auto erase(const_iterator pos) // Throws: Nothing.
+        constexpr auto erase(const_iterator pos) noexcept
         {
                 assert(pos != end());
                 erase(*pos++);
                 return pos;
         }
 
-        constexpr auto erase(const_iterator first, const_iterator last) // Throws: Nothing.
+        constexpr auto erase(const_iterator first, const_iterator last) noexcept
         {
                 std::for_each(first, last, [&](auto const& x) {
                         erase(x);
@@ -415,7 +415,7 @@ public:
                 return *this;
         }
 
-        constexpr auto& replace(value_type const& x [[maybe_unused]]) // Throws: Nothing.
+        constexpr auto& replace(value_type const& x [[maybe_unused]]) noexcept
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
@@ -424,26 +424,26 @@ public:
                 return *this;
         }
 
-        [[nodiscard]] constexpr auto find(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto find(key_type const& x) noexcept
         {
                 assert(is_valid_reference(x));
                 return contains(x) ? iterator(this, x) : end();
         }
 
-        [[nodiscard]] constexpr auto find(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find(key_type const& x) const noexcept
         {
                 assert(is_valid_reference(x));
                 return contains(x) ? const_iterator(this, x) : cend();
         }
 
-        [[nodiscard]] constexpr auto count(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto count(key_type const& x) const noexcept
                 -> size_type
         {
                 assert(is_valid_reference(x));
                 return contains(x);
         }
 
-        [[nodiscard]] constexpr auto contains(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto contains(key_type const& x) const noexcept
         {
                 assert(is_valid_reference(x));
                 if constexpr (num_logical_blocks >= 1) {
@@ -454,42 +454,42 @@ public:
                 return false;
         }
 
-        [[nodiscard]] constexpr auto lower_bound(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto lower_bound(key_type const& x) noexcept
                 -> iterator
         {
                 assert(is_valid_reference(x));
                 return { this, find_next(x) };
         }
 
-        [[nodiscard]] constexpr auto lower_bound(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto lower_bound(key_type const& x) const noexcept
                 -> const_iterator
         {
                 assert(is_valid_reference(x));
                 return { this, find_next(x) };
         }
 
-        [[nodiscard]] constexpr auto upper_bound(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto upper_bound(key_type const& x) noexcept
                 -> iterator
         {
                 assert(is_valid_reference(x));
                 return { this, find_next(x + 1) };
         }
 
-        [[nodiscard]] constexpr auto upper_bound(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto upper_bound(key_type const& x) const noexcept
                 -> const_iterator
         {
                 assert(is_valid_reference(x));
                 return { this, find_next(x + 1) };
         }
 
-        [[nodiscard]] constexpr auto equal_range(key_type const& x) // Throws: Nothing.
+        [[nodiscard]] constexpr auto equal_range(key_type const& x) noexcept
                 -> std::pair<iterator, iterator>
         {
                 assert(is_valid_reference(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
-        [[nodiscard]] constexpr auto equal_range(key_type const& x) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto equal_range(key_type const& x) const noexcept
                 -> std::pair<const_iterator, const_iterator>
         {
                 assert(is_valid_reference(x));
@@ -578,7 +578,7 @@ public:
                 return *this;
         }
 
-        constexpr auto& operator<<=(value_type n [[maybe_unused]]) // Throws: Nothing.
+        constexpr auto& operator<<=(value_type n [[maybe_unused]]) noexcept
         {
                 assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
@@ -611,7 +611,7 @@ public:
                 return *this;
         }
 
-        constexpr auto& operator>>=(value_type n [[maybe_unused]]) // Throws: Nothing.
+        constexpr auto& operator>>=(value_type n [[maybe_unused]]) noexcept
         {
                 assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
@@ -739,7 +739,7 @@ private:
         // The outer static_cast guards against integral promotions of block_type smaller than int.
         static constexpr auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
 
-        [[nodiscard]] static constexpr auto single_bit_mask(value_type n) // Throws: Nothing.
+        [[nodiscard]] static constexpr auto single_bit_mask(value_type n) noexcept
                 -> block_type
         {
                 static_assert(num_logical_blocks >= 1);
@@ -759,7 +759,7 @@ private:
                 return 0 <= n && n <= M;
         }
 
-        [[nodiscard]] static constexpr auto which(value_type n [[maybe_unused]]) // Throws: Nothing.
+        [[nodiscard]] static constexpr auto which(value_type n [[maybe_unused]]) noexcept
                 -> value_type
         {
                 static_assert(num_logical_blocks >= 1);
@@ -771,7 +771,7 @@ private:
                 }
         }
 
-        [[nodiscard]] static constexpr auto where(value_type n) // Throws: Nothing.
+        [[nodiscard]] static constexpr auto where(value_type n) noexcept
                 -> value_type
         {
                 static_assert(num_logical_blocks >= 1);
@@ -791,7 +791,7 @@ private:
                 }
         }
 
-        [[nodiscard]] constexpr auto find_front() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_front() const noexcept
         {
                 assert(!empty());
                 if constexpr (num_logical_blocks == 1) {
@@ -813,7 +813,7 @@ private:
                 }
         }
 
-        [[nodiscard]] constexpr auto find_back() const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_back() const noexcept
         {
                 assert(!empty());
                 if constexpr (num_logical_blocks == 1) {
@@ -852,7 +852,7 @@ private:
                 return M;
         }
 
-        [[nodiscard]] constexpr auto find_next(value_type n) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_next(value_type n) const noexcept
         {
                 assert(is_valid_iterator(n));
                 if (n == M) {
@@ -881,7 +881,7 @@ private:
                 return M;
         }
 
-        [[nodiscard]] constexpr auto find_prev(value_type n) const // Throws: Nothing.
+        [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
         {
                 assert(is_valid_reference(n));
                 // static_cast to guard against integral promotions of block_type smaller than int.
@@ -963,7 +963,7 @@ private:
         public:
                 proxy_iterator() = default;
 
-                [[nodiscard]] constexpr proxy_iterator(bit_set const* bs, value_type const& v) // Throws: Nothing.
+                [[nodiscard]] constexpr proxy_iterator(bit_set const* bs, value_type const& v) noexcept
                 :
                         m_bs(bs),
                         m_value(v)
@@ -978,14 +978,14 @@ private:
                         return this->m_value == other.m_value;
                 }
 
-                [[nodiscard]] constexpr auto operator*() const // Throws: Nothing.
+                [[nodiscard]] constexpr auto operator*() const noexcept
                         -> proxy_reference
                 {
                         assert(is_valid_reference(m_value));
                         return { *m_bs, m_value };
                 }
 
-                constexpr auto& operator++() // Throws: Nothing.
+                constexpr auto& operator++() noexcept
                 {
                         assert(is_valid_reference(m_value));
                         m_value = m_bs->find_next(m_value + 1);
@@ -993,12 +993,12 @@ private:
                         return *this;
                 }
 
-                constexpr auto operator++(int) // Throws: Nothing.
+                constexpr auto operator++(int) noexcept
                 {
                         auto nrv = *this; ++*this; return nrv;
                 }
 
-                constexpr auto& operator--() // Throws: Nothing.
+                constexpr auto& operator--() noexcept
                 {
                         assert(is_valid_reference(m_value - 1));
                         m_value = m_bs->find_prev(m_value - 1);
@@ -1006,7 +1006,7 @@ private:
                         return *this;
                 }
 
-                constexpr auto operator--(int) // Throws: Nothing.
+                constexpr auto operator--(int) noexcept
                 {
                         auto nrv = *this; --*this; return nrv;
                 }
@@ -1044,13 +1044,13 @@ template<std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
+[[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, int n) noexcept
 {
         auto nrv = lhs; nrv <<= n; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) // Throws: Nothing.
+[[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
 }
