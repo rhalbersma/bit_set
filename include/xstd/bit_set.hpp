@@ -146,7 +146,6 @@ public:
         }
 
         [[nodiscard]] constexpr auto empty() const noexcept
-                -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
                         return true;
@@ -158,12 +157,7 @@ public:
                                 m_data[1]
                         );
                 } else if constexpr (num_logical_blocks >= 3) {
-                        return std::ranges::none_of(
-                                m_data, 
-                                [](auto block) -> bool { 
-                                        return block;
-                                }
-                        );
+                        return std::ranges::none_of(m_data, std::identity{});
                 }
         }
 
@@ -644,7 +638,6 @@ public:
         }
 
         [[nodiscard]] constexpr auto is_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
-                -> bool
         {
                 if constexpr (num_logical_blocks == 0) {
                         return true;
@@ -659,7 +652,7 @@ public:
                         // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data), pred);
                         return std::ranges::equal(
                                 this->m_data, other.m_data, 
-                                [](auto lhs, auto rhs) -> bool {
+                                [](auto lhs, auto rhs) {
                                         return !(lhs & ~rhs);
                                 }
                         );
@@ -672,7 +665,6 @@ public:
         }
 
         [[nodiscard]] constexpr auto is_proper_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
-                -> bool
         {
                 if constexpr (num_logical_blocks < 3) {
                         return this->is_subset_of(other) && !other.is_subset_of(*this);
@@ -689,7 +681,7 @@ public:
                         return (i == num_logical_blocks) ? false : std::ranges::equal(
                                 // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data) | std::views::drop(i), pred);
                                 this->m_data | std::views::drop(i), other.m_data | std::views::drop(i),
-                                [](auto lhs, auto rhs) -> bool {
+                                [](auto lhs, auto rhs) {
                                         return !(lhs & ~rhs);
                                 }
                         );
@@ -717,7 +709,7 @@ public:
                         return !std::ranges::equal(
                                 // C++23: std::ranges::any_of(std::views::zip(this->m_data, other.m_data), pred);
                                 this->m_data, other.m_data, 
-                                [](auto lhs, auto rhs) -> bool {
+                                [](auto lhs, auto rhs) {
                                         return !(lhs & rhs);
                                 }
                         );
@@ -748,13 +740,11 @@ private:
         }
 
         [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
-                -> bool
         {
                 return 0 <= n && n < M;
         }
 
         [[nodiscard]] static constexpr auto is_valid_iterator(value_type n) noexcept
-                -> bool
         {
                 return 0 <= n && n <= M;
         }
@@ -972,7 +962,6 @@ private:
                 }
 
                 [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
-                        -> bool
                 {
                         assert(this->m_bs == other.m_bs);
                         return this->m_value == other.m_value;
