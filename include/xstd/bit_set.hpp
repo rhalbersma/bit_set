@@ -99,9 +99,7 @@ public:
         [[nodiscard]] constexpr auto operator<=>(bit_set const& other [[maybe_unused]]) const noexcept
                 -> std::strong_ordering
         {
-                if constexpr (num_logical_blocks == 0) {
-                        return std::strong_ordering::equal;
-                } else if constexpr (num_logical_blocks <= 1) {
+                if constexpr (num_logical_blocks == 1) {
                         return other.m_data[0] <=> this->m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
                         constexpr auto tied = [](auto const& bs) {
@@ -114,6 +112,7 @@ public:
                                 std::rbegin(this->m_data), std::rend(this->m_data)
                         );
                 }
+                return std::strong_ordering::equal;
         }
 
         [[nodiscard]] constexpr auto begin()         noexcept { return       iterator(this, find_first()); }
@@ -147,9 +146,7 @@ public:
 
         [[nodiscard]] constexpr auto empty() const noexcept
         {
-                if constexpr (num_logical_blocks == 0) {
-                        return true;
-                } else if constexpr (num_logical_blocks == 1) {
+                if constexpr (num_logical_blocks == 1) {
                         return !m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
                         return !(
@@ -159,14 +156,13 @@ public:
                 } else if constexpr (num_logical_blocks >= 3) {
                         return std::ranges::none_of(m_data, std::identity{});
                 }
+                return true;
         }
 
         [[nodiscard]] constexpr auto full() const noexcept
         {
                 if constexpr (num_excess_bits == 0) {
-                        if constexpr (num_logical_blocks == 0) {
-                                return true;
-                        } else if constexpr (num_logical_blocks == 1) {
+                        if constexpr (num_logical_blocks == 1) {
                                 return m_data[0] == ones;
                         } else if constexpr (num_logical_blocks == 2) {
                                 return
@@ -181,6 +177,7 @@ public:
                                         }
                                 );
                         }
+                        return true;
                 } else {
                         static_assert(num_logical_blocks >= 1);
                         if constexpr (num_logical_blocks == 1) {
@@ -206,9 +203,7 @@ public:
 
         [[nodiscard]] constexpr auto ssize() const noexcept
         {
-                if constexpr (num_logical_blocks == 0) {
-                        return 0;
-                } else if constexpr (num_logical_blocks == 1) {
+                if constexpr (num_logical_blocks == 1) {
                         return std::popcount(m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
                         return
@@ -224,6 +219,7 @@ public:
                                 }
                         );
                 }
+                return 0;
         }
 
         [[nodiscard]] constexpr auto size() const noexcept
@@ -633,9 +629,7 @@ public:
 
         [[nodiscard]] constexpr auto is_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
         {
-                if constexpr (num_logical_blocks == 0) {
-                        return true;
-                } else if constexpr (num_logical_blocks == 1) {
+                if constexpr (num_logical_blocks == 1) {
                         return !(this->m_data[0] & ~other.m_data[0]);
                 } else if constexpr (num_logical_blocks == 2) {
                         return !(
@@ -651,6 +645,7 @@ public:
                                 }
                         );
                 }
+                return true;
         }
 
         [[nodiscard]] constexpr auto is_superset_of(bit_set const& other) const noexcept
@@ -690,9 +685,7 @@ public:
         [[nodiscard]] constexpr auto intersects(bit_set const& other [[maybe_unused]]) const noexcept
                 -> bool
         {
-                if constexpr (num_logical_blocks == 0) {
-                        return false;
-                } else if constexpr (num_logical_blocks == 1) {
+                if constexpr (num_logical_blocks == 1) {
                         return this->m_data[0] & other.m_data[0];
                 } else if constexpr (num_logical_blocks == 2) {
                         return
@@ -708,6 +701,7 @@ public:
                                 }
                         );
                 }
+                return false;
         }
 
 private:
