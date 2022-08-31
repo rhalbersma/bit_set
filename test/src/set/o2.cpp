@@ -3,10 +3,11 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <set/compatible/flat_set.hpp>  // op<=>
-#include <set/compatible/set.hpp>       // op<=>
+#include <aux/flat_set.hpp>             // flat_set
 #include <set/exhaustive.hpp>           // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
-                                        // all_singleton_sets, all_singleton_set_pairs, all_valid                                         
+                                        // all_singleton_sets, all_singleton_set_pairs, all_valid
+#include <set/parallel.hpp>             // includes, set_difference, set_intersection, set_symmetric_difference, set_union,
+                                        // transform_decrement_filter, transform_increment_filter
 #include <set/primitives.hpp>           // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
                                         // mem_lower_bound, mem_upper_bound, mem_equal_range, op_equal, op_not_equal_to,
                                         // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
@@ -141,6 +142,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         all_singleton_set_pairs<T>(op_greater_equal());
 
         all_singleton_set_pairs<T>(fn_swap());
+
+        empty_set_pair<T>(parallel::includes());
+        all_singleton_set_pairs<T>(parallel::includes());
+        all_singleton_set_pairs<T>(parallel::set_union());
+        all_singleton_set_pairs<T>(parallel::set_intersection());
+        all_singleton_set_pairs<T>(parallel::set_difference());
+        all_singleton_set_pairs<T>(parallel::set_symmetric_difference());
+
+        all_valid<T>([](auto pos) {
+                all_singleton_sets<T>([&](auto const& bs1) {
+                        parallel::transform_decrement_filter()(bs1, pos);
+                });
+        });      
+        all_valid<T>([](auto pos) {
+                all_singleton_sets<T>([&](auto const& bs1) {
+                        parallel::transform_increment_filter()(bs1, pos);
+                });
+        });         
 }
 
 BOOST_AUTO_TEST_SUITE_END()

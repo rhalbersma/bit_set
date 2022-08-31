@@ -11,7 +11,7 @@
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
-#include <functional>           // less
+#include <functional>           // identity, less
 #include <initializer_list>     // initializer_list
 #include <iterator>             // begin, bidirectional_iterator_tag, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
@@ -49,9 +49,9 @@ class bit_set
         static constexpr auto num_logical_blocks = (M - 1 + block_size) / block_size;
         static constexpr auto num_storage_blocks = std::max(num_logical_blocks, 1);
         static constexpr auto num_bits = num_logical_blocks * block_size;
-        static constexpr auto num_excess_bits = num_bits - M;
+        static constexpr auto num_unused_bits = num_bits - M;
 
-        static_assert(0 <= num_excess_bits && num_excess_bits < block_size);
+        static_assert(0 <= num_unused_bits && num_unused_bits < block_size);
 
         class proxy_reference;
         class proxy_iterator;
@@ -161,7 +161,7 @@ public:
 
         [[nodiscard]] constexpr auto full() const noexcept
         {
-                if constexpr (num_excess_bits == 0) {
+                if constexpr (num_unused_bits == 0) {
                         if constexpr (num_logical_blocks == 1) {
                                 return m_data[0] == ones;
                         } else if constexpr (num_logical_blocks == 2) {
@@ -181,15 +181,15 @@ public:
                 } else {
                         static_assert(num_logical_blocks >= 1);
                         if constexpr (num_logical_blocks == 1) {
-                                return m_data[0] == no_excess_bits;
+                                return m_data[0] == no_unused_bits;
                         } else if constexpr (num_logical_blocks == 2) {
                                 return
-                                        m_data[0] == no_excess_bits &&
+                                        m_data[0] == no_unused_bits &&
                                         m_data[1] == ones
                                 ;
                         } else if constexpr (num_logical_blocks >= 3) {
                                 return
-                                        m_data[0] == no_excess_bits &&
+                                        m_data[0] == no_unused_bits &&
                                         std::ranges::all_of(
                                                 m_data | std::views::drop(1), 
                                                 [](auto block) {
@@ -311,7 +311,7 @@ public:
 
         constexpr auto& fill() noexcept
         {
-                if constexpr (num_excess_bits == 0) {
+                if constexpr (num_unused_bits == 0) {
                         if constexpr (num_logical_blocks == 1) {
                                 m_data[0] = ones;
                         } else if constexpr (num_logical_blocks == 2) {
@@ -322,12 +322,12 @@ public:
                         }
                 } else {
                         if constexpr (num_logical_blocks == 1) {
-                                m_data[0] = no_excess_bits;
+                                m_data[0] = no_unused_bits;
                         } else if constexpr (num_logical_blocks == 2) {
-                                m_data[0] = no_excess_bits;
+                                m_data[0] = no_unused_bits;
                                 m_data[1] = ones;
                         } else if constexpr (num_logical_blocks >= 3) {
-                                m_data[0] = no_excess_bits;
+                                m_data[0] = no_unused_bits;
                                 std::ranges::fill_n(std::next(std::begin(m_data)), num_logical_blocks - 1, ones);
                         }
                 }
@@ -434,14 +434,10 @@ public:
         }
 
         [[nodiscard]] constexpr auto contains(key_type const& x) const noexcept
+                -> bool
         {
                 assert(is_valid_reference(x));
-                if constexpr (num_logical_blocks >= 1) {
-                        if (m_data[which(x)] & single_bit_mask(where(x))) {
-                                return true;
-                        }
-                }
-                return false;
+                return m_data[which(x)] & single_bit_mask(where(x));
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) noexcept
@@ -499,7 +495,7 @@ public:
                                 block = static_cast<block_type>(~block);
                         });
                 }
-                clear_excess_bits();
+                clear_unused_bits();
                 return *this;
         }
 
@@ -594,7 +590,7 @@ public:
                         }
                         std::ranges::fill_n(std::prev(std::end(m_data), n_block), n_block, zero);
                 }
-                clear_excess_bits();
+                clear_unused_bits();
                 return *this;
         }
 
@@ -648,16 +644,11 @@ public:
                 return true;
         }
 
-        [[nodiscard]] constexpr auto is_superset_of(bit_set const& other) const noexcept
-        {
-                return other.is_subset_of(*this);
-        }
-
         [[nodiscard]] constexpr auto is_proper_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
         {
-                if constexpr (num_logical_blocks < 3) {
+                if constexpr (num_logical_blocks == 1 || num_logical_blocks == 2) {
                         return this->is_subset_of(other) && !other.is_subset_of(*this);
-                } else {
+                } else if constexpr (num_logical_blocks >= 3) {
                         auto i = 0;
                         for (/* init-statement before loop */; i < num_logical_blocks; ++i) {
                                 if (this->m_data[i] & ~other.m_data[i]) {
@@ -675,11 +666,7 @@ public:
                                 }
                         );
                 }
-        }
-
-        [[nodiscard]] constexpr auto is_proper_superset_of(bit_set const& other) const noexcept
-        {
-                return other.is_proper_subset_of(*this);
+                return false;
         }
 
         [[nodiscard]] constexpr auto intersects(bit_set const& other [[maybe_unused]]) const noexcept
@@ -710,10 +697,10 @@ private:
         static constexpr auto ones = static_cast<block_type>(-1);
 
         PRAGMA_VC_WARNING_PUSH_DISABLE(4309)
-        static constexpr auto no_excess_bits = static_cast<block_type>(ones << num_excess_bits);
+        static constexpr auto no_unused_bits = static_cast<block_type>(ones << num_unused_bits);
         PRAGMA_VC_WARNING_POP
 
-        static_assert(num_excess_bits ^ (ones == no_excess_bits));
+        static_assert(num_unused_bits ^ (ones == no_unused_bits));
 
         // The inner static_cast guards against integer overflow of block_type larger than int.
         // The outer static_cast guards against integral promotions of block_type smaller than int.
@@ -722,7 +709,6 @@ private:
         [[nodiscard]] static constexpr auto single_bit_mask(value_type n) noexcept
                 -> block_type
         {
-                static_assert(num_logical_blocks >= 1);
                 assert(0 <= n && n < block_size);
                 return unit >> n;
         }
@@ -740,9 +726,8 @@ private:
         [[nodiscard]] static constexpr auto which(value_type n [[maybe_unused]]) noexcept
                 -> value_type
         {
-                static_assert(num_logical_blocks >= 1);
                 assert(is_valid_reference(n));
-                if constexpr (num_logical_blocks == 1) {
+                if constexpr (num_logical_blocks <= 1) {
                         return 0;
                 } else {
                         return num_logical_blocks - 1 - n / block_size;
@@ -752,20 +737,19 @@ private:
         [[nodiscard]] static constexpr auto where(value_type n) noexcept
                 -> value_type
         {
-                static_assert(num_logical_blocks >= 1);
                 assert(is_valid_reference(n));
-                if constexpr (num_logical_blocks == 1) {
+                if constexpr (num_logical_blocks <= 1) {
                         return n;
                 } else {
                         return n % block_size;
                 }
         }
 
-        constexpr auto clear_excess_bits() noexcept
+        constexpr auto clear_unused_bits() noexcept
         {
-                if constexpr (num_excess_bits != 0) {
+                if constexpr (num_unused_bits != 0) {
                         static_assert(num_logical_blocks >= 1);
-                        m_data[0] &= no_excess_bits;
+                        m_data[0] &= no_unused_bits;
                 }
         }
 
@@ -1030,12 +1014,6 @@ template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto is_disjoint(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
-{
-        return !lhs.intersects(rhs);
 }
 
 template<std::size_t N, std::unsigned_integral Block>

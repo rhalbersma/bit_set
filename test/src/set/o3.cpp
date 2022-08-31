@@ -3,6 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <aux/flat_set.hpp>             // flat_set
 #include <set/exhaustive.hpp>           // all_singleton_set_triples
 #include <set/primitives.hpp>           // op_equal_to, op_less
 #include <xstd/bit_set.hpp>             // bit_set

@@ -23,9 +23,8 @@ using int_set_types = boost::mpl::vector
 ,       bit_set<  9, uint8_t>
 ,       bit_set< 15, uint8_t>
 ,       bit_set< 16, uint8_t>
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94933
-// ,       bit_set< 17, uint8_t> 
-// ,       bit_set< 24, uint8_t>
+,       bit_set< 17, uint8_t> 
+,       bit_set< 24, uint8_t>
 ,       bit_set<  0, uint16_t>
 ,       bit_set<  1, uint16_t>
 ,       bit_set< 15, uint16_t>

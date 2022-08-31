@@ -5,9 +5,10 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <concepts.hpp> // resizeable
-#include <cassert>      // assert
-#include <cstddef>      // size_t
+#include <bitset/factory.hpp>   // make_bitset
+#include <concepts.hpp>         // resizeable
+#include <cassert>              // assert
+#include <cstddef>              // size_t
 
 #if defined(_MSC_VER)
         // std::bitset<0> and xstd::bit_set<0> give bogus "unreachable code" warnings
@@ -16,8 +17,8 @@
 
 namespace xstd {
 
-template<class BitSet, std::size_t Limit>
-inline auto const limit_v = resizeable<BitSet> ? Limit : fn_size(BitSet());
+template<class T, std::size_t Limit>
+inline auto const limit_v = resizeable<T> ? Limit : T().size();
 
 inline constexpr auto L0 = 128;
 inline constexpr auto L1 =  64;
@@ -27,76 +28,76 @@ inline constexpr auto L4 =   8;
 
 // NOTE: these tests are O(1)
 
-template<class BitSet>
+template<class T>
 auto empty_set(auto fun)
 {
-        auto const N = limit_v<BitSet, L0>;
-        BitSet bs0; resize(bs0, N); assert(count(bs0) == 0);
+        auto const N = limit_v<T, L0>;
+        auto bs0 = make_bitset<T>(N); assert(bs0.count() == 0);
         fun(bs0);
 }
 
-template<class BitSet>
+template<class T>
 auto full_set(auto fun)
 {
-        auto const N = limit_v<BitSet, L0>;
-        BitSet bsN; resize(bsN, N, true); assert(count(bsN) == N);
+        auto const N = limit_v<T, L0>;
+        auto bsN = make_bitset<T>(N, true); assert(bsN.count() == N);
         fun(bsN);
 }
 
 // NOTE: these tests are O(N)
 
-template<class BitSet>
+template<class T>
 auto all_valid(auto fun)
 {
-        auto const N = limit_v<BitSet, L1>;
+        auto const N = limit_v<T, L1>;
         for (auto i = decltype(N)(0); i < N; ++i) {
                 fun(i);
         }
 }
 
-template<class BitSet>
+template<class T>
 auto any_value(auto fun)
 {
-        auto const N = limit_v<BitSet, L1>;
+        auto const N = limit_v<T, L1>;
         for (auto i = decltype(N)(0); i <= N; ++i) {
                 fun(i);
         }
 }
 
-template<class BitSet>
+template<class T>
 auto all_cardinality_sets(auto fun)
 {
-        auto const N = limit_v<BitSet, L1>;
+        auto const N = limit_v<T, L1>;
         for (auto i = decltype(N)(0); i <= N; ++i) {
-                BitSet bs; resize(bs, N);
+                auto bs = make_bitset<T>(N);
                 for (auto j = decltype(N)(0); j < i; ++j) {
-                        set(bs, j);
+                        bs.set(j);
                 }
-                assert(count(bs) == i);
+                assert(bs.count() == i);
                 fun(bs);
         }
 }
 
-template<class BitSet>
+template<class T>
 auto all_singleton_sets(auto fun)
 {
-        auto const N = limit_v<BitSet, L1>;
+        auto const N = limit_v<T, L1>;
         for (auto i = decltype(N)(0); i < N; ++i) {
-                BitSet bs1; resize(bs1, N); set(bs1, i); assert(count(bs1) == 1);
+                auto bs1 = make_bitset<T>(N); bs1.set(i); assert(bs1.count() == 1);
                 fun(bs1);
         }
 }
 
 // NOTE: these tests are O(N^2)
 
-template<class BitSet>
+template<class T>
 auto all_singleton_set_pairs(auto fun)
 {
-        auto const N = limit_v<BitSet, L2>;
+        auto const N = limit_v<T, L2>;
         for (auto i = decltype(N)(0); i < N; ++i) {
-                BitSet bs1_i; resize(bs1_i, N); set(bs1_i, i); assert(count(bs1_i) == 1);
+                auto bs1_i = make_bitset<T>(N); bs1_i.set(i); assert(bs1_i.count() == 1);
                 for (auto j = decltype(N)(0); j < N; ++j) {
-                        BitSet bs1_j; resize(bs1_j, N); set(bs1_j, j); assert(count(bs1_j) == 1);
+                        auto bs1_j = make_bitset<T>(N); bs1_j.set(j); assert(bs1_j.count() == 1);
                         fun(bs1_i, bs1_j);
                 }
         }
@@ -104,16 +105,16 @@ auto all_singleton_set_pairs(auto fun)
 
 // NOTE: this test is O(N^3)
 
-template<class BitSet>
+template<class T>
 auto all_singleton_set_triples(auto fun)
 {
-        auto const N = limit_v<BitSet, L3>;
+        auto const N = limit_v<T, L3>;
         for (auto i = decltype(N)(0); i < N; ++i) {
-                BitSet bs1_i; resize(bs1_i, N); set(bs1_i, i); assert(count(bs1_i) == 1);
+                auto bs1_i = make_bitset<T>(N); bs1_i.set(i); assert(bs1_i.count() == 1);
                 for (auto j = decltype(N)(0); j < N; ++j) {
-                        BitSet bs1_j; resize(bs1_j, N); set(bs1_j, j); assert(count(bs1_j) == 1);
+                        auto bs1_j = make_bitset<T>(N); bs1_j.set(j); assert(bs1_j.count() == 1);
                         for (auto k = decltype(N)(0); k < N; ++k) {
-                                BitSet bs1_k; resize(bs1_k, N); set(bs1_k, k); assert(count(bs1_k) == 1);
+                                auto bs1_k = make_bitset<T>(N); bs1_k.set(k); assert(bs1_k.count() == 1);
                                 fun(bs1_i, bs1_j, bs1_k);
                         }
                 }
@@ -122,16 +123,16 @@ auto all_singleton_set_triples(auto fun)
 
 // NOTE: this test is O(N^4)
 
-template<class BitSet>
+template<class T>
 auto all_doubleton_set_pairs(auto fun)
 {
-        auto const N = limit_v<BitSet, L4>;
+        auto const N = limit_v<T, L4>;
         for (auto j = decltype(N)(1); j < N; ++j) {
                 for (auto i = decltype(N)(0); i < j; ++i) {
-                        BitSet bs2_ij; resize(bs2_ij, N); set(bs2_ij, i); set(bs2_ij, j); assert(count(bs2_ij) == 2);
+                        auto bs2_ij = make_bitset<T>(N); bs2_ij.set(i); bs2_ij.set(j); assert(bs2_ij.count() == 2);
                         for (auto n = decltype(N)(1); n < N; ++n) {
                                 for (auto m = decltype(N)(0); m < n; ++m) {
-                                        BitSet bs2_mn; resize(bs2_mn, N); set(bs2_mn, m); set(bs2_mn, n); assert(count(bs2_mn) == 2);
+                                        auto bs2_mn = make_bitset<T>(N); bs2_mn.set(m); bs2_mn.set(n); assert(bs2_mn.count() == 2);
                                         fun(bs2_ij, bs2_mn);
                                 }
                         }

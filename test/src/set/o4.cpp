@@ -3,10 +3,10 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <set/compatible/flat_set.hpp>  // op<=>
-#include <set/compatible/set.hpp>       // op<=>
+#include <aux/flat_set.hpp>             // <=>
 #include <set/exhaustive.hpp>           // all_doubleton_set_pairs
-#include <set/primitives.hpp>           // op_less
+#include <set/parallel.hpp>             // includes
+#include <set/primitives.hpp>           // op_compare_three_way
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set
 #include <boost/mpl/vector.hpp>         // vector
@@ -38,6 +38,7 @@ using int_set_types = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWay, T, int_set_types)
 {
         all_doubleton_set_pairs<T>(op_compare_three_way());
+        all_doubleton_set_pairs<T>(parallel::includes());        
 }
 
 BOOST_AUTO_TEST_SUITE_END()

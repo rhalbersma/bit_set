@@ -5,7 +5,6 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <iostream.hpp>                 // operator<<, operator>>
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
 #include <algorithm>                    // equal_range, for_each, lexicographical_compare_three_way
 #include <compare>                      // strong_ordering

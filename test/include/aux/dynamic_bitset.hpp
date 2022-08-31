@@ -15,151 +15,9 @@
 namespace boost {
 
 template<std::unsigned_integral Block, class Allocator>
-auto resize(dynamic_bitset<Block, Allocator>& bs, std::size_t num_bits, bool value = false) noexcept
-{
-        bs.resize(num_bits, value);
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto& left_shift_assign(dynamic_bitset<Block, Allocator>& bs, std::size_t pos) // Throws: Nothing.
-{
-        return bs <<= pos;
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto& right_shift_assign(dynamic_bitset<Block, Allocator>& bs, std::size_t pos) // Throws: Nothing.
-{
-        return bs >>= pos;
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto& set(dynamic_bitset<Block, Allocator>& bs) noexcept
-{
-        return bs.set();
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto& set(dynamic_bitset<Block, Allocator>& bs, std::size_t pos, bool val = true)
-{
-        if (pos >= bs.size()) {
-                throw std::out_of_range{""};
-        } else {
-                return bs.set(pos, val);
-        }
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto& reset(dynamic_bitset<Block, Allocator>& bs) noexcept
-{
-        return bs.reset();
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto& reset(dynamic_bitset<Block, Allocator>& bs, std::size_t pos)
-{
-        if (pos >= bs.size()) {
-                throw std::out_of_range{""};
-        } else {
-                return bs.reset(pos);
-        }
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto& flip(dynamic_bitset<Block, Allocator>& bs) noexcept
-{
-        return bs.flip();
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto& flip(dynamic_bitset<Block, Allocator>& bs, std::size_t pos)
-{
-        if (pos >= bs.size()) {
-                throw std::out_of_range{""};
-        } else {
-                return bs.flip(pos);
-        }
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] constexpr auto count(dynamic_bitset<Block, Allocator> const& bs) noexcept
-{
-        return bs.count();
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] constexpr auto fn_size(dynamic_bitset<Block, Allocator> const& bs) noexcept
-{
-        return bs.size();
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto test(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos)
-{
-        if (pos >= bs.size()) {
-                throw std::out_of_range{""};
-        } else {
-                return bs.test(pos);
-        }
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto all(dynamic_bitset<Block, Allocator> const& bs) noexcept
-{
-        return bs.all();
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto any(dynamic_bitset<Block, Allocator> const& bs) noexcept
-{
-        return bs.any();
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto none(dynamic_bitset<Block, Allocator> const& bs) noexcept
-{
-        return bs.none();
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto left_shift(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
-{
-        return bs << pos;
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto right_shift(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
-{
-        return bs >> pos;
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto at(dynamic_bitset<Block, Allocator> const& bs, std::size_t pos) // Throws: Nothing.
-{
-        return bs[pos];
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t pos) // Throws: Nothing.
-{
-        return bs[pos];
-}
-
-template<std::unsigned_integral Block, class Allocator>
-auto at(dynamic_bitset<Block, Allocator>& bs, std::size_t pos, bool val) // Throws: Nothing.
-{
-        return bs[pos] = val;
-}
-
-template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto is_subset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
         return lhs.is_subset_of(rhs);
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto is_superset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
-{
-        return rhs.is_subset_of(lhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
@@ -169,21 +27,9 @@ template<std::unsigned_integral Block, class Allocator>
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto is_proper_superset_of(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
-{
-        return rhs.is_proper_subset_of(lhs);
-}
-
-template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto intersects(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
 {
         return lhs.intersects(rhs);
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto is_disjoint(dynamic_bitset<Block, Allocator> const& lhs, dynamic_bitset<Block, Allocator> const& rhs) noexcept
-{
-        return !lhs.intersects(rhs);
 }
 
 template<std::unsigned_integral Block, class Allocator>

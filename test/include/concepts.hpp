@@ -5,22 +5,15 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <ranges>       // range
 #include <utility>      // declval
 
 namespace xstd {
 
-template<class BitSet>
-concept insertable = std::ranges::range<BitSet> && requires(BitSet&& bs)
+template<class T>
+concept resizeable = requires(T&& t)
 {
-        bs.insert(std::declval<typename BitSet::iterator>(), std::declval<typename BitSet::value_type>());
-};
-
-template<class BitSet>
-concept resizeable = requires(BitSet&& bs)
-{
-        bs.resize(std::declval<typename BitSet::size_type>());
-        bs.resize(std::declval<typename BitSet::size_type>(), std::declval<bool>());
+        t.resize(std::declval<typename T::size_type>());
+        t.resize(std::declval<typename T::size_type>(), std::declval<bool>());
 };
 
 }       // namespace xstd

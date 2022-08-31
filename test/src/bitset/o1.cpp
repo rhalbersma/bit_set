@@ -3,18 +3,17 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <bitset/compatible/bit_set.hpp>        // bit_set
-#include <bitset/compatible/bitset.hpp>         // bitset
-#include <bitset/compatible/dynamic_bitset.hpp> // dynamic_bitset
-#include <bitset/exhaustive.hpp>                // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set 
-#include <bitset/primitives.hpp>                // mem_set, mem_reset, op_compl, mem_flip, mem_count, mem_size, mem_test, mem_all, mem_any, mem_none
-                                                // mem_at, op_bitand, op_bitor, op_xor, op_minus, mem_is_subset_of, mem_intersects, fn_iostream
-#include <xstd/bit_set.hpp>                     // bit_set
-#include <boost/dynamic_bitset.hpp>             // dynamic_bitset
-#include <boost/mpl/vector.hpp>                 // vector
-#include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <bitset>                               // bitset
-#include <cstdint>                              // uint8_t, uint16_t, uint32_t, uint64_t
+#include <aux/bit_set.hpp>              // xstd::bitset adaptor around xstd::bit_set
+#include <aux/bitset.hpp>               // bitset
+#include <aux/dynamic_bitset.hpp>       // dynamic_bitset
+#include <bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set 
+#include <bitset/primitives.hpp>        // mem_set, mem_reset, op_compl, mem_flip, mem_count, mem_size, mem_test, mem_all, mem_any, mem_none
+                                        // mem_at, op_bitand, op_bitor, op_xor, op_minus, mem_is_subset_of, mem_intersects, fn_iostream
+#include <boost/dynamic_bitset.hpp>     // dynamic_bitset
+#include <boost/mpl/vector.hpp>         // vector
+#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <bitset>                       // bitset
+#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 
 BOOST_AUTO_TEST_SUITE(Linear)
 
@@ -25,20 +24,20 @@ using bitset_types = boost::mpl::vector
 ,       std::bitset<  1>
 ,       std::bitset< 64>
 ,       boost::dynamic_bitset<>
-,       bit_set< 0, uint8_t>
-,       bit_set< 1, uint8_t>
-,       bit_set< 8, uint8_t>
-,       bit_set< 9, uint8_t>
-,       bit_set<16, uint8_t>
-,       bit_set<17, uint8_t>
-,       bit_set<24, uint8_t>
-,       bit_set<24, uint16_t>
-,       bit_set<24, uint32_t>
+,       bitset< 0, uint8_t>
+,       bitset< 1, uint8_t>
+,       bitset< 8, uint8_t>
+,       bitset< 9, uint8_t>
+,       bitset<16, uint8_t>
+,       bitset<17, uint8_t>
+,       bitset<24, uint8_t>
+,       bitset<24, uint16_t>
+,       bitset<24, uint32_t>
 #if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
-,       bit_set<24, uint64_t>
+,       bitset<24, uint64_t>
 #endif
 #if defined(__GNUG__)
-,       bit_set<24, __uint128_t>
+,       bitset<24, __uint128_t>
 #endif
 >;
 
@@ -102,27 +101,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 empty_set<T>([&](auto const& bs0) {
                         op_at()(bs0, pos);
                 });
-                empty_set<T>([&](auto& bs0) {
-                        op_at()(bs0, pos);
-                });
-                empty_set<T>([&](auto& bs0) {
-                        op_at()(bs0, pos, false);
-                });
-                empty_set<T>([&](auto& bs0) {
-                        op_at()(bs0, pos, true);
-                });
+                // empty_set<T>([&](auto& bs0) {
+                //         op_at()(bs0, pos);
+                // });
+                // empty_set<T>([&](auto& bs0) {
+                //         op_at()(bs0, pos, false);
+                // });
+                // empty_set<T>([&](auto& bs0) {
+                //         op_at()(bs0, pos, true);
+                // });
                 full_set<T>([&](auto const& bsN) {
                         op_at()(bsN, pos);
                 });
-                full_set<T>([&](auto& bsN) {
-                        op_at()(bsN, pos);
-                });
-                full_set<T>([&](auto& bsN) {
-                        op_at()(bsN, pos, false);
-                });
-                full_set<T>([&](auto& bsN) {
-                        op_at()(bsN, pos, true);
-                });
+                // full_set<T>([&](auto& bsN) {
+                //         op_at()(bsN, pos);
+                // });
+                // full_set<T>([&](auto& bsN) {
+                //         op_at()(bsN, pos, false);
+                // });
+                // full_set<T>([&](auto& bsN) {
+                //         op_at()(bsN, pos, true);
+                // });
         });
 
         all_singleton_sets<T>(op_bitand());
@@ -133,11 +132,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
         all_cardinality_sets<T>(mem_is_subset_of());
         all_singleton_sets<T>(mem_is_subset_of());
 
+        all_cardinality_sets<T>(mem_is_proper_subset_of());
+        all_singleton_sets<T>(mem_is_proper_subset_of());
+
         all_cardinality_sets<T>(mem_intersects());
         all_singleton_sets<T>(mem_intersects());
-
-        all_cardinality_sets<T>(fn_is_disjoint());
-        all_singleton_sets<T>(fn_is_disjoint());
 
         all_cardinality_sets<T>(fn_iostream());
         all_singleton_sets<T>(fn_iostream());
