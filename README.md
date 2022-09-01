@@ -50,7 +50,7 @@ Notes:
 
 1. Each data structure is clear about the interface it provides: sequences are random access containers and ordered sets are bidirectional containers.
 2. The variable-size sequence of `bool` is named `xstd::bit_vector` and decoupled from the general `std::vector` class template.
-3. All containers use a dense (single bit per element) representation. Variable-size sparse sets of `int` can continue to be provided by `boost::container::flat_set` or by a possible future C++ Standard Library addition (as proposed in [p1222r2](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1222r2.pdf)).
+3. All containers use a dense (single bit per element) representation. Variable-size sparse sets of `int` can be provided by `flat_set`, either in [Boost](https://www.boost.org/doc/libs/1_80_0/doc/html/boost/container/flat_set.html) or in [C++ 23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1222r4.pdf).
 4. All containers allow storage configuration through their `Block` template parameter (defaulted to `std::size_t`).
 
 This library provides one of the four outlined quadrants: `xstd::bit_set<N>` as a **fixed-size ordered set of `int`**. The other three quadrants are not implemented.
@@ -59,7 +59,7 @@ This library provides one of the four outlined quadrants: `xstd::bit_set<N>` as 
 
 The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/hPeGxhe3Y)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/z1orEn7zs)
 
 ```cpp
 #include <xstd/bit_set.hpp>
@@ -110,7 +110,7 @@ How would the Sieve of Eratosthenes code look when using a sequence of bits? The
 | `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/as57bchEG) |
 | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/TfTzETWzb) |
 
-The essential difference (apart from differently named member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into forward proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of `begin` and `end` inside `namespace std` entail **undefined behavior**, preventing range-`for` support for `std::bitset<N>`. The best one can do is a manual loop like below (or wrapped in a `for_each` non-member function)
+The essential difference (apart from differently named member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into forward proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of `begin` and `end` inside `namespace std` entail **undefined behavior**, preventing range-`for` support for `std::bitset<N>`. The best one can do is a manual loop like below (possibly wrapped in a `for_each` non-member function)
 
 ```cpp
 // find all primes below N
@@ -137,7 +137,7 @@ How would the Sieve of Eratosthenes code look when using an ordered set of integ
 | `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/j1jPs8K3s) |
 | `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/sjs5GEqax) |
 
-The essential difference is that `std::set<int>` and `boost::flat_set<int>` lack the bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. This style of programming is also supported by `xstd::bit_set` and its proxy iterators seamlessly interact with the `std::adjacent_find` algorithm.
+The essential difference is that `std::set<int>` and `boost::container::flat_set<int>` lack the bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. This style of programming is also supported by `xstd::bit_set` and its proxy iterators seamlessly interact with the `std::adjacent_find` algorithm.
 
 ```cpp
 // find all twin primes below N
@@ -158,8 +158,8 @@ The interface for the class template `xstd::bit_set<N>` is the coherent union of
 
 1. An almost **drop-in** implementation of the full interface of `std::set<int>`.
 2. An almost complete **translation** of the [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) member functions to the [`std::set<int>`](http://en.cppreference.com/w/cpp/container/set) naming convention.
-3. The single-pass and short-circuiting **set predicates** from [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_73_0/libs/dynamic_bitset/dynamic_bitset.html).
-4. The bitwise operators from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) and [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_73_0/libs/dynamic_bitset/dynamic_bitset.html) reimagined as composable and data-parallel **set algorithms**.
+3. The single-pass and short-circuiting **set predicates** from [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_80_0/libs/dynamic_bitset/dynamic_bitset.html).
+4. The bitwise operators from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) and [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_80_0/libs/dynamic_bitset/dynamic_bitset.html) reimagined as composable and data-parallel **set algorithms**.
 
 The **full** interface of `xstd::bit_set` is `constexpr`, made possible by the great advancements of C++20 in this area (in particular `constexpr` standard algorithms).
 
@@ -202,7 +202,7 @@ Almost all existing `std::bitset<N>` code has **a direct translation** (i.e. ach
 
 The semantic differences between `xstd::bit_set<N>` and `std::bitset<N>` are:
 
-- the **full** interface of `xstd::bit_set` is `constexpr`, in contrast to `std::bitset`;
+- the **full** interface of `xstd::bit_set` is `constexpr` for C++20, although `std::bitset` also will become `constexpr` in [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2417r2.pdf);
 - `xstd::bit_set` has a `static` member function `max_size()`;
 - `xstd::bit_set` does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this **behavior is undefined**. This gives `xstd::bit_set<N>` a small performance benefit over `std::bitset<N>`.
 

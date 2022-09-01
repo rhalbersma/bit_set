@@ -237,7 +237,7 @@ struct mem_size
 {
         auto operator()(auto const& bs [[maybe_unused]]) const noexcept
         {
-                if constexpr (!resizeable<std::remove_cvref_t<decltype(bs)>>) {                      // [bitset.members]/35
+                if constexpr (!resizeable<std::remove_cvref_t<decltype(bs)>>) { // [bitset.members]/35
                         BOOST_CHECK_EQUAL(bs.size(), std::remove_cvref_t<decltype(bs)>().size());
                 }
         }
