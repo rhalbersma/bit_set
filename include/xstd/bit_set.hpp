@@ -1,4 +1,5 @@
-#pragma once
+#ifndef XSTD_BIT_SET_HPP
+#define XSTD_BIT_SET_HPP
 
 //          Copyright Rein Halbersma 2014-2022.
 // Distributed under the Boost Software License, Version 1.0.
@@ -1114,3 +1115,5 @@ template<std::size_t N, std::unsigned_integral Block>
 }
 
 }       // namespace xstd
+
+#endif  // include guard
