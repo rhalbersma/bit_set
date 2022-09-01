@@ -217,7 +217,7 @@ I/O functionality can be obtained through third-party libraries such as [{fmt}](
 
 ### 3 Set predicates from `boost::dynamic_bitset`
 
-The set predicates `is_subset`, `is_proper_subset` and `intersects` from `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that these set predicates are not present in `std::bitset`. Efficient emulation of these set predicates for `std::bitset` is not possible using **single-pass** and **short-circuiting** semantics. In addition, `xstd::bit_set` comes with convenient set predicates `is_superset_of`, `is_proper_superset_of` and `is_disjoint`.
+The set predicates `is_subset`, `is_proper_subset` and `intersects` from `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that these set predicates are not present in `std::bitset`. Efficient emulation of these set predicates for `std::bitset` is not possible using **single-pass** and **short-circuiting** semantics.
 
 | `xstd::bit_set<N>`           | `boost::dynamic_bitset<>`  | `std::bitset<N>`            |
 | :-----------------           | :------------------------  | :---------------            |
