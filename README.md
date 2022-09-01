@@ -59,13 +59,12 @@ This library provides one of the four outlined quadrants: `xstd::bit_set<N>` as 
 
 The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/Z7N8Jh7ELmDQoCek)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/hPeGxhe3Y)
 
 ```cpp
-#include "xstd/bit_set.hpp"
-#define FMT_HEADER_ONLY
-#include "fmt/core.h"
-#include "fmt/ranges.h"
+#include <xstd/bit_set.hpp>
+#include <fmt/core.h>
+#include <fmt/ranges.h>
 
 constexpr auto N = 100;
 using set_type = xstd::bit_set<N>;
@@ -108,8 +107,8 @@ How would the Sieve of Eratosthenes code look when using a sequence of bits? The
 
 | Library                   | Try it online |
 | :------                   | :------------ |
-| `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/rMAIOogh4iVt82qu) |
-| `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/1Gyca2dxluXCO8Kz) |
+| `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/as57bchEG) |
+| `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/TfTzETWzb) |
 
 The essential difference (apart from differently named member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into forward proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of `begin` and `end` inside `namespace std` entail **undefined behavior**, preventing range-`for` support for `std::bitset<N>`. The best one can do is a manual loop like below (or wrapped in a `for_each` non-member function)
 
@@ -134,9 +133,9 @@ How would the Sieve of Eratosthenes code look when using an ordered set of integ
 
 | Library                           | Try it online |
 | :------                           | :------------ |
-| `std::set<int>`                   | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/pPAOfQqbEIB1A4us) |
-| `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/52na7rrJVKD8As0Q) |
-| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://wandbox.org/permlink/anakzkISkkxxJ8xO) |
+| `std::set<int>`                   | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/WbK7xYrhK) |
+| `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/j1jPs8K3s) |
+| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/sjs5GEqax) |
 
 The essential difference is that `std::set<int>` and `boost::flat_set<int>` lack the bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. This style of programming is also supported by `xstd::bit_set` and its proxy iterators seamlessly interact with the `std::adjacent_find` algorithm.
 
