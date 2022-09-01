@@ -219,11 +219,11 @@ I/O functionality can be obtained through third-party libraries such as [{fmt}](
 
 The set predicates `is_subset`, `is_proper_subset` and `intersects` from `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that these set predicates are not present in `std::bitset`. Efficient emulation of these set predicates for `std::bitset` is not possible using **single-pass** and **short-circuiting** semantics.
 
-| `xstd::bit_set<N>`           | `boost::dynamic_bitset<>`  | `std::bitset<N>`            |
-| :-----------------           | :------------------------  | :---------------            |
-| `a.is_subset_of(b)`          | `a.is_subset_of(b)`        | `(a & ~b).none()`           |
-| `a.is_proper_subset_of(b)`   | `a.is_proper_subset_of(b)` | `(a & ~b).none() && a != b` |
-| `a.intersects(b)`            | `a.intersects(b)`          | `(a & b).any()`             |
+| `xstd::bit_set<N>` <br> `boost::dynamic_bitset<>`  | `std::bitset<N>`            |
+| :------------------------------------------------  | :---------------            |
+| `a.is_subset_of(b)`                                | `(a & ~b).none()`           |
+| `a.is_proper_subset_of(b)`                         | `(a & ~b).none() && a != b` |
+| `a.intersects(b)`                                  | `(a & b).any()`             |
 
 ### 4 The bitwise operators from `std::bitset` and `boost::dynamic_bitset` reimagined as set algorithms
 
