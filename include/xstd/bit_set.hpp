@@ -659,9 +659,9 @@ public:
                                         break;
                                 }
                         }
-                        return (i == num_logical_blocks) ? false : std::ranges::equal(
-                                // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data) | std::views::drop(i), pred);
-                                this->m_data | std::views::drop(i), other.m_data | std::views::drop(i),
+                        // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data) | std::views::drop(i), pred);
+                       return (i == num_logical_blocks) ? false : std::ranges::equal(
+                                 this->m_data | std::views::drop(i), other.m_data | std::views::drop(i),
                                 [](auto lhs, auto rhs) {
                                         return !(lhs & ~rhs);
                                 }
@@ -681,8 +681,8 @@ public:
                                 (this->m_data[1] & other.m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
+                        // C++23: std::ranges::any_of(std::views::zip(this->m_data, other.m_data), pred);
                         return !std::ranges::equal(
-                                // C++23: std::ranges::any_of(std::views::zip(this->m_data, other.m_data), pred);
                                 this->m_data, other.m_data, 
                                 [](auto lhs, auto rhs) {
                                         return !(lhs & rhs);
