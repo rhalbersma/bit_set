@@ -6,7 +6,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <algorithm>            // for_each, lexicographical_compare_three_way, max 
+#include <range/v3/view/zip.hpp>
+#include <algorithm>            // lexicographical_compare_three_way, max 
 #include <bit>                  // countl_zero, countr_zero, popcount
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
@@ -17,7 +18,7 @@
 #include <iterator>             // begin, bidirectional_iterator_tag, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
-#include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, swap_ranges, views::drop, views::take
+#include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, subrange, swap_ranges, views::drop, views::take
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
@@ -291,18 +292,18 @@ public:
         template<class InputIterator>
         constexpr auto insert(InputIterator first, InputIterator last) noexcept
         {
-                std::for_each(first, last, [&](auto const& x) {
+                for (auto const& x : std::ranges::subrange(first, last)) {
                         insert(x);
-                });
+                };
         }
 
         template<class Range>
         constexpr auto insert_range(Range&& rg) noexcept
                 requires std::ranges::range<Range> && std::constructible_from<value_type, decltype(*rg.begin())>
         {
-                std::ranges::for_each(rg, [&](auto const& x) {
+                for (auto const& x : rg) {
                         insert(x);
-                });
+                };
         }
 
         constexpr auto insert(std::initializer_list<value_type> ilist) noexcept
@@ -374,9 +375,9 @@ public:
 
         constexpr auto erase(const_iterator first, const_iterator last) noexcept
         {
-                std::for_each(first, last, [&](auto const& x) {
+                for (auto const& x : std::ranges::subrange(first, last)) {
                         erase(x);
-                });
+                }
                 return last;
         }
 
@@ -492,9 +493,9 @@ public:
                         m_data[0] = static_cast<block_type>(~m_data[0]);
                         m_data[1] = static_cast<block_type>(~m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        std::ranges::for_each(m_data, [](auto& block) {
+                        for (auto& block : m_data) {
                                 block = static_cast<block_type>(~block);
-                        });
+                        };
                 }
                 clear_unused_bits();
                 return *this;

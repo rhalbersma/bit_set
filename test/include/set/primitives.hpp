@@ -6,7 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <algorithm>                    // equal_range, for_each, lexicographical_compare_three_way
+#include <algorithm>                    // equal_range, lexicographical_compare_three_way
 #include <compare>                      // strong_ordering
 #include <concepts>                     // convertible_to, default_initializable, equality_comparable, same_as, signed_integral, unsigned_integral
 #include <initializer_list>             // initializer_list
@@ -14,7 +14,7 @@
 #include <limits>                       // max
 #include <memory>                       // addressof
 #include <numeric>                      // accumulate
-#include <ranges>                       // count, equal, find, lexicographical_compare, lower_bound, upper_bound
+#include <ranges>                       // count, equal, find, lexicographical_compare, lower_bound, , subrange, upper_bound
 #include <utility>                      // pair
 
 namespace xstd {
@@ -312,9 +312,9 @@ struct mem_insert
                 static_assert(std::constructible_from<typename X::value_type, decltype(*i)>);
                 auto a1 = a;
                 a.insert(i, j);
-                std::for_each(i, j, [&](auto const& t) {
+                for (auto const& t : std::ranges::subrange(i, j)) {
                         a1.insert(t);
-                });
+                }
                 BOOST_CHECK(a == a1);                                           // [associative.reqmts.general]/77
         }
 
@@ -327,9 +327,9 @@ struct mem_insert
                 static_assert(std::constructible_from<typename X::value_type, decltype(*rg.begin())>);
                 auto a1 = a;
                 a.insert_range(rg);
-                std::ranges::for_each(rg, [&](auto const& t) {
+                for (auto const& t : rg) {
                         a1.insert(t);
-                });
+                }
                 BOOST_CHECK(a == a1);                                           // [associative.reqmts.general]/81
         }
 
