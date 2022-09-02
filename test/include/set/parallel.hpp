@@ -5,12 +5,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL
-#include <algorithm>                    // includes, set_difference, set_intersection, set_symmetric_difference, set_union
-#include <cstddef>                      // size_t
-#include <iterator>                     // inserter
-#include <ranges>                       // views::filter, views::transform
-#include <type_traits>                  // remove_cvref_t
+#include <boost/test/unit_test.hpp>             // BOOST_CHECK, BOOST_CHECK_EQUAL
+#include <range/v3/range/conversion.hpp>        // to
+#include <range/v3/view/set_algorithm.hpp>      // set_difference, set_intersection, set_symmetric_difference, set_union
+#include <algorithm>                            // includes 
+#include <ranges>                               // filter, transform
+#include <type_traits>                          // remove_cvref_t
 
 namespace xstd::parallel {
 
@@ -29,10 +29,8 @@ struct set_union
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 if constexpr (requires { a | b; }) {
-                        auto const lhs = a | b;
-                        std::remove_cvref_t<decltype(lhs)> rhs;
-                        std::ranges::set_union(a, b, std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK(lhs == rhs);
+                        using set_type = std::remove_cvref_t<decltype(a)>;
+                        BOOST_CHECK((a | b) == (ranges::view::set_union(a, b) | ranges::to<set_type>));
                 }
         }
 };
@@ -42,10 +40,8 @@ struct set_intersection
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 if constexpr (requires { a & b; }) {
-                        auto const lhs = a & b;
-                        std::remove_cvref_t<decltype(lhs)> rhs;
-                        std::ranges::set_intersection(a, b, std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK(lhs == rhs);
+                        using set_type = std::remove_cvref_t<decltype(a)>;
+                        BOOST_CHECK((a & b) == (ranges::view::set_intersection(a, b) | ranges::to<set_type>));
                 }
         }
 };
@@ -55,10 +51,8 @@ struct set_difference
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 if constexpr (requires { a - b; }) {
-                        auto const lhs = a - b;
-                        std::remove_cvref_t<decltype(lhs)> rhs;
-                        std::ranges::set_difference(a, b, std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK(lhs == rhs);
+                        using set_type = std::remove_cvref_t<decltype(a)>;
+                        BOOST_CHECK((a - b) == (ranges::view::set_difference(a, b) | ranges::to<set_type>));
                 }
         }
 };
@@ -68,10 +62,8 @@ struct set_symmetric_difference
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 if constexpr (requires { a ^ b; }) {
-                        auto const lhs = a ^ b;
-                        std::remove_cvref_t<decltype(lhs)> rhs;
-                        std::ranges::set_symmetric_difference(a, b, std::inserter(rhs, rhs.end()));
-                        BOOST_CHECK(lhs == rhs);
+                        using set_type = std::remove_cvref_t<decltype(a)>;
+                        BOOST_CHECK((a ^ b) == (ranges::view::set_symmetric_difference(a, b) | ranges::to<set_type>));
                 }
         }
 };
@@ -80,20 +72,16 @@ struct transform_increment_filter
 {
         auto operator()(auto const& is, int n) const
         {
-                if constexpr (requires { is << n; }) {                
-                        auto const lhs = is << n;
-                        std::remove_cvref_t<decltype(lhs)> rhs;
-                        std::ranges::copy(
-                                is |
-                                std::views::transform([=](auto x) {
-                                        return x + n;
-                                }) |
-                                std::views::filter([&](auto x) {
-                                        return x < static_cast<int>(is.max_size());
-                                }),
-                                std::inserter(rhs, rhs.end())
+                if constexpr (requires { is << n; }) {       
+                        constexpr auto N = static_cast<int>(is.max_size());         
+                        using set_type = std::remove_cvref_t<decltype(is)>;
+                        BOOST_CHECK(
+                                (is << n) == (is
+                                        | std::views::transform([=](auto x) { return x + n; })
+                                        | std::views::filter([](auto x) { return x < N;  })
+                                        | ranges::to<set_type>
+                                )
                         );
-                        BOOST_CHECK(lhs == rhs);
                 }
         }
 };
@@ -102,20 +90,15 @@ struct transform_decrement_filter
 {
         auto operator()(auto const& is, int n) const
         {
-                if constexpr (requires { is >> n; }) {                
-                        auto const lhs = is >> n;
-                        std::remove_cvref_t<decltype(lhs)> rhs;
-                        std::ranges::copy(
-                                is |
-                                std::views::transform([=](auto x) {
-                                        return x - n;
-                                }) |
-                                std::views::filter([](auto x) {
-                                        return 0 <= x;
-                                }),
-                                std::inserter(rhs, rhs.end())
+                if constexpr (requires { is >> n; }) {               
+                        using set_type = std::remove_cvref_t<decltype(is)>;
+                        BOOST_CHECK(
+                                (is >> n) == (is
+                                        | std::views::transform([=](auto x) { return x - n; })
+                                        | std::views::filter([](auto x) { return 0 <= x;  })
+                                        | ranges::to<set_type>
+                                )
                         );
-                        BOOST_CHECK(lhs == rhs);
                 }
         }
 };

@@ -84,6 +84,7 @@ foreach(t ${targets})
     target_include_directories(
         ${target_id} PRIVATE
         ${current_include_dir}
+        ${PROJECT_SOURCE_DIR}/../third_party/range-v3/include
     )
 
     target_compile_definitions(
