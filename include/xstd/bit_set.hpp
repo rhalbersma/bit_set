@@ -6,7 +6,6 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <range/v3/view/zip.hpp>
 #include <algorithm>            // lexicographical_compare_three_way, max 
 #include <bit>                  // countl_zero, countr_zero, popcount
 #include <cassert>              // assert
