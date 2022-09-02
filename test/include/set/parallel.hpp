@@ -6,9 +6,10 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL
+#include <algorithm>                    // includes, set_difference, set_intersection, set_symmetric_difference, set_union
 #include <cstddef>                      // size_t
 #include <iterator>                     // inserter
-#include <ranges>                       // includes, set_difference, set_intersection, set_symmetric_difference, set_union, views::filter, views::transform
+#include <ranges>                       // views::filter, views::transform
 #include <type_traits>                  // remove_cvref_t
 
 namespace xstd::parallel {
