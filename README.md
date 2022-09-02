@@ -368,7 +368,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Linux    | GCC        | 11, 12, 13-SVN | CI currently being ported to GitHub Actions |
 | Windows  | Visual C++ | 17.3           | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. Both GCC 11 and Visual C++ 17.3 and higher are supported at the moment. Clang is still missing some C++20 features, and will be added whenever possible.
+Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. Both GCC 11 and Visual C++ 17.3 and higher are supported at the moment. Clang is still missing some C++20 features, and will be added whenever possible. Also note that running the unit tests requires the presence of the range-v3 library.
 
 ## License
 
