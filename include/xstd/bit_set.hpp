@@ -508,7 +508,6 @@ public:
                         this->m_data[0] &= other.m_data[0];
                         this->m_data[1] &= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
-                        // C++23: std::ranges::for_each(std::views::zip(this->m_data, other.m_data), op);
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] &= other.m_data[i];
                         }
@@ -524,7 +523,6 @@ public:
                         this->m_data[0] |= other.m_data[0];
                         this->m_data[1] |= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
-                        // C++23: std::ranges::for_each(std::views::zip(this->m_data, other.m_data), op);
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] |= other.m_data[i];
                         }
@@ -540,7 +538,6 @@ public:
                         this->m_data[0] ^= other.m_data[0];
                         this->m_data[1] ^= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
-                        // C++23: std::ranges::for_each(std::views::zip(this->m_data, other.m_data), op);
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] ^= other.m_data[i];
                         }
@@ -557,7 +554,6 @@ public:
                         this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
                         this->m_data[1] &= static_cast<block_type>(~other.m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
-                        // C++23: std::ranges::for_each(std::views::zip(this->m_data, other.m_data), op);
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] &= static_cast<block_type>(~other.m_data[i]);
                         }
@@ -634,7 +630,13 @@ public:
                                 (this->m_data[1] & ~other.m_data[1])
                         );
                 } else if constexpr (num_logical_blocks >= 3) {
-                        // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data), pred);
+                        // C++23 (currently available in range-v3)
+                        // return std::ranges::none_of(
+                        //         ranges::views::zip(this->m_data, other.m_data),
+                        //         [](auto const& t) {
+                        //                 auto const& [lhs, rhs] = t; return lhs & ~ rhs;
+                        //         }
+                        // );
                         return std::ranges::equal(
                                 this->m_data, other.m_data, 
                                 [](auto lhs, auto rhs) {
@@ -659,7 +661,13 @@ public:
                                         break;
                                 }
                         }
-                        // C++23: std::ranges::none_of(std::views::zip(this->m_data, other.m_data) | std::views::drop(i), pred);
+                        // C++23 (currently available in range-v3)
+                        // return (i == num_logical_blocks) ? false : std::ranges::none_of(
+                        //         ranges::views::zip(this->m_data, other.m_data) | ranges::views::drop(i),
+                        //         [](auto const& t) {
+                        //                 auto const& [lhs, rhs] = t; return lhs & ~ rhs;
+                        //         }
+                        // );
                        return (i == num_logical_blocks) ? false : std::ranges::equal(
                                  this->m_data | std::views::drop(i), other.m_data | std::views::drop(i),
                                 [](auto lhs, auto rhs) {
@@ -681,7 +689,13 @@ public:
                                 (this->m_data[1] & other.m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
-                        // C++23: std::ranges::any_of(std::views::zip(this->m_data, other.m_data), pred);
+                        // C++23 (currently available in range-v3)
+                        // return std::ranges::any_of(
+                        //         ranges::views::zip(this->m_data, other.m_data),
+                        //         [](auto const& t) {
+                        //                 auto const& [lhs, rhs] = t; return lhs & rhs;
+                        //         }
+                        // );                        
                         return !std::ranges::equal(
                                 this->m_data, other.m_data, 
                                 [](auto lhs, auto rhs) {
