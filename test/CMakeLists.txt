@@ -40,8 +40,7 @@ set(cxx_compile_options_warnings
         -Wall
         -Wextra
         -Wpedantic
-        -Wconversion
-        -Wno-type-limits
+        -Wconversion                        # NOTE: possibly triggered by range-v3 views::zip overload resolution
         -Wshadow
         -Wsign-compare
         -Wsign-conversion

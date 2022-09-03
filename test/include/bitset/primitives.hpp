@@ -88,7 +88,7 @@ struct op_minus_assign
 
 struct op_shift_left_assign
 {
-        auto operator()(auto& bs, std::size_t pos) const
+        auto operator()(auto& bs, std::size_t pos) const noexcept
         {
                 auto const src = bs;
                 auto const& dst = bs <<= pos;
@@ -105,7 +105,7 @@ struct op_shift_left_assign
 
 struct op_shift_right_assign
 {
-        auto operator()(auto& bs, std::size_t pos) const
+        auto operator()(auto& bs, std::size_t pos) const noexcept
         {
                 auto const src = bs;
                 auto const& dst = bs >>= pos;
@@ -129,7 +129,7 @@ struct mem_set
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/12
         }
 
-        auto operator()(auto& bs, std::size_t pos, bool val = true) const
+        auto operator()(auto& bs, std::size_t pos, bool val = true) const noexcept
         {
                 if (pos < bs.size()) {
                         auto const src = bs;
@@ -154,12 +154,11 @@ struct mem_reset
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/17
         }
 
-        auto operator()(auto& bs, std::size_t pos) const
+        auto operator()(auto& bs, std::size_t pos) const noexcept
         {
                 if (pos < bs.size()) {
                         auto const src = bs;
                         auto const& dst = bs.reset(pos);
-
                         for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {
                                                                                 // [bitset.members]/18
                                 BOOST_CHECK_EQUAL(dst[i], i == pos ? false : src[i]);
@@ -179,13 +178,6 @@ struct op_compl
                 auto const& ret = ~a;
                 BOOST_CHECK_NE(std::addressof(ret), std::addressof(expected));  // [bitset.members]/21
                 BOOST_CHECK_EQUAL(ret, expected);                               // [bitset.members]/22
-                BOOST_CHECK_EQUAL(~ret, a);                                     // involution
-        }
-
-        auto operator()(auto const& a, auto const& b) const noexcept
-        {
-                BOOST_CHECK_EQUAL(~(a | b), (~a & ~b));                         // De Morgan's Laws
-                BOOST_CHECK_EQUAL(~(a & b), (~a | ~b));                         // De Morgan's Laws
         }
 };
 
@@ -199,11 +191,9 @@ struct mem_flip
                         BOOST_CHECK_NE(dst[i], src[i]);                         // [bitset.members]/23
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/24
-                bs.flip();
-                BOOST_CHECK_EQUAL(bs, src);                                     // involution
         }
 
-        auto operator()(auto& bs, std::size_t pos) const
+        auto operator()(auto& bs, std::size_t pos) const noexcept
         {
                 if (pos < bs.size()) {
                         auto const src = bs;
@@ -219,7 +209,7 @@ struct mem_flip
         }
 };
 
-// [bitset.members]/28-33 describe to_ulong, to_ullong, to_string
+// [bitset.members]/28-33 describe conversion functions to_ulong, to_ullong, to_string
 
 struct mem_count
 {
@@ -235,10 +225,11 @@ struct mem_count
 
 struct mem_size
 {
-        auto operator()(auto const& bs [[maybe_unused]]) const noexcept
+        auto operator()(auto const& bs) const noexcept
         {
-                if constexpr (!resizeable<std::remove_cvref_t<decltype(bs)>>) { // [bitset.members]/35
-                        BOOST_CHECK_EQUAL(bs.size(), std::remove_cvref_t<decltype(bs)>().size());
+                using set_type = std::remove_cvref_t<decltype(bs)>;
+                if constexpr (!resizeable<set_type>) { 
+                        BOOST_CHECK_EQUAL(bs.size(), set_type().size());        // [bitset.members]/35
                 }
         }
 };
@@ -247,7 +238,6 @@ struct op_equal_to
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(a.size(), b.size());
                 auto expected = true;
                 for (auto N = a.size(), i = decltype(N)(0); i < N; ++i) {
                         expected &= a[i] == b[i];
@@ -261,14 +251,10 @@ struct mem_test
         auto operator()(auto const& bs, std::size_t pos) const noexcept
         {
                 if (pos < bs.size()) {
-                        auto value = bs; value.reset(); value.set(pos);
-                        for (auto N = bs.size(), i = decltype(N)(0); i < N; ++i) {
-                                BOOST_CHECK_EQUAL(value.test(i), i == pos);     // [bitset.members]/37
-                        }
+                        BOOST_CHECK_EQUAL(bs.test(pos), bs[pos]);               // [bitset.members]/37
                 } else {                                                        // [bitset.members]/38
                         BOOST_CHECK_THROW(static_cast<void>(bs.test(pos)), std::out_of_range);
-                }
-                 
+                }                 
         }
 };
 
@@ -298,7 +284,7 @@ struct mem_none
 
 struct op_shift_left
 {
-        auto operator()(auto const& bs, std::size_t pos) const
+        auto operator()(auto const& bs, std::size_t pos) const noexcept
         {
                 auto expected = bs; expected <<= pos;
                 BOOST_CHECK_EQUAL(bs << pos, expected);                         // [bitset.members]/42
@@ -307,7 +293,7 @@ struct op_shift_left
 
 struct op_shift_right
 {
-        auto operator()(auto const& bs, std::size_t pos) const
+        auto operator()(auto const& bs, std::size_t pos) const noexcept
         {
                 auto expected = bs; expected >>= pos;
                 BOOST_CHECK_EQUAL(bs >> pos, expected);                         // [bitset.members]/43
@@ -316,11 +302,11 @@ struct op_shift_right
 
 struct op_at
 {
-        auto operator()(auto const& bs, std::size_t pos) const
+        auto operator()(auto const& bs, std::size_t pos) const noexcept
         {
                 BOOST_CHECK(pos < bs.size());                                   // [bitset.members]/44
                 BOOST_CHECK_EQUAL(bs[pos], bs.test(pos));                       // [bitset.members]/45
-                //BOOST_CHECK_NO_THROW(at(bs, pos));                             // [bitset.members]/46
+                BOOST_CHECK_NO_THROW(static_cast<void>(bs[pos]));               // [bitset.members]/46
         }
 
         // auto operator()(auto& bs, std::size_t pos) const
@@ -344,146 +330,61 @@ struct op_at
 
 struct op_bitand
 {
-        auto operator()(auto const& a) const noexcept
-        {
-                BOOST_CHECK_EQUAL((a & a), a);                                  // idempotent
-        }
-
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 auto expected = a; expected &= b;
                 BOOST_CHECK_EQUAL((a & b), expected);                           // [bitset.operators]/1
-                BOOST_CHECK_EQUAL((a & b), (b & a));                            // commutative
-                BOOST_CHECK(is_subset_of(a & b, a));
-                BOOST_CHECK(is_subset_of(a & b, b));
-                BOOST_CHECK_LE((a & b).count(), std::min(a.count(), b.count()));
-        }
-
-        auto operator()(auto const& a, auto const& b, auto const& c) const noexcept
-        {
-                BOOST_CHECK_EQUAL(((a & b) & c), (a & (b & c)));                // associative
-                BOOST_CHECK_EQUAL((a & (b | c)), ((a & b) | (a & c)));          // distributive
         }
 };
 
 struct op_bitor
 {
-        auto operator()(auto const& a) const noexcept
-        {
-                BOOST_CHECK_EQUAL((a | a), a);                                  // idempotent
-        }
-
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 auto expected = a; expected |= b;
                 BOOST_CHECK_EQUAL((a | b), expected);                           // [bitset.operators]/2
-                BOOST_CHECK_EQUAL((a | b), (b | a));                            // commutative
-                BOOST_CHECK(is_subset_of(a, a | b));
-                BOOST_CHECK(is_subset_of(b, a | b));
-                BOOST_CHECK_EQUAL((a | b).count(), a.count() + b.count() - (a & b).count());
-        }
-
-        auto operator()(auto const& a, auto const& b, auto const& c) const noexcept
-        {
-                BOOST_CHECK_EQUAL(((a | b) | c), (a | (b | c)));                // associative
-                BOOST_CHECK_EQUAL((a | (b & c)), ((a | b) & (a | c)));          // distributive
         }
 };
 
 struct op_xor
 {
-        auto operator()(auto const& a) const noexcept
-        {
-                BOOST_CHECK((a ^ a).none());                                    // nilpotent
-        }
-
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 auto expected = a; expected ^= b;
                 BOOST_CHECK_EQUAL((a ^ b), expected);                           // [bitset.operators]/3
-                BOOST_CHECK_EQUAL((a ^ b), (b ^ a));                            // commutative
-                BOOST_CHECK_EQUAL((a ^ b), ((a - b) | (b - a)));
-                BOOST_CHECK_EQUAL((a ^ b), (a | b) - (a & b));
-        }
-
-        auto operator()(auto const& a, auto const& b, auto const& c) const noexcept
-        {
-                BOOST_CHECK_EQUAL(((a ^ b) ^ c), (a ^ (b ^ c)));                // associative
-                BOOST_CHECK_EQUAL((a & (b ^ c)), ((a & b) ^ (a & c)));          // distributive
         }
 };
 
 struct op_minus
 {
-        auto operator()(auto const& a) const noexcept
-        {
-                BOOST_CHECK((a - a).none());                                    // nilpotent
-        }
-
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 auto expected = a; expected -= b;
                 BOOST_CHECK_EQUAL(a - b, expected);
-                BOOST_CHECK_EQUAL(a - b, (a & ~b));
-                BOOST_CHECK_EQUAL(~(a - b), (~a | b));
-                BOOST_CHECK_EQUAL(~a - ~b, b - a);
-                BOOST_CHECK_EQUAL(a - b, (a | b) - b);
-                BOOST_CHECK_EQUAL(a - b, a - (a & b));
-                BOOST_CHECK(is_subset_of(a - b, a));
-                BOOST_CHECK(!intersects(a - b, b));
         }
 };
 
 struct mem_is_subset_of
 {
-        auto operator()(auto const& a) const noexcept
-        {
-                BOOST_CHECK(is_subset_of(a, a));                                // reflexive
-        }
-
         auto operator()(auto const& a, auto const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(a.size(), b.size());
-                auto expected = true;
-                for (auto N = a.size(), i = decltype(N)(0); i < N; ++i) {
-                        expected &= !a[i] || b[i];
-                }
-                BOOST_CHECK_EQUAL(is_subset_of(a, b), expected);
-                BOOST_CHECK_EQUAL(is_subset_of(a, b), (a - b).none());
-                BOOST_CHECK_EQUAL(is_subset_of(a, b), (a & b) == a);
-        }
-
-        auto operator()(auto const& a, auto const& b, auto const& c) const noexcept
-        {                                                                       // transitive
-                BOOST_CHECK(!(is_subset_of(a, b) && is_subset_of(b, c)) || is_subset_of(a, c));
+                BOOST_CHECK_EQUAL(is_subset_of(a, b), (a & ~b).none());
         }
 };
 
 struct mem_is_proper_subset_of
 {
-        auto operator()(auto const& a) const noexcept
-        {
-                BOOST_CHECK(!is_proper_subset_of(a, a));                        // irrreflexive
-        }
-
         auto operator()(auto const& a, auto const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(is_proper_subset_of(a, b), is_subset_of(a, b) && !is_subset_of(b, a));
                 BOOST_CHECK_EQUAL(is_proper_subset_of(a, b), is_subset_of(a, b) && a != b);
         }
 };
 
 struct mem_intersects
 {
-        auto operator()(auto const& a) const noexcept
-        {
-                BOOST_CHECK(intersects(a, a) || a.none());
-        }
-
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 BOOST_CHECK_EQUAL(intersects(a, b), (a & b).any());
-                BOOST_CHECK_EQUAL(intersects(a, b), intersects(b, a));
         }
 };
 

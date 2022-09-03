@@ -57,8 +57,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 });
         });      
 
-        all_singleton_set_pairs<T>(op_compl());
-
         all_singleton_set_pairs<T>(op_equal_to());
 
         any_value<T>([](auto pos) {

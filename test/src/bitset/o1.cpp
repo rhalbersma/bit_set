@@ -124,20 +124,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 // });
         });
 
-        all_singleton_sets<T>(op_bitand());
-        all_singleton_sets<T>(op_bitor());
-        all_singleton_sets<T>(op_xor());
-        all_singleton_sets<T>(op_minus());
-
-        all_cardinality_sets<T>(mem_is_subset_of());
-        all_singleton_sets<T>(mem_is_subset_of());
-
-        all_cardinality_sets<T>(mem_is_proper_subset_of());
-        all_singleton_sets<T>(mem_is_proper_subset_of());
-
-        all_cardinality_sets<T>(mem_intersects());
-        all_singleton_sets<T>(mem_intersects());
-
         all_cardinality_sets<T>(fn_iostream());
         all_singleton_sets<T>(fn_iostream());
 }
