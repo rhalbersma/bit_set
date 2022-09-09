@@ -82,7 +82,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
         }
 
+        all_singleton_set_pairs<T>(op_equal_to());
         all_singleton_set_pairs<T>(mem_swap());
+        all_singleton_set_pairs<T>(fn_swap());
 
         all_valid<T>([](auto const& x) {
                 all_singleton_sets<T>([&](auto& is1) {
@@ -132,7 +134,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
         });
 
-        all_singleton_set_pairs<T>(op_equal_to());
         all_singleton_set_pairs<T>(op_not_equal_to());
 
         all_singleton_set_pairs<T>(op_compare_three_way());
@@ -140,8 +141,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         all_singleton_set_pairs<T>(op_greater());
         all_singleton_set_pairs<T>(op_less_equal());
         all_singleton_set_pairs<T>(op_greater_equal());
-
-        all_singleton_set_pairs<T>(fn_swap());
 
         empty_set_pair<T>(parallel::includes());
         all_singleton_set_pairs<T>(parallel::includes());
