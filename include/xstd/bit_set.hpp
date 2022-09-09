@@ -50,8 +50,8 @@ class bit_set
         static constexpr auto num_logical_blocks = (M - 1 + block_size) / block_size;
         static constexpr auto num_storage_blocks = std::max(num_logical_blocks, 1);
         static constexpr auto num_bits = num_logical_blocks * block_size;
+        static constexpr auto has_unused_bits = num_bits > M;        
         static constexpr auto num_unused_bits = num_bits - M;
-
         static_assert(0 <= num_unused_bits && num_unused_bits < block_size);
 
         template<bool> class proxy_reference;
@@ -165,7 +165,7 @@ public:
 
         [[nodiscard]] constexpr auto full() const noexcept
         {
-                if constexpr (num_unused_bits) {
+                if constexpr (has_unused_bits) {
                         static_assert(num_logical_blocks >= 1);
                         if constexpr (num_logical_blocks == 1) {
                                 return m_data[0] == used_bits;
@@ -334,7 +334,7 @@ public:
 
         constexpr auto& fill() noexcept
         {
-                if constexpr (num_unused_bits) {
+                if constexpr (has_unused_bits) {
                         if constexpr (num_logical_blocks == 1) {
                                 m_data[0] = used_bits;
                         } else if constexpr (num_logical_blocks == 2) {
@@ -609,8 +609,7 @@ public:
                         if (n == 0) {
                                 return *this;
                         }
-                        auto const n_block = n / block_size;
-                        auto const R_shift = n % block_size;
+                        auto const [ n_block, R_shift ] = div(n, block_size);
                         if (R_shift == 0) {
                                 std::ranges::copy_n(std::next(std::begin(m_data), n_block), num_logical_blocks - n_block, std::begin(m_data));
                         } else {
@@ -639,8 +638,7 @@ public:
                         if (n == 0) {
                                 return *this;
                         }
-                        auto const n_block = n / block_size;
-                        auto const L_shift = n % block_size;
+                        auto const [ n_block, L_shift ] = div(n, block_size);
                         if (L_shift == 0) {
                                 std::ranges::copy_backward(m_data | std::views::take(num_logical_blocks - n_block), std::end(m_data));
                         } else {
@@ -751,7 +749,7 @@ private:
 
         PRAGMA_VC_WARNING_PUSH_DISABLE(4309)
         static constexpr auto used_bits = static_cast<block_type>(ones << num_unused_bits);
-        static_assert(num_unused_bits ^ (ones == used_bits));
+        static_assert(has_unused_bits ^ (ones == used_bits));
         PRAGMA_VC_WARNING_POP
 
         [[nodiscard]] static constexpr auto is_valid(value_type n) noexcept
