@@ -7,7 +7,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <algorithm>            // lexicographical_compare_three_way, max 
-#include <bit>                  // countl_zero, countr_zero, popcount
+#include <bit>                  // countl_zero, countr_zero, has_single_bit, popcount
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, unsigned_integral
@@ -19,7 +19,7 @@
 #include <numeric>              // accumulate
 #include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, subrange, swap_ranges, views::drop, views::take
 #include <tuple>                // tie
-#include <type_traits>          // common_type_t, is_class_v, make_signed_t
+#include <type_traits>          // common_type_t, conditional_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
 
 #if defined(_MSC_VER)
@@ -54,8 +54,11 @@ class bit_set
 
         static_assert(0 <= num_unused_bits && num_unused_bits < block_size);
 
-        class proxy_reference;
-        class proxy_iterator;
+        template<bool> class proxy_reference;
+        template<bool> class proxy_iterator;
+
+        using const_proxy_reference = proxy_reference<true>;
+        using const_proxy_iterator = proxy_iterator<true>;
 
         Block m_data[num_storage_blocks]{};     // zero-initialization
 public:
@@ -63,14 +66,14 @@ public:
         using key_compare            = std::less<key_type>;
         using value_type             = int;
         using value_compare          = std::less<value_type>;
-        using pointer                = proxy_iterator;
-        using const_pointer          = proxy_iterator;
-        using reference              = proxy_reference;
-        using const_reference        = proxy_reference;
+        using pointer                = const_proxy_iterator;
+        using const_pointer          = const_proxy_iterator;
+        using reference              = const_proxy_reference;
+        using const_reference        = const_proxy_reference;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = proxy_iterator;
-        using const_iterator         = proxy_iterator;
+        using iterator               = const_proxy_iterator;
+        using const_iterator         = const_proxy_iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
         using block_type             = Block;
@@ -162,35 +165,18 @@ public:
 
         [[nodiscard]] constexpr auto full() const noexcept
         {
-                if constexpr (num_unused_bits == 0) {
-                        if constexpr (num_logical_blocks == 1) {
-                                return m_data[0] == ones;
-                        } else if constexpr (num_logical_blocks == 2) {
-                                return
-                                        m_data[0] == ones &&
-                                        m_data[1] == ones
-                                ;
-                        } else if constexpr (num_logical_blocks >= 3) {
-                                return std::ranges::all_of(
-                                        m_data, 
-                                        [](auto block) {
-                                                return block == ones;
-                                        }
-                                );
-                        }
-                        return true;
-                } else {
+                if constexpr (num_unused_bits) {
                         static_assert(num_logical_blocks >= 1);
                         if constexpr (num_logical_blocks == 1) {
-                                return m_data[0] == no_unused_bits;
+                                return m_data[0] == used_bits;
                         } else if constexpr (num_logical_blocks == 2) {
                                 return
-                                        m_data[0] == no_unused_bits &&
+                                        m_data[0] == used_bits &&
                                         m_data[1] == ones
                                 ;
                         } else if constexpr (num_logical_blocks >= 3) {
                                 return
-                                        m_data[0] == no_unused_bits &&
+                                        m_data[0] == used_bits &&
                                         std::ranges::all_of(
                                                 m_data | std::views::drop(1), 
                                                 [](auto block) {
@@ -199,6 +185,20 @@ public:
                                         )
                                 ;
                         }
+                } else {
+                        if constexpr (num_logical_blocks == 1) {
+                                return m_data[0] == ones;
+                        } else if constexpr (num_logical_blocks == 2) {
+                                return
+                                        m_data[0] == ones &&
+                                        m_data[1] == ones
+                                ;
+                        } else if constexpr (num_logical_blocks >= 3) {
+                                return std::ranges::all_of(m_data, [](auto block) {
+                                        return block == ones;
+                                });
+                        }
+                        return true;
                 }
         }
 
@@ -255,44 +255,66 @@ public:
 
         constexpr auto& add(value_type x) noexcept
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 if constexpr (num_logical_blocks >= 1) {
-                        m_data[which(x)] |= single_bit_mask(where(x));
+                        auto&& [ block, mask ] = block_mask(x);
+                        block |= mask;
                 }
                 assert(contains(x));
                 return *this;
         }
-        
-        constexpr auto insert(value_type const& x) noexcept
+
+private:
+        constexpr auto do_insert(value_type x) noexcept
                 -> std::pair<iterator, bool>
         {
-                assert(is_valid_reference(x));
-                if constexpr (num_logical_blocks >= 1) {
-                        auto& block = m_data[which(x)]; 
-                        auto const mask = single_bit_mask(where(x));
-                        if (!(block & mask)) {
+                assert(is_valid(x));
+                if constexpr (num_logical_blocks >= 1) {                        
+                        if (auto&& [ block, mask ] = block_mask(x); !(block & mask)) {
                                 block |= mask;
                                 assert(contains(x));
                                 return { { this, x }, true };
                         }
                 }
                 assert(contains(x));
-                return { { this, x }, false };
+                return { { this, x }, false };                
         }
 
-        constexpr auto insert(const_iterator /* hint */, value_type const& x) noexcept
+public:
+        constexpr auto insert(value_type const& x) noexcept
+        {
+                return do_insert(x);
+        }
+
+        constexpr auto insert(value_type&& x) noexcept
+        {
+                return do_insert(std::move(x));
+        }
+
+private:
+        constexpr auto do_insert(const_iterator /* hint */, value_type x) noexcept
                 -> iterator
         {
-                assert(is_valid_reference(x));
-                insert(x);
+                add(x);
                 return { this, x };
+        }
+
+public:
+        constexpr auto insert(const_iterator hint, value_type const& x) noexcept
+        {
+                return do_insert(hint, x);
+        }
+
+        constexpr auto insert(const_iterator hint, value_type&& x) noexcept
+        {
+                return do_insert(hint, std::move(x));
         }
 
         template<class InputIterator>
         constexpr auto insert(InputIterator first, InputIterator last) noexcept
         {
                 for (auto const& x : std::ranges::subrange(first, last)) {
-                        insert(x);
+                        add(x);
                 };
         }
 
@@ -301,7 +323,7 @@ public:
                 requires std::ranges::range<Range> && std::constructible_from<value_type, decltype(*rg.begin())>
         {
                 for (auto const& x : rg) {
-                        insert(x);
+                        add(x);
                 };
         }
 
@@ -312,7 +334,17 @@ public:
 
         constexpr auto& fill() noexcept
         {
-                if constexpr (num_unused_bits == 0) {
+                if constexpr (num_unused_bits) {
+                        if constexpr (num_logical_blocks == 1) {
+                                m_data[0] = used_bits;
+                        } else if constexpr (num_logical_blocks == 2) {
+                                m_data[0] = used_bits;
+                                m_data[1] = ones;
+                        } else if constexpr (num_logical_blocks >= 3) {
+                                m_data[0] = used_bits;
+                                std::ranges::fill_n(std::next(std::begin(m_data)), num_logical_blocks - 1, ones);
+                        }
+                } else {
                         if constexpr (num_logical_blocks == 1) {
                                 m_data[0] = ones;
                         } else if constexpr (num_logical_blocks == 2) {
@@ -321,16 +353,6 @@ public:
                         } else if constexpr (num_logical_blocks >= 3) {
                                 std::ranges::fill_n(std::begin(m_data), num_logical_blocks, ones);
                         }
-                } else {
-                        if constexpr (num_logical_blocks == 1) {
-                                m_data[0] = no_unused_bits;
-                        } else if constexpr (num_logical_blocks == 2) {
-                                m_data[0] = no_unused_bits;
-                                m_data[1] = ones;
-                        } else if constexpr (num_logical_blocks >= 3) {
-                                m_data[0] = no_unused_bits;
-                                std::ranges::fill_n(std::next(std::begin(m_data)), num_logical_blocks - 1, ones);
-                        }
                 }
                 assert(full());
                 return *this;
@@ -338,10 +360,11 @@ public:
 
         constexpr auto& pop(key_type x) noexcept
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 if constexpr (num_logical_blocks >= 1) {
+                        auto&& [ block, mask ] = block_mask(x);
                         // static_cast to guard against integral promotions of block_type smaller than int.
-                        m_data[which(x)] &= static_cast<block_type>(~single_bit_mask(where(x)));
+                        block &= static_cast<block_type>(~mask);
                 }
                 assert(!contains(x));
                 return *this;
@@ -350,11 +373,9 @@ public:
         constexpr auto erase(key_type const& x) noexcept
                 -> size_type
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 if constexpr (num_logical_blocks >= 1) {
-                        auto& block = m_data[which(x)];
-                        auto const mask = single_bit_mask(where(x));
-                        if (block & mask) {
+                        if (auto&& [ block, mask ] = block_mask(x); block & mask) {
                                 // static_cast to guard against integral promotions of block_type smaller than int.
                                 block &= static_cast<block_type>(~mask);
                                 assert(!contains(x));
@@ -368,14 +389,14 @@ public:
         constexpr auto erase(const_iterator pos) noexcept
         {
                 assert(pos != end());
-                erase(*pos++);
+                pop(*pos++);
                 return pos;
         }
 
         constexpr auto erase(const_iterator first, const_iterator last) noexcept
         {
                 for (auto const& x : std::ranges::subrange(first, last)) {
-                        erase(x);
+                        pop(x);
                 }
                 return last;
         }
@@ -408,78 +429,80 @@ public:
 
         constexpr auto& replace(value_type const& x [[maybe_unused]]) noexcept
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 if constexpr (num_logical_blocks >= 1) {
-                        m_data[which(x)] ^= single_bit_mask(where(x));
+                        auto&& [ block, mask ] = block_mask(x);
+                        block ^= mask;
                 }
                 return *this;
         }
 
         [[nodiscard]] constexpr auto find(key_type const& x) noexcept
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return contains(x) ? iterator(this, x) : end();
         }
 
         [[nodiscard]] constexpr auto find(key_type const& x) const noexcept
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return contains(x) ? const_iterator(this, x) : cend();
         }
 
         [[nodiscard]] constexpr auto count(key_type const& x) const noexcept
                 -> size_type
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return contains(x);
         }
 
         [[nodiscard]] constexpr auto contains(key_type const& x) const noexcept
                 -> bool
         {
-                assert(is_valid_reference(x));
-                return m_data[which(x)] & single_bit_mask(where(x));
+                assert(is_valid(x));
+                auto&& [ block, mask ] = block_mask(x);
+                return block & mask;
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) noexcept
                 -> iterator
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return { this, find_next(x) };
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) const noexcept
                 -> const_iterator
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return { this, find_next(x) };
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) noexcept
                 -> iterator
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return { this, find_next(x + 1) };
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) const noexcept
                 -> const_iterator
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return { this, find_next(x + 1) };
         }
 
         [[nodiscard]] constexpr auto equal_range(key_type const& x) noexcept
                 -> std::pair<iterator, iterator>
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
         [[nodiscard]] constexpr auto equal_range(key_type const& x) const noexcept
                 -> std::pair<const_iterator, const_iterator>
         {
-                assert(is_valid_reference(x));
+                assert(is_valid(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
@@ -579,7 +602,7 @@ public:
 
         constexpr auto& operator<<=(value_type n [[maybe_unused]]) noexcept
         {
-                assert(is_valid_reference(n));
+                assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] >>= n;
                 } else if constexpr (num_logical_blocks >= 2) {
@@ -609,7 +632,7 @@ public:
 
         constexpr auto& operator>>=(value_type n [[maybe_unused]]) noexcept
         {
-                assert(is_valid_reference(n));
+                assert(is_valid(n));
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] <<= n;
                 } else if constexpr (num_logical_blocks >= 2) {
@@ -647,8 +670,7 @@ public:
                         );
                 } else if constexpr (num_logical_blocks >= 3) {
                         // C++23 (currently available in range-v3)
-                        // return std::ranges::none_of(
-                        //         ranges::views::zip(this->m_data, other.m_data),
+                        // return std::ranges::none_of(ranges::views::zip(this->m_data, other.m_data),
                         //         [](auto const& t) { auto const& [lhs, rhs] = t; 
                         //                 return lhs & ~rhs;
                         //         }
@@ -728,59 +750,80 @@ private:
         static constexpr auto ones = static_cast<block_type>(-1);
 
         PRAGMA_VC_WARNING_PUSH_DISABLE(4309)
-        static constexpr auto no_unused_bits = static_cast<block_type>(ones << num_unused_bits);
+        static constexpr auto used_bits = static_cast<block_type>(ones << num_unused_bits);
+        static_assert(num_unused_bits ^ (ones == used_bits));
         PRAGMA_VC_WARNING_POP
 
-        static_assert(num_unused_bits ^ (ones == no_unused_bits));
-
-        // The inner static_cast guards against integer overflow of block_type larger than int.
-        // The outer static_cast guards against integral promotions of block_type smaller than int.
-        static constexpr auto unit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
-
-        [[nodiscard]] static constexpr auto single_bit_mask(value_type n) noexcept
-                -> block_type
-        {
-                assert(0 <= n && n < block_size);
-                return unit >> n;
-        }
-
-        [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
+        [[nodiscard]] static constexpr auto is_valid(value_type n) noexcept
         {
                 return 0 <= n && n < M;
         }
 
-        [[nodiscard]] static constexpr auto is_valid_iterator(value_type n) noexcept
+        [[nodiscard]] static constexpr auto in_range(value_type n) noexcept
         {
                 return 0 <= n && n <= M;
         }
 
-        [[nodiscard]] static constexpr auto which(value_type n [[maybe_unused]]) noexcept
-                -> value_type
+        static constexpr auto last_block = num_logical_blocks - 1;
+
+        // The inner static_cast guards against integer overflow of block_type larger than int.
+        // The outer static_cast guards against integral promotions of block_type smaller than int.
+        static constexpr auto last_bit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
+        static_assert(std::has_single_bit(last_bit));
+
+        struct div_t
         {
-                assert(is_valid_reference(n));
+                value_type quot; 
+                value_type rem;
+        };
+
+        [[nodiscard]] static constexpr auto div(value_type numer, value_type denom) noexcept
+                -> div_t
+        {
+                return { numer / denom, numer % denom };
+        }
+        
+        [[nodiscard]] static constexpr auto index_offset(value_type n) noexcept
+                -> div_t
+        {
+                assert(is_valid(n));
                 if constexpr (num_logical_blocks <= 1) {
-                        return 0;
+                        return { 0, n };
                 } else {
-                        return num_logical_blocks - 1 - n / block_size;
-                }
+                        return div(n, block_size);
+                }                
         }
 
-        [[nodiscard]] static constexpr auto where(value_type n) noexcept
-                -> value_type
+        template<bool IsConst>
+        struct block_ref_mask_t
         {
-                assert(is_valid_reference(n));
-                if constexpr (num_logical_blocks <= 1) {
-                        return n;
-                } else {
-                        return n % block_size;
-                }
+                std::conditional_t<IsConst, block_type const&, block_type&> block;
+                block_type mask; 
+        };
+
+        [[nodiscard]] auto block_mask(value_type n) const noexcept
+                -> block_ref_mask_t<true>
+        {
+                assert(is_valid(n));
+                auto const [ index, offset ] = index_offset(n);
+                // static_cast to guard against integral promotions of block_type smaller than int.
+                return { m_data[last_block - index], static_cast<block_type>(last_bit >> offset) };
+        }
+
+        [[nodiscard]] auto block_mask(value_type n) noexcept
+                -> block_ref_mask_t<false>
+        {
+                assert(is_valid(n));
+                auto const [ index, offset ] = index_offset(n);
+                // static_cast to guard against integral promotions of block_type smaller than int.
+                return { m_data[last_block - index], static_cast<block_type>(last_bit >> offset) };
         }
 
         constexpr auto clear_unused_bits() noexcept
         {
-                if constexpr (num_unused_bits != 0) {
+                if constexpr (num_unused_bits) {
                         static_assert(num_logical_blocks >= 1);
-                        m_data[0] &= no_unused_bits;
+                        m_data[0] &= used_bits;
                 }
         }
 
@@ -847,7 +890,7 @@ private:
 
         [[nodiscard]] constexpr auto find_next(value_type n) const noexcept
         {
-                assert(is_valid_iterator(n));
+                assert(in_range(n));
                 if (n == M) {
                         return M;
                 }
@@ -857,8 +900,9 @@ private:
                                 return n + std::countl_zero(block);
                         }
                 } else if constexpr (num_logical_blocks >= 2) {
-                        auto i = which(n);
-                        if (auto const offset = where(n); offset) {
+                        auto const [ index, offset ] = index_offset(n);
+                        auto i = last_block - index;
+                        if (offset) {
                                 if (auto const block = static_cast<block_type>(m_data[i] << offset); block) {
                                         return n + std::countl_zero(block);
                                 }
@@ -876,14 +920,15 @@ private:
 
         [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
         {
-                assert(is_valid_reference(n));
+                assert(is_valid(n));
                 // static_cast to guard against integral promotions of block_type smaller than int.
                 if constexpr (num_logical_blocks == 1) {
                         return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (block_size - 1 - n)));
                 } else {
                         if constexpr (num_logical_blocks >= 2) {
-                                auto i = which(n);
-                                if (auto const offset = block_size - 1 - where(n); offset) {
+                                auto const [ index, _ ] = index_offset(n);
+                                auto i = last_block - index;
+                                if (auto const offset = block_size - 1 - _; offset) {
                                         if (auto const block = static_cast<block_type>(m_data[i] >> offset); block) {
                                                 return n - std::countr_zero(block);
                                         }
@@ -900,10 +945,13 @@ private:
                 }
         }
 
+        template<bool IsConst>
         class proxy_reference
         {
-                bit_set const& m_bs;
-                value_type const m_value;
+                using reference_type = std::conditional_t<IsConst, bit_set const&, bit_set&>;
+                using value_type = bit_set::value_type;
+                reference_type m_ref;
+                value_type m_val;
         public:
                 ~proxy_reference() = default;
                 proxy_reference(proxy_reference const&) = default;
@@ -913,75 +961,82 @@ private:
 
                 proxy_reference() = delete;
 
-                [[nodiscard]] constexpr proxy_reference(bit_set const& bs, value_type const& v) noexcept
+                [[nodiscard]] constexpr proxy_reference(reference_type r, value_type v) noexcept
                 :
-                        m_bs(bs),
-                        m_value(v)
+                        m_ref(r),
+                        m_val(v)
                 {
-                        assert(is_valid_reference(m_value));
+                        assert(is_valid(m_val));
                 }
 
-                [[nodiscard]] constexpr auto operator&() const noexcept
-                        -> proxy_iterator
+                [[nodiscard]] constexpr auto operator==(proxy_reference const& other) const noexcept
                 {
-                        return { &m_bs, m_value };
+                        return this->m_val == other.m_val;
+                }                
+
+                [[nodiscard]] constexpr auto operator&() const noexcept
+                        -> proxy_iterator<IsConst>
+                {
+                        return { &m_ref, m_val };
                 }
 
                 [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
                 {
-                        return m_value;
+                        return m_val;
                 }
 
                 template<class T>
                         requires std::is_class_v<T> && std::constructible_from<T, value_type>
-                [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_value)))
+                [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_val)))
                 {
-                        return m_value;
+                        return m_val;
                 }
         };
 
+        template<bool IsConst>
         class proxy_iterator
         {
         public:
                 using difference_type   = bit_set::difference_type;
                 using value_type        = bit_set::value_type;
-                using pointer           = proxy_iterator;
-                using reference         = proxy_reference;
+                using pointer           = proxy_iterator<IsConst>;
+                using reference         = proxy_reference<IsConst>;
                 using iterator_category = std::bidirectional_iterator_tag;
 
         private:
-                bit_set const* m_bs;
-                value_type m_value;
+                using pointer_type = std::conditional_t<IsConst, bit_set const*, bit_set*>;
+                pointer_type m_ptr;
+                value_type m_val;
 
         public:
                 proxy_iterator() = default;
 
-                [[nodiscard]] constexpr proxy_iterator(bit_set const* bs, value_type const& v) noexcept
+                [[nodiscard]] constexpr proxy_iterator(pointer_type p, value_type v) noexcept
                 :
-                        m_bs(bs),
-                        m_value(v)
+                        m_ptr(p),
+                        m_val(v)
                 {
-                        assert(is_valid_iterator(m_value));
+                        assert(in_range(m_val));
                 }
 
                 [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
                 {
-                        assert(this->m_bs == other.m_bs);
-                        return this->m_value == other.m_value;
+                        assert(this->m_ptr == other.m_ptr);
+                        return this->m_val == other.m_val;
                 }
 
                 [[nodiscard]] constexpr auto operator*() const noexcept
-                        -> proxy_reference
+                        -> proxy_reference<IsConst>
                 {
-                        assert(is_valid_reference(m_value));
-                        return { *m_bs, m_value };
+                        assert(is_valid(m_val));
+                        return { *m_ptr, m_val };
                 }
 
                 constexpr auto& operator++() noexcept
                 {
-                        assert(is_valid_reference(m_value));
-                        m_value = m_bs->find_next(m_value + 1);
-                        assert(is_valid_reference(m_value - 1));
+                        assert(is_valid(m_val));
+                        m_val = m_ptr->find_next(m_val + 1);
+                        assert(is_valid(m_val - 1));
                         return *this;
                 }
 
@@ -992,9 +1047,9 @@ private:
 
                 constexpr auto& operator--() noexcept
                 {
-                        assert(is_valid_reference(m_value - 1));
-                        m_value = m_bs->find_prev(m_value - 1);
-                        assert(is_valid_reference(m_value));
+                        assert(is_valid(m_val - 1));
+                        m_val = m_ptr->find_prev(m_val - 1);
+                        assert(is_valid(m_val));
                         return *this;
                 }
 
