@@ -9,9 +9,9 @@
 
 ## Design choices for a `bitset` data structure
 
-> "A `bitset` can be seen as either an array of bits or a set of integers. [...]  
+> "A `bitset` can be seen as either an array of bits or a set of integers. [...]
 > Common usage suggests that dynamic-length `bitsets` are seldom needed."
->  
+>
 > Chuck Allison, [ISO/WG21/N0075](http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/1991/WG21%201991/X3J16_91-0142%20WG21_N0075.pdf), November 25, 1991
 
 The above quote is from the first C++ Standard Committee proposal on what would eventually become `std::bitset<N>`. The quote highlights two design choices to be made for a `bitset` data structure:
@@ -286,40 +286,40 @@ auto b = a
 
 ### Iterators
 
-**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?  
+**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?
 **A**: Using proxy iterators, which hold a pointer and an offset.
 
-**Q**: What happens if you dereference a proxy iterator?  
+**Q**: What happens if you dereference a proxy iterator?
 **A**: You get a proxy reference: `ref == *it`.
 
-**Q**: What happens if you take the address of a proxy reference?  
+**Q**: What happens if you take the address of a proxy reference?
 **A**: You get a proxy iterator: `it == &ref`.
 
-**Q**: How do you get any value out of a proxy reference?  
+**Q**: How do you get any value out of a proxy reference?
 **A**: They implicitly convert to `int`.
 
-**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?  
+**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?
 **A**: Indeed, proxy references break the equivalence between functions calls like `ref.mem_fn()` and `it->mem_fn()`.
 
-**Q**: How do you work around this?  
+**Q**: How do you work around this?
 **A**: `int` is not a class-type and does not have member functions, so this situation never occurs.
 
-**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?  
+**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?
 **A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.
 
-**Q**: So iterating over an `xstd::bit_set` is really fool-proof?  
+**Q**: So iterating over an `xstd::bit_set` is really fool-proof?
 **A**: Yes, `xstd::bit_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
 
 ### Bit-layout
 
-**Q**: How is `xstd::bit_set` implemented?  
+**Q**: How is `xstd::bit_set` implemented?
 **A**: It uses a stack-allocated array of unsigned integers as bit storage.
 
-**Q**: How is the set ordering mapped to the array's bit layout?  
-**A**: The most significant bit of the last array word maps onto set value `0`.  
-**A**: The least significant bit of the first array word maps onto set value `N - 1`.  
+**Q**: How is the set ordering mapped to the array's bit layout?
+**A**: The most significant bit of the last array word maps onto set value `0`.
+**A**: The least significant bit of the first array word maps onto set value `N - 1`.
 
-**Q**: I'm visually oriented, can you draw a diagram?  
+**Q**: I'm visually oriented, can you draw a diagram?
 **A**: Sure, it looks like this for `bit_set<16, uint8_t>`:
 
 |value |01234567|89ABCDEF|
@@ -327,36 +327,36 @@ auto b = a
 |word  |       1|       0|
 |offset|76543210|76543210|
 
-**Q**: Why is the set order reversely mapped onto the array's bit-layout?  
+**Q**: Why is the set order reversely mapped onto the array's bit-layout?
 **A**: To be able to use **data-parallelism** for `(a < b) == std::ranges::lexicographical_compare(a, b)`.
 
-**Q**: How is efficient set comparison connected to the bit-ordering within words?  
+**Q**: How is efficient set comparison connected to the bit-ordering within words?
 **A**: Take `bit_set<8, uint8_t>` and consider when `sL < sR` for ordered sets of integers `sL` and `sR`.
 
-**Q**: Ah, lexicographical set comparison corresponds to bit comparison from most to least significant.  
-**A**: Indeed, and this is equivalent to doing the integer comparison `wL > wR` on the underlying words `wL` and `wR`.  
+**Q**: Ah, lexicographical set comparison corresponds to bit comparison from most to least significant.
+**A**: Indeed, and this is equivalent to doing the integer comparison `wL > wR` on the underlying words `wL` and `wR`.
 
-**Q**: So the set ordering a `bit_set` is equivalent to its representation as a bitstring?  
+**Q**: So the set ordering a `bit_set` is equivalent to its representation as a bitstring?
 **A**: Yes, indeed, and this property has been known for several decades:
 
-> "bit-0 is the leftmost, just like char-0 is the leftmost in character strings. [...]  
-> This makes converting from and to unsigned integers a little counter-intuitive,  
+> "bit-0 is the leftmost, just like char-0 is the leftmost in character strings. [...]
+> This makes converting from and to unsigned integers a little counter-intuitive,
 > but the string-ness (or "array-ness") is the foundation of this abstraction.
->  
+>
 > Chuck Allison, [ISO/WG21/N0128](http://www.open-std.org/Jtc1/sc22/wg21/docs/papers/1992/WG21%201992/X3J16_92-0051%20WG21_N0128.pdf), May 26, 1992
 
 ### Storage type
 
-**Q**: What storage type does `xstd::bit_set` use?  
+**Q**: What storage type does `xstd::bit_set` use?
 **A**: By default, `xstd::bit_set` uses an array of `std::size_t` integers.
 
-**Q**: Can I customize the storage type?  
+**Q**: Can I customize the storage type?
 **A**: Yes, the full class template signature is `template<std::size_t N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.
 
-**Q**: What other storage types can be used as template argument for `Block`?  
+**Q**: What other storage types can be used as template argument for `Block`?
 **A**: Any type modelling the Standard Library `unsigned_integral` concept, which includes (for GCC and Clang) the non-Standard `__uint128_t`.
 
-**Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?  
+**Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?
 **A**: Yes, there are three special cases for 0, 1 and 2 words of storage, as well as the general case of 3 or more words.
 
 ## Requirements
@@ -372,6 +372,6 @@ Note that this library makes liberal use of C++20 features, in particular Concep
 
 ## License
 
-Copyright Rein Halbersma 2014-2022.  
-Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/users/license.html).  
+Copyright Rein Halbersma 2014-2022.
+Distributed under the [Boost Software License, Version 1.0](http://www.boost.org/users/license.html).
 (See accompanying file LICENSE_1_0.txt or copy at [http://www.boost.org/LICENSE_1_0.txt](http://www.boost.org/LICENSE_1_0.txt))

@@ -38,7 +38,7 @@ using int_set_types = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWay, T, int_set_types)
 {
         all_doubleton_set_pairs<T>(op_compare_three_way());
-        all_doubleton_set_pairs<T>(parallel::includes());        
+        all_doubleton_set_pairs<T>(parallel::includes());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
                 full_set<T>([&](auto& isN) {
                         mem_insert()(isN, a2.begin(), a2.end());
-                });                
+                });
         });
         all_doubleton_ilists<T>([](auto ilist2) {
                 empty_set<T>([=](auto& is0) {
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
                 full_set<T>([=](auto& isN) {
                         mem_insert()(isN, ilist2);
-                });                
+                });
         });
 
         // boost::container::flat_set<int>::erase invalidates iterators
@@ -153,12 +153,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 all_singleton_sets<T>([&](auto const& bs1) {
                         parallel::transform_decrement_filter()(bs1, pos);
                 });
-        });      
+        });
         all_valid<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
                         parallel::transform_increment_filter()(bs1, pos);
                 });
-        });         
+        });
 }
 
 BOOST_AUTO_TEST_SUITE_END()

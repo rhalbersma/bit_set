@@ -8,7 +8,7 @@
 #include <aux/dynamic_bitset.hpp>       // dynamic_bitset
 #include <bitset/exhaustive.hpp>        // all_singleton_sets, all_singleton_set_pairs, any_value
 #include <bitset/primitives.hpp>        // op_bitand_assign, op_bitor_assign, op_xor_assign, op_minus_assign,
-                                        // op_shift_left_assign, op_shift_right_assign, op_compl, op_equal_to, 
+                                        // op_shift_left_assign, op_shift_right_assign, op_compl, op_equal_to,
                                         // op_shift_left, op_shift_right, op_bitand, op_bitor, op_xor, op_minus,
                                         // mem_is_subset_of, mem_is_proper_subset_of, mem_intersect
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
@@ -50,12 +50,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 all_singleton_sets<T>([&](auto& bs1) {
                         op_shift_left_assign()(bs1, pos);
                 });
-        });     
+        });
         any_value<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto& bs1) {
                         op_shift_right_assign()(bs1, pos);
                 });
-        });      
+        });
 
         all_singleton_set_pairs<T>(op_equal_to());
 
@@ -63,12 +63,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 all_singleton_sets<T>([&](auto const& bs1) {
                         op_shift_left()(bs1, pos);
                 });
-        });      
+        });
         any_value<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
                         op_shift_right()(bs1, pos);
                 });
-        });       
+        });
 
         all_singleton_set_pairs<T>(op_bitand());
         all_singleton_set_pairs<T>(op_bitor());

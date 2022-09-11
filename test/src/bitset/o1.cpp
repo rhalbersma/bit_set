@@ -6,7 +6,7 @@
 #include <aux/bit_set.hpp>              // xstd::bitset adaptor around xstd::bit_set
 #include <aux/bitset.hpp>               // bitset
 #include <aux/dynamic_bitset.hpp>       // dynamic_bitset
-#include <bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set 
+#include <bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set
 #include <bitset/primitives.hpp>        // mem_set, mem_reset, op_compl, mem_flip, mem_count, mem_size, mem_test, mem_all, mem_any, mem_none
                                         // mem_at, op_bitand, op_bitor, op_xor, op_minus, mem_is_subset_of, mem_intersects, fn_iostream
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 full_set<T>([&](auto& bsN) {
                         mem_set()(bsN, pos, false);
                 });
-        });     
+        });
 
         all_cardinality_sets<T>(mem_reset());
         all_singleton_sets<T>(mem_reset());
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 full_set<T>([&](auto& bsN) {
                         mem_reset()(bsN, pos);
                 });
-        });     
+        });
 
         all_cardinality_sets<T>(op_compl());
         all_singleton_sets<T>(op_compl());
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 full_set<T>([&](auto& bsN) {
                         mem_flip()(bsN, pos);
                 });
-       });      
+       });
 
         all_cardinality_sets<T>(mem_count());
 

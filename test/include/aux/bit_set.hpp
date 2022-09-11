@@ -36,10 +36,10 @@ template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
         bit_set<N, Block> m_impl;
-        
+
         explicit constexpr bitset(bit_set<N, Block> const& bs) noexcept
-        : 
-                m_impl(bs) 
+        :
+                m_impl(bs)
         {}
 public:
         bitset() = default;
@@ -49,7 +49,7 @@ public:
                 std::basic_string<CharT, Traits, Allocator> const& str,
                 std::basic_string<CharT, Traits, Allocator>::size_type pos = 0,
                 std::basic_string<CharT, Traits, Allocator>::size_type n = std::basic_string<CharT, Traits, Allocator>::npos,
-                CharT zero = CharT('0'), 
+                CharT zero = CharT('0'),
                 CharT one = CharT('1')
         ) noexcept(false)
         {
@@ -75,7 +75,7 @@ public:
         explicit constexpr bitset(
                 CharT const* str,
                 std::basic_string<CharT>::size_type n = std::basic_string<CharT>::npos,
-                CharT zero = CharT('0'), 
+                CharT zero = CharT('0'),
                 CharT one = CharT('1')
         ) noexcept(false)
         :
@@ -84,25 +84,25 @@ public:
 
         constexpr auto& operator&=(bitset const& other) noexcept
         {
-                this->m_impl &= other.m_impl; 
+                this->m_impl &= other.m_impl;
                 return *this;
         }
 
         constexpr auto& operator|=(bitset const& other) noexcept
         {
-                this->m_impl |= other.m_impl; 
+                this->m_impl |= other.m_impl;
                 return *this;
         }
 
         constexpr auto& operator^=(bitset const& other) noexcept
         {
-                this->m_impl ^= other.m_impl; 
+                this->m_impl ^= other.m_impl;
                 return *this;
-        }        
+        }
 
         constexpr auto& operator-=(bitset const& other) noexcept
         {
-                this->m_impl -= other.m_impl; 
+                this->m_impl -= other.m_impl;
                 return *this;
         }
 
@@ -111,7 +111,7 @@ public:
                 if (pos >= N) {
                         m_impl.clear();
                 } else {
-                        m_impl <<= static_cast<int>(pos);                
+                        m_impl <<= static_cast<int>(pos);
                 }
                 return *this;
         }
@@ -121,10 +121,10 @@ public:
                 if (pos >= N) {
                         m_impl.clear();
                 } else {
-                        m_impl >>= static_cast<int>(pos);                
+                        m_impl >>= static_cast<int>(pos);
                 }
                 return *this;
-        }        
+        }
 
         constexpr auto& set() noexcept
         {
@@ -186,8 +186,8 @@ public:
         }
 
         template<
-                class CharT = char, 
-                class Traits = std::char_traits<CharT>, 
+                class CharT = char,
+                class Traits = std::char_traits<CharT>,
                 class Allocator = std::allocator<CharT>
         >
         [[nodiscard]] constexpr auto to_string(CharT zero = CharT('0'), CharT one = CharT('1')) const noexcept(false)
@@ -197,9 +197,9 @@ public:
                         if (m_impl.contains(static_cast<int>(N - 1 - i))) {
                                 str[i] = one;
                         }
-                }               
-                return str; 
-        }        
+                }
+                return str;
+        }
 
         [[nodiscard]] constexpr auto count() const noexcept
         {
@@ -338,7 +338,7 @@ auto& operator>>(std::basic_istream<CharT, Traits>& is, bitset<N, Block>& x) noe
 
 template<class CharT, class Traits, std::size_t N, std::unsigned_integral Block>
 auto& operator<<(std::basic_ostream<CharT, Traits>& os, bitset<N, Block> const& x) noexcept(false)
-{        
+{
         return os << x.template to_string<CharT, Traits, std::allocator<CharT>>(
                 std::use_facet<std::ctype<CharT>>(os.getloc()).widen('0'),
                 std::use_facet<std::ctype<CharT>>(os.getloc()).widen('1')

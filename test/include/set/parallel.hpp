@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>             // BOOST_CHECK, BOOST_CHECK_EQUAL
 #include <range/v3/range/conversion.hpp>        // to
 #include <range/v3/view/set_algorithm.hpp>      // set_difference, set_intersection, set_symmetric_difference, set_union
-#include <algorithm>                            // includes 
+#include <algorithm>                            // includes
 #include <ranges>                               // filter, transform
 #include <type_traits>                          // remove_cvref_t
 
@@ -72,8 +72,8 @@ struct transform_increment_filter
 {
         auto operator()(auto const& is, int n) const
         {
-                if constexpr (requires { is << n; }) {       
-                        constexpr auto N = static_cast<int>(is.max_size());         
+                if constexpr (requires { is << n; }) {
+                        constexpr auto N = static_cast<int>(is.max_size());
                         using set_type = std::remove_cvref_t<decltype(is)>;
                         BOOST_CHECK(
                                 (is << n) == (is
@@ -90,7 +90,7 @@ struct transform_decrement_filter
 {
         auto operator()(auto const& is, int n) const
         {
-                if constexpr (requires { is >> n; }) {               
+                if constexpr (requires { is >> n; }) {
                         using set_type = std::remove_cvref_t<decltype(is)>;
                         BOOST_CHECK(
                                 (is >> n) == (is

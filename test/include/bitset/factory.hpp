@@ -26,7 +26,7 @@ struct factory<bitset<N, Block>>
                         bs.set();
                 } else {
                         bs.reset();
-                }              
+                }
                 return bs;
         }
 };
@@ -41,7 +41,7 @@ struct factory<std::bitset<N>>
                         bs.set();
                 } else {
                         bs.reset();
-                }              
+                }
                 return bs;
         }
 };
@@ -52,7 +52,7 @@ struct factory<boost::dynamic_bitset<Block, Allocator>>
         constexpr auto operator()(std::size_t num_bits, bool value = false) const noexcept
         {
                 boost::dynamic_bitset<Block, Allocator> bs;
-                bs.resize(num_bits, value);          
+                bs.resize(num_bits, value);
                 return bs;
         }
 };
@@ -60,7 +60,7 @@ struct factory<boost::dynamic_bitset<Block, Allocator>>
 template<class T>
 auto make_bitset(std::size_t num_bits, bool value = false)
 {
-        return factory<T>()(num_bits, value);        
+        return factory<T>()(num_bits, value);
 }
 
 }       // namespace xstd

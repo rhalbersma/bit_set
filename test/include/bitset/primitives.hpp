@@ -37,7 +37,7 @@ struct op_bitand_assign
                 BOOST_CHECK_EQUAL(lhs.size(), rhs.size());
                 auto const src = lhs;
                 auto const& dst = lhs &= rhs;
-                for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {                                                                                
+                for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {
                         BOOST_CHECK_EQUAL(dst[i], !rhs[i] ? false : src[i]);    // [bitset.members]/1
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/2
@@ -51,7 +51,7 @@ struct op_bitor_assign
                 BOOST_CHECK_EQUAL(lhs.size(), rhs.size());
                 auto const src = lhs;
                 auto const& dst = lhs |= rhs;
-                for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {                                                                                
+                for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {
                         BOOST_CHECK_EQUAL(dst[i], rhs[i] ? true : src[i]);      // [bitset.members]/3
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/4
@@ -65,7 +65,7 @@ struct op_xor_assign
                 BOOST_CHECK_EQUAL(lhs.size(), rhs.size());
                 auto const src = lhs;
                 auto const& dst = lhs ^= rhs;
-                for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {                                                                                
+                for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {
                         BOOST_CHECK_EQUAL(dst[i], rhs[i] ? !src[i] : src[i]);   // [bitset.members]/5
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/6
@@ -79,7 +79,7 @@ struct op_minus_assign
                 BOOST_CHECK_EQUAL(lhs.size(), rhs.size());
                 auto const src = lhs;
                 auto const& dst = lhs -= rhs;
-                for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {                                                                                
+                for (auto N = src.size(), i = decltype(N)(0); i < N; ++i) {
                         BOOST_CHECK_EQUAL(dst[i], rhs[i] ? false : src[i]);
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));
@@ -95,7 +95,7 @@ struct op_shift_left_assign
                 for (auto N = src.size(), I = decltype(N)(0); I < N; ++I) {
                         if (I < pos) {
                                 BOOST_CHECK(!dst[I]);                           // [bitset.members]/7.1
-                        } else {                                                
+                        } else {
                                 BOOST_CHECK_EQUAL(dst[I], src[I - pos]);        // [bitset.members]/7.2
                         }
                 }
@@ -112,7 +112,7 @@ struct op_shift_right_assign
                 for (auto N = src.size(), I = decltype(N)(0); I < N; ++I) {
                         if (pos >= N - I) {
                                 BOOST_CHECK(!dst[I]);                           // [bitset.members]/9.1
-                        } else {                                                
+                        } else {
                                 BOOST_CHECK_EQUAL(dst[I], src[I + pos]);        // [bitset.members]/9.2
                         }
                 }
@@ -139,8 +139,8 @@ struct mem_set
                                 BOOST_CHECK_EQUAL(dst[i], i == pos ? val : src[i]);
                         }                                                       // [bitset.members]/14
                         BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));
-                } else {                                                        
-                        BOOST_CHECK_THROW(bs.set(pos, val), std::out_of_range); // [bitset.members]/15                        
+                } else {
+                        BOOST_CHECK_THROW(bs.set(pos, val), std::out_of_range); // [bitset.members]/15
                 }
         }
 };
@@ -164,9 +164,9 @@ struct mem_reset
                                 BOOST_CHECK_EQUAL(dst[i], i == pos ? false : src[i]);
                         }                                                       // [bitset.members]/19
                         BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));
-                } else {                                                        
+                } else {
                         BOOST_CHECK_THROW(bs.reset(pos), std::out_of_range);    // [bitset.members]/20
-                }                        
+                }
         }
 };
 
@@ -228,7 +228,7 @@ struct mem_size
         auto operator()(auto const& bs) const noexcept
         {
                 using set_type = std::remove_cvref_t<decltype(bs)>;
-                if constexpr (!resizeable<set_type>) { 
+                if constexpr (!resizeable<set_type>) {
                         BOOST_CHECK_EQUAL(bs.size(), set_type().size());        // [bitset.members]/35
                 }
         }
@@ -254,7 +254,7 @@ struct mem_test
                         BOOST_CHECK_EQUAL(bs.test(pos), bs[pos]);               // [bitset.members]/37
                 } else {                                                        // [bitset.members]/38
                         BOOST_CHECK_THROW(static_cast<void>(bs.test(pos)), std::out_of_range);
-                }                 
+                }
         }
 };
 

@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <aux/flat_set.hpp>             // flat_set
-#include <set/exhaustive.hpp>           // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets, 
+#include <set/exhaustive.hpp>           // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets,
                                         // all_valid, empty_set, full_set
 #include <set/primitives.hpp>           // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
                                         // mem_empty, mem_size, mem_max_size, mem_insert, mem_erase, mem_clear,
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
                 full_set<T>([=](auto& isN) {
                         mem_insert()(isN, t);
-                });                
+                });
         });
         all_valid<T>([](auto const& t) {
                 empty_set<T>([=](auto& is0) {
@@ -96,13 +96,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
                 full_set<T>([=](auto& isN) {
                         mem_emplace_hint()(isN, isN.end(), t);
-                });                
+                });
                 empty_set<T>([=](auto& is0) {
                         mem_insert()(is0, is0.end(), t);
                 });
                 full_set<T>([=](auto& isN) {
                         mem_emplace_hint()(isN, isN.end(), t);
-                });                
+                });
         });
         all_singleton_arrays<T>([](auto const& a1) {
                 empty_set<T>([&](auto& is0) {
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
                 full_set<T>([&](auto& isN) {
                         mem_insert()(isN, a1.begin(), a1.end());
-                });                
+                });
         });
         all_singleton_ilists<T>([](auto ilist1) {
                 empty_set<T>([&](auto& is0) {
@@ -118,13 +118,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
                 });
                 full_set<T>([&](auto& isN) {
                         mem_insert()(isN, ilist1);
-                });                
+                });
         });
 
         all_valid<T>([](auto const& k) {
                 empty_set<T>([&](auto& is0) {
                         mem_erase()(is0, k);
-                });                
+                });
                 full_set<T>([&](auto& isN) {
                         mem_erase()(isN, k);
                 });
