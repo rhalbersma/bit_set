@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <aux/flat_set.hpp>             // flat_set
+#include <adaptor/flat_set.hpp>         // flat_set
 #include <set/exhaustive.hpp>           // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
                                         // all_singleton_sets, all_singleton_set_pairs, all_valid
 #include <set/parallel.hpp>             // includes, set_difference, set_intersection, set_symmetric_difference, set_union,

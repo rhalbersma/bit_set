@@ -25,6 +25,10 @@ set(cxx_compile_options_warnings
         /permissive-
         /WX
     >
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
+        -Werror
+        -pedantic-errors
+    >
     $<$<CXX_COMPILER_ID:Clang>:
         -Weverything
         -Wno-unknown-warning-option         # forward compatibility for new Clang warnings
@@ -49,10 +53,6 @@ set(cxx_compile_options_warnings
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:Release>>:
         -Wno-array-bounds                   # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
         -Wno-stringop-overflow              # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
-    >
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
-        -Werror
-        -pedantic-errors
     >
 )
 

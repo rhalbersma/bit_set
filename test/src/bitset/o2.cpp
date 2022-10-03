@@ -3,9 +3,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <aux/bit_set.hpp>              // xstd::bitset adaptor around xstd::bit_set
-#include <aux/bitset.hpp>               // bitset
-#include <aux/dynamic_bitset.hpp>       // dynamic_bitset
+#include <adaptor/bit_set.hpp>          // xstd::bitset adaptor around xstd::bit_set
+#include <adaptor/bitset.hpp>           // bitset
+#include <adaptor/dynamic_bitset.hpp>   // dynamic_bitset
 #include <bitset/exhaustive.hpp>        // all_singleton_sets, all_singleton_set_pairs, any_value
 #include <bitset/primitives.hpp>        // op_bitand_assign, op_bitor_assign, op_xor_assign, op_minus_assign,
                                         // op_shift_left_assign, op_shift_right_assign, op_compl, op_equal_to,

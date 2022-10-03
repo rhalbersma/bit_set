@@ -6,9 +6,9 @@
 #define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
-#include <aux/bit_set.hpp>              // xstd::bitset adaptor around xstd::bit_set
-#include <aux/bitset.hpp>               // bitset
-#include <aux/dynamic_bitset.hpp>       // dynamic_bitset
+#include <adaptor/bit_set.hpp>          // xstd::bitset adaptor around xstd::bit_set
+#include <adaptor/bitset.hpp>           // bitset
+#include <adaptor/dynamic_bitset.hpp>   // dynamic_bitset
 #include <bitset/primitives.hpp>        // constructor
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <boost/mpl/vector.hpp>         // vector

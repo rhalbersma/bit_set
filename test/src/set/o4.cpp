@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <aux/flat_set.hpp>             // <=>
+#include <adaptor/flat_set.hpp>         // <=>
 #include <set/exhaustive.hpp>           // all_doubleton_set_pairs
 #include <set/parallel.hpp>             // includes
 #include <set/primitives.hpp>           // op_compare_three_way

@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <aux/flat_set.hpp>             // flat_set
+#include <adaptor/flat_set.hpp>         // flat_set
 #include <set/exhaustive.hpp>           // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets,
                                         // all_valid, empty_set, full_set
 #include <set/primitives.hpp>           // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,

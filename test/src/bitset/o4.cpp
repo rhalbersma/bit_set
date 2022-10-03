@@ -3,9 +3,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <aux/bit_set.hpp>              // xstd::bitset adaptor around xstd::bit_set
-#include <aux/bitset.hpp>               // bitset
-#include <aux/dynamic_bitset.hpp>       // dynamic_bitset
+#include <adaptor/bit_set.hpp>          // xstd::bitset adaptor around xstd::bit_set
+#include <adaptor/bitset.hpp>           // bitset
+#include <adaptor/dynamic_bitset.hpp>   // dynamic_bitset
 #include <bitset/exhaustive.hpp>        // all_doubleton_set_pairs
 #include <bitset/primitives.hpp>        // mem_is_subset_of, mem_is_proper_subset_of
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
