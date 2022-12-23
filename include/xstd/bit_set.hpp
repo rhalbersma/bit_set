@@ -255,7 +255,7 @@ public:
         {
                 for (auto x : std::ranges::subrange(first, last)) {
                         add(x);
-                };
+                }
         }
 
         template<class Range>
@@ -264,7 +264,7 @@ public:
         {
                 for (auto x : rg) {
                         add(x);
-                };
+                }
         }
 
         constexpr auto insert(std::initializer_list<value_type> ilist) noexcept
@@ -413,7 +413,7 @@ public:
                 } else {
                         for (auto& block : m_data | std::views::take(num_logical_blocks)) {
                                 block = static_cast<block_type>(~block);
-                        };
+                        }
                 }
                 clear_unused_bits();
                 return *this;
@@ -498,7 +498,7 @@ public:
         constexpr auto& operator<<=(value_type n [[maybe_unused]]) noexcept
         {
                 assert(is_valid(n));
-                if constexpr (num_logical_blocks == 1) {
+                if constexpr (num_logical_blocks <= 1) {
                         m_data[0] >>= n;
                 } else {
                         if (n == 0) {
@@ -526,7 +526,7 @@ public:
         constexpr auto& operator>>=(value_type n [[maybe_unused]]) noexcept
         {
                 assert(is_valid(n));
-                if constexpr (num_logical_blocks == 1) {
+                if constexpr (num_logical_blocks <= 1) {
                         m_data[0] <<= n;
                 } else {
                         if (n == 0) {
@@ -794,6 +794,7 @@ private:
                 }
 
                 [[nodiscard]] constexpr auto operator==(proxy_reference const& other) const noexcept
+                        -> bool
                 {
                         return this->m_val == other.m_val;
                 }
@@ -844,6 +845,7 @@ private:
                 }
 
                 [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
+                        -> bool
                 {
                         assert(this->m_ptr == other.m_ptr);
                         return this->m_val == other.m_val;
