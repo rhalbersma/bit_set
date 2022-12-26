@@ -187,12 +187,12 @@ Almost all existing `std::bitset<N>` code has **a direct translation** (i.e. ach
 | `std::bitset<N>`                | `xstd::bit_set<N>`              | Notes                                           |
 | :---------------                | :-----------------              | :----                                           |
 | `bs.set()`                      | `bs.fill()`                     | not a member of `std::set<int>`                 |
-| `bs.set(n)`                     | `bs.add(n)` <br> `bs.insert(n)` | no bounds-checking or `out_of_range` exceptions, <br> the former returns `*this`, the latter `pair<iterator, bool>` |
+| `bs.set(n)`                     | `bs.add(n)` <br> `bs.insert(n)` | no bounds-checking or `out_of_range` exceptions |
 | `bs.set(n, v)` <br> `bs[n] = v` | `v ? bs.add(n) : bs.pop(n)`     | no bounds-checking or `out_of_range` exceptions |
-| `bs.reset()`                    | `bs.clear()`                    | returns `*this`, not `void` as `std::set<int>`  |
-| `bs.reset(n)`                   | `bs.pop(n)` <br> `bs.erase(n)`  | no bounds-checking or `out_of_range` exceptions, <br> the former returns `*this`, the latter `size_type`            |
+| `bs.reset()`                    | `bs.clear()`                    | returns `void` as `std::set<int>`, not `*this` as `std::bitset<N>`  |
+| `bs.reset(n)`                   | `bs.pop(n)` <br> `bs.erase(n)`  | no bounds-checking or `out_of_range` exceptions |
 | `bs.flip()`                     | `bs.complement()`               | not a member of `std::set<int>`                 |
-| `bs.flip(n)`                    | `bs.replace(n)`                 | no bounds-checking or `out_of_range` exceptions <br> not a member of `std::set<int>` |
+| `bs.flip(n)`                    | `bs.complement(n)`              | no bounds-checking or `out_of_range` exceptions <br> not a member of `std::set<int>` |
 | `bs.count()`                    | `bs.size()`                     | |
 | `bs.size()`                     | `bs.max_size()`                 | a `static` member                               |
 | `bs.test(n)` <br> `bs[n]`       | `bs.contains(n)`                | no bounds-checking or `out_of_range` exceptions |

@@ -327,7 +327,7 @@ public:
                 assert(empty());
         }
 
-        constexpr auto replace(value_type x [[maybe_unused]]) noexcept
+        constexpr auto complement(value_type x [[maybe_unused]]) noexcept
         {
                 assert(is_valid(x));
                 auto&& [ block, mask ] = block_mask(x);

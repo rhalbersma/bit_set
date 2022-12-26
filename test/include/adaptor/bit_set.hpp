@@ -176,7 +176,7 @@ public:
                 if (pos >= N) {
                         throw std::out_of_range("");
                 }
-                m_impl.replace(static_cast<int>(pos));
+                m_impl.complement(static_cast<int>(pos));
                 return *this;
         }
 
