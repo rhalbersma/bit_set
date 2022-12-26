@@ -115,17 +115,15 @@ public:
         [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator(rend());   }
 
         [[nodiscard]] constexpr auto front() const noexcept
-                -> const_reference
         {
                 assert(!empty());
-                return { *this, find_front() };
+                return const_reference(*this, find_front());
         }
 
         [[nodiscard]] constexpr auto back() const noexcept
-                -> const_reference
         {
                 assert(!empty());
-                return { *this, find_back() };
+                return const_reference(*this, find_back());
         }
 
         [[nodiscard]] constexpr auto empty() const noexcept
@@ -213,7 +211,7 @@ private:
                 auto const inserted = !(block & mask);
                 block |= mask;
                 assert(contains(x));
-                return { { this, x },  inserted };
+                return { iterator(this, x),  inserted };
         }
 
 public:
@@ -229,10 +227,9 @@ public:
 
 private:
         constexpr auto do_insert(const_iterator /* hint */, value_type x) noexcept
-                -> iterator
         {
                 add(x);
-                return { this, x };
+                return iterator(this, x);
         }
 
 public:
@@ -359,31 +356,27 @@ public:
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) noexcept
-                -> iterator
         {
                 assert(is_valid(x));
-                return { this, find_next(x) };
+                return iterator(this, find_next(x));
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) const noexcept
-                -> const_iterator
         {
                 assert(is_valid(x));
-                return { this, find_next(x) };
+                return const_iterator(this, find_next(x));
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) noexcept
-                -> iterator
         {
                 assert(is_valid(x));
-                return { this, find_next(x + 1) };
+                return iterator(this, find_next(x + 1));
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) const noexcept
-                -> const_iterator
         {
                 assert(is_valid(x));
-                return { this, find_next(x + 1) };
+                return const_iterator(this, find_next(x + 1));
         }
 
         [[nodiscard]] constexpr auto equal_range(key_type const& x) noexcept
@@ -781,7 +774,7 @@ private:
 
                 proxy_reference() = delete;
 
-                [[nodiscard]] constexpr proxy_reference(rimpl_type r, value_type v) noexcept
+                [[nodiscard]] explicit constexpr proxy_reference(rimpl_type r, value_type v) noexcept
                 :
                         m_ref(r),
                         m_val(v)
@@ -796,9 +789,8 @@ private:
                 }
 
                 [[nodiscard]] constexpr auto operator&() const noexcept
-                        -> proxy_iterator
                 {
-                        return { &m_ref, m_val };
+                        return proxy_iterator(&m_ref, m_val);
                 }
 
                 [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
@@ -831,7 +823,7 @@ private:
         public:
                 proxy_iterator() = default;
 
-                [[nodiscard]] constexpr proxy_iterator(pimpl_type p, value_type v) noexcept
+                [[nodiscard]] explicit constexpr proxy_iterator(pimpl_type p, value_type v) noexcept
                 :
                         m_ptr(p),
                         m_val(v)
@@ -847,10 +839,9 @@ private:
                 }
 
                 [[nodiscard]] constexpr auto operator*() const noexcept
-                        -> proxy_reference
                 {
                         assert(is_valid(m_val));
-                        return { *m_ptr, m_val };
+                        return proxy_reference(*m_ptr, m_val);
                 }
 
                 constexpr auto& operator++() noexcept
