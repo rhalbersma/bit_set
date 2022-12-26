@@ -19,7 +19,7 @@
 #include <numeric>              // accumulate
 #include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, subrange, swap_ranges, views::drop, views::take
 #include <tuple>                // tie
-#include <type_traits>          // common_type_t, conditional_t, is_class_v, make_signed_t
+#include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
 
 namespace xstd {
@@ -38,11 +38,8 @@ class bit_set
         static constexpr auto num_unused_bits = num_bits - M;
         static_assert(0 <= num_unused_bits && num_unused_bits < block_size);
 
-        template<bool> class proxy_reference;
-        template<bool> class proxy_iterator;
-
-        using const_proxy_reference = proxy_reference<true>;
-        using const_proxy_iterator = proxy_iterator<true>;
+        class proxy_iterator;
+        class proxy_reference;
 
         Block m_data[num_storage_blocks]{};     // zero-initialization
 public:
@@ -50,14 +47,14 @@ public:
         using key_compare            = std::less<key_type>;
         using value_type             = int;
         using value_compare          = std::less<value_type>;
-        using pointer                = const_proxy_iterator;
-        using const_pointer          = const_proxy_iterator;
-        using reference              = const_proxy_reference;
-        using const_reference        = const_proxy_reference;
+        using pointer                = proxy_iterator;
+        using const_pointer          = proxy_iterator;
+        using reference              = proxy_reference;
+        using const_reference        = proxy_reference;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = const_proxy_iterator;
-        using const_iterator         = const_proxy_iterator;
+        using iterator               = proxy_iterator;
+        using const_iterator         = proxy_iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
         using block_type             = Block;
@@ -769,10 +766,9 @@ private:
                 }
         }
 
-        template<bool IsConst>
         class proxy_reference
         {
-                using rimpl_type = std::conditional_t<IsConst, bit_set const&, bit_set&>;
+                using rimpl_type = bit_set const&;
                 using value_type = bit_set::value_type;
                 rimpl_type m_ref;
                 value_type m_val;
@@ -800,7 +796,7 @@ private:
                 }
 
                 [[nodiscard]] constexpr auto operator&() const noexcept
-                        -> proxy_iterator<IsConst>
+                        -> proxy_iterator
                 {
                         return { &m_ref, m_val };
                 }
@@ -818,18 +814,17 @@ private:
                 }
         };
 
-        template<bool IsConst>
         class proxy_iterator
         {
         public:
                 using iterator_category = std::bidirectional_iterator_tag;
                 using difference_type   = bit_set::difference_type;
                 using value_type        = bit_set::value_type;
-                using pointer           = proxy_iterator<IsConst>;
-                using reference         = proxy_reference<IsConst>;
+                using pointer           = proxy_iterator;
+                using reference         = proxy_reference;
 
         private:
-                using pimpl_type = std::conditional_t<IsConst, bit_set const*, bit_set*>;
+                using pimpl_type = bit_set const*;
                 pimpl_type m_ptr;
                 value_type m_val;
 
@@ -852,7 +847,7 @@ private:
                 }
 
                 [[nodiscard]] constexpr auto operator*() const noexcept
-                        -> proxy_reference<IsConst>
+                        -> proxy_reference
                 {
                         assert(is_valid(m_val));
                         return { *m_ptr, m_val };
