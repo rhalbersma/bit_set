@@ -110,7 +110,7 @@ How would the Sieve of Eratosthenes code look when using a sequence of bits? The
 | `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/as57bchEG) |
 | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/TfTzETWzb) |
 
-The essential difference (apart from differently named member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynammic_bitset<>`, these can be retro-fitted into forward proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of `begin` and `end` inside `namespace std` entail **undefined behavior**, preventing range-`for` support for `std::bitset<N>`. The best one can do is a manual loop like below (possibly wrapped in a `for_each` non-member function)
+The essential difference (apart from differently named member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynamic_bitset<>`, these can be retro-fitted into forward proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of `begin` and `end` inside `namespace std` entail **undefined behavior**, preventing range-`for` support for `std::bitset<N>`. The best one can do is a manual loop like below (possibly wrapped in a `for_each` non-member function)
 
 ```cpp
 // find all primes below N
@@ -368,7 +368,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Linux    | GCC        | 11, 12, 13-SVN | CI currently being ported to GitHub Actions |
 | Windows  | Visual C++ | 17.3           | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. Both GCC 11 and Visual C++ 17.3 and higher are supported at the moment. Clang is still missing some C++20 features, and will be added whenever possible. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library.
+Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. Both GCC 11 and Visual C++ 17.3 and higher are supported at the moment. GCC 10 will compile the library but due to a [compiler bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94924) an incorrect `operator==` will be emitted. Clang is still missing some C++20 features, and will be added whenever possible. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library.
 
 ## License
 
