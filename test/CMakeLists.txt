@@ -35,6 +35,9 @@ set(cxx_compile_options_warnings
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
         -Wno-c++20-compat
+        -Wno-c++20-compat-pedantic
+        -Wno-ctad-maybe-unsupported
+        -Wno-unsafe-buffer-usage
         -Wno-disabled-macro-expansion       # triggered by Boost.Test
         -Wno-global-constructors            # triggered by Boost.Test
         -Wno-used-but-marked-unused         # triggered by Boost.Test
@@ -84,6 +87,10 @@ foreach(t ${targets})
     target_include_directories(
         ${target_id} PRIVATE
         ${current_include_dir}
+    )
+
+    target_include_directories(
+        ${target_id} SYSTEM PRIVATE
         ${PROJECT_SOURCE_DIR}/../third_party/range-v3/include
     )
 

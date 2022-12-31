@@ -73,8 +73,8 @@ struct transform_increment_filter
         auto operator()(auto const& is, int n) const
         {
                 if constexpr (requires { is << n; }) {
-                        constexpr auto N = static_cast<int>(is.max_size());
                         using set_type = std::remove_cvref_t<decltype(is)>;
+                        constexpr auto N = static_cast<int>(set_type::max_size());
                         BOOST_CHECK(
                                 (is << n) == (is
                                         | std::views::transform([=](auto x) { return x + n; })
