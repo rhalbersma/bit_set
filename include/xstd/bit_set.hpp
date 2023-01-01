@@ -10,7 +10,7 @@
 #include <bit>                  // countl_zero, countr_zero, has_single_bit, popcount
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
-#include <concepts>             // constructible_from, innput_iteratorl, unsigned_integral
+#include <concepts>             // constructible_from, input_iterator, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
 #include <functional>           // identity, less
 #include <initializer_list>     // initializer_list
@@ -61,8 +61,7 @@ public:
 
         bit_set() = default;                    // zero-initialization
 
-        template<class InputIterator>
-        [[nodiscard]] constexpr bit_set(InputIterator first, InputIterator last) noexcept
+        [[nodiscard]] constexpr bit_set(std::input_iterator auto first, std::input_iterator auto last) noexcept
         {
                 insert(first, last);
         }
@@ -180,18 +179,16 @@ public:
                 return num_bits;
         }
 
-        template<class... Args>
-        constexpr auto emplace(Args&&... args) noexcept
-                requires (sizeof...(Args) == 1)
+        constexpr auto emplace(auto&&... args) noexcept
+                requires (sizeof...(args) == 1)
         {
-                return insert(value_type(std::forward<Args>(args)...));
+                return insert(value_type(std::forward<decltype(args)>(args)...));
         }
 
-        template<class... Args>
-        constexpr auto emplace_hint(const_iterator hint, Args&&... args) noexcept
-                requires (sizeof...(Args) == 1)
+        constexpr auto emplace_hint(const_iterator hint, auto&&... args) noexcept
+                requires (sizeof...(args) == 1)
         {
-                return insert(hint, value_type(std::forward<Args>(args)...));
+                return insert(hint, value_type(std::forward<decltype(args)>(args)...));
         }
 
         constexpr auto add(value_type x) noexcept
@@ -243,18 +240,16 @@ public:
                 return do_insert(hint, std::move(x));
         }
 
-        template<class InputIterator>
-        constexpr auto insert(InputIterator first, InputIterator last) noexcept
-                requires std::input_iterator<InputIterator> && std::constructible_from<value_type, decltype(*first)>
+        constexpr auto insert(std::input_iterator auto first, std::input_iterator auto last) noexcept
+                requires std::constructible_from<value_type, decltype(*first)>
         {
                 for (auto x : std::ranges::subrange(first, last)) {
                         add(x);
                 }
         }
 
-        template<class Range>
-        constexpr auto insert_range(Range&& rg) noexcept
-                requires std::ranges::range<Range> && std::constructible_from<value_type, decltype(*rg.begin())>
+        constexpr auto insert_range(std::ranges::range auto&& rg) noexcept
+                requires std::constructible_from<value_type, decltype(*rg.begin())>
         {
                 for (auto x : rg) {
                         add(x);
