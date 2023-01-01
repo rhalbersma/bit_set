@@ -17,7 +17,7 @@
 #include <iterator>             // begin, bidirectional_iterator_tag, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
-#include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, subrange, swap_ranges, views::drop, views::take
+#include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, subrange, swap_ranges, views::drop, views::take, views::zip
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap
@@ -411,13 +411,15 @@ public:
                         this->m_data[0] &= other.m_data[0];
                         this->m_data[1] &= other.m_data[1];
                 } else {
-                        // C++23 (currently available in range-v3)
-                        // for (auto&& [lhs, rhs] : ranges::views::zip(this->m_data, other.m_data)) {
-                        //         lhs &= rhs;
-                        // }
+                #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
+                                lhs &= rhs;
+                        }
+                #else
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] &= other.m_data[i];
                         }
+                #endif
                 }
                 return *this;
         }
@@ -430,13 +432,15 @@ public:
                         this->m_data[0] |= other.m_data[0];
                         this->m_data[1] |= other.m_data[1];
                 } else {
-                        // C++23 (currently available in range-v3)
-                        // for (auto&& [lhs, rhs] : ranges::views::zip(this->m_data, other.m_data)) {
-                        //         lhs |= rhs;
-                        // }
+                #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
+                                lhs |= rhs;
+                        }
+                #else
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] |= other.m_data[i];
                         }
+                #endif
                 }
                 return *this;
         }
@@ -449,13 +453,15 @@ public:
                         this->m_data[0] ^= other.m_data[0];
                         this->m_data[1] ^= other.m_data[1];
                 } else {
-                        // C++23 (currently available in range-v3)
-                        // for (auto&& [lhs, rhs] : ranges::views::zip(this->m_data, other.m_data)) {
-                        //         lhs ^= rhs;
-                        // }
+                #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
+                                lhs ^= rhs;
+                        }
+                #else
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] ^= other.m_data[i];
                         }
+                #endif
                 }
                 return *this;
         }
@@ -468,13 +474,15 @@ public:
                         this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
                         this->m_data[1] &= static_cast<block_type>(~other.m_data[1]);
                 } else {
-                        // C++23 (currently available in range-v3)
-                        // for (auto&& [lhs, rhs] : ranges::views::zip(this->m_data, other.m_data)) {
-                        //         lhs &= static_cast<block_type>(~rhs);
-                        // }
+                #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
+                                lhs &= static_cast<block_type>(~rhs);
+                        }
+                #else
                         for (auto i = 0; i < num_logical_blocks; ++i) {
                                 this->m_data[i] &= static_cast<block_type>(~other.m_data[i]);
                         }
+                #endif
                 }
                 return *this;
         }
@@ -536,15 +544,19 @@ public:
 
         [[nodiscard]] constexpr auto is_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
         {
-                // C++23 (currently available in range-v3)
-                // return std::ranges::none_of(ranges::views::zip(this->m_data, other.m_data),
-                //         [](auto const& t) { auto const& [lhs, rhs] = t;
-                //                 return lhs & ~rhs;
-                //         }
-                // );
+        #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                return std::ranges::none_of(
+                        std::views::zip(this->m_data, other.m_data),
+                        [](auto const& tup) {
+                                auto const& [lhs, rhs] = tup;
+                                return lhs & ~rhs;
+                        }
+                );
+        #else
                 return std::ranges::equal(this->m_data, other.m_data, [](auto lhs, auto rhs) {
                         return !(lhs & ~rhs);
                 });
+        #endif
         }
 
         [[nodiscard]] constexpr auto is_proper_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
@@ -558,33 +570,39 @@ public:
                                 break;
                         }
                 }
-                // C++23 (currently available in range-v3)
-                // return (i == num_logical_blocks) ? false : std::ranges::none_of(
-                //         ranges::views::zip(this->m_data, other.m_data) | ranges::views::drop(i),
-                //         [](auto const& t) { auto const& [lhs, rhs] = t;
-                //                 return lhs & ~rhs;
-                //         }
-                // );
+        #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                return (i == num_logical_blocks) ? false : std::ranges::none_of(
+                        std::views::zip(this->m_data, other.m_data) | std::views::drop(i),
+                        [](auto const& tup) {
+                                auto const& [lhs, rhs] = tup;
+                                return lhs & ~rhs;
+                        }
+                );
+        #else
                 return (i == num_logical_blocks) ? false : std::ranges::equal(
                         this->m_data | std::views::drop(i), other.m_data | std::views::drop(i),
                         [](auto lhs, auto rhs) {
                                 return !(lhs & ~rhs);
                         }
                 );
+        #endif
         }
 
         [[nodiscard]] constexpr auto intersects(bit_set const& other [[maybe_unused]]) const noexcept
         {
-                // C++23 (currently available in range-v3)
-                // return std::ranges::any_of(
-                //         ranges::views::zip(this->m_data, other.m_data),
-                //         [](auto const& t) { auto const& [lhs, rhs] = t;
-                //                 return lhs & rhs;
-                //         }
-                // );
+        #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                return std::ranges::any_of(
+                        std::views::zip(this->m_data, other.m_data),
+                        [](auto const& tup) {
+                                auto const& [lhs, rhs] = tup;
+                                return lhs & rhs;
+                        }
+                );
+        #else
                 return !std::ranges::equal(this->m_data, other.m_data, [](auto lhs, auto rhs) {
                         return !(lhs & rhs);
                 });
+        #endif
         }
 
 private:
