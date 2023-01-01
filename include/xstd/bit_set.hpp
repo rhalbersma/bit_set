@@ -393,7 +393,7 @@ public:
                 return { lower_bound(x), upper_bound(x) };
         }
 
-        constexpr auto& complement() noexcept
+        constexpr auto complement() noexcept
         {
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] = static_cast<block_type>(~m_data[0]);
@@ -406,7 +406,6 @@ public:
                         }
                 }
                 clear_unused_bits();
-                return *this;
         }
 
         constexpr auto& operator&=(bit_set const& other [[maybe_unused]]) noexcept
@@ -580,7 +579,6 @@ public:
         }
 
         [[nodiscard]] constexpr auto intersects(bit_set const& other [[maybe_unused]]) const noexcept
-                -> bool
         {
                 // C++23 (currently available in range-v3)
                 // return std::ranges::any_of(
