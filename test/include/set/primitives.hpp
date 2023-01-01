@@ -306,28 +306,29 @@ struct mem_capacity
 
 struct mem_emplace
 {
-        template<class X, class... Args>
-        auto operator()(X& a, Args&&... args) const
+        template<class X>
+        auto operator()(X& a, auto&&... args) const
         {                                                                       // [associative.reqmts.general]/47
-                static_assert(std::same_as<decltype(a.emplace(std::forward<Args>(args)...)), std::pair<typename X::iterator, bool>>);
+                static_assert(std::same_as<decltype(a.emplace(std::forward<decltype(args)>(args)...)), std::pair<typename X::iterator, bool>>);
                                                                                 // [associative.reqmts.general]/48
-                static_assert(std::constructible_from<typename X::value_type, Args...>);
-                auto emplaced = !a.contains(typename X::value_type(std::forward<Args>(args)...));
-                auto r = a.emplace(std::forward<Args>(args)...);                // [associative.reqmts.general]/49
+                static_assert(std::constructible_from<typename X::value_type, decltype(args)...>);
+                auto emplaced = !a.contains(typename X::value_type(std::forward<decltype(args)>(args)...));
+                auto r = a.emplace(std::forward<decltype(args)>(args)...);      // [associative.reqmts.general]/49
                                                                                 // [associative.reqmts.general]/50
-                BOOST_CHECK(r == std::make_pair(a.find(typename X::value_type(std::forward<Args>(args)...)), emplaced));
+                BOOST_CHECK(r == std::make_pair(a.find(typename X::value_type(std::forward<decltype(args)>(args)...)), emplaced));
         }
 };
 
 struct mem_emplace_hint
 {
-        template<class X, class... Args>
-        auto operator()(X& a, X::iterator p, Args&&... args) const
+        template<class X>
+        auto operator()(X& a, X::iterator p, auto&&... args) const
         {                                                                       // [associative.reqmts.general]/57
-                static_assert(std::same_as<decltype(a.emplace_hint(p, std::forward<Args>(args)...)), typename X::iterator>);
-                auto r = a.emplace_hint(p, std::forward<Args>(args)...);        // [associative.reqmts.general]/58
+                static_assert(std::same_as<decltype(a.emplace_hint(p, std::forward<decltype(args)>(args)...)), typename X::iterator>);
+                                                                                // [associative.reqmts.general]/58
+                auto r = a.emplace_hint(p, std::forward<decltype(args)>(args)...);
                                                                                 // [associative.reqmts.general]/59
-                BOOST_CHECK(r == a.find(typename X::value_type(std::forward<Args>(args)...)));
+                BOOST_CHECK(r == a.find(typename X::value_type(std::forward<decltype(args)>(args)...)));
         }
 };
 
@@ -375,8 +376,8 @@ struct mem_insert
                 BOOST_CHECK(r == a.find(t));                                    // [associative.reqmts.general]/73
         }
 
-        template<class X, class InputIterator>
-        auto operator()(X& a, InputIterator i, InputIterator j) const
+        template<class X>
+        auto operator()(X& a, std::input_iterator auto i, std::input_iterator auto j) const
         {
                 static_assert(std::same_as<decltype(a.insert(i, j)), void>);    // [associative.reqmts.general]/75
                                                                                 // [associative.reqmts.general]/76
@@ -389,9 +390,8 @@ struct mem_insert
                 BOOST_CHECK(a == a1);                                           // [associative.reqmts.general]/77
         }
 
-        template<class X, class Range>
-                requires std::ranges::range<Range>
-        auto operator()(X& a, Range&& rg) const
+        template<class X>
+        auto operator()(X& a, std::ranges::range auto&& rg) const
         {                                                                       // [associative.reqmts.general]/79
                 static_assert(std::same_as<decltype(a.insert_range(rg)), void>);
                                                                                 // [associative.reqmts.general]/80
