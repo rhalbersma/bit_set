@@ -1016,9 +1016,9 @@ template<std::size_t N, std::unsigned_integral Block>
         return bs.empty();
 }
 
-}       // namespace xstd
-
 template<std::size_t N, std::unsigned_integral Block = std::size_t, std::size_t D = std::numeric_limits<Block>::digits>
 using bit_set_fast = bit_set<((N - 1 + D) / D) * D, Block>;
+
+}       // namespace xstd
 
 #endif  // include guard
