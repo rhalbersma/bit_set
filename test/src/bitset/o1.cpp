@@ -3,16 +3,14 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <adaptor/bit_set.hpp>          // xstd::bitset adaptor around xstd::bit_set
-#include <adaptor/bitset.hpp>           // bitset
 #include <adaptor/dynamic_bitset.hpp>   // dynamic_bitset
+#include <adaptor/std_bitset.hpp>       // bitset
+#include <adaptor/xstd_bitset.hpp>      // bitset
 #include <bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set
-#include <bitset/primitives.hpp>        // mem_set, mem_reset, op_compl, mem_flip, mem_count, mem_size, mem_test, mem_all, mem_any, mem_none
-                                        // mem_at, op_bitand, op_bitor, op_xor, op_minus, mem_is_subset_of, mem_intersects, fn_iostream
-#include <boost/dynamic_bitset.hpp>     // dynamic_bitset
+#include <bitset/primitives.hpp>        // mem_set, mem_reset, op_bit_not, mem_flip, mem_count, mem_size, mem_test, mem_all, mem_any, mem_none
+                                        // mem_at, op_bit_and, op_bit_or, op_bit_xor, op_minus, mem_is_subset_of, mem_intersects, fn_iostream
 #include <boost/mpl/vector.hpp>         // vector
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <bitset>                       // bitset
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 
 BOOST_AUTO_TEST_SUITE(Linear)
@@ -65,8 +63,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 });
         });
 
-        all_cardinality_sets<T>(op_compl());
-        all_singleton_sets<T>(op_compl());
+        all_cardinality_sets<T>(op_bit_not());
+        all_singleton_sets<T>(op_bit_not());
 
         all_cardinality_sets<T>(mem_flip());
         all_singleton_sets<T>(mem_flip());

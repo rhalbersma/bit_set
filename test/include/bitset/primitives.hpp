@@ -10,7 +10,6 @@
 #include <cstddef>                      // ptrdiff_t, size_t
 #include <iterator>                     // distance, inserter
 #include <memory>                       // addressof
-#include <ranges>                       // copy, equal, find, includes, set_difference, set_intersection, set_symmetric_difference, set_union, views::filter, views::transform
 #include <set>                          // set
 #include <sstream>                      // stringstream
 #include <stdexcept>                    // out_of_range
@@ -30,7 +29,7 @@ struct constructor
         // [bitset.cons]/2-7 describe constructors taking unsigned long long, basic_string and char const*
 };
 
-struct op_bitand_assign
+struct op_bit_and_assign
 {
         auto operator()(auto& lhs, auto const& rhs) const noexcept
         {
@@ -44,7 +43,7 @@ struct op_bitand_assign
         }
 };
 
-struct op_bitor_assign
+struct op_bit_or_assign
 {
         auto operator()(auto& lhs, auto const& rhs) const noexcept
         {
@@ -58,7 +57,7 @@ struct op_bitor_assign
         }
 };
 
-struct op_xor_assign
+struct op_bit_xor_assign
 {
         auto operator()(auto& lhs, auto const& rhs) const noexcept
         {
@@ -170,7 +169,7 @@ struct mem_reset
         }
 };
 
-struct op_compl
+struct op_bit_not
 {
         auto operator()(auto const& a) const noexcept
         {
@@ -328,7 +327,7 @@ struct op_at
 
 // [bitset.hash]/1 stipulates a std::hash<std::bitset<N>> specialization
 
-struct op_bitand
+struct op_bit_and
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
@@ -337,7 +336,7 @@ struct op_bitand
         }
 };
 
-struct op_bitor
+struct op_bit_or
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
@@ -346,7 +345,7 @@ struct op_bitor
         }
 };
 
-struct op_xor
+struct op_bit_xor
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {

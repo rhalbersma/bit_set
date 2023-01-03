@@ -6,18 +6,18 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <algorithm>            // lexicographical_compare_three_way, max
+#include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, lexicographical_compare_three_way, none_of, max, swap_ranges
 #include <bit>                  // countl_zero, countr_zero, has_single_bit, popcount
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
-#include <concepts>             // constructible_from, input_iterator, unsigned_integral
+#include <concepts>             // constructible_from, input_iterator, range, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
 #include <functional>           // identity, less
 #include <initializer_list>     // initializer_list
 #include <iterator>             // begin, bidirectional_iterator_tag, end, next, prev, rbegin, rend, reverse_iterator
 #include <limits>               // digits
 #include <numeric>              // accumulate
-#include <ranges>               // all_of, copy_backward, copy_n, equal, fill_n, none_of, range, subrange, swap_ranges, views::drop, views::take, views::zip
+#include <ranges>               // drop, range, subrange, take, zip
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair, swap

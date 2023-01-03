@@ -41,9 +41,10 @@ class proxy_iterator;
 template<std::unsigned_integral Block, class Allocator>
 class proxy_reference
 {
+        using rimpl_type = dynamic_bitset<Block, Allocator> const&;
         using value_type = dynamic_bitset<Block, Allocator>::size_type;
-        dynamic_bitset<Block, Allocator> const& m_bs;
-        value_type const m_value;
+        rimpl_type m_ref;
+        value_type m_val;
 public:
         ~proxy_reference() = default;
         proxy_reference(proxy_reference const&) = default;
@@ -53,30 +54,35 @@ public:
 
         proxy_reference() = delete;
 
-        [[nodiscard]] constexpr proxy_reference(dynamic_bitset<Block, Allocator> const& bs, value_type const& v) noexcept
+        [[nodiscard]] explicit constexpr proxy_reference(rimpl_type r, value_type v) noexcept
         :
-                m_bs(bs),
-                m_value(v)
+                m_ref(r),
+                m_val(v)
         {
-                assert(m_value < bs.size());
+                assert(m_val < m_ref.size());
+        }
+
+        [[nodiscard]] constexpr auto operator==(proxy_reference const& other) const noexcept
+                -> bool
+        {
+                return this->m_val == other.m_val;
         }
 
         [[nodiscard]] constexpr auto operator&() const noexcept
-                -> proxy_iterator<Block, Allocator>
         {
-                return { &m_bs, m_value };
+                return proxy_iterator<Block, Allocator>(&m_ref, m_val);
         }
 
         [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
         {
-                return m_value;
+                return m_val;
         }
 
         template<class T>
+        [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_val)))
                 requires std::is_class_v<T> && std::constructible_from<T, value_type>
-        [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_value)))
         {
-                return m_value;
+                return m_val;
         }
 };
 
@@ -91,43 +97,43 @@ public:
         using iterator_category = std::forward_iterator_tag;
 
 private:
-        dynamic_bitset<Block, Allocator>  const* m_bs;
-        value_type m_value;
+        using pimpl_type = dynamic_bitset<Block, Allocator>  const*;
+        pimpl_type m_ptr;
+        value_type m_val;
 
 public:
         proxy_iterator() = default;
 
-        [[nodiscard]] constexpr proxy_iterator(dynamic_bitset<Block, Allocator> const* bs, value_type const& v) // Throws: Nothing.
+        [[nodiscard]] constexpr proxy_iterator(pimpl_type p, value_type v) noexcept
         :
-                m_bs(bs),
-                m_value(v)
+                m_ptr(p),
+                m_val(v)
         {
-                assert(m_value < bs->size() || m_value == bs->npos);
+                assert(m_val < m_ptr->size() || m_val == m_ptr->npos);
         }
 
         [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
                 -> bool
         {
-                assert(m_bs == other.m_bs);
-                return m_value == other.m_value;
+                assert(this->m_ptr == other.m_ptr);
+                return this->m_val == other.m_val;
         }
 
-        [[nodiscard]] constexpr auto operator*() const // Throws: Nothing.
-                -> proxy_reference<Block, Allocator>
+        [[nodiscard]] constexpr auto operator*() const noexcept
         {
-                assert(m_value < m_bs->size());
-                return { *m_bs, m_value };
+                assert(m_val < m_ptr->size());
+                return proxy_reference<Block, Allocator>(*m_ptr, m_val);
         }
 
-        auto& operator++() // Throws: Nothing.
+        auto& operator++() noexcept
         {
-                assert(m_value < m_bs->size());
-                m_value = m_bs->find_next(m_value);
-                assert(m_value < m_bs->size() || m_value == m_bs->npos);
+                assert(m_val < m_ptr->size());
+                m_val = m_ptr->find_next(m_val);
+                assert(m_val < m_ptr->size() || m_val == m_ptr->npos);
                 return *this;
         }
 
-        auto operator++(int) // Throws: Nothing.
+        auto operator++(int) noexcept
         {
                 auto nrv = *this; ++*this; return nrv;
         }
@@ -135,30 +141,26 @@ public:
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& bs)
-        -> proxy_iterator<Block, Allocator>
 {
-        return { &bs, bs.find_first() };
+        return proxy_iterator<Block, Allocator>(&bs, bs.find_first());
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto begin(dynamic_bitset<Block, Allocator> const& bs)
-        -> proxy_iterator<Block, Allocator>
 {
-        return { &bs, bs.find_first() };
+        return proxy_iterator<Block, Allocator>(&bs, bs.find_first());
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto end(dynamic_bitset<Block, Allocator>& bs)
-        -> proxy_iterator<Block, Allocator>
 {
-        return { &bs, bs.npos };
+        return proxy_iterator<Block, Allocator>(&bs, bs.npos);
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto end(dynamic_bitset<Block, Allocator> const& bs)
-        -> proxy_iterator<Block, Allocator>
 {
-        return { &bs, bs.npos };
+        return proxy_iterator<Block, Allocator>(&bs, bs.npos);
 }
 
 template<std::unsigned_integral Block, class Allocator>
