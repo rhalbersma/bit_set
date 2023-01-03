@@ -292,18 +292,6 @@ struct mem_back
         }
 };
 
-struct mem_capacity
-{
-        template<class X>
-        auto operator()(X const& a) const noexcept
-        {
-                if constexpr (requires { a.capacity(); }) {
-                        static_assert(std::same_as<decltype(a.capacity()), typename X::size_type>);
-                        BOOST_CHECK_LE(a.size(), a.capacity());
-                }
-        }
-};
-
 struct mem_emplace
 {
         template<class X>

@@ -173,12 +173,6 @@ public:
                 return N;
         }
 
-        [[nodiscard]] static constexpr auto capacity() noexcept
-                -> size_type
-        {
-                return num_bits;
-        }
-
         constexpr auto emplace(auto&&... args) noexcept
                 requires (sizeof...(args) == 1)
         {
@@ -1023,5 +1017,8 @@ template<std::size_t N, std::unsigned_integral Block>
 }
 
 }       // namespace xstd
+
+template<std::size_t N, std::unsigned_integral Block = std::size_t, std::size_t D = std::numeric_limits<Block>::digits>
+using bit_set_fast = bit_set<((N - 1 + D) / D) * D, Block>;
 
 #endif  // include guard
