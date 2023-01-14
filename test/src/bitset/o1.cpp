@@ -122,11 +122,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
                 // });
         });
 
-#if defined(__clang__) || !defined(__GNUC__) || __GNUC__ != 13
-        // gcc-13 bug pending: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108214
         all_cardinality_sets<T>(fn_iostream());
         all_singleton_sets<T>(fn_iostream());
-#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()

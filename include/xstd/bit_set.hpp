@@ -405,7 +405,7 @@ public:
                         this->m_data[0] &= other.m_data[0];
                         this->m_data[1] &= other.m_data[1];
                 } else {
-                #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                #ifdef __cpp_lib_ranges_zip
                         for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
                                 lhs &= rhs;
                         }
@@ -426,7 +426,7 @@ public:
                         this->m_data[0] |= other.m_data[0];
                         this->m_data[1] |= other.m_data[1];
                 } else {
-                #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                #ifdef __cpp_lib_ranges_zip
                         for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
                                 lhs |= rhs;
                         }
@@ -447,7 +447,7 @@ public:
                         this->m_data[0] ^= other.m_data[0];
                         this->m_data[1] ^= other.m_data[1];
                 } else {
-                #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                #ifdef __cpp_lib_ranges_zip
                         for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
                                 lhs ^= rhs;
                         }
@@ -468,7 +468,7 @@ public:
                         this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
                         this->m_data[1] &= static_cast<block_type>(~other.m_data[1]);
                 } else {
-                #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+                #ifdef __cpp_lib_ranges_zip
                         for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
                                 lhs &= static_cast<block_type>(~rhs);
                         }
@@ -538,7 +538,7 @@ public:
 
         [[nodiscard]] constexpr auto is_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
         {
-        #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+        #ifdef __cpp_lib_ranges_zip
                 return std::ranges::none_of(
                         std::views::zip(this->m_data, other.m_data),
                         [](auto const& tup) {
@@ -564,7 +564,7 @@ public:
                                 break;
                         }
                 }
-        #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+        #ifdef __cpp_lib_ranges_zip
                 return (i == num_logical_blocks) ? false : std::ranges::none_of(
                         std::views::zip(this->m_data, other.m_data) | std::views::drop(i),
                         [](auto const& tup) {
@@ -584,7 +584,7 @@ public:
 
         [[nodiscard]] constexpr auto intersects(bit_set const& other [[maybe_unused]]) const noexcept
         {
-        #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ >= 13
+        #ifdef __cpp_lib_ranges_zip
                 return std::ranges::any_of(
                         std::views::zip(this->m_data, other.m_data),
                         [](auto const& tup) {
