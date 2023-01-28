@@ -7,7 +7,10 @@
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
 #include <adaptor/flat_set.hpp>         // flat_set
-#include <set/primitives.hpp>           // constructor
+#include <set/exhaustive.hpp>           // empty_set_pair
+#include <set/parallel.hpp>             // includes, set_difference, set_intersection, set_symmetric_difference, set_union
+#include <set/primitives.hpp>           // constructor mem_swap,fn_swap, op_equal, op_not_equal_to,
+                                        // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal,
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set
 #include <boost/mpl/vector.hpp>         // vector
@@ -68,6 +71,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
 {
         [[maybe_unused]] auto _ = nested_types<T>();
         constructor<T>()();
+
+        empty_set_pair<T>(mem_swap());
+        empty_set_pair<T>(fn_swap());
+
+        empty_set_pair<T>(op_equal_to());
+        empty_set_pair<T>(op_not_equal_to());
+
+        empty_set_pair<T>(op_compare_three_way());
+        empty_set_pair<T>(op_less());
+        empty_set_pair<T>(op_greater());
+        empty_set_pair<T>(op_less_equal());
+        empty_set_pair<T>(op_greater_equal());
+
+        empty_set_pair<T>(parallel::includes());
+        empty_set_pair<T>(parallel::set_union());
+        empty_set_pair<T>(parallel::set_intersection());
+        empty_set_pair<T>(parallel::set_difference());
+        empty_set_pair<T>(parallel::set_symmetric_difference());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

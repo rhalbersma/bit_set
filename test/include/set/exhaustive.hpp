@@ -31,8 +31,7 @@ inline constexpr auto L4 =  16;
 template<class T>
 auto empty_set(auto fun)
 {
-        T is0;
-        assert(is0.empty());
+        T is0; assert(is0.empty());
         fun(is0);
 }
 
@@ -46,6 +45,14 @@ auto full_set(auto fun)
         }
         assert(static_cast<int>(isN.size()) == N);
         fun(isN);
+}
+
+template<class T>
+auto empty_set_pair(auto fun)
+{
+        T is0; assert(is0.empty());
+        T is1; assert(is1.empty());
+        fun(is0, is1);
 }
 
 // NOTE: these tests are O(N)
@@ -138,12 +145,6 @@ auto all_doubleton_sets(auto fun)
                         fun(is2);
                 }
         }
-}
-
-template<class T>
-auto empty_set_pair(auto fun)
-{
-        fun(T{}, T{});
 }
 
 template<class T>

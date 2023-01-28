@@ -9,7 +9,10 @@
 #include <adaptor/dynamic_bitset.hpp>   // dynamic_bitset
 #include <adaptor/std_bitset.hpp>       // bitset
 #include <adaptor/xstd_bitset.hpp>      // bitset
-#include <bitset/primitives.hpp>        // constructor
+#include <bitset/exhaustive.hpp>        // empty_set_pair
+#include <bitset/primitives.hpp>        // constructor, op_bit_and_assign, op_bit_or_assign, op_bit_xor_assign, op_minus_assign,
+                                        // op_equal_to, op_bit_and, op_bit_or, op_bit_xor, op_minus,
+                                        // mem_is_subset_of, mem_is_proper_subset_of, mem_intersect
 #include <boost/mpl/vector.hpp>         // vector
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
@@ -73,6 +76,22 @@ using bitset_types = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
 {
         constructor<T>()();
+
+        empty_set_pair<T>(op_bit_and_assign());
+        empty_set_pair<T>(op_bit_or_assign());
+        empty_set_pair<T>(op_bit_xor_assign());
+        empty_set_pair<T>(op_minus_assign());
+
+        empty_set_pair<T>(op_equal_to());
+
+        empty_set_pair<T>(op_bit_and());
+        empty_set_pair<T>(op_bit_or());
+        empty_set_pair<T>(op_bit_xor());
+        empty_set_pair<T>(op_minus());
+
+        empty_set_pair<T>(mem_is_subset_of());
+        empty_set_pair<T>(mem_is_proper_subset_of());
+        empty_set_pair<T>(mem_intersects());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

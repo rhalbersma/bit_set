@@ -44,6 +44,15 @@ auto full_set(auto fun)
         fun(bsN);
 }
 
+template<class T>
+auto empty_set_pair(auto fun)
+{
+        auto const N = limit_v<T, L0>;
+        auto bs0 = make_bitset<T>(N); assert(bs0.count() == 0);
+        auto bs1 = make_bitset<T>(N); assert(bs1.count() == 0);
+        fun(bs0, bs1);
+}
+
 // NOTE: these tests are O(N)
 
 template<class T>
