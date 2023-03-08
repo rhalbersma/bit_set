@@ -366,10 +366,10 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Platform | Compiler   | Versions       | Build |
 | :------- | :-------   | :-------       | :---- |
 | Linux    | GCC        | 11, 12, 13-SVN | CI currently being ported to GitHub Actions |
-| Linux    | Clang      | 16-SVN         | CI currently being ported to GitHub Actions |
+| Linux    | Clang      | 16, 17-SVN     | CI currently being ported to GitHub Actions |
 | Windows  | Visual C++ | 17.3           | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. GCC 11, Clang 16-SVN and Visual C++ 17.3 and higher are supported at the moment. GCC 10 will compile the library but due to a [compiler bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94924) an incorrect `operator==` will be emitted. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library.
+Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. GCC 11, Clang 16 and Visual C++ 17.3 and higher are supported at the moment. GCC 10 will compile the library but due to a [compiler bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94924) an incorrect `operator==` will be emitted. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library.
 
 ## License
 
