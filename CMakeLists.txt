@@ -3,7 +3,7 @@
 #    (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.28)
 project(
     bit_set
     HOMEPAGE_URL https://github.com/rhalbersma/${PROJECT_NAME}
