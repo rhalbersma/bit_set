@@ -25,10 +25,9 @@
 namespace xstd {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
+        requires (N <= std::numeric_limits<int>::max())
 class bit_set
 {
-        static_assert(N <= std::numeric_limits<int>::max());
-
         static constexpr auto M = static_cast<int>(N);  // keep size_t from spilling all over the code base
         static constexpr auto block_size = std::numeric_limits<Block>::digits;
         static constexpr auto num_logical_blocks = (M - 1 + block_size) / block_size;
@@ -449,15 +448,9 @@ public:
                         this->m_data[0] &= other.m_data[0];
                         this->m_data[1] &= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
-                #ifdef __cpp_lib_ranges_zip
                         for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
                                 lhs &= rhs;
                         }
-                #else
-                        for (auto i = 0; i < num_logical_blocks; ++i) {
-                                this->m_data[i] &= other.m_data[i];
-                        }
-                #endif
                 }
                 return *this;
         }
@@ -470,15 +463,9 @@ public:
                         this->m_data[0] |= other.m_data[0];
                         this->m_data[1] |= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
-                #ifdef __cpp_lib_ranges_zip
                         for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
                                 lhs |= rhs;
                         }
-                #else
-                        for (auto i = 0; i < num_logical_blocks; ++i) {
-                                this->m_data[i] |= other.m_data[i];
-                        }
-                #endif
                 }
                 return *this;
         }
@@ -491,15 +478,9 @@ public:
                         this->m_data[0] ^= other.m_data[0];
                         this->m_data[1] ^= other.m_data[1];
                 } else if constexpr (num_logical_blocks >= 3) {
-                #ifdef __cpp_lib_ranges_zip
                         for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
                                 lhs ^= rhs;
                         }
-                #else
-                        for (auto i = 0; i < num_logical_blocks; ++i) {
-                                this->m_data[i] ^= other.m_data[i];
-                        }
-                #endif
                 }
                 return *this;
         }
@@ -512,15 +493,9 @@ public:
                         this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
                         this->m_data[1] &= static_cast<block_type>(~other.m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
-                #ifdef __cpp_lib_ranges_zip
                         for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
                                 lhs &= static_cast<block_type>(~rhs);
                         }
-                #else
-                        for (auto i = 0; i < num_logical_blocks; ++i) {
-                                this->m_data[i] &= static_cast<block_type>(~other.m_data[i]);
-                        }
-                #endif
                 }
                 return *this;
         }
@@ -593,7 +568,6 @@ public:
                                 (this->m_data[1] & ~other.m_data[1])
                         );
                 } else if constexpr (num_logical_blocks >= 3) {
-                #ifdef __cpp_lib_ranges_zip
                         return std::ranges::none_of(
                                 std::views::zip(this->m_data, other.m_data),
                                 [](auto const& tup) {
@@ -601,11 +575,6 @@ public:
                                         return lhs & ~rhs;
                                 }
                         );
-                #else
-                        return std::ranges::equal(this->m_data, other.m_data, [](auto lhs, auto rhs) {
-                                return !(lhs & ~rhs);
-                        });
-                #endif
                 }
         }
 
@@ -634,7 +603,6 @@ public:
                                         break;
                                 }
                         }
-                #ifdef __cpp_lib_ranges_zip
                         return (i == num_logical_blocks) ? false : std::ranges::none_of(
                                 std::views::zip(this->m_data, other.m_data) | std::views::drop(i),
                                 [](auto const& tup) {
@@ -642,14 +610,6 @@ public:
                                         return lhs & ~rhs;
                                 }
                         );
-                #else
-                        return (i == num_logical_blocks) ? false : std::ranges::equal(
-                                this->m_data | std::views::drop(i), other.m_data | std::views::drop(i),
-                                [](auto lhs, auto rhs) {
-                                        return !(lhs & ~rhs);
-                                }
-                        );
-                #endif
                 }
         }
 
@@ -666,7 +626,6 @@ public:
                                 (this->m_data[1] & other.m_data[1])
                         ;
                 } else if constexpr (num_logical_blocks >= 3) {
-                #ifdef __cpp_lib_ranges_zip
                         return std::ranges::any_of(
                                 std::views::zip(this->m_data, other.m_data),
                                 [](auto const& tup) {
@@ -674,11 +633,6 @@ public:
                                         return lhs & rhs;
                                 }
                         );
-                #else
-                        return !std::ranges::equal(this->m_data, other.m_data, [](auto lhs, auto rhs) {
-                                return !(lhs & rhs);
-                        });
-                #endif
                 }
         }
 
