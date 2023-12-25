@@ -205,7 +205,7 @@ public:
 
         constexpr auto add(value_type x) noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 block |= mask;
                 assert(contains(x));
@@ -215,7 +215,7 @@ private:
         constexpr auto do_insert(value_type x) noexcept
                 -> std::pair<iterator, bool>
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 auto const inserted = !(block & mask);
                 block |= mask;
@@ -297,7 +297,7 @@ public:
 
         constexpr auto pop(key_type x) noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 block &= static_cast<block_type>(~mask);
                 assert(!contains(x));
@@ -305,7 +305,7 @@ public:
 
         constexpr auto erase(key_type const& x) noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 auto const erased = static_cast<size_type>(static_cast<bool>(block & mask));
                 block &= static_cast<block_type>(~mask);
@@ -355,73 +355,73 @@ public:
 
         constexpr auto complement(value_type x) noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 block ^= mask;
         }
 
         [[nodiscard]] constexpr auto find(key_type const& x) noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return contains(x) ? iterator(this, x) : end();
         }
 
         [[nodiscard]] constexpr auto find(key_type const& x) const noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return contains(x) ? const_iterator(this, x) : cend();
         }
 
         [[nodiscard]] constexpr auto count(key_type const& x) const noexcept
                 -> size_type
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return contains(x);
         }
 
         [[nodiscard]] constexpr auto contains(key_type const& x) const noexcept
                 -> bool
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 return block & mask;
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return iterator(this, find_next(x));
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) const noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return const_iterator(this, find_next(x));
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return iterator(this, find_next(x + 1));
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) const noexcept
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return const_iterator(this, find_next(x + 1));
         }
 
         [[nodiscard]] constexpr auto equal_range(key_type const& x) noexcept
                 -> std::pair<iterator, iterator>
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
         [[nodiscard]] constexpr auto equal_range(key_type const& x) const noexcept
                 -> std::pair<const_iterator, const_iterator>
         {
-                assert(is_valid(x));
+                assert(is_valid_reference(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
@@ -502,7 +502,7 @@ public:
 
         constexpr auto& operator<<=(value_type n [[maybe_unused]]) noexcept
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] >>= n;
                 } else if constexpr (num_logical_blocks >= 2) {
@@ -530,7 +530,7 @@ public:
 
         constexpr auto& operator>>=(value_type n [[maybe_unused]]) noexcept
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks == 1) {
                         m_data[0] <<= n;
                 } else if constexpr (num_logical_blocks >= 2) {
@@ -640,16 +640,16 @@ private:
         static constexpr auto zero = static_cast<block_type>( 0);
         static constexpr auto ones = static_cast<block_type>(-1);
         static constexpr auto used_bits = static_cast<block_type>(ones << num_unused_bits);
-        static constexpr auto last_block = num_logical_blocks - 1;
+        static constexpr auto last_block = num_storage_blocks - 1;
         static constexpr auto last_bit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
         static_assert(std::has_single_bit(last_bit));
 
-        [[nodiscard]] static constexpr auto is_valid(value_type n) noexcept
+        [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
         {
                 return 0 <= n && n < M;
         }
 
-        [[nodiscard]] static constexpr auto in_range(value_type n) noexcept
+        [[nodiscard]] static constexpr auto is_valid_iterator(value_type n) noexcept
         {
                 return 0 <= n && n <= M;
         }
@@ -663,7 +663,7 @@ private:
         [[nodiscard]] static constexpr auto index_offset(value_type n) noexcept
                 -> std::pair<value_type, value_type>
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks <= 1) {
                         return { 0, n };
                 } else if constexpr (num_logical_blocks >= 2) {
@@ -674,7 +674,7 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) noexcept
                 -> std::pair<block_type&, block_type>
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[last_block - index], static_cast<block_type>(last_bit >> offset) };
         }
@@ -682,7 +682,7 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) const noexcept
                 -> std::pair<block_type const&, block_type>
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[last_block - index], static_cast<block_type>(last_bit >> offset) };
         }
@@ -703,7 +703,7 @@ private:
                         return m_data[1] ? std::countl_zero(m_data[1]) : std::countl_zero(m_data[0]) + block_size;
                 } else if constexpr (num_logical_blocks >= 3) {
                         auto n = 0;
-                        for (auto i = num_storage_blocks - 1; i > 0; --i, n += block_size) {
+                        for (auto i = last_block; i > 0; --i, n += block_size) {
                                 if (auto const block = m_data[i]; block) {
                                         return n + std::countl_zero(block);
                                 }
@@ -721,12 +721,12 @@ private:
                         return m_data[0] ? num_bits - 1 - std::countr_zero(m_data[0]) : block_size - 1 - std::countr_zero(m_data[1]);
                 } else if constexpr (num_logical_blocks >= 3) {
                         auto n = num_bits - 1;
-                        for (auto i = 0; i < num_storage_blocks - 1; ++i, n -= block_size) {
+                        for (auto i = 0; i < last_block; ++i, n -= block_size) {
                                 if (auto const block = m_data[i]; block) {
                                         return n - std::countr_zero(block);
                                 }
                         }
-                        return n - std::countr_zero(m_data[num_storage_blocks - 1]);
+                        return n - std::countr_zero(m_data[last_block]);
                 }
         }
 
@@ -748,7 +748,7 @@ private:
 
         [[nodiscard]] constexpr auto find_next(value_type n) const noexcept
         {
-                assert(in_range(n));
+                assert(is_valid_iterator(n));
                 if (n == M) {
                         return M;
                 }
@@ -777,7 +777,7 @@ private:
 
         [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
         {
-                assert(is_valid(n));
+                assert(is_valid_reference(n));
                 if constexpr (num_logical_blocks <= 1) {
                         return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (block_size - 1 - n)));
                 } else if constexpr (num_logical_blocks >= 2) {
@@ -790,12 +790,12 @@ private:
                                 ++i;
                                 n -= block_size - reverse_offset;
                         }
-                        for (/* init-statement before loop */; i < num_storage_blocks - 1; ++i, n -= block_size) {
+                        for (/* init-statement before loop */; i < last_block; ++i, n -= block_size) {
                                 if (auto const block = m_data[i]; block) {
                                         return n - std::countr_zero(block);
                                 }
                         }
-                        return n - std::countr_zero(m_data[num_storage_blocks - 1]);
+                        return n - std::countr_zero(m_data[last_block]);
                 }
         }
 
@@ -819,7 +819,7 @@ private:
                         m_ref(r),
                         m_val(v)
                 {
-                        assert(is_valid(m_val));
+                        assert(is_valid_reference(m_val));
                 }
 
                 [[nodiscard]] constexpr auto operator==(proxy_reference const& other) const noexcept
@@ -868,7 +868,7 @@ private:
                         m_ptr(p),
                         m_val(v)
                 {
-                        assert(in_range(m_val));
+                        assert(is_valid_iterator(m_val));
                 }
 
                 [[nodiscard]] constexpr auto operator==(proxy_iterator const& other) const noexcept
@@ -880,15 +880,15 @@ private:
 
                 [[nodiscard]] constexpr auto operator*() const noexcept
                 {
-                        assert(is_valid(m_val));
+                        assert(is_valid_reference(m_val));
                         return proxy_reference(*m_ptr, m_val);
                 }
 
                 constexpr auto& operator++() noexcept
                 {
-                        assert(is_valid(m_val));
+                        assert(is_valid_reference(m_val));
                         m_val = m_ptr->find_next(m_val + 1);
-                        assert(is_valid(m_val - 1));
+                        assert(is_valid_reference(m_val - 1));
                         return *this;
                 }
 
@@ -899,9 +899,9 @@ private:
 
                 constexpr auto& operator--() noexcept
                 {
-                        assert(is_valid(m_val - 1));
+                        assert(is_valid_reference(m_val - 1));
                         m_val = m_ptr->find_prev(m_val - 1);
-                        assert(is_valid(m_val));
+                        assert(is_valid_reference(m_val));
                         return *this;
                 }
 
