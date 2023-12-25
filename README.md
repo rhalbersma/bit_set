@@ -174,7 +174,6 @@ The **full** interface of `xstd::bit_set` is `constexpr`, made possible by the g
 Minor **semantic differences** between common functionality in `xstd::bit_set<N>` and `std::set<int>` are:
 
 - the `xstd::bit_set` member function `max_size` is a `static` member function (because `N` is a constant expression).
-- the `xstd::bit_set` member function `clear` returns `*this` instead of `void` as for `std::set`, to allow better chaining of member functions (consisent with `std::bitset::reset`).
 - the `xstd::bit_set` iterators are **proxy iterators**, and taking their address yields **proxy references**. The difference should be undetectable. See the FAQ at the end of this document.
 - the `xstd::bit_set` members `fill`, `complement`, `replace` and `full` do not exist for `std::set`.
 
