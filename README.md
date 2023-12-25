@@ -1,7 +1,7 @@
 # Rebooting the `std::bitset` franchise
 
 [![Language](https://img.shields.io/badge/language-C++-blue.svg)](https://isocpp.org/)
-[![Standard](https://img.shields.io/badge/c%2B%2B-20-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
+[![Standard](https://img.shields.io/badge/c%2B%2B-23-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
 [![License](https://img.shields.io/badge/license-Boost-blue.svg)](https://opensource.org/licenses/BSL-1.0)
 [![Lines of Code](https://tokei.rs/b1/github/rhalbersma/bit_set?category=code)](https://github.com/rhalbersma/bit_set)
 
@@ -360,15 +360,15 @@ auto b = a
 
 ## Requirements
 
-This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++20](https://open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4868.pdf) compilers:
+This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++23](https://open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4868.pdf) compilers:
 
 | Platform | Compiler   | Versions       | Build |
 | :------- | :-------   | :-------       | :---- |
-| Linux    | GCC        | 11, 12, 13-SVN | CI currently being ported to GitHub Actions |
-| Linux    | Clang      | 16, 17-SVN     | CI currently being ported to GitHub Actions |
+| Linux    | GCC        | 13, 14-SVN     | CI currently being ported to GitHub Actions |
+| Linux    | Clang      | 17, 18-SVN     | CI currently being ported to GitHub Actions |
 | Windows  | Visual C++ | 17.3           | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++20 features, in particular Concepts, Ranges, `constexpr` algorithms and the `<=>` operator for comparisons. GCC 11, Clang 16 and Visual C++ 17.3 and higher are supported at the moment. GCC 10 will compile the library but due to a [compiler bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=94924) an incorrect `operator==` will be emitted. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library.
+Note that this library makes liberal use of C++23 features, such as `std::views::zip`. GCC 13, Clang 17 and Visual C++ 17.3 and higher are supported at the moment. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library (for the set algorithm views and `ranges::to`).
 
 ## License
 
