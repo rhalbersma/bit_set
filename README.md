@@ -161,7 +161,7 @@ The interface for the class template `xstd::bit_set<N>` is the coherent union of
 3. The single-pass and short-circuiting **set predicates** from [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_80_0/libs/dynamic_bitset/dynamic_bitset.html).
 4. The bitwise operators from [`std::bitset<N>`](http://en.cppreference.com/w/cpp/utility/bitset) and [`boost::dynamic_bitset`](https://www.boost.org/doc/libs/1_80_0/libs/dynamic_bitset/dynamic_bitset.html) reimagined as composable and data-parallel **set algorithms**.
 
-The **full** interface of `xstd::bit_set` is `constexpr`, made possible by the great advancements of C++20 in this area (in particular `constexpr` standard algorithms).
+The **full** interface of `xstd::bit_set` is `constexpr`.
 
 ### 1 An almost drop-in replacement for `std::set<int>`
 
@@ -201,9 +201,8 @@ Almost all existing `std::bitset<N>` code has **a direct translation** (i.e. ach
 
 The semantic differences between `xstd::bit_set<N>` and `std::bitset<N>` are:
 
-- the **full** interface of `xstd::bit_set` is `constexpr` for C++20, although `std::bitset` also will become `constexpr` in [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p2417r2.pdf);
-- `xstd::bit_set` has a `static` member function `max_size()`;
-- `xstd::bit_set` does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this **behavior is undefined**. This gives `xstd::bit_set<N>` a small performance benefit over `std::bitset<N>`.
+- `xstd::bit_set<N>` has a `static` member function `max_size()`;
+- `xstd::bit_set<N>` does not do bounds-checking for its members `insert`, `erase`, `replace` and `contains`. Instead of throwing an `out_of_range` exception for argument values outside the range `[0, N)`, this **behavior is undefined**. This gives `xstd::bit_set<N>` a small performance benefit over `std::bitset<N>`.
 
 Functionality from `std::bitset<N>` that is not in `xstd::bit_set<N>`:
 
@@ -230,11 +229,11 @@ The bitwise operators (`&=`, `|=`, `^=`, `-=`, `~`, `&`, `|`, `^`, `-`) from `st
 
 The bitwise-shift operators (`<<=`, `>>=`, `<<`, `>>`) from `std::bitset` and `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax**, but with the **semantic difference** that `xstd::bit_set<N>` does not support bit-shifting for lengths `>= N`. Instead of calling `clear()` for argument values outside the range `[0, N)`, this **behavior is undefined**. Note that these semantics for `xstd::bit_set<N>` are identical to bit-shifting on native unsigned integers. This gives `xstd::bit_set<N>` a small performance benefit over `std::bitset<N>`.
 
-With the exception of `operator~`, the non-member bitwise operators can be reimagined as **composable** and **data-parallel** versions of the set algorithms on sorted ranges. In C++20 and C++23, the set algorithms are not (yet) composable, but the [range-v3](https://ericniebler.github.io/range-v3/) library contains lazy views for them. In addition, C++23 will acquire a range conversion operator `std::ranges::to` that is also in range-v3 already.
+With the exception of `operator~`, the non-member bitwise operators can be reimagined as **composable** and **data-parallel** versions of the set algorithms on sorted ranges. In C++23, the set algorithms are not (yet) composable, but the [range-v3](https://ericniebler.github.io/range-v3/) library contains lazy views for them.
 
 [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/1PozoWY5f)
 
-| `xstd::bit_set<N>`      | `std::set<int>` with C++23 [std::ranges::to](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1206r7.pdf) and range-v3 lazy set algorithms |
+| `xstd::bit_set<N>`      | `std::set<int>` with `std::ranges::to` and range-v3 lazy set algorithms |
 | :----------------       | :-------------------------------------------------                      |
 | `a.is_subset_of(b)`     | `includes(a, b)`                                                        |
 | <code>a &vert; b</code> | <code>set_union(a, b)                &vert; to&lt;std::set&gt; </code>  |
@@ -242,7 +241,7 @@ With the exception of `operator~`, the non-member bitwise operators can be reima
 | `a - b`                 | <code>set_difference(a, b)           &vert; to&lt;std::set&gt; </code>  |
 | `a ^ b`                 | <code>set_symmetric_difference(a, b) &vert; to&lt;std::set&gt; </code>  |
 
-The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **transformations** that add or subtract a non-negative constant to all set elements, followed by **filtering** out elements that would fall outside the range `[0, N)`. Using the C++20 `transform` and `filter` views and the C++23 `std::ranges::to` conversion, this can also be formulated in a composable way for `std::set<int>`, albeit without the data-parallelism that `xstd::bit_set<N>` provides.
+The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **transformations** that add or subtract a non-negative constant to all set elements, followed by **filtering** out elements that would fall outside the range `[0, N)`. Using the `transform` and `filter` views and `std::ranges::to` conversion, this can also be formulated in a composable way for `std::set<int>`, albeit without the data-parallelism that `xstd::bit_set<N>` provides.
 
 <table>
 <tr>
@@ -250,7 +249,7 @@ The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **tra
         xstd::bit_set&ltN&gt
     </th>
     <th>
-        std::set&ltint&gt with C++23 <a href=https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p1206r7.pdf>std::ranges::to</a>
+        std::set&ltint&gt with C++23 std::ranges::to
     </th>
 </tr>
 <tr>
@@ -360,7 +359,7 @@ auto b = a
 
 ## Requirements
 
-This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++23](https://open-std.org/jtc1/sc22/wg21/docs/papers/2020/n4868.pdf) compilers:
+This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) compilers:
 
 | Platform | Compiler   | Versions       | Build |
 | :------- | :-------   | :-------       | :---- |
