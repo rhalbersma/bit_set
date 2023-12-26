@@ -59,7 +59,7 @@ public:
                 assert(m_impl.empty());
                 auto const rlen = std::min(n, str.size() - pos);
                 auto const M = std::min(N, rlen);
-                for (auto i = std::size_t(0); i < M; ++i) {
+                for (auto i = 0uz; i < M; ++i) {
                         auto const ch = str[pos + M - 1 - i];
                         if (Traits::eq(ch, one)) {
                                 m_impl.add(static_cast<int>(i));
@@ -193,7 +193,7 @@ public:
         [[nodiscard]] constexpr auto to_string(CharT zero = CharT('0'), CharT one = CharT('1')) const noexcept(false)
         {
                 auto str = std::basic_string<CharT, Traits, Allocator>(N, zero);
-                for (auto i = std::size_t(0); i < N; ++i) {
+                for (auto i = 0uz; i < N; ++i) {
                         if (m_impl.contains(static_cast<int>(N - 1 - i))) {
                                 str[i] = one;
                         }
@@ -322,7 +322,7 @@ auto& operator>>(std::basic_istream<CharT, Traits>& is, bitset<N, Block>& x) noe
 {
         auto str = std::basic_string<CharT, Traits>(N, is.widen('0'));
         CharT ch;
-        auto i = std::size_t(0);
+        auto i = 0uz;
         for (/* init-statement before loop */; i < N && !is.eof() && (is.peek() == is.widen('0') || is.peek() == is.widen('1')); ++i) {
                 is >> ch;
                 if (ch == is.widen('1')) {
