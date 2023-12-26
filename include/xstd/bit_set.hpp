@@ -24,16 +24,15 @@
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block = std::size_t>
-        requires (N <= std::numeric_limits<int>::max())
+template<int N, std::unsigned_integral Block = std::size_t>
+        requires (N >= 0)
 class bit_set
 {
-        static constexpr auto M = static_cast<int>(N);  // keep size_t from spilling all over the code base
         static constexpr auto block_size = std::numeric_limits<Block>::digits;
-        static constexpr auto num_bits = ((M - 1 + block_size) / block_size) * block_size;
+        static constexpr auto num_bits = ((N - 1 + block_size) / block_size) * block_size;
         static constexpr auto num_blocks = std::max(num_bits / block_size, 1);
-        static constexpr auto has_unused_bits = num_bits > M;
-        static constexpr auto num_unused_bits = num_bits - M;
+        static constexpr auto has_unused_bits = num_bits > N;
+        static constexpr auto num_unused_bits = num_bits - N;
 
         class proxy_iterator;
         class proxy_reference;
@@ -99,8 +98,8 @@ public:
 
         [[nodiscard]] constexpr auto begin()         noexcept { return       iterator(this, find_first()); }
         [[nodiscard]] constexpr auto begin()   const noexcept { return const_iterator(this, find_first()); }
-        [[nodiscard]] constexpr auto end()           noexcept { return       iterator(this, M); }
-        [[nodiscard]] constexpr auto end()     const noexcept { return const_iterator(this, M); }
+        [[nodiscard]] constexpr auto end()           noexcept { return       iterator(this, N); }
+        [[nodiscard]] constexpr auto end()     const noexcept { return const_iterator(this, N); }
 
         [[nodiscard]] constexpr auto rbegin()        noexcept { return       reverse_iterator(end()); }
         [[nodiscard]] constexpr auto rbegin()  const noexcept { return const_reverse_iterator(end()); }
@@ -186,7 +185,7 @@ public:
 
         [[nodiscard]] static constexpr auto max_size() noexcept
         {
-                return N;
+                return static_cast<size_type>(N);
         }
 
         constexpr auto emplace(auto&&... args) noexcept
@@ -643,12 +642,12 @@ private:
 
         [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
         {
-                return 0 <= n && n < M;
+                return 0 <= n && n < N;
         }
 
         [[nodiscard]] static constexpr auto is_valid_iterator(value_type n) noexcept
         {
-                return 0 <= n && n <= M;
+                return 0 <= n && n <= N;
         }
 
         [[nodiscard]] static constexpr auto div(value_type numer, value_type denom) noexcept
@@ -746,14 +745,14 @@ private:
                                 }
                         }
                 }
-                return M;
+                return N;
         }
 
         [[nodiscard]] constexpr auto find_next(value_type n) const noexcept
         {
                 assert(is_valid_iterator(n));
-                if (n == M) {
-                        return M;
+                if (n == N) {
+                        return N;
                 }
                 if constexpr (N > 0 && num_blocks == 1) {
                         if (auto const block = static_cast<block_type>(m_data[0] << n); block) {
@@ -775,7 +774,7 @@ private:
                                 }
                         }
                 }
-                return M;
+                return N;
         }
 
         [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
@@ -915,146 +914,146 @@ private:
         };
 };
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator~(bit_set<N, Block> const& lhs) noexcept
 {
         auto nrv = lhs; nrv.complement(); return nrv;
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator&(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv &= rhs; return nrv;
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator|(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv |= rhs; return nrv;
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator^(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv ^= rhs; return nrv;
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, int n) noexcept
 {
         auto nrv = lhs; nrv <<= n; return nrv;
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 constexpr auto swap(bit_set<N, Block>& lhs, bit_set<N, Block>& rhs) noexcept
 {
         lhs.swap(rhs);
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto begin(bit_set<N, Block>& bs) noexcept
 {
         return bs.begin();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto begin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.begin();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto end(bit_set<N, Block>& bs) noexcept
 {
         return bs.end();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto end(bit_set<N, Block> const& bs) noexcept
 {
         return bs.end();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto rbegin(bit_set<N, Block>& bs) noexcept
 {
         return bs.rbegin();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto rbegin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.rbegin();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto rend(bit_set<N, Block>& bs) noexcept
 {
         return bs.rend();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto rend(bit_set<N, Block> const& bs) noexcept
 {
         return bs.rend();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto cbegin(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::begin(bs);
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto cend(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::end(bs);
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto crbegin(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::rbegin(bs);
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto crend(bit_set<N, Block> const& bs) noexcept
 {
         return xstd::rend(bs);
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto size(bit_set<N, Block> const& bs) noexcept
 {
         return bs.size();
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto ssize(bit_set<N, Block> const& bs) noexcept
 {
         using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(bs.size())>>;
         return static_cast<R>(bs.size());
 }
 
-template<std::size_t N, std::unsigned_integral Block>
+template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto empty(bit_set<N, Block> const& bs) noexcept
 {
         return bs.empty();
 }
 
-template<std::size_t N, std::unsigned_integral Block = std::size_t, std::size_t D = std::numeric_limits<Block>::digits>
+template<int N, std::unsigned_integral Block = std::size_t, int D = std::numeric_limits<Block>::digits>
 using bit_set_fast = bit_set<((N - 1 + D) / D) * D, Block>;
 
 }       // namespace xstd

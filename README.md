@@ -21,7 +21,7 @@ The above quote is from the first C++ Standard Committee proposal on what would 
 
 A `bitset` should also optimize for both space (using contiguous storage) and time (using CPU-intrinsics for data-parallelism) wherever possible.
 
-## The current `bitset` landscape
+## The current `bit` landscape
 
 The C++ Standard Library and Boost provide the following optimized data structures in the landscape spanned by the aforementioned design decisions and optimization directives, as shown in the table below.
 
@@ -37,9 +37,9 @@ Notes:
 3. For ordered sets, there is a further design choice whether to optimize for **dense** sets or for **sparse** sets. Dense sets require a single bit per **potential** element, whereas sparse sets require a single `int` per **actual** element. For 32-bit integers, if less (more) than 1 in 32 elements (3.125%) are actually present in a set, a dense representation will be less (more) compact than a sparse representation.
 4. Only `boost::dynamic_bitset` allows storage configuration through its `Block` template parameter (defaulted to `unsigned long`).
 
-## A reimagined `bitset` landscape
+## A reimagined `bit` landscape
 
-The aforementioned issues with the current `bitset` landscape can be resolved by implementing a single-purpose container for each of the four quadrants in the design space.
+The aforementioned issues with the current `bit` landscape can be resolved by implementing a single-purpose container for each of the four quadrants in the design space.
 
 |                          | fixed-size                                   | variable-size                             |
 | :--------------------    | :---------                                   | :------------                             |
@@ -350,7 +350,7 @@ auto b = a
 **A**: By default, `xstd::bit_set` uses an array of `std::size_t` integers.  
 
 **Q**: Can I customize the storage type?  
-**A**: Yes, the full class template signature is `template<std::size_t N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.  
+**A**: Yes, the full class template signature is `template<int N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.  
 
 **Q**: What other storage types can be used as template argument for `Block`?  
 **A**: Any type modelling the Standard Library `unsigned_integral` concept, which includes (for GCC and Clang) the non-Standard `__uint128_t`.  
