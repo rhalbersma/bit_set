@@ -4,8 +4,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <adaptor/flat_set.hpp>         // <=>
+#include <set/algorithms.hpp>           // includes
 #include <set/exhaustive.hpp>           // all_doubleton_set_pairs
-#include <set/parallel.hpp>             // includes
 #include <set/primitives.hpp>           // op_compare_three_way
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set

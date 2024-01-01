@@ -233,15 +233,15 @@ With the exception of `operator~`, the non-member bitwise operators can be reima
 
 [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/1PozoWY5f)
 
-| `xstd::bit_set<N>`      | `std::set<int>` with `std::ranges::to` and range-v3 lazy set algorithms |
-| :----------------       | :-------------------------------------------------                      |
-| `a.is_subset_of(b)`     | `includes(a, b)`                                                        |
-| <code>a &vert; b</code> | <code>set_union(a, b)                &vert; to&lt;std::set&gt; </code>  |
-| `a & b`                 | <code>set_intersection(a, b)         &vert; to&lt;std::set&gt; </code>  |
-| `a - b`                 | <code>set_difference(a, b)           &vert; to&lt;std::set&gt; </code>  |
-| `a ^ b`                 | <code>set_symmetric_difference(a, b) &vert; to&lt;std::set&gt; </code>  |
+| `xstd::bit_set<N>`      | `std::set<int>` with the range-v3 set algorithm views                                                |
+| :----------------       | :----------------------------------------------------------------------------------------------------|
+| `a.is_subset_of(b)`     | `std::ranges::includes(a, b)`                                                                        |
+| <code>a &vert; b</code> | <code>ranges::views::set_union(a, b)                &vert; std::ranges::to&lt;std::set&gt;() </code> |
+| `a & b`                 | <code>ranges::views::set_intersection(a, b)         &vert; std::ranges::to&lt;std::set&gt;() </code> |
+| `a - b`                 | <code>ranges::views::set_difference(a, b)           &vert; std::ranges::to&lt;std::set&gt;() </code> |
+| `a ^ b`                 | <code>ranges::views::set_symmetric_difference(a, b) &vert; std::ranges::to&lt;std::set&gt;() </code> |
 
-The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **transformations** that add or subtract a non-negative constant to all set elements, followed by **filtering** out elements that would fall outside the range `[0, N)`. Using the `transform` and `filter` views and `std::ranges::to` conversion, this can also be formulated in a composable way for `std::set<int>`, albeit without the data-parallelism that `xstd::bit_set<N>` provides.
+The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **transformations** that add or subtract a non-negative constant to all set elements, followed by **filtering** out elements that would fall outside the range `[0, N)`. This can also be formulated in a composable way for `std::set<int>`, albeit without the data-parallelism that `xstd::bit_set<N>` provides.
 
 <table>
 <tr>
@@ -249,7 +249,7 @@ The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **tra
         xstd::bit_set&ltN&gt
     </th>
     <th>
-        std::set&ltint&gt with C++23 std::ranges::to
+        std::set&ltint&gt
     </th>
 </tr>
 <tr>
@@ -259,9 +259,9 @@ The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **tra
     <td>
         <pre lang="cpp">
 auto b = a
-    | transform([=](auto x) { return x + n; })
-    | filter([](auto x) { return x < N;  })
-    | to&ltstd::set&gt
+    | std::views::transform([=](auto x) { return x + n; })
+    | std::views::filter([](auto x) { return x < N;  })
+    | std::ranges::to&ltstd::set&gt;()
 ;</pre>
     </td>
 </tr>
@@ -272,9 +272,9 @@ auto b = a
     <td>
         <pre lang="cpp">
 auto b = a
-    | transform([=](auto x) { return x - n; })
-    | filter([](auto x) { return 0 <= x;  })
-    | to&ltstd::set&gt
+    | std::views::transform([=](auto x) { return x - n; })
+    | std::views::filter([](auto x) { return 0 <= x;  })
+    | std::ranges::to&ltstd::set&gt;()
 ;</pre>
     </td>
 </tr>
@@ -363,11 +363,11 @@ This single-header library has no other dependencies than the C++ Standard Libra
 
 | Platform | Compiler   | Versions       | Build |
 | :------- | :-------   | :-------       | :---- |
-| Linux    | GCC        | 13, 14-SVN     | CI currently being ported to GitHub Actions |
+| Linux    | GCC        | 14-trunk       | CI currently being ported to GitHub Actions |
 | Linux    | Clang      | 17, 18-SVN     | CI currently being ported to GitHub Actions |
 | Windows  | Visual C++ | 17.3           | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++23 features, such as `std::views::zip`. GCC 13, Clang 17 and Visual C++ 17.3 and higher are supported at the moment. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library (for the set algorithm views and `ranges::to`).
+Note that this library makes liberal use of C++23 features, such as `std::views::zip` and `std::ranges::to`. GCC 14-trunk, Clang 17 and Visual C++ 17.3 and higher are supported at the moment. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library (for the set algorithm views).
 
 ## License
 

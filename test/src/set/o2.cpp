@@ -4,10 +4,10 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <adaptor/flat_set.hpp>         // flat_set
+#include <set/algorithms.hpp>           // includes, set_difference, set_intersection, set_symmetric_difference, set_union,
+                                        // transform_decrement_filter, transform_increment_filter
 #include <set/exhaustive.hpp>           // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
                                         // all_singleton_sets, all_singleton_set_pairs, all_valid
-#include <set/parallel.hpp>             // includes, set_difference, set_intersection, set_symmetric_difference, set_union,
-                                        // transform_decrement_filter, transform_increment_filter
 #include <set/primitives.hpp>           // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
                                         // mem_lower_bound, mem_upper_bound, mem_equal_range, op_equal, op_not_equal_to,
                                         // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal, fn_swap

@@ -6,10 +6,9 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/test/unit_test.hpp>             // BOOST_CHECK, BOOST_CHECK_EQUAL
-#include <range/v3/range/conversion.hpp>        // to
 #include <range/v3/view/set_algorithm.hpp>      // set_difference, set_intersection, set_symmetric_difference, set_union
 #include <algorithm>                            // includes
-#include <ranges>                               // filter, transform
+#include <ranges>                               // filter, to, transform
 #include <type_traits>                          // remove_cvref_t
 
 namespace xstd::parallel {
@@ -30,7 +29,7 @@ struct set_union
         {
                 if constexpr (requires { a | b; }) {
                         using set_type = std::remove_cvref_t<decltype(a)>;
-                        BOOST_CHECK((a | b) == (ranges::views::set_union(a, b) | ranges::to<set_type>));
+                        BOOST_CHECK((a | b) == (ranges::views::set_union(a, b) | std::ranges::to<set_type>()));
                 }
         }
 };
@@ -41,7 +40,7 @@ struct set_intersection
         {
                 if constexpr (requires { a & b; }) {
                         using set_type = std::remove_cvref_t<decltype(a)>;
-                        BOOST_CHECK((a & b) == (ranges::views::set_intersection(a, b) | ranges::to<set_type>));
+                        BOOST_CHECK((a & b) == (ranges::views::set_intersection(a, b) | std::ranges::to<set_type>()));
                 }
         }
 };
@@ -52,7 +51,7 @@ struct set_difference
         {
                 if constexpr (requires { a - b; }) {
                         using set_type = std::remove_cvref_t<decltype(a)>;
-                        BOOST_CHECK((a - b) == (ranges::views::set_difference(a, b) | ranges::to<set_type>));
+                        BOOST_CHECK((a - b) == (ranges::views::set_difference(a, b) | std::ranges::to<set_type>()));
                 }
         }
 };
@@ -63,7 +62,7 @@ struct set_symmetric_difference
         {
                 if constexpr (requires { a ^ b; }) {
                         using set_type = std::remove_cvref_t<decltype(a)>;
-                        BOOST_CHECK((a ^ b) == (ranges::views::set_symmetric_difference(a, b) | ranges::to<set_type>));
+                        BOOST_CHECK((a ^ b) == (ranges::views::set_symmetric_difference(a, b) | std::ranges::to<set_type>()));
                 }
         }
 };
@@ -79,7 +78,7 @@ struct transform_increment_filter
                                 (is << n) == (is
                                         | std::views::transform([=](auto x) { return x + n; })
                                         | std::views::filter([](auto x) { return x < N;  })
-                                        | ranges::to<set_type>
+                                        | std::ranges::to<set_type>()
                                 )
                         );
                 }
@@ -96,7 +95,7 @@ struct transform_decrement_filter
                                 (is >> n) == (is
                                         | std::views::transform([=](auto x) { return x - n; })
                                         | std::views::filter([](auto x) { return 0 <= x;  })
-                                        | ranges::to<set_type>
+                                        | std::ranges::to<set_type>()
                                 )
                         );
                 }

@@ -7,8 +7,8 @@
 #define BOOST_MPL_LIMIT_VECTOR_SIZE 50
 
 #include <adaptor/flat_set.hpp>         // flat_set
+#include <set/algorithms.hpp>           // includes, set_difference, set_intersection, set_symmetric_difference, set_union
 #include <set/exhaustive.hpp>           // empty_set_pair
-#include <set/parallel.hpp>             // includes, set_difference, set_intersection, set_symmetric_difference, set_union
 #include <set/primitives.hpp>           // constructor mem_swap,fn_swap, op_equal, op_not_equal_to,
                                         // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal,
 #include <xstd/bit_set.hpp>             // bit_set
