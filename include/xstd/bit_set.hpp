@@ -650,7 +650,9 @@ private:
         static constexpr auto ones = static_cast<block_type>(-1);
         static constexpr auto used_bits = static_cast<block_type>(ones << num_unused_bits);
         static constexpr auto last_block = num_blocks - 1;
-        static constexpr auto last_bit = static_cast<block_type>(static_cast<block_type>(1) << (block_size - 1));
+        static constexpr auto last_bit = num_bits - 1;
+        static constexpr auto left_bit = block_size - 1;
+        static constexpr auto left_mask = static_cast<block_type>(static_cast<block_type>(1) << left_bit);
 
         [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
         {
@@ -684,7 +686,7 @@ private:
         {
                 assert(is_valid_reference(n));
                 auto const [ index, offset ] = index_offset(n);
-                return { m_data[last_block - index], static_cast<block_type>(last_bit >> offset) };
+                return { m_data[last_block - index], static_cast<block_type>(left_mask >> offset) };
         }
 
         [[nodiscard]] constexpr auto block_mask(value_type n) const noexcept
@@ -692,7 +694,7 @@ private:
         {
                 assert(is_valid_reference(n));
                 auto const [ index, offset ] = index_offset(n);
-                return { m_data[last_block - index], static_cast<block_type>(last_bit >> offset) };
+                return { m_data[last_block - index], static_cast<block_type>(left_mask >> offset) };
         }
 
         constexpr auto clear_unused_bits() noexcept
@@ -724,11 +726,11 @@ private:
         {
                 assert(!empty());
                 if constexpr (num_blocks == 1) {
-                        return num_bits - 1 - std::countr_zero(m_data[0]);
+                        return last_bit - std::countr_zero(m_data[0]);
                 } else if constexpr (num_blocks == 2) {
-                        return m_data[0] ? num_bits - 1 - std::countr_zero(m_data[0]) : block_size - 1 - std::countr_zero(m_data[1]);
+                        return m_data[0] ? last_bit - std::countr_zero(m_data[0]) : left_bit - std::countr_zero(m_data[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        auto n = num_bits - 1;
+                        auto n = last_bit;
                         for (auto i = 0; i < last_block; ++i, n -= block_size) {
                                 if (m_data[i]) {
                                         return n - std::countr_zero(m_data[i]);
@@ -793,11 +795,11 @@ private:
         {
                 assert(is_valid_reference(n));
                 if constexpr (num_blocks == 1) {
-                        return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (block_size - 1 - n)));
+                        return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (left_bit - n)));
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ index, offset ] = index_offset(n);
                         auto i = last_block - index;
-                        if (auto const reverse_offset = block_size - 1 - offset; reverse_offset) {
+                        if (auto const reverse_offset = left_bit - offset; reverse_offset) {
                                 if (auto const block = static_cast<block_type>(m_data[i] >> reverse_offset); block) {
                                         return n - std::countr_zero(block);
                                 }
