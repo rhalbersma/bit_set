@@ -712,8 +712,8 @@ private:
                 } else if constexpr (num_blocks >= 3) {
                         auto n = 0;
                         for (auto i = last_block; i > 0; --i, n += block_size) {
-                                if (auto const block = m_data[i]; block) {
-                                        return n + std::countl_zero(block);
+                                if (m_data[i]) {
+                                        return n + std::countl_zero(m_data[i]);
                                 }
                         }
                         return n + std::countl_zero(m_data[0]);
@@ -730,8 +730,8 @@ private:
                 } else if constexpr (num_blocks >= 3) {
                         auto n = num_bits - 1;
                         for (auto i = 0; i < last_block; ++i, n -= block_size) {
-                                if (auto const block = m_data[i]; block) {
-                                        return n - std::countr_zero(block);
+                                if (m_data[i]) {
+                                        return n - std::countr_zero(m_data[i]);
                                 }
                         }
                         return n - std::countr_zero(m_data[last_block]);
@@ -752,8 +752,8 @@ private:
                         }
                 } else if constexpr (num_blocks >= 3) {
                         for (auto i = last_block, n = 0; i >= 0; --i, n += block_size) {
-                                if (auto const block = m_data[i]; block) {
-                                        return n + std::countl_zero(block);
+                                if (m_data[i]) {
+                                        return n + std::countl_zero(m_data[i]);
                                 }
                         }
                 }
@@ -781,8 +781,8 @@ private:
                                 n += block_size - offset;
                         }
                         for (/* init-statement before loop */; i >= 0; --i, n += block_size) {
-                                if (auto const block = m_data[i]; block) {
-                                        return n + std::countl_zero(block);
+                                if (m_data[i]) {
+                                        return n + std::countl_zero(m_data[i]);
                                 }
                         }
                 }
@@ -805,8 +805,8 @@ private:
                                 n -= block_size - reverse_offset;
                         }
                         for (/* init-statement before loop */; i < last_block; ++i, n -= block_size) {
-                                if (auto const block = m_data[i]; block) {
-                                        return n - std::countr_zero(block);
+                                if (m_data[i]) {
+                                        return n - std::countr_zero(m_data[i]);
                                 }
                         }
                         return n - std::countr_zero(m_data[last_block]);
