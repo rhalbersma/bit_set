@@ -20,11 +20,11 @@ namespace xstd {
 template<class T, std::size_t Limit>
 inline auto const limit_v = resizeable<T> ? Limit : T().size();
 
-inline constexpr auto L0 = 128;
-inline constexpr auto L1 =  64;
-inline constexpr auto L2 =  32;
-inline constexpr auto L3 =  16;
-inline constexpr auto L4 =   8;
+inline constexpr auto L0 = 128uz;
+inline constexpr auto L1 =  64uz;
+inline constexpr auto L2 =  32uz;
+inline constexpr auto L3 =  16uz;
+inline constexpr auto L4 =   8uz;
 
 // NOTE: these tests are O(1)
 
@@ -59,7 +59,7 @@ template<class T>
 auto all_valid(auto fun)
 {
         auto const N = limit_v<T, L1>;
-        for (auto i = decltype(N)(0); i < N; ++i) {
+        for (auto i = 0uz; i < N; ++i) {
                 fun(i);
         }
 }
@@ -68,7 +68,7 @@ template<class T>
 auto any_value(auto fun)
 {
         auto const N = limit_v<T, L1>;
-        for (auto i = decltype(N)(0); i <= N; ++i) {
+        for (auto i = 0uz; i <= N; ++i) {
                 fun(i);
         }
 }
@@ -77,9 +77,9 @@ template<class T>
 auto all_cardinality_sets(auto fun)
 {
         auto const N = limit_v<T, L1>;
-        for (auto i = decltype(N)(0); i <= N; ++i) {
+        for (auto i = 0uz; i <= N; ++i) {
                 auto bs = make_bitset<T>(N);
-                for (auto j = decltype(N)(0); j < i; ++j) {
+                for (auto j = 0uz; j < i; ++j) {
                         bs.set(j);
                 }
                 assert(bs.count() == i);
@@ -91,7 +91,7 @@ template<class T>
 auto all_singleton_sets(auto fun)
 {
         auto const N = limit_v<T, L1>;
-        for (auto i = decltype(N)(0); i < N; ++i) {
+        for (auto i = 0uz; i < N; ++i) {
                 auto bs1 = make_bitset<T>(N); bs1.set(i); assert(bs1.count() == 1);
                 fun(bs1);
         }
@@ -103,9 +103,9 @@ template<class T>
 auto all_singleton_set_pairs(auto fun)
 {
         auto const N = limit_v<T, L2>;
-        for (auto i = decltype(N)(0); i < N; ++i) {
+        for (auto i = 0uz; i < N; ++i) {
                 auto bs1_i = make_bitset<T>(N); bs1_i.set(i); assert(bs1_i.count() == 1);
-                for (auto j = decltype(N)(0); j < N; ++j) {
+                for (auto j = 0uz; j < N; ++j) {
                         auto bs1_j = make_bitset<T>(N); bs1_j.set(j); assert(bs1_j.count() == 1);
                         fun(bs1_i, bs1_j);
                 }
@@ -118,11 +118,11 @@ template<class T>
 auto all_singleton_set_triples(auto fun)
 {
         auto const N = limit_v<T, L3>;
-        for (auto i = decltype(N)(0); i < N; ++i) {
+        for (auto i = 0uz; i < N; ++i) {
                 auto bs1_i = make_bitset<T>(N); bs1_i.set(i); assert(bs1_i.count() == 1);
-                for (auto j = decltype(N)(0); j < N; ++j) {
+                for (auto j = 0uz; j < N; ++j) {
                         auto bs1_j = make_bitset<T>(N); bs1_j.set(j); assert(bs1_j.count() == 1);
-                        for (auto k = decltype(N)(0); k < N; ++k) {
+                        for (auto k = 0uz; k < N; ++k) {
                                 auto bs1_k = make_bitset<T>(N); bs1_k.set(k); assert(bs1_k.count() == 1);
                                 fun(bs1_i, bs1_j, bs1_k);
                         }
@@ -136,11 +136,11 @@ template<class T>
 auto all_doubleton_set_pairs(auto fun)
 {
         auto const N = limit_v<T, L4>;
-        for (auto j = decltype(N)(1); j < N; ++j) {
-                for (auto i = decltype(N)(0); i < j; ++i) {
+        for (auto j = 1uz; j < N; ++j) {
+                for (auto i = 0uz; i < j; ++i) {
                         auto bs2_ij = make_bitset<T>(N); bs2_ij.set(i); bs2_ij.set(j); assert(bs2_ij.count() == 2);
-                        for (auto n = decltype(N)(1); n < N; ++n) {
-                                for (auto m = decltype(N)(0); m < n; ++m) {
+                        for (auto n = 1uz; n < N; ++n) {
+                                for (auto m = 0uz; m < n; ++m) {
                                         auto bs2_mn = make_bitset<T>(N); bs2_mn.set(m); bs2_mn.set(n); assert(bs2_mn.count() == 2);
                                         fun(bs2_ij, bs2_mn);
                                 }
