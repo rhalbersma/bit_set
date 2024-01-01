@@ -646,13 +646,27 @@ private:
 
         [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
         {
-                return 0 <= n && n < N;
+                if constexpr (N == 0) {
+                        return false;
+                } else {
+                        return 0 <= n && n < N;
+                }
         }
 
         [[nodiscard]] static constexpr auto is_valid_iterator(value_type n) noexcept
         {
                 return 0 <= n && n <= N;
         }
+
+        [[nodiscard]] static constexpr auto is_incrementable(value_type n) noexcept
+        {
+                return is_valid_reference(n);
+        }
+
+        [[nodiscard]] static constexpr auto is_decrementable(value_type n) noexcept
+        {
+                return is_valid_reference(n - 1);
+        }        
 
         [[nodiscard]] static constexpr auto div(value_type numer, value_type denom) noexcept
                 -> std::pair<value_type, value_type>
@@ -663,8 +677,6 @@ private:
         [[nodiscard]] static constexpr auto index_offset(value_type n) noexcept
                 -> std::pair<value_type, value_type>
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_valid_reference(n));
                 if constexpr (num_blocks == 1) {
                         return { 0, n };
                 } else if constexpr (num_blocks >= 2) {
@@ -759,7 +771,6 @@ private:
 
         [[nodiscard]] constexpr auto find_next(value_type n) const noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); }
                 assert(is_valid_iterator(n));
                 if (n == N) {
                         return N;
@@ -907,9 +918,10 @@ private:
 
                 constexpr auto& operator++() noexcept
                 {
-                        assert(is_valid_reference(m_val));
+                        if constexpr (N == 0) { std::unreachable(); } 
+                        assert(is_incrementable(m_val));
                         m_val = m_ptr->find_next(m_val + 1);
-                        assert(is_valid_reference(m_val - 1));
+                        assert(is_decrementable(m_val));
                         return *this;
                 }
 
@@ -920,9 +932,10 @@ private:
 
                 constexpr auto& operator--() noexcept
                 {
-                        assert(is_valid_reference(m_val - 1));
+                        if constexpr (N == 0) { std::unreachable(); } 
+                        assert(is_decrementable(m_val));
                         m_val = m_ptr->find_prev(m_val - 1);
-                        assert(is_valid_reference(m_val));
+                        assert(is_incrementable(m_val));
                         return *this;
                 }
 
