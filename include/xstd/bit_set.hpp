@@ -24,12 +24,24 @@
 
 namespace xstd {
 
+[[nodiscard]] constexpr auto bit_align(int alignment, int size) noexcept
+{
+        return ((size - 1 + alignment) / alignment) * alignment;
+}
+
+template<int N, std::unsigned_integral>
+        requires (N >= 0)
+class bit_set;
+
+template<int N, std::unsigned_integral Block = std::size_t>
+using bit_set_aligned = bit_set<bit_align(std::numeric_limits<Block>::digits, N), Block>;
+
 template<int N, std::unsigned_integral Block = std::size_t>
         requires (N >= 0)
 class bit_set
 {
         static constexpr auto block_size = std::numeric_limits<Block>::digits;
-        static constexpr auto num_bits = ((N - 1 + block_size) / block_size) * block_size;
+        static constexpr auto num_bits = bit_align(block_size, N);
         static constexpr auto num_blocks = std::max(num_bits / block_size, 1);
         static constexpr auto has_unused_bits = num_bits > N;
         static constexpr auto num_unused_bits = num_bits - N;
@@ -1052,9 +1064,6 @@ template<int N, std::unsigned_integral Block>
 {
         return bs.empty();
 }
-
-template<int N, std::unsigned_integral Block = std::size_t, int D = std::numeric_limits<Block>::digits>
-using bit_set_fast = bit_set<((N - 1 + D) / D) * D, Block>;
 
 }       // namespace xstd
 
