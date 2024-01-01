@@ -125,13 +125,11 @@ public:
 
         [[nodiscard]] constexpr auto front() const noexcept
         {
-                assert(!empty());
                 return const_reference(*this, find_front());
         }
 
         [[nodiscard]] constexpr auto back() const noexcept
         {
-                assert(!empty());
                 return const_reference(*this, find_back());
         }
 
@@ -214,7 +212,6 @@ public:
 
         constexpr auto add(value_type x) noexcept
         {
-                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 block |= mask;
                 assert(contains(x));
@@ -224,7 +221,6 @@ private:
         constexpr auto do_insert(value_type x) noexcept
                 -> std::pair<iterator, bool>
         {
-                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 auto const inserted = !(block & mask);
                 block |= mask;
@@ -264,6 +260,7 @@ public:
         constexpr auto insert(std::input_iterator auto first, std::input_iterator auto last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
+                if constexpr (N == 0) { assert(first == last); }
                 for (auto x : std::ranges::subrange(first, last)) {
                         add(x);
                 }
@@ -272,6 +269,7 @@ public:
         constexpr auto insert_range(std::ranges::range auto&& rg) noexcept
                 requires std::constructible_from<value_type, decltype(*rg.begin())>
         {
+                if constexpr (N == 0) { assert(rg.begin() == rg.end()); }
                 for (auto x : rg) {
                         add(x);
                 }
@@ -279,6 +277,7 @@ public:
 
         constexpr auto insert(std::initializer_list<value_type> ilist) noexcept
         {
+                if constexpr (N == 0) { assert(ilist.size() == 0); }
                 insert(ilist.begin(), ilist.end());
         }
 
@@ -306,7 +305,6 @@ public:
 
         constexpr auto pop(key_type x) noexcept
         {
-                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 block &= static_cast<block_type>(~mask);
                 assert(!contains(x));
@@ -314,7 +312,6 @@ public:
 
         constexpr auto erase(key_type const& x) noexcept
         {
-                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 auto const erased = static_cast<size_type>(static_cast<bool>(block & mask));
                 block &= static_cast<block_type>(~mask);
@@ -324,6 +321,7 @@ public:
 
         constexpr auto erase(const_iterator pos) noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(pos != end());
                 pop(*pos++);
                 return pos;
@@ -331,6 +329,7 @@ public:
 
         constexpr auto erase(const_iterator first, const_iterator last) noexcept
         {
+                if constexpr (N == 0) { assert(first == last); }
                 for (auto x : std::ranges::subrange(first, last)) {
                         pop(x);
                 }
@@ -364,73 +363,62 @@ public:
 
         constexpr auto complement(value_type x) noexcept
         {
-                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 block ^= mask;
         }
 
         [[nodiscard]] constexpr auto find(key_type const& x) noexcept
         {
-                assert(is_valid_reference(x));
                 return contains(x) ? iterator(this, x) : end();
         }
 
         [[nodiscard]] constexpr auto find(key_type const& x) const noexcept
         {
-                assert(is_valid_reference(x));
                 return contains(x) ? const_iterator(this, x) : cend();
         }
 
         [[nodiscard]] constexpr auto count(key_type const& x) const noexcept
                 -> size_type
         {
-                assert(is_valid_reference(x));
                 return contains(x);
         }
 
         [[nodiscard]] constexpr auto contains(key_type const& x) const noexcept
                 -> bool
         {
-                assert(is_valid_reference(x));
                 auto&& [ block, mask ] = block_mask(x);
                 return block & mask;
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) noexcept
         {
-                assert(is_valid_reference(x));
                 return iterator(this, find_next(x));
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) const noexcept
         {
-                assert(is_valid_reference(x));
                 return const_iterator(this, find_next(x));
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) noexcept
         {
-                assert(is_valid_reference(x));
                 return iterator(this, find_next(x + 1));
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) const noexcept
         {
-                assert(is_valid_reference(x));
                 return const_iterator(this, find_next(x + 1));
         }
 
         [[nodiscard]] constexpr auto equal_range(key_type const& x) noexcept
                 -> std::pair<iterator, iterator>
         {
-                assert(is_valid_reference(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
         [[nodiscard]] constexpr auto equal_range(key_type const& x) const noexcept
                 -> std::pair<const_iterator, const_iterator>
         {
-                assert(is_valid_reference(x));
                 return { lower_bound(x), upper_bound(x) };
         }
 
@@ -511,8 +499,9 @@ public:
 
         constexpr auto& operator<<=(value_type n [[maybe_unused]]) noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(is_valid_reference(n));
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (num_blocks == 1) {
                         m_data[0] >>= n;
                 } else if constexpr (num_blocks >= 2) {
                         if (n == 0) {
@@ -539,8 +528,9 @@ public:
 
         constexpr auto& operator>>=(value_type n [[maybe_unused]]) noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(is_valid_reference(n));
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (num_blocks == 1) {
                         m_data[0] <<= n;
                 } else if constexpr (num_blocks >= 2) {
                         if (n == 0) {
@@ -673,6 +663,7 @@ private:
         [[nodiscard]] static constexpr auto index_offset(value_type n) noexcept
                 -> std::pair<value_type, value_type>
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(is_valid_reference(n));
                 if constexpr (num_blocks == 1) {
                         return { 0, n };
@@ -684,6 +675,7 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) noexcept
                 -> std::pair<block_type&, block_type>
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(is_valid_reference(n));
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[last_block - index], static_cast<block_type>(left_mask >> offset) };
@@ -692,6 +684,7 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) const noexcept
                 -> std::pair<block_type const&, block_type>
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(is_valid_reference(n));
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[last_block - index], static_cast<block_type>(left_mask >> offset) };
@@ -706,6 +699,7 @@ private:
 
         [[nodiscard]] constexpr auto find_front() const noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(!empty());
                 if constexpr (num_blocks == 1) {
                         return std::countl_zero(m_data[0]);
@@ -724,6 +718,7 @@ private:
 
         [[nodiscard]] constexpr auto find_back() const noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(!empty());
                 if constexpr (num_blocks == 1) {
                         return last_bit - std::countr_zero(m_data[0]);
@@ -764,11 +759,12 @@ private:
 
         [[nodiscard]] constexpr auto find_next(value_type n) const noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); }
                 assert(is_valid_iterator(n));
                 if (n == N) {
                         return N;
                 }
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (num_blocks == 1) {
                         if (auto const block = static_cast<block_type>(m_data[0] << n); block) {
                                 return n + std::countl_zero(block);
                         }
@@ -793,6 +789,7 @@ private:
 
         [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(is_valid_reference(n));
                 if constexpr (num_blocks == 1) {
                         return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (left_bit - n)));
@@ -835,22 +832,26 @@ private:
                         m_ref(r),
                         m_val(v)
                 {
+                        if constexpr (N == 0) { std::unreachable(); } 
                         assert(is_valid_reference(m_val));
                 }
 
                 [[nodiscard]] constexpr auto operator==(proxy_reference const& other) const noexcept
                         -> bool
                 {
+                        if constexpr (N == 0) { std::unreachable(); } 
                         return this->m_val == other.m_val;
                 }
 
                 [[nodiscard]] constexpr auto operator&() const noexcept
                 {
+                        if constexpr (N == 0) { std::unreachable(); } 
                         return proxy_iterator(&m_ref, m_val);
                 }
 
                 [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
                 {
+                        if constexpr (N == 0) { std::unreachable(); } 
                         return m_val;
                 }
 
@@ -858,6 +859,7 @@ private:
                 [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_val)))
                         requires std::is_class_v<T> && std::constructible_from<T, value_type>
                 {
+                        if constexpr (N == 0) { std::unreachable(); } 
                         return m_val;
                 }
         };
@@ -891,12 +893,15 @@ private:
                         -> bool
                 {
                         assert(this->m_ptr == other.m_ptr);
-                        return this->m_val == other.m_val;
+                        if constexpr (N == 0) {
+                                return true;
+                        } else {
+                                return this->m_val == other.m_val;
+                        }
                 }
 
                 [[nodiscard]] constexpr auto operator*() const noexcept
                 {
-                        assert(is_valid_reference(m_val));
                         return proxy_reference(*m_ptr, m_val);
                 }
 
@@ -923,6 +928,7 @@ private:
 
                 constexpr auto operator--(int) noexcept
                 {
+
                         auto nrv = *this; --*this; return nrv;
                 }
         };
