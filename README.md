@@ -367,7 +367,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Linux    | Clang      | 17, 18-SVN     | CI currently being ported to GitHub Actions |
 | Windows  | Visual C++ | 17.3           | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++23 features, such as `std::views::zip` and `std::ranges::to`. GCC 14-trunk, Clang 17 and Visual C++ 17.3 and higher are supported at the moment. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library (for the set algorithm views).
+Note that this library makes liberal use of C++23 features, such as `fold_left`, `pairwise_transform`, `to`, `zip`, `zip_transform` and `uz` literals for `size_t`. GCC 14-trunk, Clang 17 and Visual C++ 17.3 and higher are supported at the moment. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library (for the set algorithm views).
 
 ## License
 

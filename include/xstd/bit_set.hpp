@@ -6,21 +6,22 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <algorithm>            // all_of, copy_backward, copy_n, equal, fill_n, lexicographical_compare_three_way, none_of, max, swap, swap_ranges
+#include <algorithm>            // all_of, copy_backward, copy, equal, fill, fold_left, lexicographical_compare_three_way, none_of, max, swap, swap_ranges
 #include <bit>                  // countl_zero, countr_zero, popcount
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
-#include <concepts>             // constructible_from, input_iterator, range, unsigned_integral
+#include <concepts>             // constructible_from, range, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
 #include <functional>           // identity, less
 #include <initializer_list>     // initializer_list
-#include <iterator>             // begin, bidirectional_iterator_tag, end, next, prev, rbegin, rend, reverse_iterator
+#include <iterator>             // begin, bidirectional_iterator_tag, empty, end, input_iterator, next, prev, rbegin, rend, reverse_iterator, sentinel_for
 #include <limits>               // digits
-#include <numeric>              // accumulate
-#include <ranges>               // drop, range, subrange, take, zip
+#include <ranges>               // drop, empty, input_range, pairwise_transform, reverse, subrange, take, zip, zip_transform
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair
+
+#include <print>
 
 namespace xstd {
 
@@ -69,18 +70,31 @@ public:
 
         bit_set() = default;            // zero-initialization
 
-        [[nodiscard]] constexpr bit_set(std::input_iterator auto first, std::input_iterator auto last) noexcept
+        [[nodiscard]] constexpr bit_set(std::input_iterator auto first, std::sentinel_for<decltype(first)> auto last) noexcept
+                requires std::constructible_from<value_type, decltype(*first)>
         {
+                if constexpr (N == 0) { assert(first == last); }
                 insert(first, last);
         }
 
         [[nodiscard]] constexpr bit_set(std::initializer_list<value_type> ilist) noexcept
         :
                 bit_set(ilist.begin(), ilist.end())
-        {}
+        {
+                if constexpr (N == 0) { assert(std::empty(ilist)); }
+        }
+
+        [[nodiscard]] constexpr bit_set(std::from_range_t, std::ranges::input_range auto&& rg) noexcept
+                requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
+        :
+                bit_set(rg.begin(), rg.end())
+        {
+                if constexpr (N == 0) { assert(std::ranges::empty(rg)); }
+        }
 
         constexpr auto& operator=(std::initializer_list<value_type> ilist) noexcept
         {
+                if constexpr (N == 0) { assert(std::empty(ilist)); }
                 clear();
                 insert(ilist.begin(), ilist.end());
                 return *this;
@@ -101,6 +115,8 @@ public:
                         };
                         return tied(other) <=> tied(*this);
                 } else if constexpr (num_blocks >= 3) {
+                        // P2022: Rangified version of lexicographical_compare_three_way
+                        // https://github.com/cplusplus/papers/issues/1468
                         return std::lexicographical_compare_three_way(
                                 std::rbegin(other.m_data), std::rend(other.m_data),
                                 std::rbegin(this->m_data), std::rend(this->m_data)
@@ -125,11 +141,15 @@ public:
 
         [[nodiscard]] constexpr auto front() const noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); }
+                assert(!empty());
                 return const_reference(*this, find_front());
         }
 
         [[nodiscard]] constexpr auto back() const noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); }
+                assert(!empty());
                 return const_reference(*this, find_back());
         }
 
@@ -142,7 +162,7 @@ public:
                 } else if constexpr (num_blocks == 2) {
                         return !(m_data[0] || m_data[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        return std::ranges::none_of(m_data, std::identity{});
+                        return std::ranges::none_of(m_data, std::identity());
                 }
         }
 
@@ -154,8 +174,8 @@ public:
                         } else if (num_blocks == 2) {
                                 return m_data[0] == used_bits && m_data[1] == ones;
                         } else if (num_blocks >= 3) {
-                                return m_data[0] == used_bits && std::ranges::all_of(m_data | std::views::drop(1), [](auto block) {
-                                        return block == ones;
+                                return m_data[0] == used_bits && std::ranges::all_of(m_data | std::views::drop(1), [](auto const& block) { 
+                                        return block == ones; 
                                 });
                         }
                 } else {
@@ -166,7 +186,7 @@ public:
                         } else if constexpr (num_blocks == 2) {
                                 return m_data[0] == ones && m_data[1] == ones;
                         } else if constexpr (num_blocks >= 3) {
-                                return std::ranges::all_of(m_data, [](auto block) {
+                                return std::ranges::all_of(m_data, [](auto const& block) {
                                         return block == ones;
                                 });
                         }
@@ -182,9 +202,11 @@ public:
                 } else if constexpr (num_blocks == 2) {
                         return std::popcount(m_data[0]) + std::popcount(m_data[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        return std::accumulate(std::begin(m_data), std::end(m_data), 0, [](auto sum, auto block) {
-                                return sum + std::popcount(block);
-                        });
+                        return std::ranges::fold_left(
+                                m_data | std::views::transform([](auto const& block) { 
+                                        return std::popcount(block); 
+                                }), 0, std::plus()
+                        );
                 }
         }
 
@@ -257,7 +279,7 @@ public:
                 return do_insert(hint, std::move(x));
         }
 
-        constexpr auto insert(std::input_iterator auto first, std::input_iterator auto last) noexcept
+        constexpr auto insert(std::input_iterator auto first, std::sentinel_for<decltype(first)> auto last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
                 if constexpr (N == 0) { assert(first == last); }
@@ -266,19 +288,17 @@ public:
                 }
         }
 
-        constexpr auto insert_range(std::ranges::range auto&& rg) noexcept
-                requires std::constructible_from<value_type, decltype(*rg.begin())>
-        {
-                if constexpr (N == 0) { assert(rg.begin() == rg.end()); }
-                for (auto x : rg) {
-                        add(x);
-                }
-        }
-
         constexpr auto insert(std::initializer_list<value_type> ilist) noexcept
         {
-                if constexpr (N == 0) { assert(ilist.size() == 0); }
+                if constexpr (N == 0) { assert(std::empty(ilist)); }
                 insert(ilist.begin(), ilist.end());
+        }
+
+        constexpr auto insert_range(std::ranges::input_range auto&& rg) noexcept
+                requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
+        {
+                if constexpr (N == 0) { assert(std::ranges::empty(rg)); }
+                insert(rg.begin(), rg.end());
         }
 
         constexpr auto fill() noexcept
@@ -288,7 +308,7 @@ public:
                         if constexpr (num_blocks == 2) {
                                 m_data[1] = ones;
                         } else if (num_blocks >= 3) {
-                                std::ranges::fill_n(std::next(std::begin(m_data)), num_blocks - 1, ones);
+                                std::ranges::fill(m_data | std::views::drop(1), ones);
                         }
                 } else if constexpr (N > 0) {
                         if constexpr (num_blocks == 1) {
@@ -297,7 +317,7 @@ public:
                                 m_data[0] = ones;
                                 m_data[1] = ones;
                         } else if constexpr (num_blocks >= 3) {
-                                std::ranges::fill_n(std::begin(m_data), num_blocks, ones);
+                                std::ranges::fill(m_data, ones);
                         }
                 }
                 assert(full());
@@ -356,7 +376,7 @@ public:
                         m_data[0] = zero;
                         m_data[1] = zero;
                 } else if constexpr (num_blocks >= 3) {
-                        std::ranges::fill_n(std::begin(m_data), num_blocks, zero);
+                        std::ranges::fill(m_data, zero);
                 }
                 assert(empty());
         }
@@ -504,23 +524,31 @@ public:
                 if constexpr (num_blocks == 1) {
                         m_data[0] >>= n;
                 } else if constexpr (num_blocks >= 2) {
-                        if (n == 0) {
-                                return *this;
-                        }
                         auto const [ R_blocks, R_shift ] = div(n, block_size);
                         if (R_shift == 0) {
-                                std::ranges::copy_n(std::next(std::begin(m_data), R_blocks), num_blocks - R_blocks, std::begin(m_data));
+                                std::ranges::copy(
+                                        m_data 
+                                        | std::views::drop(R_blocks), 
+                                        std::begin(m_data)
+                                );
                         } else {
                                 auto const L_shift = block_size - R_shift;
-                                for (auto i = 0; i < last_block - R_blocks; ++i) {
-                                        m_data[i] =
-                                                static_cast<block_type>(m_data[i + R_blocks    ] >> R_shift) |
-                                                static_cast<block_type>(m_data[i + R_blocks + 1] << L_shift)
-                                        ;
-                                }
+                                std::ranges::copy(
+                                        m_data 
+                                        | std::views::drop(R_blocks)
+                                        | std::views::pairwise_transform(
+                                                [=](auto const& first, auto const& second) {
+                                                        return
+                                                                static_cast<block_type>(second << L_shift) |
+                                                                static_cast<block_type>(first  >> R_shift)
+                                                        ;
+                                                }
+                                        ), 
+                                        std::begin(m_data)
+                                );
                                 m_data[last_block - R_blocks] = static_cast<block_type>(m_data[last_block] >> R_shift);
                         }
-                        std::ranges::fill_n(std::prev(std::end(m_data), R_blocks), R_blocks, zero);
+                        std::ranges::fill(m_data | std::views::drop(num_blocks - R_blocks), zero);
                 }
                 clear_unused_bits();
                 return *this;
@@ -533,29 +561,38 @@ public:
                 if constexpr (num_blocks == 1) {
                         m_data[0] <<= n;
                 } else if constexpr (num_blocks >= 2) {
-                        if (n == 0) {
-                                return *this;
-                        }
                         auto const [ L_blocks, L_shift ] = div(n, block_size);
                         if (L_shift == 0) {
-                                std::ranges::copy_backward(m_data | std::views::take(num_blocks - L_blocks), std::end(m_data));
+                                std::ranges::copy(
+                                        m_data 
+                                        | std::views::reverse 
+                                        | std::views::drop(L_blocks), 
+                                        std::rbegin(m_data)
+                                );
                         } else {
                                 auto const R_shift = block_size - L_shift;
-                                for (auto i = last_block; i > L_blocks; --i) {
-                                        m_data[i] =
-                                                static_cast<block_type>(m_data[i - L_blocks    ] << L_shift) |
-                                                static_cast<block_type>(m_data[i - L_blocks - 1] >> R_shift)
-                                        ;
-                                }
+                                std::ranges::copy(
+                                        m_data
+                                        | std::views::reverse
+                                        | std::views::drop(L_blocks)
+                                        | std::views::pairwise_transform(
+                                                [=](auto const& first, auto const& second) {
+                                                        return
+                                                                static_cast<block_type>(first  << L_shift) |
+                                                                static_cast<block_type>(second >> R_shift)
+                                                        ;
+                                                }
+                                        ),
+                                        std::rbegin(m_data)
+                                );
                                 m_data[L_blocks] = static_cast<block_type>(m_data[0] << L_shift);
                         }
-                        std::ranges::fill_n(std::begin(m_data), L_blocks, zero);
+                        std::ranges::fill(m_data | std::views::take(L_blocks), zero);
                 }
                 return *this;
         }
 
         [[nodiscard]] constexpr auto is_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
-                -> bool
         {
                 if constexpr (N == 0) {
                         return true;
@@ -568,11 +605,12 @@ public:
                         );
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::none_of(
-                                std::views::zip(this->m_data, other.m_data),
-                                [](auto const& tup) {
-                                        auto const& [lhs, rhs] = tup;
-                                        return lhs & ~rhs;
-                                }
+                                std::views::zip_transform(
+                                        [](auto const& lhs, auto const& rhs)
+                                        { return lhs & ~rhs; },
+                                        this->m_data, other.m_data
+                                ),
+                                std::identity()
                         );
                 }
         }
@@ -603,11 +641,12 @@ public:
                                 }
                         }
                         return (i == num_blocks) ? false : std::ranges::none_of(
-                                std::views::zip(this->m_data, other.m_data) | std::views::drop(i),
-                                [](auto const& tup) {
-                                        auto const& [lhs, rhs] = tup;
-                                        return lhs & ~rhs;
-                                }
+                                std::views::zip_transform(
+                                        [](auto const& lhs, auto const& rhs) 
+                                        { return lhs & ~rhs; },
+                                        this->m_data, other.m_data
+                                ) | std::views::drop(i),
+                                std::identity()
                         );
                 }
         }
@@ -626,11 +665,12 @@ public:
                         ;
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::any_of(
-                                std::views::zip(this->m_data, other.m_data),
-                                [](auto const& tup) {
-                                        auto const& [lhs, rhs] = tup;
-                                        return lhs & rhs;
-                                }
+                                std::views::zip_transform(
+                                        [](auto const& lhs, auto const& rhs)
+                                        { return lhs & rhs; },
+                                        this->m_data, other.m_data
+                                ),
+                                std::identity()
                         );
                 }
         }
@@ -687,8 +727,6 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) noexcept
                 -> std::pair<block_type&, block_type>
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_valid_reference(n));
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[last_block - index], static_cast<block_type>(left_mask >> offset) };
         }
@@ -696,8 +734,6 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) const noexcept
                 -> std::pair<block_type const&, block_type>
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_valid_reference(n));
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[last_block - index], static_cast<block_type>(left_mask >> offset) };
         }
@@ -850,19 +886,16 @@ private:
                 [[nodiscard]] constexpr auto operator==(proxy_reference const& other) const noexcept
                         -> bool
                 {
-                        if constexpr (N == 0) { std::unreachable(); } 
                         return this->m_val == other.m_val;
                 }
 
                 [[nodiscard]] constexpr auto operator&() const noexcept
                 {
-                        if constexpr (N == 0) { std::unreachable(); } 
                         return proxy_iterator(&m_ref, m_val);
                 }
 
                 [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
                 {
-                        if constexpr (N == 0) { std::unreachable(); } 
                         return m_val;
                 }
 
@@ -870,7 +903,6 @@ private:
                 [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_val)))
                         requires std::is_class_v<T> && std::constructible_from<T, value_type>
                 {
-                        if constexpr (N == 0) { std::unreachable(); } 
                         return m_val;
                 }
         };
@@ -913,6 +945,8 @@ private:
 
                 [[nodiscard]] constexpr auto operator*() const noexcept
                 {
+                        if constexpr (N == 0) { std::unreachable(); } 
+                        assert(is_valid_reference(m_val));
                         return proxy_reference(*m_ptr, m_val);
                 }
 
@@ -941,7 +975,6 @@ private:
 
                 constexpr auto operator--(int) noexcept
                 {
-
                         auto nrv = *this; --*this; return nrv;
                 }
         };

@@ -366,7 +366,7 @@ struct mem_insert
 
         template<class X>
         auto operator()(X& a, std::input_iterator auto i, std::input_iterator auto j) const
-        {
+        {               
                 static_assert(std::same_as<decltype(a.insert(i, j)), void>);    // [associative.reqmts.general]/75
                                                                                 // [associative.reqmts.general]/76
                 static_assert(std::constructible_from<typename X::value_type, decltype(*i)>);
@@ -379,7 +379,7 @@ struct mem_insert
         }
 
         template<class X>
-        auto operator()(X& a, std::ranges::range auto&& rg) const
+        auto operator()(X& a, std::ranges::input_range auto&& rg) const
         {                                                                       // [associative.reqmts.general]/79
                 static_assert(std::same_as<decltype(a.insert_range(rg)), void>);
                                                                                 // [associative.reqmts.general]/80
