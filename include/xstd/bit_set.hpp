@@ -1,7 +1,7 @@
 #ifndef XSTD_BIT_SET_HPP
 #define XSTD_BIT_SET_HPP
 
-//          Copyright Rein Halbersma 2014-2023.
+//          Copyright Rein Halbersma 2014-2024.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
