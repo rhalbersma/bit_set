@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Full, T, int_set_types)
         static_assert(b.full());
         static_assert(b.size() == b.max_size());
         static_assert(b.empty() || b.front() == *b.cbegin());
-        static_assert(b.empty() || b.back() == *b.crbegin());
+        static_assert(b.empty() || b.back()  == *b.crbegin());
         static_assert(b == b);
         static_assert((b <=> b) == std::strong_ordering::equal);
 }

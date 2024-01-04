@@ -6,8 +6,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <algorithm>            // lexicographical_compare_three_way, max, shift_left, shift_right, swap
-                                // all_of, any_of, copy, equal, fill, find_if, fold_left, none_of, swap_ranges
+#include <algorithm>            // lexicographical_compare_three_way, shift_left, shift_right
+                                // all_of, any_of, fill, find_if, fold_left, max, none_of, swap, swap_ranges
 #include <bit>                  // countl_zero, countr_zero, popcount
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
@@ -18,39 +18,14 @@
 #include <iterator>             // bidirectional_iterator_tag, reverse_iterator
                                 // input_iterator, sentinel_for
 #include <limits>               // digits
-#include <ranges>               // begin, distance, empty, end, from_range_t, range_difference_t, rbegin, rend, subrange
+#include <ranges>               // begin, distance, empty, end, from_range_t, rbegin, rend, subrange
                                 // drop, pairwise_transform, reverse, transform, zip, zip_transform
-                                // forward_range, input_range
+                                // input_range
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
 #include <utility>              // forward, pair
 
 namespace xstd {
-namespace ranges {        
-        // P2022: Rangified version of lexicographical_compare_three_way
-        // https://github.com/cplusplus/papers/issues/1468        
-        template<std::ranges::input_range R1, std::ranges::input_range R2>
-        [[nodiscard]] constexpr auto lexicographical_compare_three_way(R1&& r1, R2&& r2)
-        {
-                return std::lexicographical_compare_three_way(
-                        std::ranges::begin(r1), std::ranges::end(r1),
-                        std::ranges::begin(r2), std::ranges::end(r2)
-                );
-        }
-
-        template<std::ranges::forward_range R>
-        constexpr auto shift_left(R&& r, std::ranges::range_difference_t<R> n)
-        {
-                return std::shift_left(std::ranges::begin(r), std::ranges::end(r), n);
-        }
-
-        template<std::ranges::forward_range R>
-        constexpr auto shift_right(R&& r, std::ranges::range_difference_t<R> n)
-        {
-                return std::shift_right(std::ranges::begin(r), std::ranges::end(r), n);
-        }
-
-}       // namespace ranges
 
 [[nodiscard]] constexpr auto bit_align(int alignment, int size) noexcept
 {
@@ -70,7 +45,7 @@ class bit_set
 {
         static constexpr auto block_size = std::numeric_limits<Block>::digits;
         static constexpr auto num_bits = bit_align(block_size, N);
-        static constexpr auto num_blocks = std::max(num_bits / block_size, 1);
+        static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, 1);
         static constexpr auto has_unused_bits = num_bits > N;
         static constexpr auto num_unused_bits = num_bits - N;
 
@@ -141,9 +116,9 @@ public:
                         };
                         return tied(other) <=> tied(*this);
                 } else if constexpr (num_blocks >= 3) {
-                        return xstd::ranges::lexicographical_compare_three_way(
-                                other.m_data | std::views::reverse,
-                                this->m_data | std::views::reverse
+                        return std::lexicographical_compare_three_way(
+                                std::ranges::rbegin(other.m_data), std::ranges::rend(other.m_data),
+                                std::ranges::rbegin(this->m_data), std::ranges::rend(this->m_data)
                         );
                 }
         }
@@ -393,10 +368,10 @@ public:
         constexpr auto swap(bit_set& other [[maybe_unused]]) noexcept
         {
                 if constexpr (N > 0 && num_blocks == 1) {
-                        std::swap(this->m_data[0], other.m_data[0]);
+                        std::ranges::swap(this->m_data[0], other.m_data[0]);
                 } else if constexpr (num_blocks == 2) {
-                        std::swap(this->m_data[0], other.m_data[0]);
-                        std::swap(this->m_data[1], other.m_data[1]);
+                        std::ranges::swap(this->m_data[0], other.m_data[0]);
+                        std::ranges::swap(this->m_data[1], other.m_data[1]);
                 } else if constexpr (num_blocks >= 3) {
                         std::ranges::swap_ranges(this->m_data, other.m_data);
                 }
@@ -560,7 +535,7 @@ public:
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div(n, block_size);
                         if (R_shift == 0) {
-                                xstd::ranges::shift_left(m_data, n_blocks);
+                                std::shift_left(std::ranges::begin(m_data), std::ranges::end(m_data), n_blocks);
                         } else {
                                 auto const L_shift = block_size - R_shift;
                                 for (auto&& [lhs, rhs] : std::views::zip(
@@ -589,7 +564,7 @@ public:
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div(n, block_size);
                         if (L_shift == 0) {
-                                xstd::ranges::shift_right(m_data, n_blocks);
+                                std::shift_right(std::ranges::begin(m_data), std::ranges::end(m_data), n_blocks);
                         } else {
                                 auto const R_shift = block_size - L_shift;
                                 for (auto&& [lhs, rhs] : std::views::zip(
@@ -845,6 +820,7 @@ private:
         {
                 if constexpr (N == 0) { std::unreachable(); } 
                 assert(is_valid_reference(n));
+                assert(!empty());
                 if constexpr (num_blocks == 1) {
                         return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (left_bit - n)));
                 } else if constexpr (num_blocks >= 2) {
