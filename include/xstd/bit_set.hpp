@@ -23,7 +23,7 @@
                                 // input_range
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
-#include <utility>              // forward, pair
+#include <utility>              // forward, pair, unreachable
 
 namespace xstd {
 
@@ -541,8 +541,13 @@ public:
                                 for (auto&& [lhs, rhs] : std::views::zip(
                                         m_data,
                                         m_data | std::views::drop(n_blocks) | std::views::pairwise_transform(
-                                                [=](auto first, auto second) -> block_type 
-                                                { return (second << L_shift) | (first  >> R_shift); }
+                                                [=](auto first, auto second) -> block_type
+                                                { 
+                                                        return 
+                                                                static_cast<block_type>(second << L_shift) | 
+                                                                static_cast<block_type>(first  >> R_shift)
+                                                        ; 
+                                                }
                                         )
                                 )) {
                                         lhs = rhs;
@@ -570,8 +575,13 @@ public:
                                 for (auto&& [lhs, rhs] : std::views::zip(
                                         m_data | std::views::reverse,
                                         m_data | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform(
-                                                [=](auto first, auto second) -> block_type 
-                                                { return (first << L_shift) | (second >> R_shift); }
+                                                [=](auto first, auto second) -> block_type
+                                                { 
+                                                        return 
+                                                                static_cast<block_type>(first  << L_shift) | 
+                                                                static_cast<block_type>(second >> R_shift)
+                                                        ; 
+                                                }
                                         )
                                 )) {
                                         lhs = rhs;
