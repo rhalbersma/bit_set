@@ -27,14 +27,14 @@
 
 namespace xstd {
 
+template<int N, std::unsigned_integral> 
+        requires (N >= 0) 
+class bit_set;
+
 [[nodiscard]] constexpr auto bit_align(int alignment, int size) noexcept
 {
         return ((size - 1 + alignment) / alignment) * alignment;
 }
-
-template<int N, std::unsigned_integral>
-        requires (N >= 0)
-class bit_set;
 
 template<int N, std::unsigned_integral Block = std::size_t>
 using bit_set_aligned = bit_set<bit_align(std::numeric_limits<Block>::digits, N), Block>;
