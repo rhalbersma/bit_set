@@ -9,7 +9,6 @@
 #include <concepts>                     // constructible_from, unsigned_integral
 #include <cstddef>                      // ptrdiff_t
 #include <iterator>                     // forward_iterator_tag, iter_value_t
-#include <ranges>                       // range_size_t
 #include <type_traits>                  // is_class_v
 
 namespace boost {
@@ -97,7 +96,7 @@ class dynamic_bitset_iterator
 {
 public:
         using iterator_category = std::forward_iterator_tag;
-        using value_type        = std::ranges::range_size_t<dynamic_bitset<Block, Allocator>>;
+        using value_type        = dynamic_bitset<Block, Allocator>::size_type;
         using difference_type   = std::ptrdiff_t;
         using pointer           = dynamic_bitset_iterator<Block, Allocator>;
         using reference         = dynamic_bitset_reference<Block, Allocator>;
