@@ -906,8 +906,8 @@ private:
         {
         public:
                 using iterator_category = std::bidirectional_iterator_tag;
-                using difference_type   = bit_set::difference_type;
                 using value_type        = bit_set::value_type;
+                using difference_type   = bit_set::difference_type;
                 using pointer           = proxy_iterator;
                 using reference         = proxy_reference;
 
