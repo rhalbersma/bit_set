@@ -59,11 +59,10 @@ This library provides one of the four outlined quadrants: `xstd::bit_set<N>` as 
 
 The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/z1orEn7zs)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/PjnMKf3Kz)
 
 ```cpp
 #include <xstd/bit_set.hpp>
-#include <fmt/core.h>
 #include <fmt/ranges.h>
 
 constexpr auto N = 100;
@@ -90,8 +89,8 @@ int main()
     auto const twins = primes & primes >> 2;    // bitwise operators from std::bitset<N>
 
     // pretty-print solution
-    fmt::print("{}\n", primes);
-    fmt::print("{}\n", twins);
+    fmt::println("{}", primes);
+    fmt::println("{}", twins);
 }
 ```
 
@@ -361,13 +360,13 @@ auto b = a
 
 This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) compilers:
 
-| Platform | Compiler   | Versions       | Build |
-| :------- | :-------   | -------:       | :---- |
-| Linux    | GCC        |     14-trunk   | CI currently being ported to GitHub Actions |
-| Linux    | Clang      | 17, 18-trunk   | CI currently being ported to GitHub Actions |
-| Windows  | Visual C++ | 17.3           | CI currently being ported to GitHub Actions |
+| Platform | Compiler   | Versions               | Build |
+| :------- | :-------   | -------:               | :---- |
+| Linux    | GCC        |               14-trunk | CI currently being ported to GitHub Actions |
+| Linux    | Clang      |       17,     18-trunk | CI currently being ported to GitHub Actions |
+| Windows  | Visual C++ | 17.7, 17.8, 17.9-trunk | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++23 features, such as the `fold_left`, `shift_left` and `shift_right` algorithms, the `pairwise_transform`, `zip` and `zip_transform` views, the `to` range conversion, the `uz` literal for `size_t` and the `unreachable` utility. GCC 14-trunk, Clang 17 and 18-trunk (both only with the GCC 14-trunk standard library) and Visual C++ 17.3 and higher are supported at the moment. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library (for the set algorithm views).
+Note that this library makes liberal use of C++23 features, such as the `fold_left`, `shift_left` and `shift_right` algorithms, the `pairwise_transform`, `zip` and `zip_transform` views, the `to` range conversion, the `uz` literal for `size_t` and the `unreachable` utility. GCC 14-trunk, Clang 17 and 18-trunk (both only with the GCC 14-trunk standard library) and Visual C++ 17.7 and higher are supported at the moment. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library (for the set algorithm views).
 
 ## License
 
