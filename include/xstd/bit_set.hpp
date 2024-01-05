@@ -897,7 +897,7 @@ private:
                 }
         };
 
-        friend [[nodiscard]] constexpr auto format_as(proxy_reference const& r) noexcept
+        [[nodiscard]] friend constexpr auto format_as(proxy_reference const& r) noexcept
         {
                 return static_cast<value_type>(r);
         }
