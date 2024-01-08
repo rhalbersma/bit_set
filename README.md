@@ -313,18 +313,18 @@ auto b = a
 **A**: It uses a stack-allocated array of unsigned integers as bit storage.  
 
 **Q**: How is the set ordering mapped to the array's bit layout?  
-**A**: The most significant bit of the last array word maps onto set value `0`.  
-**A**: The least significant bit of the first array word maps onto set value `N - 1`.  
+**A**: The most significant bit of the first array word maps onto set value `0`.  
+**A**: The least significant bit of the last array word maps onto set value `N - 1`.  
 
 **Q**: I'm visually oriented, can you draw a diagram?  
 **A**: Sure, it looks like this for `bit_set<16, uint8_t>`:  
 
 |value |01234567|89ABCDEF|
 |:---- |-------:|-------:|
-|word  |       1|       0|
+|word  |       0|       1|
 |offset|76543210|76543210|
 
-**Q**: Why is the set order reversely mapped onto the array's bit-layout?  
+**Q**: Why is the set order mapped this way onto the array's bit-layout?  
 **A**: To be able to use **data-parallelism** for `(a < b) == std::ranges::lexicographical_compare(a, b)`.  
 
 **Q**: How is efficient set comparison connected to the bit-ordering within words?  
