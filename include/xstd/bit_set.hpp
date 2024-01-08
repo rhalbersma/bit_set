@@ -112,13 +112,13 @@ public:
                         return other.m_data[0] <=> this->m_data[0];
                 } else if constexpr (num_blocks == 2) {
                         constexpr auto tied = [](auto const& bs) {
-                                return std::tie(bs.m_data[1], bs.m_data[0]);
+                                return std::tie(bs.m_data[0], bs.m_data[1]);
                         };
                         return tied(other) <=> tied(*this);
                 } else if constexpr (num_blocks >= 3) {
                         return std::lexicographical_compare_three_way(
-                                std::ranges::rbegin(other.m_data), std::ranges::rend(other.m_data),
-                                std::ranges::rbegin(this->m_data), std::ranges::rend(this->m_data)
+                                std::ranges::begin(other.m_data), std::ranges::end(other.m_data),
+                                std::ranges::begin(this->m_data), std::ranges::end(this->m_data)
                         );
                 }
         }
@@ -171,11 +171,11 @@ public:
                         if constexpr (num_blocks == 1) {
                                 return m_data[0] == used_bits;
                         } else if (num_blocks == 2) {
-                                return m_data[0] == used_bits && m_data[1] == ones;
+                                return m_data[0] == ones && m_data[1] == used_bits;
                         } else if (num_blocks >= 3) {
-                                return m_data[0] == used_bits && std::ranges::all_of(m_data | std::views::drop(1), [](auto block) { 
+                                return std::ranges::all_of(m_data | std::views::take(num_blocks - 1), [](auto block) { 
                                         return block == ones; 
-                                });
+                                }) && m_data[last_block] == used_bits;
                         }
                 } else {
                         if constexpr (N == 0) {
@@ -313,12 +313,12 @@ public:
         constexpr auto fill() noexcept
         {
                 if constexpr (has_unused_bits) {
-                        m_data[0] = used_bits;
                         if constexpr (num_blocks == 2) {
-                                m_data[1] = ones;
+                                m_data[0] = ones;
                         } else if (num_blocks >= 3) {
-                                std::ranges::fill(m_data | std::views::drop(1), ones);
+                                std::ranges::fill(m_data | std::views::take(num_blocks - 1), ones);
                         }
+                        m_data[last_block] = used_bits;
                 } else if constexpr (N > 0) {
                         if constexpr (num_blocks == 1) {
                                 m_data[0] = ones;
@@ -535,12 +535,12 @@ public:
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div(n, block_size);
                         if (R_shift == 0) {
-                                std::shift_left(std::ranges::begin(m_data), std::ranges::end(m_data), n_blocks);
+                                std::shift_right(std::ranges::begin(m_data), std::ranges::end(m_data), n_blocks);
                         } else {
                                 auto const L_shift = block_size - R_shift;
                                 for (auto&& [lhs, rhs] : std::views::zip(
-                                        m_data,
-                                        m_data | std::views::drop(n_blocks) | std::views::pairwise_transform(
+                                        m_data | std::views::reverse,
+                                        m_data | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform(
                                                 [=](auto first, auto second) -> block_type
                                                 { 
                                                         return 
@@ -552,9 +552,9 @@ public:
                                 )) {
                                         lhs = rhs;
                                 }                               
-                                m_data[last_block - n_blocks] = static_cast<block_type>(m_data[last_block] >> R_shift);
+                                m_data[n_blocks] = static_cast<block_type>(m_data[0] >> R_shift);
                         }
-                        std::ranges::fill(m_data | std::views::drop(num_blocks - n_blocks), zero);
+                        std::ranges::fill(m_data | std::views::reverse | std::views::drop(num_blocks - n_blocks), zero);
                 }
                 clear_unused_bits();
                 return *this;
@@ -569,12 +569,12 @@ public:
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div(n, block_size);
                         if (L_shift == 0) {
-                                std::shift_right(std::ranges::begin(m_data), std::ranges::end(m_data), n_blocks);
+                                std::shift_left(std::ranges::begin(m_data), std::ranges::end(m_data), n_blocks);
                         } else {
                                 auto const R_shift = block_size - L_shift;
                                 for (auto&& [lhs, rhs] : std::views::zip(
-                                        m_data | std::views::reverse,
-                                        m_data | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform(
+                                        m_data,
+                                        m_data | std::views::drop(n_blocks) | std::views::pairwise_transform(
                                                 [=](auto first, auto second) -> block_type
                                                 { 
                                                         return 
@@ -586,9 +586,9 @@ public:
                                 )) {
                                         lhs = rhs;
                                 }
-                                m_data[n_blocks] = static_cast<block_type>(m_data[0] << L_shift);
+                                m_data[last_block - n_blocks] = static_cast<block_type>(m_data[last_block] << L_shift);
                         }
-                        std::ranges::fill(m_data | std::views::reverse | std::views::drop(num_blocks - n_blocks), zero);
+                        std::ranges::fill(m_data | std::views::drop(num_blocks - n_blocks), zero);
                 }
                 return *this;
         }
@@ -726,20 +726,20 @@ private:
                 -> std::pair<block_type&, block_type>
         {
                 auto const [ index, offset ] = index_offset(n);
-                return { m_data[last_block - index], static_cast<block_type>(left_mask >> offset) };
+                return { m_data[index], static_cast<block_type>(left_mask >> offset) };
         }
 
         [[nodiscard]] constexpr auto block_mask(value_type n) const noexcept
                 -> std::pair<block_type const&, block_type>
         {
                 auto const [ index, offset ] = index_offset(n);
-                return { m_data[last_block - index], static_cast<block_type>(left_mask >> offset) };
+                return { m_data[index], static_cast<block_type>(left_mask >> offset) };
         }
 
         constexpr auto clear_unused_bits() noexcept
         {
                 if constexpr (has_unused_bits) {
-                        m_data[0] &= used_bits;
+                        m_data[last_block] &= used_bits;
                 }
         }
 
@@ -750,11 +750,11 @@ private:
                 if constexpr (num_blocks == 1) {
                         return std::countl_zero(m_data[0]);
                 } else if constexpr (num_blocks == 2) {
-                        return m_data[1] ? std::countl_zero(m_data[1]) : block_size + std::countl_zero(m_data[0]);
+                        return m_data[0] ? std::countl_zero(m_data[0]) : block_size + std::countl_zero(m_data[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        auto const front = std::ranges::find_if(m_data | std::views::reverse, std::identity());
-                        assert(front != std::ranges::rend(m_data));
-                        return static_cast<value_type>(std::ranges::distance(std::ranges::rbegin(m_data), front)) * block_size + std::countl_zero(*front);
+                        auto const front = std::ranges::find_if(m_data, std::identity());
+                        assert(front != std::ranges::end(m_data));
+                        return static_cast<value_type>(std::ranges::distance(std::ranges::begin(m_data), front)) * block_size + std::countl_zero(*front);
                 }
         }
 
@@ -765,11 +765,11 @@ private:
                 if constexpr (num_blocks == 1) {
                         return last_bit - std::countr_zero(m_data[0]);
                 } else if constexpr (num_blocks == 2) {
-                        return m_data[0] ? last_bit - std::countr_zero(m_data[0]) : left_bit - std::countr_zero(m_data[1]);
+                        return m_data[1] ? last_bit - std::countr_zero(m_data[1]) : left_bit - std::countr_zero(m_data[0]);
                 } else if constexpr (num_blocks >= 3) {
-                        auto const back = std::ranges::find_if(m_data, std::identity());
-                        assert(back != std::ranges::end(m_data));
-                        return last_bit - static_cast<value_type>(std::ranges::distance(std::ranges::begin(m_data), back)) * block_size - std::countr_zero(*back);
+                        auto const back = std::ranges::find_if(m_data | std::views::reverse, std::identity());
+                        assert(back != std::ranges::rend(m_data));
+                        return last_bit - static_cast<value_type>(std::ranges::distance(std::ranges::rbegin(m_data), back)) * block_size - std::countr_zero(*back);
                 }
         }
 
@@ -780,17 +780,17 @@ private:
                                 return std::countl_zero(m_data[0]);
                         }
                 } else if constexpr (num_blocks == 2) {
-                        if (m_data[1]) {
-                                return std::countl_zero(m_data[1]);
-                        } else if (m_data[0]) {
-                                return block_size + std::countl_zero(m_data[0]);
+                        if (m_data[0]) {
+                                return std::countl_zero(m_data[0]);
+                        } else if (m_data[1]) {
+                                return block_size + std::countl_zero(m_data[1]);
                         }
                 } else if constexpr (num_blocks >= 3) {
                         if (
-                                auto const first = std::ranges::find_if(m_data | std::views::reverse, std::identity()); 
-                                first != std::ranges::rend(m_data)
+                                auto const first = std::ranges::find_if(m_data, std::identity()); 
+                                first != std::ranges::end(m_data)
                         ) {
-                                return static_cast<value_type>(std::ranges::distance(std::ranges::rbegin(m_data), first)) * block_size + std::countl_zero(*first);
+                                return static_cast<value_type>(std::ranges::distance(std::ranges::begin(m_data), first)) * block_size + std::countl_zero(*first);
                         }
                 }
                 return N;
@@ -809,13 +809,13 @@ private:
                 } else if constexpr (num_blocks >= 2) {
                         auto [ index, offset ] = index_offset(n);
                         if (offset) {
-                                if (auto const block = static_cast<block_type>(m_data[last_block - index] << offset); block) {
+                                if (auto const block = static_cast<block_type>(m_data[index] << offset); block) {
                                         return n + std::countl_zero(block);
                                 }
                                 ++index;
                                 n += block_size - offset;
                         }
-                        auto const rg = m_data | std::views::reverse | std::views::drop(index);
+                        auto const rg = m_data | std::views::drop(index);
                         if (
                                 auto const next = std::ranges::find_if(rg, std::identity()); 
                                 next != std::ranges::end(rg)
@@ -836,13 +836,13 @@ private:
                 } else if constexpr (num_blocks >= 2) {
                         auto [ index, offset ] = index_offset(n);
                         if (auto const reverse_offset = left_bit - offset; reverse_offset) {
-                                if (auto const block = static_cast<block_type>(m_data[last_block - index] >> reverse_offset); block) {
+                                if (auto const block = static_cast<block_type>(m_data[index] >> reverse_offset); block) {
                                         return n - std::countr_zero(block);
                                 }
                                 --index;
                                 n -= block_size - reverse_offset;
                         }
-                        auto const rg = m_data | std::views::drop(last_block - index);
+                        auto const rg = m_data | std::views::reverse | std::views::drop(last_block - index);
                         auto const prev = std::ranges::find_if(rg, std::identity());
                         assert(prev != std::ranges::end(rg));
                         return n - static_cast<value_type>(std::ranges::distance(std::ranges::begin(rg), prev)) * block_size - std::countr_zero(*prev); 
