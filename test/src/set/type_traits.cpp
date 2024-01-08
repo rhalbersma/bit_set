@@ -11,8 +11,9 @@
 #include <boost/container/flat_set.hpp> // flat_set
 #include <boost/mpl/vector.hpp>         // vector
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <concepts>                     // regular
+#include <concepts>                     // regular, totally_ordered
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <ranges>                       // bidirectional_range
 #include <set>                          // set
 
 BOOST_AUTO_TEST_SUITE(TypeTraits)
@@ -51,6 +52,16 @@ using int_set_types = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, int_set_types)
 {
         static_assert(std::regular<T>);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsTotallyOrdered, T, int_set_types)
+{
+        static_assert(std::totally_ordered<T>);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsBiDirectional, T, int_set_types)
+{
+        static_assert(std::ranges::bidirectional_range<T>);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
