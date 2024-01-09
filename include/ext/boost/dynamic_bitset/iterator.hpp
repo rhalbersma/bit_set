@@ -79,11 +79,11 @@ class dynamic_bitset_reference
 public:
         dynamic_bitset_reference()                                           = delete;
         dynamic_bitset_reference& operator=(dynamic_bitset_reference const&) = delete;
-        dynamic_bitset_reference& operator=(dynamic_bitset_reference&&     ) = delete;
+        dynamic_bitset_reference& operator=(dynamic_bitset_reference &&    ) = delete;
 
                       constexpr ~dynamic_bitset_reference()                                noexcept = default;
         [[nodiscard]] constexpr  dynamic_bitset_reference(dynamic_bitset_reference const&) noexcept = default;
-        [[nodiscard]] constexpr  dynamic_bitset_reference(dynamic_bitset_reference&&     ) noexcept = default;
+        [[nodiscard]] constexpr  dynamic_bitset_reference(dynamic_bitset_reference &&    ) noexcept = default;
 
         [[nodiscard]] explicit constexpr dynamic_bitset_reference(rimpl_type r, value_type v) noexcept
         :

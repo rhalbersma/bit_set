@@ -5,5 +5,6 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <ext/std/bitset/iterator.hpp>
 #include <ext/std/bitset/operators.hpp>
 #include <ext/std/bitset/predicates.hpp>
