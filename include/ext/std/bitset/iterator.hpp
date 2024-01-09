@@ -52,15 +52,15 @@ public:
 
         [[nodiscard]] constexpr auto operator*() const noexcept
         {
-                assert(m_val < m_ptr->size());
+                assert(m_val < N);
                 return reference(*m_ptr, m_val);
         }
 
         constexpr auto& operator++() noexcept
         {
-                assert(m_val < m_ptr->size());
+                assert(m_val < N);
                 m_val = m_ptr->_Find_next(m_val);
-                assert(m_val < m_ptr->size() || m_val == m_ptr->npos);
+                assert(m_val <= N);
                 return *this;
         }
 
