@@ -102,29 +102,12 @@ which has as output:
 
 ### Sequence of bits
 
-How would the Sieve of Eratosthenes code look when using a sequence of bits? The links in the table below provide the full code examples for `std::bitset<N>` and `boost::dynamic_bitset<>`.
+How would the Sieve of Eratosthenes code look when using a sequence of bits? The essential difference (apart from differently named member functions) is the lack of iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. We combine these functions into a `ranges::view_interface` to provide a `set_view` with a `key_type` and forward iterators `begin` and `end`. The links in the table below provide the full code examples for `std::bitset<N>` and `boost::dynamic_bitset<>`.
 
 | Library                   | Try it online |
 | :------                   | :------------ |
-| `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/6jbPorsKv) |
-| `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/oPMGn5Tca) |
-
-The essential difference (apart from differently named member functions) is the lack of proxy iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. For `boost::dynamic_bitset<>`, these can be retro-fitted into forward proxy iterators `begin` and `end`, but for `std::bitset<N>` the required user-defined specializations of `begin` and `end` inside `namespace std` entail **undefined behavior**, preventing range-`for` support for `std::bitset<N>`. The best one can do is a manual loop like below (possibly wrapped in a `for_each` non-member function)
-
-```cpp
-// find all primes below N
-for (auto p = primes._Find_first(); p < N; p = primes._Find_next(p)) {
-    // ...
-}
-```
-
-The output of these `bitset` implementations gives a bitstring, to be read from right-to-left:
-<pre>
-0010000000100000100010000010100010000010100000100000100010100010000010100000100010100010100010101100
-0000000000000000000000000000100000000000100000000000000000100000000000100000000000100000100000101000
-</pre>
-
-Printing the actual bit indices requires a manual loop using the `_Find_first` and `_Find_next` extensions mentioned above.
+| `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/zGjofjToj) |
+| `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/PeKoK8zvd) |
 
 ### Ordered set of integers
 
