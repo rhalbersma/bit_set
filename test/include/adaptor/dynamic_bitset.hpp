@@ -98,7 +98,7 @@ public:
         using iterator_category = std::forward_iterator_tag;
         using value_type        = dynamic_bitset<Block, Allocator>::size_type;
         using difference_type   = std::ptrdiff_t;
-        using pointer           = dynamic_bitset_iterator<Block, Allocator>;
+        using pointer           = void;
         using reference         = dynamic_bitset_reference<Block, Allocator>;
 
 private:
