@@ -125,25 +125,25 @@ template<std::unsigned_integral Block, class Allocator>
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& bs)
+[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
         return dynamic_bitset_iterator<Block, Allocator>(&bs, bs.find_first());
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator> const& bs)
+[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return dynamic_bitset_iterator<Block, Allocator>(&bs, bs.find_first());
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] constexpr auto end(dynamic_bitset<Block, Allocator>& bs)
+[[nodiscard]] constexpr auto end(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
         return dynamic_bitset_iterator<Block, Allocator>(&bs, bs.npos);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] constexpr auto end(dynamic_bitset<Block, Allocator> const& bs)
+[[nodiscard]] constexpr auto end(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return dynamic_bitset_iterator<Block, Allocator>(&bs, bs.npos);
 }

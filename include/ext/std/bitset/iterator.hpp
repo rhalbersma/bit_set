@@ -55,7 +55,7 @@ public:
                 return reference(*m_ptr, m_val);
         }
 
-        auto& operator++() noexcept
+        constexpr auto& operator++() noexcept
         {
                 assert(m_val < m_ptr->size());
                 m_val = m_ptr->_Find_next(m_val);
@@ -63,7 +63,7 @@ public:
                 return *this;
         }
 
-        auto operator++(int) noexcept
+        constexpr auto operator++(int) noexcept
         {
                 auto nrv = *this; ++*this; return nrv;
         }
@@ -125,31 +125,31 @@ template<std::size_t N>
 }
 
 template<std::size_t N>
-[[nodiscard]] auto begin(std::bitset<N>& bs)
+[[nodiscard]] constexpr auto begin(std::bitset<N>& bs) noexcept
 {
         return bitset_iterator<N>(&bs, bs._Find_first());
 }
 
 template<std::size_t N>
-[[nodiscard]] auto begin(std::bitset<N> const& bs)
+[[nodiscard]] constexpr auto begin(std::bitset<N> const& bs) noexcept
 {
         return bitset_iterator<N>(&bs, bs._Find_first());
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto end(std::bitset<N>& bs)
+[[nodiscard]] constexpr auto end(std::bitset<N>& bs) noexcept
 {
         return bitset_iterator<N>(&bs, N);
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto end(std::bitset<N> const& bs)
+[[nodiscard]] constexpr auto end(std::bitset<N> const& bs) noexcept
 {
         return bitset_iterator<N>(&bs, N);
 }
 
 template<std::size_t N>
-[[nodiscard]] auto cbegin(std::bitset<N> const& bs) noexcept(noexcept(xstd::begin(bs)))
+[[nodiscard]] constexpr auto cbegin(std::bitset<N> const& bs) noexcept(noexcept(xstd::begin(bs)))
         -> decltype(xstd::begin(bs))
 {
         return xstd::begin(bs);
