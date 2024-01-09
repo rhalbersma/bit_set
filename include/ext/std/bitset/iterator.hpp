@@ -6,7 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <bitset>       // bitset
-#include <assert>       // assert
+#include <cassert>      // assert
 #include <concepts>     // constructible_from
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // forward_iterator_tag, iter_value_t
