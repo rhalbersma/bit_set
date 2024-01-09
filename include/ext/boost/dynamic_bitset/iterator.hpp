@@ -9,6 +9,7 @@
 #include <concepts>                     // constructible_from, unsigned_integral
 #include <cstddef>                      // ptrdiff_t
 #include <iterator>                     // forward_iterator_tag, iter_value_t
+#include <ranges>                       // view_interface
 #include <type_traits>                  // is_class_v
 
 namespace boost {
@@ -161,5 +162,24 @@ template<std::unsigned_integral Block, class Allocator>
 {
         return boost::end(bs);
 }
+
+template<std::unsigned_integral Block, class Allocator>
+class set_view 
+: 
+        public std::ranges::view_interface<set_view<Block, Allocator>>
+{
+        dynamic_bitset<Block, Allocator> const& m_data;
+
+public:        
+        using key_type = int;
+
+        [[nodiscard]] constexpr set_view(dynamic_bitset<Block, Allocator>) const& bs) noexcept
+        : 
+                m_data(bs) 
+        {}
+
+        [[nodiscard]] constexpr auto begin() const noexcept { return boost::begin(m_data); }
+        [[nodiscard]] constexpr auto end()   const noexcept { return boost::end(m_data); }
+};
 
 }       // namespace boost

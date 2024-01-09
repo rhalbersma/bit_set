@@ -10,6 +10,7 @@
 #include <concepts>     // constructible_from
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // forward_iterator_tag, iter_value_t
+#include <ranges>       // view_interface
 #include <type_traits>  // is_class_v
 
 namespace xstd {
@@ -162,5 +163,24 @@ template<std::size_t N>
 {
         return xstd::end(bs);
 }
+
+template<std::size_t N>
+class set_view 
+: 
+        public std::ranges::view_interface<set_view<N>>
+{
+        std::bitset<N> const& m_data;
+
+public:        
+        using key_type = int;
+
+        [[nodiscard]] constexpr set_view(std::bitset<N>) const& bs) noexcept
+        : 
+                m_data(bs) 
+        {}
+
+        [[nodiscard]] constexpr auto begin() const noexcept { return xstd::begin(m_data); }
+        [[nodiscard]] constexpr auto end()   const noexcept { return xstd::end(m_data); }
+};
 
 }       // namespace xstd
