@@ -173,7 +173,7 @@ class set_view
 public:        
         using key_type = int;
 
-        [[nodiscard]] constexpr set_view(dynamic_bitset<Block, Allocator>) const& bs) noexcept
+        [[nodiscard]] constexpr set_view(dynamic_bitset<Block, Allocator> const& bs) noexcept
         : 
                 m_data(bs) 
         {}

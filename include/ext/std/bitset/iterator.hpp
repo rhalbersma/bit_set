@@ -174,7 +174,7 @@ class set_view
 public:        
         using key_type = int;
 
-        [[nodiscard]] constexpr set_view(std::bitset<N>) const& bs) noexcept
+        [[nodiscard]] constexpr set_view(std::bitset<N> const& bs) noexcept
         : 
                 m_data(bs) 
         {}
