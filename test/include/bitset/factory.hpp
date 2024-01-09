@@ -5,9 +5,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <adaptor/dynamic_bitset.hpp>   // dynamic_bitset
-#include <adaptor/std_bitset.hpp>       // bitset
-#include <adaptor/xstd_bitset.hpp>      // bitset
+#include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
+#include <ext/std/bitset.hpp>           // bitset
+#include <ext/xstd/bitset.hpp>          // bitset
 #include <concepts>                     // unsigned_integral
 #include <cstddef>                      // size_t
 

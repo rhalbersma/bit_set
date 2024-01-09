@@ -52,7 +52,6 @@ public:
         using difference_type        = std::ptrdiff_t;
         using block_type             = Block;
 
-        class iterator;
         class reference;
 
         class iterator
@@ -134,13 +133,13 @@ public:
                 rimpl_type m_ref;
                 value_type m_val;
         public:
-                              constexpr ~reference() noexcept = default;
-                [[nodiscard]] constexpr reference(reference const&) noexcept = default;
-                [[nodiscard]] constexpr reference(reference&&) noexcept = default;
-
+                reference()                            = delete;
                 reference& operator=(reference const&) = delete;
-                reference& operator=(reference&&) = delete;
-                reference() = delete;
+                reference& operator=(reference &&)     = delete;
+
+                              constexpr ~reference()                 noexcept = default;
+                [[nodiscard]] constexpr  reference(reference const&) noexcept = default;
+                [[nodiscard]] constexpr  reference(reference &&)     noexcept = default;
 
                 [[nodiscard]] explicit constexpr reference(rimpl_type r, value_type v) noexcept
                 :

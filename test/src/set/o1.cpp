@@ -3,18 +3,17 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <adaptor/flat_set.hpp>         // flat_set
-#include <set/exhaustive.hpp>           // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets,
-                                        // all_valid, empty_set, full_set
-#include <set/primitives.hpp>           // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
-                                        // mem_empty, mem_size, mem_max_size, mem_insert, mem_erase, mem_clear,
-                                        // op_equal, op_compare_three_way, fn_iterator, fn_size, fn_ssize, fn_empty
-#include <xstd/bit_set.hpp>             // bit_set
-#include <boost/container/flat_set.hpp> // flat_set
-#include <boost/mpl/vector.hpp>         // vector
-#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
-#include <set>                          // set
+#include <ext/boost/container/flat_set.hpp>     // flat_set
+#include <set/exhaustive.hpp>                   // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets,
+                                                // all_valid, empty_set, full_set
+#include <set/primitives.hpp>                   // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
+                                                // mem_empty, mem_size, mem_max_size, mem_insert, mem_erase, mem_clear,
+                                                // op_equal, op_compare_three_way, fn_iterator, fn_size, fn_ssize, fn_empty
+#include <xstd/bit_set.hpp>                     // bit_set
+#include <boost/mpl/vector.hpp>                 // vector
+#include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <cstdint>                              // uint8_t, uint16_t, uint32_t, uint64_t
+#include <set>                                  // set
 
 BOOST_AUTO_TEST_SUITE(Linear)
 
