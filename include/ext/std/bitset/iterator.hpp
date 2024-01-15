@@ -178,13 +178,13 @@ template<std::size_t N>
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(std::bitset<N>& bs) noexcept
 {
-        return bitset_iterator<N>(&bs, impl::find_first(bs));
+        return bitset_iterator<N>(&bs, impl::find_first(&bs));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(std::bitset<N> const& bs) noexcept
 {
-        return bitset_iterator<N>(&bs, impl::find_first(bs));
+        return bitset_iterator<N>(&bs, impl::find_first(&bs));
 }
 
 template<std::size_t N>
