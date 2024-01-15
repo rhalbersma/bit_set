@@ -44,7 +44,7 @@ template<std::size_t N>
 [[nodiscard]] constexpr auto find_prev(std::bitset<N> const* bs, std::size_t n) noexcept
 {
         assert(bs->any());
-        return *std::ranges::find_if(std::views::iota(0, n) | std::views::reverse, [&](auto i) { 
+        return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) { 
                 return bs->test(i); 
         });
 }
