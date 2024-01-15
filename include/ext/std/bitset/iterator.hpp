@@ -17,35 +17,35 @@ namespace xstd {
 namespace impl {
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto find_first(std::bitset<N> const& bs) noexcept
+[[nodiscard]] constexpr auto find_first(std::bitset<N> const* bs) noexcept
 {
         if constexpr (requires { bs._Find_first(); }) {
-                return bs._Find_first();
+                return bs->_Find_first();
         } else {
                 return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) { 
-                        return bs.test(i); 
+                        return bs->test(i); 
                 });
         }
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto find_next(std::bitset<N> const& bs, std::size_t n) noexcept
+[[nodiscard]] constexpr auto find_next(std::bitset<N> const* bs, std::size_t n) noexcept
 {
         if constexpr (requires { bs._Find_next(n); }) {
-                return bs._Find_next(n);
+                return bs->_Find_next(n);
         } else {
                 return *std::ranges::find_if(std::views::iota(n + 1, N), [&](auto i) { 
-                        return bs.test(i); 
+                        return bs->test(i); 
                 });
         }
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto find_prev(std::bitset<N> const& bs, std::size_t n) noexcept
+[[nodiscard]] constexpr auto find_prev(std::bitset<N> const* bs, std::size_t n) noexcept
 {
-        assert(bs.any());
+        assert(bs->any());
         return *std::ranges::find_if(std::views::iota(0, n) | std::views::reverse, [&](auto i) { 
-                return bs.test(i); 
+                return bs->test(i); 
         });
 }
 
