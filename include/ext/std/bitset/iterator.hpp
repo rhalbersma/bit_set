@@ -19,7 +19,7 @@ namespace impl {
 template<std::size_t N>
 [[nodiscard]] constexpr auto find_first(std::bitset<N> const* bs) noexcept
 {
-        if constexpr (requires { bs._Find_first(); }) {
+        if constexpr (requires { bs->_Find_first(); }) {
                 return bs->_Find_first();
         } else {
                 return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) { 
@@ -31,7 +31,7 @@ template<std::size_t N>
 template<std::size_t N>
 [[nodiscard]] constexpr auto find_next(std::bitset<N> const* bs, std::size_t n) noexcept
 {
-        if constexpr (requires { bs._Find_next(n); }) {
+        if constexpr (requires { bs->_Find_next(n); }) {
                 return bs->_Find_next(n);
         } else {
                 return *std::ranges::find_if(std::views::iota(n + 1, N), [&](auto i) { 
