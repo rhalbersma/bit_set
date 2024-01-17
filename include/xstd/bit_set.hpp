@@ -1085,25 +1085,25 @@ template<int N, std::unsigned_integral Block>
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto cbegin(bit_set<N, Block> const& bs) noexcept
 {
-        return xstd::begin(bs);
+        return begin(bs);
 }
 
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto cend(bit_set<N, Block> const& bs) noexcept
 {
-        return xstd::end(bs);
+        return end(bs);
 }
 
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto crbegin(bit_set<N, Block> const& bs) noexcept
 {
-        return xstd::rbegin(bs);
+        return rbegin(bs);
 }
 
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto crend(bit_set<N, Block> const& bs) noexcept
 {
-        return xstd::rend(bs);
+        return rend(bs);
 }
 
 template<int N, std::unsigned_integral Block>

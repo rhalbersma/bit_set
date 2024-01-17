@@ -1,11 +1,15 @@
-#pragma once
+#ifndef EXT_STD_RANGES_HPP
+#define EXT_STD_RANGES_HPP
 
 //          Copyright Rein Halbersma 2014-2024.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <ranges>
+#include <ranges>       // begin, end, range_adaptor_closure, range_value_t, view_interface
+                        // all_t 
+                        // input_range, view, viewable_range
+#include <utility>      // forward, move                        
 
 namespace xstd {
 namespace ranges::views {
@@ -38,8 +42,8 @@ struct as_set_fn
         std::ranges::range_adaptor_closure<as_set_fn> 
 {
         template <std::ranges::viewable_range R>
-                requires requires { as_set_view(std::declval<R>()); }
         [[nodiscard]] constexpr auto operator()(R&& r) const noexcept
+                requires requires { as_set_view(std::forward<R>(r)); }
         {
                 return as_set_view(std::forward<R>(r));
         }
@@ -52,3 +56,5 @@ inline constexpr as_set_fn as_set;
 namespace views = ranges::views;
 
 }       // namespace xstd
+
+#endif  // include guard

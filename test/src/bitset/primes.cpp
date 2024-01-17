@@ -5,6 +5,7 @@
 
 #include <xstd/bit_set.hpp>             // bit_set
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
+#include <ext/std/bitset.hpp>           // bitset
 #include <ext/std/ranges.hpp>           // as_set
 #include <boost/mpl/vector.hpp>         // vector
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
@@ -22,7 +23,7 @@ BOOST_AUTO_TEST_CASE(XstdBitSet)
         constexpr auto N = 100;
         using set_type = xstd::bit_set<N>;
 
-        auto primes = set_type();
+        set_type primes;
         primes.fill();
         primes.erase(0);
         primes.erase(1);
@@ -35,16 +36,16 @@ BOOST_AUTO_TEST_CASE(XstdBitSet)
 
         auto const twins = primes & primes >> 2;
 
-        BOOST_CHECK(fmt::format("{}", primes) == format_primes);
-        BOOST_CHECK(fmt::format("{}", twins)  == format_twins);
+        BOOST_CHECK_EQUAL(fmt::format("{}", primes), format_primes);
+        BOOST_CHECK_EQUAL(fmt::format("{}", twins),  format_twins);
 }
 
-BOOST_AUTO_TEST_CASE(BoostDynamicBitset)
+BOOST_AUTO_TEST_CASE(StdBitset)
 {
         constexpr auto N = 100uz;
-        using set_type = boost::dynamic_bitset<>;
+        using set_type = std::bitset<N>;
 
-        auto primes = set_type(N);
+        set_type primes;
         primes.set();
         primes.reset(0);
         primes.reset(1);
@@ -57,8 +58,30 @@ BOOST_AUTO_TEST_CASE(BoostDynamicBitset)
 
         auto const twins = primes & primes >> 2;
 
-        BOOST_CHECK(fmt::format("{}", primes | xstd::views::as_set) == format_primes);
-        BOOST_CHECK(fmt::format("{}", twins  | xstd::views::as_set) == format_twins);
+        BOOST_CHECK_EQUAL(fmt::format("{}", primes | xstd::views::as_set), format_primes);
+        BOOST_CHECK_EQUAL(fmt::format("{}", twins  | xstd::views::as_set), format_twins);
+}
+
+BOOST_AUTO_TEST_CASE(BoostDynamicBitset)
+{
+        constexpr auto N = 100uz;
+        using set_type = boost::dynamic_bitset<>;
+
+        set_type primes(N);
+        primes.set();
+        primes.reset(0);
+        primes.reset(1);
+
+        for (auto p : primes | std::views::take_while([](auto x) { return x * x < N; })) {
+                for (auto m : std::views::iota(p * p, N) | std::views::stride(p)) {
+                        primes.reset(m);
+                }
+        }
+
+        auto const twins = primes & primes >> 2;
+
+        BOOST_CHECK_EQUAL(fmt::format("{}", primes | xstd::views::as_set), format_primes);
+        BOOST_CHECK_EQUAL(fmt::format("{}", twins  | xstd::views::as_set), format_twins);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -9,7 +9,7 @@
 #include <concepts>                     // constructible_from, unsigned_integral
 #include <cstddef>                      // ptrdiff_t
 #include <iterator>                     // bidirectional_iterator_tag, iter_value_t
-#include <ranges>                       // find_if, iota, reverse, view_interface
+#include <ranges>                       // find_if, iota, reverse
 #include <type_traits>                  // is_class_v
 
 namespace boost {
@@ -173,49 +173,49 @@ template<std::unsigned_integral Block, class Allocator>
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
-        return std::reverse_iterator(bs.end());
+        return std::reverse_iterator(end(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return std::reverse_iterator(bs.end());
+        return std::reverse_iterator(end(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rend(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
-        return std::reverse_iterator(bs.begin());
+        return std::reverse_iterator(begin(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rend(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return std::reverse_iterator(bs.begin());
+        return std::reverse_iterator(begin(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return boost::begin(bs);
+        return begin(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return boost::end(bs);
+        return end(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto crbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return boost::rbegin(bs);
+        return rbegin(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto crend(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return boost::rend(bs);
+        return rend(bs);
 }
 
 }       // namespace boost

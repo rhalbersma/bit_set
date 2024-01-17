@@ -26,6 +26,7 @@ using int_set_types = boost::mpl::vector
 BOOST_AUTO_TEST_CASE_TEMPLATE(TwinPrimes, set_type, int_set_types)
 {
         auto primes = std::views::iota(2, N) | std::ranges::to<set_type>();
+        
         for (auto p : primes | std::views::take_while([](auto x) { return x * x < N; })) {
                 for (auto m : std::views::iota(p * p, N) | std::views::stride(p)) {
                         primes.erase(m);

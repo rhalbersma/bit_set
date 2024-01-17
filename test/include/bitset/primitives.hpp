@@ -368,7 +368,7 @@ struct op_minus
         if constexpr (requires { a.is_subset_of(b); }) {
                 return a.is_subset_of(b);
         } else {
-                return xstd::is_subset_of(a, b);
+                return is_subset_of(a, b);
         }
 }
 
@@ -385,7 +385,7 @@ struct mem_is_subset_of
         if constexpr (requires { a.is_proper_subset_of(b); }) {
                 return a.is_proper_subset_of(b);
         } else {
-                return xstd::is_proper_subset_of(a, b);
+                return is_proper_subset_of(a, b);
         }
 }
 
@@ -402,7 +402,7 @@ struct mem_is_proper_subset_of
         if constexpr (requires { a.intersects(b); }) {
                 return a.intersects(b);
         } else {
-                return xstd::intersects(a, b);
+                return intersects(a, b);
         }
 }
 
