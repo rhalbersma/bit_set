@@ -363,27 +363,54 @@ struct op_minus
         }
 };
 
+[[nodiscard]] auto fn_is_subset_of(auto const& a, auto const& b) noexcept
+{
+        if constexpr (requires { a.is_subset_of(b); }) {
+                return a.is_subset_of(b);
+        } else {
+                return xstd::is_subset_of(a, b);
+        }
+}
+
 struct mem_is_subset_of
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(is_subset_of(a, b), (a & ~b).none());
+                BOOST_CHECK_EQUAL(fn_is_subset_of(a, b), (a & ~b).none());
         }
 };
+
+[[nodiscard]] auto fn_is_proper_subset_of(auto const& a, auto const& b) noexcept
+{
+        if constexpr (requires { a.is_proper_subset_of(b); }) {
+                return a.is_proper_subset_of(b);
+        } else {
+                return xstd::is_proper_subset_of(a, b);
+        }
+}
 
 struct mem_is_proper_subset_of
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(is_proper_subset_of(a, b), is_subset_of(a, b) && a != b);
+                BOOST_CHECK_EQUAL(fn_is_proper_subset_of(a, b), fn_is_subset_of(a, b) && a != b);
         }
 };
+
+[[nodiscard]] auto fn_intersects(auto const& a, auto const& b) noexcept
+{
+        if constexpr (requires { a.intersects(b); }) {
+                return a.intersects(b);
+        } else {
+                return xstd::intersects(a, b);
+        }
+}
 
 struct mem_intersects
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(intersects(a, b), (a & b).any());
+                BOOST_CHECK_EQUAL(fn_intersects(a, b), (a & b).any());
         }
 };
 

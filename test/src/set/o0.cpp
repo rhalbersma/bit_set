@@ -23,7 +23,7 @@ using namespace xstd;
 
 using int_set_types = boost::mpl::vector
 <       std::set<int>
-//,       boost::container::flat_set<int>
+,       boost::container::flat_set<int>
 ,       bit_set<  0, uint8_t>
 ,       bit_set<  1, uint8_t>
 ,       bit_set<  7, uint8_t>

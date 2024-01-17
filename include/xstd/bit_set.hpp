@@ -69,14 +69,13 @@ public:
                 value_type m_val;
 
         public:
-                [[nodiscard]] constexpr iterator() noexcept = default;
-
-                [[nodiscard]] explicit constexpr iterator(pimpl_type p, value_type v) noexcept
+                [[nodiscard]] constexpr          iterator()                           noexcept = default;
+                [[nodiscard]] constexpr explicit iterator(pimpl_type p, value_type v) noexcept
                 :
                         m_ptr(p),
                         m_val(v)
                 {
-                        assert(is_valid_iterator(m_val));
+                        assert(is_valid());
                 }
 
                 [[nodiscard]] constexpr auto operator==(iterator const& other) const noexcept
@@ -93,16 +92,16 @@ public:
                 [[nodiscard]] constexpr auto operator*() const noexcept
                 {
                         if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_valid_reference(m_val));
+                        assert(is_dereferencable());
                         return reference(*m_ptr, m_val);
                 }
 
                 constexpr auto& operator++() noexcept
                 {
                         if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_incrementable(m_val));
+                        assert(is_incrementable());
                         m_val = m_ptr->find_next(m_val + 1);
-                        assert(is_decrementable(m_val));
+                        assert(is_decrementable());
                         return *this;
                 }
 
@@ -114,9 +113,9 @@ public:
                 constexpr auto& operator--() noexcept
                 {
                         if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_decrementable(m_val));
+                        assert(is_decrementable());
                         m_val = m_ptr->find_prev(m_val - 1);
-                        assert(is_incrementable(m_val));
+                        assert(is_incrementable());
                         return *this;
                 }
 
@@ -124,6 +123,27 @@ public:
                 {
                         auto nrv = *this; --*this; return nrv;
                 }
+
+        private:
+                [[nodiscard]] constexpr auto is_valid() const noexcept
+                {
+                        return m_ptr != nullptr && 0 <= m_val && m_val <= N;
+                }
+
+                [[nodiscard]] constexpr auto is_dereferencable() const noexcept
+                {
+                        return m_ptr != nullptr && bit_set::is_valid(m_val);
+                }
+
+                [[nodiscard]] constexpr auto is_incrementable() const noexcept
+                {
+                        return m_ptr != nullptr && bit_set::is_valid(m_val);
+                }
+
+                [[nodiscard]] constexpr auto is_decrementable() const noexcept
+                {
+                        return m_ptr != nullptr && bit_set::is_valid(m_val - 1);
+                }                                                 
         };
 
         class reference
@@ -141,13 +161,13 @@ public:
                 [[nodiscard]] constexpr  reference(reference const&) noexcept = default;
                 [[nodiscard]] constexpr  reference(reference &&)     noexcept = default;
 
-                [[nodiscard]] explicit constexpr reference(rimpl_type r, value_type v) noexcept
+                [[nodiscard]] constexpr explicit reference(rimpl_type r, value_type v) noexcept
                 :
                         m_ref(r),
                         m_val(v)
                 {
                         if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_valid_reference(m_val));
+                        assert(is_valid());
                 }
 
                 [[nodiscard]] constexpr auto operator==(reference const& other) const noexcept
@@ -161,17 +181,23 @@ public:
                         return iterator(&m_ref, m_val);
                 }
 
-                [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
+                [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
                 {
                         return m_val;
                 }
 
                 template<class T>
-                [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_val)))
+                [[nodiscard]] constexpr explicit(false) operator T() const noexcept(noexcept(T(m_val)))
                         requires std::is_class_v<T> && std::constructible_from<T, value_type>
                 {
                         return m_val;
                 }
+
+        private:
+                [[nodiscard]] constexpr auto is_valid() const noexcept
+                {
+                        return bit_set::is_valid(m_val);
+                }                
         };
 
         [[nodiscard]] friend constexpr auto format_as(reference const& ref) noexcept
@@ -654,7 +680,7 @@ public:
         constexpr auto& operator<<=(value_type n [[maybe_unused]]) noexcept
         {
                 if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_valid_reference(n));
+                assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
                         m_data[0] >>= n;
                 } else if constexpr (num_blocks >= 2) {
@@ -688,7 +714,7 @@ public:
         constexpr auto& operator>>=(value_type n [[maybe_unused]]) noexcept
         {
                 if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_valid_reference(n));
+                assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
                         m_data[0] <<= n;
                 } else if constexpr (num_blocks >= 2) {
@@ -809,29 +835,14 @@ private:
         static constexpr auto left_bit = block_size - 1;
         static constexpr auto left_mask = static_cast<block_type>(static_cast<block_type>(1) << left_bit);
 
-        [[nodiscard]] static constexpr auto is_valid_reference(value_type n) noexcept
+        [[nodiscard]] static constexpr auto is_valid(value_type n) noexcept
         {
                 if constexpr (N == 0) {
                         return false;
                 } else {
                         return 0 <= n && n < N;
                 }
-        }
-
-        [[nodiscard]] static constexpr auto is_valid_iterator(value_type n) noexcept
-        {
-                return 0 <= n && n <= N;
-        }
-
-        [[nodiscard]] static constexpr auto is_incrementable(value_type n) noexcept
-        {
-                return is_valid_reference(n);
-        }
-
-        [[nodiscard]] static constexpr auto is_decrementable(value_type n) noexcept
-        {
-                return is_valid_reference(n - 1);
-        }        
+        } 
 
         [[nodiscard]] static constexpr auto div(value_type numer, value_type denom) noexcept
                 -> std::pair<value_type, value_type>
@@ -925,7 +936,6 @@ private:
 
         [[nodiscard]] constexpr auto find_next(value_type n) const noexcept
         {
-                assert(is_valid_iterator(n));
                 if (n == N) {
                         return N;
                 }
@@ -956,7 +966,6 @@ private:
         [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
         {
                 if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_valid_reference(n));
                 assert(!empty());
                 if constexpr (num_blocks == 1) {
                         return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (left_bit - n)));
@@ -1008,13 +1017,13 @@ template<int N, std::unsigned_integral Block>
 }
 
 template<int N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, int n) noexcept
+[[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, std::ranges::range_value_t<bit_set<N, Block>> n) noexcept
 {
         auto nrv = lhs; nrv <<= n; return nrv;
 }
 
 template<int N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, int n) noexcept
+[[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, std::ranges::range_value_t<bit_set<N, Block>> n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
 }

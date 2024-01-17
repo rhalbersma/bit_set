@@ -37,7 +37,7 @@ class bitset
 {
         bit_set<N, Block> m_impl;
 
-        explicit constexpr bitset(bit_set<N, Block> const& bs) noexcept
+        constexpr explicit bitset(bit_set<N, Block> const& bs) noexcept
         :
                 m_impl(bs)
         {}
@@ -45,7 +45,7 @@ public:
         bitset() = default;
 
         template<class CharT, class Traits, class Allocator>
-        explicit constexpr bitset(
+        constexpr explicit bitset(
                 std::basic_string<CharT, Traits, Allocator> const& str,
                 std::basic_string<CharT, Traits, Allocator>::size_type pos = 0,
                 std::basic_string<CharT, Traits, Allocator>::size_type n = std::basic_string<CharT, Traits, Allocator>::npos,
@@ -72,7 +72,7 @@ public:
         }
 
         template<class CharT>
-        explicit constexpr bitset(
+        constexpr explicit bitset(
                 CharT const* str,
                 std::basic_string<CharT>::size_type n = std::basic_string<CharT>::npos,
                 CharT zero = CharT('0'),
@@ -297,24 +297,6 @@ template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator-(bitset<N, Block> const& lhs, bitset<N, Block> const& rhs) noexcept
 {
         return bitset<N, Block>(lhs.m_impl - rhs.m_impl);
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto is_subset_of(bitset<N, Block> const& lhs, bitset<N, Block> const& rhs) noexcept
-{
-        return lhs.is_subset_of(rhs);
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto is_proper_subset_of(bitset<N, Block> const& lhs, bitset<N, Block> const& rhs) noexcept
-{
-        return lhs.is_proper_subset_of(rhs);
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto intersects(bitset<N, Block> const& lhs, bitset<N, Block> const& rhs) noexcept
-{
-        return lhs.intersects(rhs);
 }
 
 template<class CharT, class Traits, std::size_t N, std::unsigned_integral Block>

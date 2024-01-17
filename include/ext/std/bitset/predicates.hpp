@@ -19,7 +19,7 @@ auto is_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 template<std::size_t N>
 auto is_proper_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return is_subset_of(lhs, rhs) && lhs != rhs;
+        return xstd::is_subset_of(lhs, rhs) && lhs != rhs;
 }
 
 template<std::size_t N>

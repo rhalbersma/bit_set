@@ -5,6 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <ext/std/ranges.hpp>
 #include <bitset>       // bitset
 #include <cassert>      // assert
 #include <concepts>     // constructible_from
@@ -136,7 +137,7 @@ public:
         [[nodiscard]] constexpr  bitset_reference(bitset_reference const&) noexcept = default;
         [[nodiscard]] constexpr  bitset_reference(bitset_reference &&    ) noexcept = default;
 
-        [[nodiscard]] explicit constexpr bitset_reference(rimpl_type r, value_type v) noexcept
+        [[nodiscard]] constexpr explicit bitset_reference(rimpl_type r, value_type v) noexcept
         :
                 m_ref(r),
                 m_val(v)
@@ -155,13 +156,13 @@ public:
                 return bitset_iterator<N>(&m_ref, m_val);
         }
 
-        [[nodiscard]] explicit(false) constexpr operator value_type() const noexcept
+        [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
         {
                 return m_val;
         }
 
         template<class T>
-        [[nodiscard]] explicit(false) constexpr operator T() const noexcept(noexcept(T(m_val)))
+        [[nodiscard]] constexpr explicit(false) operator T() const noexcept(noexcept(T(m_val)))
                 requires std::is_class_v<T> && std::constructible_from<T, value_type>
         {
                 return m_val;
@@ -200,36 +201,15 @@ template<std::size_t N>
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto cbegin(std::bitset<N> const& bs) noexcept(noexcept(xstd::begin(bs)))
-        -> decltype(xstd::begin(bs))
+[[nodiscard]] constexpr auto cbegin(std::bitset<N> const& bs) noexcept
 {
         return xstd::begin(bs);
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto cend(std::bitset<N> const& bs) noexcept(noexcept(xstd::end(bs)))
-        -> decltype(xstd::end(bs))
+[[nodiscard]] constexpr auto cend(std::bitset<N> const& bs) noexcept
 {
         return xstd::end(bs);
 }
-
-template<std::size_t N>
-class set_view 
-: 
-        public std::ranges::view_interface<set_view<N>>
-{
-        std::bitset<N> const& m_data;
-
-public:        
-        using key_type = int;
-
-        [[nodiscard]] constexpr set_view(std::bitset<N> const& bs) noexcept
-        : 
-                m_data(bs) 
-        {}
-
-        [[nodiscard]] constexpr auto begin() const noexcept { return xstd::begin(m_data); }
-        [[nodiscard]] constexpr auto end()   const noexcept { return xstd::end(m_data); }
-};
 
 }       // namespace xstd

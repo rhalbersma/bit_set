@@ -50,8 +50,8 @@ class int_
 {
         int m_value;
 public:
-        explicit(false) constexpr int_(int v) noexcept : m_value(v) {}
-        explicit(false) constexpr operator int() const noexcept { return m_value; }
+        [[nodiscard]] constexpr explicit(false) int_(int v) noexcept : m_value(v) {}
+        [[nodiscard]] constexpr explicit(false) operator int() const noexcept { return m_value; }
 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, int_set_types)
