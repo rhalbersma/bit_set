@@ -59,8 +59,6 @@ This library provides one of the four outlined quadrants: `xstd::bit_set<N>` as 
 
 The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/shr5TEP9M)
-
 ```cpp
 #include <xstd/bit_set.hpp>
 #include <fmt/ranges.h>
@@ -71,22 +69,21 @@ using set_type = xstd::bit_set<N>;
 int main()
 {
     // initialize all numbers from [2, N)
-    set_type primes;
-    primes.fill();                              // renamed set() member from std::bitset<N>
-    primes.erase(0);
-    primes.erase(1);
-
+    auto primes = std::views::iota(2, N) | std::ranges::to<set_type>();
+    
     // find all primes below N
-    for (auto const& p : primes) {              // range-for finds begin() / end() iterators
-        auto const p_squared = p * p;
-        if (p_squared >= N) break;
-        for (auto n = p_squared; n < N; n += p) {
-            primes.erase(n);
+    // iterate over candidate primes and remove their multiples
+    for (auto p : primes | std::views::take_while([](auto x) { return x * x < N; })) {
+        for (auto m : std::views::iota(p * p, N) | std::views::stride(p)) {
+            primes.erase(m);
         }
     }
 
     // find all twin primes below N
-    auto const twins = primes & primes >> 2;    // bitwise operators from std::bitset<N>
+    // iterate over adjacent primes, filter if their difference is 2 and select the first
+    auto const twins = primes | std::views::pairwise | std::views::filter([](auto x) { 
+        return std::get<0>(x) + 2 == std::get<1>(x);
+    }) | std::views::elements<0> | std::ranges::to<set_type>();
 
     // pretty-print solution
     fmt::println("{}", primes);
@@ -106,6 +103,7 @@ How would the Sieve of Eratosthenes code look when using a sequence of bits? The
 
 | Library                   | Try it online |
 | :------                   | :------------ |
+| `xstd::bit_set<N>`        | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/shr5TEP9M) |
 | `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/zGjofjToj) |
 | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/PeKoK8zvd) |
 
