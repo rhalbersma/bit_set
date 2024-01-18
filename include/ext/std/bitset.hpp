@@ -14,6 +14,7 @@
 #include <ranges>       // begin, end, find_if, rbegin, rend
                         // iota, reverse
 #include <type_traits>  // is_class_v
+#include <utility>      // unreachable
 
 namespace std {
 
@@ -32,19 +33,31 @@ auto operator-(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 template<std::size_t N>
 auto is_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return (lhs & ~rhs).none();
+        if constexpr (N == 0) {
+                return true;
+        } else {
+                return (lhs & ~rhs).none();
+        }
 }
 
 template<std::size_t N>
 auto is_proper_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return is_subset_of(lhs, rhs) && lhs != rhs;
+        if constexpr (N == 0) {
+                return false;
+        } else {
+                return is_subset_of(lhs, rhs) && lhs != rhs;
+        }
 }
 
 template<std::size_t N>
 auto intersects(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 {
-        return (lhs & rhs).any();
+        if constexpr (N == 0) {
+                return false;
+        } else {
+                return (lhs & rhs).any();
+        }
 }
 
 template<std::size_t N>
@@ -72,27 +85,32 @@ public:
                 m_ptr(p),
                 m_val(v)
         {
-                assert(m_val <= N);
+                assert(is_valid());
         }
 
         [[nodiscard]] constexpr auto operator==(bitset_iterator const& other) const noexcept
                 -> bool
         {
-                assert(this->m_ptr == other.m_ptr);
-                return this->m_val == other.m_val;
+                assert(is_comparable(other));
+                if constexpr (N == 0) {
+                        return true;
+                } else {
+                        return this->m_val == other.m_val;
+                }
         }
 
         [[nodiscard]] constexpr auto operator*() const noexcept
         {
-                assert(m_val < N);
+                assert(is_dereferencable());
                 return reference(*m_ptr, m_val);
         }
 
         constexpr auto& operator++() noexcept
         {
-                assert(m_val < N);
+                if constexpr (N == 0) { std::unreachable(); } 
+                assert(is_incrementable());
                 m_val = find_next(m_val);
-                assert(m_val <= N);
+                assert(is_decrementable());
                 return *this;
         }
 
@@ -103,9 +121,10 @@ public:
 
         constexpr auto& operator--() noexcept
         {
-                assert(m_val <= N);
+                if constexpr (N == 0) { std::unreachable(); } 
+                assert(is_decrementable());
                 m_val = find_prev(m_val);
-                assert(m_val < N);
+                assert(is_incrementable());
                 return *this;
         }
 
@@ -133,6 +152,31 @@ private:
                         return (*m_ptr)[i];
                 });
         }
+
+        [[nodiscard]] constexpr auto is_valid() const noexcept
+        {
+                return m_ptr != nullptr && m_val <= N;
+        }
+
+        [[nodiscard]] constexpr auto is_comparable(bitset_iterator other) const noexcept
+        {
+                return this->m_ptr == other.m_ptr;
+        }
+
+        [[nodiscard]] constexpr auto is_dereferencable() const noexcept
+        {
+                return m_ptr != nullptr && m_val < N;
+        }
+
+        [[nodiscard]] constexpr auto is_incrementable() const noexcept
+        {
+                return m_ptr != nullptr && m_val < N;
+        }
+
+        [[nodiscard]] constexpr auto is_decrementable() const noexcept
+        {
+                return m_ptr != nullptr && 0 < m_val && m_val <= N;
+        }        
 };
 
 template<std::size_t N>
@@ -156,7 +200,8 @@ public:
                 m_ref(r),
                 m_val(v)
         {
-                assert(m_val < N);
+                if constexpr (N == 0) { std::unreachable(); }                 
+                assert(is_valid());
         }
 
         [[nodiscard]] constexpr auto operator==(bitset_reference const& other) const noexcept
@@ -181,6 +226,12 @@ public:
         {
                 return m_val;
         }
+
+private:
+        [[nodiscard]] constexpr auto is_valid() const noexcept
+        {
+                return m_val < N;
+        } 
 };
 
 template<std::size_t N>
@@ -195,7 +246,9 @@ namespace detail {
 template<std::size_t N>
 [[nodiscard]] constexpr auto find_first(std::bitset<N> const* bs) noexcept
 {
-        if constexpr (requires { bs->_Find_first(); }) {
+        if constexpr (N == 0) {
+                return N;
+        } else if constexpr (requires { bs->_Find_first(); }) {
                 return bs->_Find_first();
         } else {
                 return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
