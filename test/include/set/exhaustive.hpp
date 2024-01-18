@@ -19,7 +19,7 @@
 namespace xstd {
 
 template<class T, std::size_t L>
-inline auto const limit_v = static_cast<int>(std::min(L, T().max_size()));
+inline auto const limit_v = static_cast<int>(std::ranges::min(L, T().max_size()));
 
 inline constexpr auto L1 = 128;
 inline constexpr auto L2 =  64;

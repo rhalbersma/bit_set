@@ -15,7 +15,7 @@
 #include <cstddef>              // ptrdiff_t, size_t
 #include <functional>           // identity, less
 #include <initializer_list>     // initializer_list
-#include <iterator>             // bidirectional_iterator_tag, reverse_iterator
+#include <iterator>             // bidirectional_iterator_tag, iter_value_t, reverse_iterator
                                 // input_iterator, sentinel_for
 #include <limits>               // digits
 #include <ranges>               // begin, distance, empty, end, from_range_t, rbegin, rend, subrange
@@ -31,13 +31,13 @@ template<int N, std::unsigned_integral>
         requires (N >= 0) 
 class bit_set;
 
-[[nodiscard]] constexpr auto bit_align(int alignment, int size) noexcept
+[[nodiscard]] constexpr auto aligned_size(int alignment, int size) noexcept
 {
         return ((size - 1 + alignment) / alignment) * alignment;
 }
 
 template<int N, std::unsigned_integral Block = std::size_t>
-using bit_set_aligned = bit_set<bit_align(std::numeric_limits<Block>::digits, N), Block>;
+using bit_set_aligned = bit_set<aligned_size(std::numeric_limits<Block>::digits, N), Block>;
 
 template<int N, std::unsigned_integral Block = std::size_t>
         requires (N >= 0)
@@ -201,7 +201,7 @@ public:
         };
 
         [[nodiscard]] friend constexpr auto format_as(reference const& ref) noexcept
-                -> value_type
+                -> std::iter_value_t<iterator>
         {
                 return ref;
         }
@@ -215,7 +215,7 @@ public:
 
 private:        
         static constexpr auto block_size = std::numeric_limits<Block>::digits;
-        static constexpr auto num_bits = bit_align(block_size, N);
+        static constexpr auto num_bits   = aligned_size(block_size, N);
         static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, 1);
 
         block_type m_data[num_blocks]{};                        // zero-initialization
@@ -825,15 +825,15 @@ public:
         }
 
 private:
-        static constexpr auto zero = static_cast<block_type>( 0);
-        static constexpr auto ones = static_cast<block_type>(-1);
+        static constexpr auto zero            = static_cast<block_type>( 0);
+        static constexpr auto ones            = static_cast<block_type>(-1);
         static constexpr auto has_unused_bits = num_bits > N;
         static constexpr auto num_unused_bits = num_bits - N;
-        static constexpr auto used_bits = static_cast<block_type>(ones << num_unused_bits);
-        static constexpr auto last_block = num_blocks - 1;
-        static constexpr auto last_bit = num_bits - 1;
-        static constexpr auto left_bit = block_size - 1;
-        static constexpr auto left_mask = static_cast<block_type>(static_cast<block_type>(1) << left_bit);
+        static constexpr auto used_bits       = static_cast<block_type>(ones << num_unused_bits);
+        static constexpr auto last_block      = num_blocks - 1;
+        static constexpr auto last_bit        = num_bits - 1;
+        static constexpr auto left_bit        = block_size - 1;
+        static constexpr auto left_mask       = static_cast<block_type>(static_cast<block_type>(1) << left_bit);
 
         [[nodiscard]] static constexpr auto is_valid(value_type n) noexcept
         {
@@ -1085,25 +1085,25 @@ template<int N, std::unsigned_integral Block>
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto cbegin(bit_set<N, Block> const& bs) noexcept
 {
-        return begin(bs);
+        return bs.cbegin();
 }
 
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto cend(bit_set<N, Block> const& bs) noexcept
 {
-        return end(bs);
+        return bs.cend();
 }
 
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto crbegin(bit_set<N, Block> const& bs) noexcept
 {
-        return rbegin(bs);
+        return bs.crbegin();
 }
 
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto crend(bit_set<N, Block> const& bs) noexcept
 {
-        return rend(bs);
+        return bs.crend();
 }
 
 template<int N, std::unsigned_integral Block>
@@ -1115,8 +1115,7 @@ template<int N, std::unsigned_integral Block>
 template<int N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto ssize(bit_set<N, Block> const& bs) noexcept
 {
-        using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(bs.size())>>;
-        return static_cast<R>(bs.size());
+        return bs.ssize();
 }
 
 template<int N, std::unsigned_integral Block>

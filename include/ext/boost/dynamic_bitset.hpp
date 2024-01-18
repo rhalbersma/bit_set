@@ -8,8 +8,9 @@
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <concepts>                     // constructible_from, unsigned_integral
 #include <cstddef>                      // ptrdiff_t
-#include <iterator>                     // bidirectional_iterator_tag, iter_value_t
-#include <ranges>                       // find_if, iota, reverse
+#include <iterator>                     // bidirectional_iterator_tag, iter_value_t, reverse_iterator
+#include <ranges>                       // begin, end, find_if, min, rbegin, rend
+                                        // iota, reverse
 #include <type_traits>                  // is_class_v
 
 namespace boost {
@@ -82,10 +83,10 @@ public:
         }
 
 private:
-        [[nodiscard]] auto find_prev(std::size_t n) noexcept
+        [[nodiscard]] auto find_prev(value_type n) noexcept
         {
                 assert(m_ptr->any());
-                return *std::ranges::find_if(std::views::iota(0uz, std::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) { 
+                return *std::ranges::find_if(std::views::iota(0uz, std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) { 
                         return (*m_ptr)[i]; 
                 });
         }        
@@ -173,49 +174,49 @@ template<std::unsigned_integral Block, class Allocator>
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
-        return std::reverse_iterator(end(bs));
+        return std::reverse_iterator(std::ranges::end(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return std::reverse_iterator(end(bs));
+        return std::reverse_iterator(std::ranges::end(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rend(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
-        return std::reverse_iterator(begin(bs));
+        return std::reverse_iterator(std::ranges::begin(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rend(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return std::reverse_iterator(begin(bs));
+        return std::reverse_iterator(std::ranges::begin(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return begin(bs);
+        return std::ranges::begin(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return end(bs);
+        return std::ranges::end(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto crbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return rbegin(bs);
+        return std::ranges::rbegin(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto crend(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return rend(bs);
+        return std::ranges::rend(bs);
 }
 
 }       // namespace boost

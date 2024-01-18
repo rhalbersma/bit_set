@@ -10,8 +10,9 @@
 #include <cassert>      // assert
 #include <concepts>     // constructible_from
 #include <cstddef>      // ptrdiff_t, size_t
-#include <iterator>     // bidirectional_iterator_tag, iter_value_t
-#include <ranges>       // iota, reverse
+#include <iterator>     // bidirectional_iterator_tag, iter_value_t, reverse_iterator
+#include <ranges>       // begin, end, find_if, rbegin, rend
+                        // iota, reverse
 #include <type_traits>  // is_class_v
 
 namespace std {
@@ -189,7 +190,7 @@ template<std::size_t N>
         return ref;
 }
 
-namespace impl {
+namespace detail {
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto find_first(std::bitset<N> const* bs) noexcept
@@ -203,18 +204,18 @@ template<std::size_t N>
         }
 }
 
-}       // namespace impl
+}       // namespace detail
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(std::bitset<N>& bs) noexcept
 {
-        return bitset_iterator<N>(&bs, impl::find_first(&bs));
+        return bitset_iterator<N>(&bs, detail::find_first(&bs));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(std::bitset<N> const& bs) noexcept
 {
-        return bitset_iterator<N>(&bs, impl::find_first(&bs));
+        return bitset_iterator<N>(&bs, detail::find_first(&bs));
 }
 
 template<std::size_t N>
@@ -232,49 +233,49 @@ template<std::size_t N>
 template<std::size_t N>
 [[nodiscard]] constexpr auto rbegin(std::bitset<N>& bs) noexcept
 {
-        return std::reverse_iterator(end(bs));
+        return std::reverse_iterator(std::ranges::end(bs));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto rbegin(std::bitset<N> const& bs) noexcept
 {
-        return std::reverse_iterator(end(bs));
+        return std::reverse_iterator(std::ranges::end(bs));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto rend(std::bitset<N>& bs) noexcept
 {
-        return std::reverse_iterator(begin(bs));
+        return std::reverse_iterator(std::ranges::begin(bs));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto rend(std::bitset<N> const& bs) noexcept
 {
-        return std::reverse_iterator(begin(bs));
+        return std::reverse_iterator(std::ranges::begin(bs));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto cbegin(std::bitset<N> const& bs) noexcept
 {
-        return begin(bs);
+        return std::ranges::begin(bs);
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto cend(std::bitset<N> const& bs) noexcept
 {
-        return end(bs);
+        return std::ranges::end(bs);
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto crbegin(std::bitset<N> const& bs) noexcept
 {
-        return rbegin(bs);
+        return std::ranges::rbegin(bs);
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto crend(std::bitset<N> const& bs)  noexcept
 {
-        return rend(bs);
+        return std::ranges::rend(bs);
 }
 
 }       // namespace xstd

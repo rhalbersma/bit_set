@@ -57,8 +57,8 @@ public:
                         throw std::out_of_range("");
                 }
                 assert(m_impl.empty());
-                auto const rlen = std::min(n, str.size() - pos);
-                auto const M = std::min(N, rlen);
+                auto const rlen = std::ranges::min(n, str.size() - pos);
+                auto const M = std::ranges::min(N, rlen);
                 for (auto i = 0uz; i < M; ++i) {
                         auto const ch = str[pos + M - 1 - i];
                         if (Traits::eq(ch, one)) {
