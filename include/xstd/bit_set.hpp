@@ -31,13 +31,13 @@ template<int N, std::unsigned_integral>
         requires (N >= 0) 
 class bit_set;
 
-[[nodiscard]] constexpr auto aligned_size(int alignment, int size) noexcept
+[[nodiscard]] constexpr auto aligned_size(int size, int alignment) noexcept
 {
         return ((size - 1 + alignment) / alignment) * alignment;
 }
 
 template<int N, std::unsigned_integral Block = std::size_t>
-using bit_set_aligned = bit_set<aligned_size(std::numeric_limits<Block>::digits, N), Block>;
+using bit_set_aligned = bit_set<aligned_size(N, std::numeric_limits<Block>::digits), Block>;
 
 template<int N, std::unsigned_integral Block = std::size_t>
         requires (N >= 0)
@@ -81,7 +81,7 @@ public:
                 [[nodiscard]] constexpr auto operator==(iterator const& other) const noexcept
                         -> bool
                 {
-                        assert(this->m_ptr == other.m_ptr);
+                        assert(is_comparable(other));
                         if constexpr (N == 0) {
                                 return true;
                         } else {
@@ -128,6 +128,11 @@ public:
                 [[nodiscard]] constexpr auto is_valid() const noexcept
                 {
                         return m_ptr != nullptr && 0 <= m_val && m_val <= N;
+                }
+
+                [[nodiscard]] constexpr auto is_comparable(iterator other) const noexcept
+                {
+                        return this->m_ptr == other.m_ptr;
                 }
 
                 [[nodiscard]] constexpr auto is_dereferencable() const noexcept
@@ -215,7 +220,7 @@ public:
 
 private:        
         static constexpr auto block_size = std::numeric_limits<Block>::digits;
-        static constexpr auto num_bits   = aligned_size(block_size, N);
+        static constexpr auto num_bits   = aligned_size(N, block_size);
         static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, 1);
 
         block_type m_data[num_blocks]{};                        // zero-initialization
