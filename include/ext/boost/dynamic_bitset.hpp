@@ -40,27 +40,27 @@ public:
                 m_ptr(p),
                 m_val(v)
         {
-                assert(m_val < m_ptr->size() || m_val == m_ptr->npos);
+                assert(is_valid());
         }
 
         [[nodiscard]] constexpr auto operator==(dynamic_bitset_iterator const& other) const noexcept
                 -> bool
         {
-                assert(this->m_ptr == other.m_ptr);
+                assert(is_comparable(other));
                 return this->m_val == other.m_val;
         }
 
         [[nodiscard]] constexpr auto operator*() const noexcept
         {
-                assert(m_val < m_ptr->size());
+                assert(is_dereferencable());
                 return reference(*m_ptr, m_val);
         }
 
         auto& operator++() noexcept
         {
-                assert(m_val < m_ptr->size());
+                assert(is_incrementable());
                 m_val = m_ptr->find_next(m_val);
-                assert(m_val < m_ptr->size() || m_val == m_ptr->npos);
+                assert(is_decrementable());
                 return *this;
         }
 
@@ -71,9 +71,9 @@ public:
 
         auto& operator--() noexcept
         {
-                assert(m_val < m_ptr->size() || m_val == m_ptr->npos);
+                assert(is_decrementable());
                 m_val = find_prev(m_val);
-                assert(m_val < m_ptr->size());
+                assert(is_incrementable());
                 return *this;
         }
 
@@ -89,7 +89,32 @@ private:
                 return *std::ranges::find_if(std::views::iota(0uz, std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) { 
                         return (*m_ptr)[i]; 
                 });
-        }        
+        }
+
+        [[nodiscard]] constexpr auto is_valid() const noexcept
+        {
+                return m_ptr != nullptr && (m_val < m_ptr->size() || m_val == m_ptr->npos);
+        }
+
+        [[nodiscard]] constexpr auto is_comparable(dynamic_bitset_iterator other) const noexcept
+        {
+                return this->m_ptr == other.m_ptr;
+        }
+
+        [[nodiscard]] constexpr auto is_dereferencable() const noexcept
+        {
+                return m_ptr != nullptr && m_val < m_ptr->size();
+        }
+
+        [[nodiscard]] constexpr auto is_incrementable() const noexcept
+        {
+                return m_ptr != nullptr && m_val < m_ptr->size();
+        }
+
+        [[nodiscard]] constexpr auto is_decrementable() const noexcept
+        {
+                return m_ptr != nullptr && (m_val < m_ptr->size() || m_val == m_ptr->npos);
+        }         
 };
 
 template<std::unsigned_integral Block, class Allocator>
@@ -113,7 +138,7 @@ public:
                 m_ref(r),
                 m_val(v)
         {
-                assert(m_val < m_ref.size());
+                assert(is_valid());
         }
 
         [[nodiscard]] constexpr auto operator==(dynamic_bitset_reference const& other) const noexcept
@@ -138,6 +163,12 @@ public:
         {
                 return m_val;
         }
+
+private:
+        [[nodiscard]] constexpr auto is_valid() const noexcept
+        {
+                return m_val < m_ref.size();
+        }                
 };
 
 template<std::unsigned_integral Block, class Allocator>
