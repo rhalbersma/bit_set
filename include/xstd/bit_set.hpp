@@ -69,8 +69,8 @@ public:
                 value_type m_val;
 
         public:
-                [[nodiscard]] constexpr          iterator()                           noexcept = default;
-                [[nodiscard]] constexpr explicit iterator(pimpl_type p, value_type v) noexcept
+                [[nodiscard]] constexpr iterator()                           noexcept = default;
+                [[nodiscard]] constexpr iterator(pimpl_type p, value_type v) noexcept
                 :
                         m_ptr(p),
                         m_val(v)
@@ -90,10 +90,11 @@ public:
                 }
 
                 [[nodiscard]] constexpr auto operator*() const noexcept
+                        -> reference
                 {
                         if constexpr (N == 0) { std::unreachable(); } 
                         assert(is_dereferencable());
-                        return reference(*m_ptr, m_val);
+                        return { *m_ptr, m_val };
                 }
 
                 constexpr auto& operator++() noexcept
@@ -166,7 +167,7 @@ public:
                 [[nodiscard]] constexpr  reference(reference const&) noexcept = default;
                 [[nodiscard]] constexpr  reference(reference &&)     noexcept = default;
 
-                [[nodiscard]] constexpr explicit reference(rimpl_type r, value_type v) noexcept
+                [[nodiscard]] constexpr reference(rimpl_type r, value_type v) noexcept
                 :
                         m_ref(r),
                         m_val(v)
@@ -182,8 +183,9 @@ public:
                 }
 
                 [[nodiscard]] constexpr auto operator&() const noexcept
+                        -> iterator
                 {
-                        return iterator(&m_ref, m_val);
+                        return { &m_ref, m_val };
                 }
 
                 [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
@@ -295,17 +297,19 @@ public:
         [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator(rend());   }
 
         [[nodiscard]] constexpr auto front() const noexcept
+                -> const_reference
         {
                 if constexpr (N == 0) { std::unreachable(); }
                 assert(!empty());
-                return const_reference(*this, find_front());
+                return { *this, find_front() };
         }
 
         [[nodiscard]] constexpr auto back() const noexcept
+                -> const_reference                
         {
                 if constexpr (N == 0) { std::unreachable(); }
                 assert(!empty());
-                return const_reference(*this, find_back());
+                return { *this, find_back() };
         }
 
         [[nodiscard]] constexpr auto empty() const noexcept
@@ -402,7 +406,7 @@ private:
                 auto const inserted = !(block & mask);
                 block |= mask;
                 assert(contains(x));
-                return { iterator(this, x),  inserted };
+                return { { this, x },  inserted };
         }
 
 public:
@@ -418,9 +422,10 @@ public:
 
 private:
         constexpr auto do_insert(const_iterator /* hint */, value_type x) noexcept
+                -> iterator
         {
                 add(x);
-                return iterator(this, x);
+                return { this, x };
         }
 
 public:
@@ -576,23 +581,27 @@ public:
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) noexcept
+                -> iterator
         {
-                return iterator(this, find_next(x));
+                return { this, find_next(x) };
         }
 
         [[nodiscard]] constexpr auto lower_bound(key_type const& x) const noexcept
+                -> const_iterator
         {
-                return const_iterator(this, find_next(x));
+                return { this, find_next(x) };
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) noexcept
+                -> iterator        
         {
-                return iterator(this, find_next(x + 1));
+                return { this, find_next(x + 1) };
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) const noexcept
+                -> const_iterator
         {
-                return const_iterator(this, find_next(x + 1));
+                return { this, find_next(x + 1) };
         }
 
         [[nodiscard]] constexpr auto equal_range(key_type const& x) noexcept

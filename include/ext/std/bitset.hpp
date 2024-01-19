@@ -101,6 +101,7 @@ public:
 
         [[nodiscard]] constexpr auto operator*() const noexcept
         {
+                if constexpr (N == 0) { std::unreachable(); } 
                 assert(is_dereferencable());
                 return reference(*m_ptr, m_val);
         }
@@ -195,7 +196,7 @@ public:
         [[nodiscard]] constexpr  bitset_reference(bitset_reference const&) noexcept = default;
         [[nodiscard]] constexpr  bitset_reference(bitset_reference &&    ) noexcept = default;
 
-        [[nodiscard]] constexpr explicit bitset_reference(rimpl_type r, value_type v) noexcept
+        [[nodiscard]] constexpr bitset_reference(rimpl_type r, value_type v) noexcept
         :
                 m_ref(r),
                 m_val(v)
@@ -211,8 +212,9 @@ public:
         }
 
         [[nodiscard]] constexpr auto operator&() const noexcept
+                -> bitset_iterator<N>
         {
-                return bitset_iterator<N>(&m_ref, m_val);
+                return { &m_ref, m_val };
         }
 
         [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
@@ -261,26 +263,30 @@ template<std::size_t N>
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(std::bitset<N>& bs) noexcept
+        -> bitset_iterator<N>
 {
-        return bitset_iterator<N>(&bs, detail::find_first(&bs));
+        return { &bs, detail::find_first(&bs) };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(std::bitset<N> const& bs) noexcept
+        -> bitset_iterator<N>
 {
-        return bitset_iterator<N>(&bs, detail::find_first(&bs));
+        return { &bs, detail::find_first(&bs) };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto end(std::bitset<N>& bs) noexcept
+        -> bitset_iterator<N>
 {
-        return bitset_iterator<N>(&bs, N);
+        return { &bs, N };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto end(std::bitset<N> const& bs) noexcept
+        -> bitset_iterator<N>
 {
-        return bitset_iterator<N>(&bs, N);
+        return { &bs, N };
 }
 
 template<std::size_t N>

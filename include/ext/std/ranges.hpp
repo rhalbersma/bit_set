@@ -37,6 +37,8 @@ public:
 template<class R>
 as_set_view(R&&) -> as_set_view<std::views::all_t<R>>;
 
+namespace detail {
+
 struct as_set_fn 
 : 
         std::ranges::range_adaptor_closure<as_set_fn> 
@@ -49,7 +51,9 @@ struct as_set_fn
         }
 };
 
-inline constexpr as_set_fn as_set;
+}       // namespace detail
+
+inline constexpr detail::as_set_fn as_set;
 
 }       // namespace ranges::views
 

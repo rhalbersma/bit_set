@@ -34,8 +34,8 @@ private:
         value_type m_val;
 
 public:
-        [[nodiscard]] constexpr          dynamic_bitset_iterator()                           noexcept = default;
-        [[nodiscard]] constexpr explicit dynamic_bitset_iterator(pimpl_type p, value_type v) noexcept
+        [[nodiscard]] constexpr dynamic_bitset_iterator()                           noexcept = default;
+        [[nodiscard]] constexpr dynamic_bitset_iterator(pimpl_type p, value_type v) noexcept
         :
                 m_ptr(p),
                 m_val(v)
@@ -51,9 +51,10 @@ public:
         }
 
         [[nodiscard]] constexpr auto operator*() const noexcept
+                -> reference
         {
                 assert(is_dereferencable());
-                return reference(*m_ptr, m_val);
+                return { *m_ptr, m_val };
         }
 
         auto& operator++() noexcept
@@ -133,7 +134,7 @@ public:
         [[nodiscard]] constexpr  dynamic_bitset_reference(dynamic_bitset_reference const&) noexcept = default;
         [[nodiscard]] constexpr  dynamic_bitset_reference(dynamic_bitset_reference &&    ) noexcept = default;
 
-        [[nodiscard]] constexpr explicit dynamic_bitset_reference(rimpl_type r, value_type v) noexcept
+        [[nodiscard]] constexpr dynamic_bitset_reference(rimpl_type r, value_type v) noexcept
         :
                 m_ref(r),
                 m_val(v)
@@ -148,8 +149,9 @@ public:
         }
 
         [[nodiscard]] constexpr auto operator&() const noexcept
+                -> dynamic_bitset_iterator<Block, Allocator>
         {
-                return dynamic_bitset_iterator<Block, Allocator>(&m_ref, m_val);
+                return { &m_ref, m_val };
         }
 
         [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
@@ -180,26 +182,30 @@ template<std::unsigned_integral Block, class Allocator>
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& bs) noexcept
+        -> dynamic_bitset_iterator<Block, Allocator>
 {
-        return dynamic_bitset_iterator<Block, Allocator>(&bs, bs.find_first());
+        return { &bs, bs.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto begin(dynamic_bitset<Block, Allocator> const& bs) noexcept
+        -> dynamic_bitset_iterator<Block, Allocator>
 {
-        return dynamic_bitset_iterator<Block, Allocator>(&bs, bs.find_first());
+        return { &bs, bs.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto end(dynamic_bitset<Block, Allocator>& bs) noexcept
+        -> dynamic_bitset_iterator<Block, Allocator>
 {
-        return dynamic_bitset_iterator<Block, Allocator>(&bs, bs.npos);
+        return { &bs, bs.npos };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto end(dynamic_bitset<Block, Allocator> const& bs) noexcept
+        -> dynamic_bitset_iterator<Block, Allocator>
 {
-        return dynamic_bitset_iterator<Block, Allocator>(&bs, bs.npos);
+        return { &bs, bs.npos };
 }
 
 template<std::unsigned_integral Block, class Allocator>
