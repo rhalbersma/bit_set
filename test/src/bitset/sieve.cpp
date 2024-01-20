@@ -22,7 +22,7 @@ concept bitset = requires(C& bs, std::size_t pos)
         bs.reset(pos);
 };
 
-template<class C, auto N>
+template<class C, auto>
 struct generate_empty
 {
         auto operator()() const

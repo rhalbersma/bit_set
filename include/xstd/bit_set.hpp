@@ -52,6 +52,7 @@ public:
         using difference_type        = std::ptrdiff_t;
         using block_type             = Block;
 
+        class iterator;
         class reference;
 
         class iterator
