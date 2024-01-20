@@ -93,7 +93,7 @@ public:
                         -> reference
                 {
                         if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_dereferencable());
+                        assert(is_dereferenceable());
                         return { *m_ptr, m_val };
                 }
 
@@ -136,7 +136,7 @@ public:
                         return this->m_ptr == other.m_ptr;
                 }
 
-                [[nodiscard]] constexpr auto is_dereferencable() const noexcept
+                [[nodiscard]] constexpr auto is_dereferenceable() const noexcept
                 {
                         return m_ptr != nullptr && bit_set::is_valid(m_val);
                 }
@@ -244,7 +244,8 @@ public:
                 do_insert(ilist.begin(), ilist.end());
         }
 
-        [[nodiscard]] constexpr bit_set(std::from_range_t, std::ranges::input_range auto&& rg) noexcept
+        template<std::ranges::input_range R>
+        [[nodiscard]] constexpr bit_set(std::from_range_t, R&& rg) noexcept
                 requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
         {
                 if constexpr (N == 0) { assert(std::ranges::empty(rg)); }
@@ -379,16 +380,18 @@ public:
                 return static_cast<size_type>(N);
         }
 
-        constexpr auto emplace(auto&&... args) noexcept
+        template<class... Args>
+        constexpr auto emplace(Args&&... args) noexcept
                 requires (sizeof...(args) == 1)
         {
-                return insert(value_type(std::forward<decltype(args)>(args)...));
+                return insert(value_type(std::forward<Args>(args)...));
         }
 
-        constexpr auto emplace_hint(const_iterator hint, auto&&... args) noexcept
+        template<class... Args>
+        constexpr auto emplace_hint(const_iterator hint, Args&&... args) noexcept
                 requires (sizeof...(args) == 1)
         {
-                return insert(hint, value_type(std::forward<decltype(args)>(args)...));
+                return insert(hint, value_type(std::forward<Args>(args)...));
         }
 
         constexpr auto add(value_type x) noexcept
@@ -464,7 +467,8 @@ public:
                 do_insert(ilist.begin(), ilist.end());
         }
 
-        constexpr auto insert_range(std::ranges::input_range auto&& rg) noexcept
+        template<std::ranges::input_range R>
+        constexpr auto insert_range(R&& rg) noexcept
                 requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
         {
                 if constexpr (N == 0) { assert(std::ranges::empty(rg)); }

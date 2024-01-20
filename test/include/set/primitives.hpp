@@ -13,10 +13,11 @@
 #include <compare>                                      // strong_ordering
 #include <concepts>                                     // convertible_to, default_initializable, equality_comparable, same_as, signed_integral, unsigned_integral
 #include <initializer_list>                             // initializer_list
-#include <iterator>                                     // distance, empty, next, prev, size, ssize
+#include <iterator>                                     // distance, empty, iter_difference_t, iter_value_t, next, prev, size, ssize
 #include <limits>                                       // max
 #include <memory>                                       // addressof
 #include <ranges>                                       // count, equal, find, lexicographical_compare, lower_bound, , subrange, upper_bound
+#include <type_traits>                                  // add_const_t, remove_reference_t
 #include <utility>                                      // pair
 
 namespace xstd {
@@ -32,7 +33,7 @@ template<int N, std::unsigned_integral Block>
 struct ref_same_as_pred<xstd::bit_set<N, Block>>
 {
         template<class R, class T>
-        static constexpr auto value = std::convertible_to<R, T>;
+        static constexpr auto value = std::convertible_to<R, std::add_const_t<std::remove_reference_t<T>>&>;
 };
 
 template<class X, class R, class T>
@@ -77,26 +78,28 @@ struct nested_types
 {
         static_assert(std::same_as<typename X::value_type, T>);                         // [container.reqmts]/2
         static_assert(requires { std::declval<X>().erase(std::declval<T>()); });        // [container.reqmts]/3
+        
+        static_assert(ref_same_as<X, typename X::reference, T&>);                       // [container.reqmts]/4
         static_assert(ref_same_as<X, typename X::const_reference, T const&>);           // [container.reqmts]/5        
 
         static_assert(std::forward_iterator<typename X::iterator>);                     // [container.reqmts]/6
-        static_assert(std::same_as<typename X::iterator::value_type, T>);
+        static_assert(std::same_as<std::iter_value_t<typename X::iterator>, T>);
         static_assert(std::convertible_to<typename X::iterator, typename X::const_iterator>);
 
         static_assert(std::forward_iterator<typename X::const_iterator>);               // [container.reqmts]/7
-        static_assert(std::same_as<typename X::const_iterator::value_type, T>);
+        static_assert(std::same_as<std::iter_value_t<typename X::const_iterator>, T>);
 
                                                                                         // [container.reqmts]/8
-        static_assert(std::same_as<typename X::difference_type, typename X::iterator::difference_type>);
-        static_assert(std::same_as<typename X::difference_type, typename X::const_iterator::difference_type>);
+        static_assert(std::same_as<typename X::difference_type, std::iter_difference_t<typename X::iterator>>);
+        static_assert(std::same_as<typename X::difference_type, std::iter_difference_t<typename X::const_iterator>>);
                                                                                 
         static_assert(std::bidirectional_iterator<typename X::reverse_iterator>);       // [container.rev.reqmts]/2
         static_assert(std::convertible_to<typename X::reverse_iterator, reverse_iterator<X, typename X::iterator>>);
-        static_assert(std::same_as<typename X::reverse_iterator::value_type, T>);
+        static_assert(std::same_as<std::iter_value_t<typename X::reverse_iterator>, T>);
                                                                                 
         static_assert(std::bidirectional_iterator<typename X::const_reverse_iterator>); // [container.rev.reqmts]/3
         static_assert(std::same_as<typename X::const_reverse_iterator, reverse_iterator<X, typename X::const_iterator>>);
-        static_assert(std::same_as<typename X::const_reverse_iterator::value_type, T>);
+        static_assert(std::same_as<std::iter_value_t<typename X::const_reverse_iterator>, T>);
 
         using Key = T;
         static_assert(std::same_as<typename X::key_type, Key>);                         // [associative.reqmts.general]/9
@@ -424,8 +427,8 @@ struct mem_insert
                 BOOST_CHECK(a == a1);                                           // [associative.reqmts.general]/77
         }
 
-        template<class X>
-        auto operator()(X& a, std::ranges::input_range auto&& rg) const
+        template<class X, std::ranges::input_range R>
+        auto operator()(X& a, R&& rg) const
         {                                                                       // [associative.reqmts.general]/79
                 static_assert(std::same_as<decltype(a.insert_range(rg)), void>);
                                                                                 // [associative.reqmts.general]/80

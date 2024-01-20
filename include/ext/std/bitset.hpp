@@ -102,7 +102,7 @@ public:
         [[nodiscard]] constexpr auto operator*() const noexcept
         {
                 if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_dereferencable());
+                assert(is_dereferenceable());
                 return reference(*m_ptr, m_val);
         }
 
@@ -164,7 +164,7 @@ private:
                 return this->m_ptr == other.m_ptr;
         }
 
-        [[nodiscard]] constexpr auto is_dereferencable() const noexcept
+        [[nodiscard]] constexpr auto is_dereferenceable() const noexcept
         {
                 return m_ptr != nullptr && m_val < N;
         }

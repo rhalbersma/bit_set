@@ -53,7 +53,7 @@ public:
         [[nodiscard]] constexpr auto operator*() const noexcept
                 -> reference
         {
-                assert(is_dereferencable());
+                assert(is_dereferenceable());
                 return { *m_ptr, m_val };
         }
 
@@ -102,7 +102,7 @@ private:
                 return this->m_ptr == other.m_ptr;
         }
 
-        [[nodiscard]] constexpr auto is_dereferencable() const noexcept
+        [[nodiscard]] constexpr auto is_dereferenceable() const noexcept
         {
                 return m_ptr != nullptr && m_val < m_ptr->size();
         }
