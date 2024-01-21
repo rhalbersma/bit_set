@@ -47,12 +47,11 @@ public:
         using key_type               = int;
         using key_compare            = std::less<key_type>;
         using value_type             = key_type;
-        using value_compare          = std::less<value_type>;
+        using value_compare          = key_compare;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
         using block_type             = Block;
 
-        class iterator;
         class reference;
 
         class iterator

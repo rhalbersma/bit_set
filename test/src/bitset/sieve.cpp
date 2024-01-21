@@ -13,7 +13,6 @@
 #include <fmt/ranges.h>
 #include <ranges>                       // iota, stride, take_while
 #include <type_traits>                  // conditional_t
-#include <utility>                      // pair
 
 template<class C>
 concept bitset = requires(C& bs, std::size_t pos)
@@ -22,21 +21,21 @@ concept bitset = requires(C& bs, std::size_t pos)
         bs.reset(pos);
 };
 
-template<class C, auto>
+template<class C>
 struct generate_empty
 {
-        auto operator()() const
+        auto operator()(auto) const
         {
                 return C();
         }
 };
 
-template<std::unsigned_integral Block, class Allocator, std::size_t N>
-struct generate_empty<boost::dynamic_bitset<Block, Allocator>, N>
+template<std::unsigned_integral Block, class Allocator>
+struct generate_empty<boost::dynamic_bitset<Block, Allocator>>
 {
-        auto operator()() const
+        auto operator()(boost::dynamic_bitset<Block, Allocator>::size_type n) const
         {
-                return boost::dynamic_bitset<Block, Allocator>(N);
+                return boost::dynamic_bitset<Block, Allocator>(n);
         }
 };
 
@@ -64,30 +63,29 @@ auto sift(C& primes, std::size_t m)
         primes.reset(m);
 }
 
-template<class C, std::conditional_t<bitset<C>, std::size_t, int> N>
+template<class C>
 struct generate_candidates
 {       
-        auto operator()() const
-                -> std::pair<C, decltype(N)> 
+        auto operator()(auto n) const
         {
-                auto candidates = generate_empty<C, N>()();
+                auto candidates = generate_empty<C>()(n);
                 fill(candidates);
                 sift(candidates, 0);
                 sift(candidates, 1);
-                return { candidates, N };
+                return candidates;
         }
 };
 
-template<class G>
-auto sift_primes(G candidates)
+template<class C>
+auto sift_primes(std::conditional_t<bitset<C>, std::size_t, int> n)
 {    
-        auto [ primes, N ] = candidates();
+        auto primes = generate_candidates<C>()(n);
         for (auto p 
                 : primes 
-                | std::views::take_while([&](auto x) { return x * x < N; })
+                | std::views::take_while([&](auto x) { return x * x < n; })
         ) {
                 for (auto m 
-                        : std::views::iota(p * p, N) 
+                        : std::views::iota(p * p, n) 
                         | std::views::stride(p)
                 ) {
                         sift(primes, m);
@@ -114,7 +112,7 @@ using set_types = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, C, set_types)
 {
-        auto const primes = sift_primes(generate_candidates<C, N>());
+        auto const primes = sift_primes<C>(N);
         BOOST_CHECK_EQUAL(fmt::format("{}", primes | xstd::views::as_set), "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");
 
         auto const twins = filter_twins(primes);

@@ -19,26 +19,25 @@ auto sift(C& primes, int m)
         primes.erase(m);
 }
 
-template<class C, int N>
+template<class C>
 struct generate_candidates
-{       
-        auto operator()() const
-                -> std::pair<C, int> 
+{
+        auto operator()(int n) const
         {
-                return { std::views::iota(2, N) | std::ranges::to<C>(), N };
+                return std::views::iota(2, n) | std::ranges::to<C>();
         }
 };
 
-template<class G>
-auto sift_primes(G candidates)
-{    
-        auto [ primes, N ] = candidates();
-        for (auto p 
-                : primes 
-                | std::views::take_while([&](auto x) { return x * x < N; })
+template<class C>
+auto sift_primes(int n)
+{
+        auto primes = generate_candidates<C>()(n);
+        for (auto p
+                : primes
+                | std::views::take_while([&](auto x) { return x * x < n; })
         ) {
                 for (auto m
-                        : std::views::iota(p * p, N) 
+                        : std::views::iota(p * p, n)
                         | std::views::stride(p)
                 ) {
                         sift(primes, m);
@@ -50,10 +49,10 @@ auto sift_primes(G candidates)
 template<class C>
 auto filter_twins(C const& primes)
 {
-        return primes 
+        return primes
                 | std::views::pairwise
-                | std::views::filter([](auto x) { auto [first, second] = x; return first + 2 == second; }) 
-                | std::views::elements<0> 
+                | std::views::filter([](auto&& x) { auto&& [ first, second ] = x; return first + 2 == second; })
+                | std::views::elements<0>
                 | std::ranges::to<C>()
         ;
 }
@@ -70,7 +69,7 @@ using set_types = boost::mpl::vector
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, C, set_types)
 {
-        auto const primes = sift_primes(generate_candidates<C, N>());
+        auto const primes = sift_primes<C>(N);
         BOOST_CHECK_EQUAL(fmt::format("{}", primes), "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");
 
         auto const twins = filter_twins(primes);
