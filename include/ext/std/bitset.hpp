@@ -337,6 +337,6 @@ template<std::size_t N>
         return std::ranges::rend(bs);
 }
 
-}       // namespace xstd
+}       // namespace std
 
 #endif  // include guard

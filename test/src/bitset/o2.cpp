@@ -5,7 +5,7 @@
 
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
-#include <ext/xstd/bitset.hpp>          // bitset
+#include <xstd/bitset.hpp>              // bitset
 #include <bitset/exhaustive.hpp>        // all_singleton_sets, all_singleton_set_pairs, any_value
 #include <bitset/primitives.hpp>        // op_bit_and_assign, op_bit_or_assign, op_bit_xor_assign, op_minus_assign,
                                         // op_shift_left_assign, op_shift_right_assign, op_bit_not, op_equal_to,

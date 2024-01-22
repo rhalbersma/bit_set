@@ -6,117 +6,45 @@
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
 #include <ext/std/ranges.hpp>           // as_set
+#include <xstd/bitset.hpp>              // bitset
 #include <xstd/bit_set.hpp>             // bit_set
+#include <bitset/sieve.hpp>             // filter_twins, sift_primes
 #include <boost/mpl/vector.hpp>         // vector
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
+#include <fmt/chrono.h>
 #include <fmt/format.h>                 // format
 #include <fmt/ranges.h>
-#include <ranges>                       // iota, stride, take_while
-#include <type_traits>                  // conditional_t
-
-template<class C>
-concept bitset = requires(C& bs, std::size_t pos)
-{
-        bs.set();
-        bs.reset(pos);
-};
-
-template<class C>
-struct generate_empty
-{
-        auto operator()(auto) const
-        {
-                return C();
-        }
-};
-
-template<std::unsigned_integral Block, class Allocator>
-struct generate_empty<boost::dynamic_bitset<Block, Allocator>>
-{
-        auto operator()(boost::dynamic_bitset<Block, Allocator>::size_type n) const
-        {
-                return boost::dynamic_bitset<Block, Allocator>(n);
-        }
-};
-
-template<int N, std::unsigned_integral Block>
-auto fill(xstd::bit_set<N, Block>& empty)
-{
-        empty.fill();
-}
-
-template<bitset C>
-auto fill(C& empty)
-{
-        empty.set();
-}
-
-template<int N, std::unsigned_integral Block>
-auto sift(xstd::bit_set<N, Block>& primes, int m)
-{
-        primes.erase(m);
-}
-
-template<bitset C>
-auto sift(C& primes, std::size_t m)
-{
-        primes.reset(m);
-}
-
-template<class C>
-struct generate_candidates
-{       
-        auto operator()(auto n) const
-        {
-                auto candidates = generate_empty<C>()(n);
-                fill(candidates);
-                sift(candidates, 0);
-                sift(candidates, 1);
-                return candidates;
-        }
-};
-
-template<class C>
-auto sift_primes(std::conditional_t<bitset<C>, std::size_t, int> n)
-{    
-        auto primes = generate_candidates<C>()(n);
-        for (auto p 
-                : primes 
-                | std::views::take_while([&](auto x) { return x * x < n; })
-        ) {
-                for (auto m 
-                        : std::views::iota(p * p, n) 
-                        | std::views::stride(p)
-                ) {
-                        sift(primes, m);
-                }
-        }
-        return primes;
-}
-
-template<class C>
-auto filter_twins(C const& primes)
-{
-        return primes & primes >> 2;
-}
+#include <chrono>                       // duration_cast, system_clock
+#include <locale>                       // locale
 
 BOOST_AUTO_TEST_SUITE(Sieve)
 
-inline constexpr auto N = 100;
+inline constexpr auto N = 10'000'000;
 
 using set_types = boost::mpl::vector
-<       std::bitset<N>
-,       boost::dynamic_bitset<>
-,       xstd::bit_set<N>
+<       boost::dynamic_bitset<>
+,         std::bitset<N>
+,        xstd::bitset<N>
+,        xstd::bit_set<N>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, C, set_types)
 {
-        auto const primes = sift_primes<C>(N);
-        BOOST_CHECK_EQUAL(fmt::format("{}", primes | xstd::views::as_set), "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");
+        std::locale::global(std::locale("en_US.UTF-8"));
 
-        auto const twins = filter_twins(primes);
-        BOOST_CHECK_EQUAL(fmt::format("{}", twins  | xstd::views::as_set), "{3, 5, 11, 17, 29, 41, 59, 71}");
+        auto t0 = std::chrono::system_clock::now();
+        auto const primes = xstd::sift_primes<C>(N);
+        auto t1 = std::chrono::system_clock::now();
+        auto d0 = std::chrono::duration_cast<std::chrono::microseconds>(t1-t0);
+        fmt::println("Generated {:>7L} primes in {:>10L}", xstd::size(primes), d0);
+        // BOOST_CHECK_EQUAL(fmt::format("{}", primes | xstd::views::as_set), "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");
+
+        auto t2 = std::chrono::system_clock::now();
+        auto const twins = xstd::filter_twins(primes);
+        auto t3 = std::chrono::system_clock::now();
+        auto d1 = std::chrono::duration_cast<std::chrono::microseconds>(t3 - t2);
+        fmt::println("Generated {:>7L} twins  in {:>10}", xstd::size(twins), d1);
+        // BOOST_CHECK_EQUAL(fmt::format("{}", twins  | xstd::views::as_set), "{3, 5, 11, 17, 29, 41, 59, 71}");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -77,7 +77,7 @@ struct transform_increment_filter
                         BOOST_CHECK(
                                 (is << n) == (is
                                         | std::views::transform([=](auto x) { return x + n; })
-                                        | std::views::filter([](auto x) { return x < N;  })
+                                        | std::views::filter   ([=](auto x) { return x < N; })
                                         | std::ranges::to<set_type>()
                                 )
                         );
@@ -93,8 +93,8 @@ struct transform_decrement_filter
                         using set_type = std::remove_cvref_t<decltype(is)>;
                         BOOST_CHECK(
                                 (is >> n) == (is
-                                        | std::views::transform([=](auto x) { return x - n; })
-                                        | std::views::filter([](auto x) { return 0 <= x;  })
+                                        | std::views::transform([=](auto x) { return x - n;  })
+                                        | std::views::filter   ([=](auto x) { return 0 <= x; })
                                         | std::ranges::to<set_type>()
                                 )
                         );

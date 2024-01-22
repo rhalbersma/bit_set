@@ -27,7 +27,7 @@
 
 namespace xstd {
 
-template<int N, std::unsigned_integral> 
+template<int N, std::unsigned_integral Block> 
         requires (N >= 0) 
 class bit_set;
 
@@ -158,6 +158,7 @@ public:
                 using value_type = bit_set::value_type;
                 rimpl_type m_ref;
                 value_type m_val;
+                
         public:
                 reference()                            = delete;
                 reference& operator=(reference const&) = delete;

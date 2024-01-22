@@ -55,39 +55,142 @@ Notes:
 
 This library provides one of the four outlined quadrants: `xstd::bit_set<N>` as a **fixed-size ordered set of `int`**. The other three quadrants are not implemented.
 
-### Hello World
+### Hello World: generating (twin) primes
 
-The code below demonstrates how `xstd::bit_set<N>` implements the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes) algorithm to generate all prime numbers below a compile time number `N`.
+The code below demonstrates how a standards conforming `set` implementation can be used to implement the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes). This algorithm generates all [prime numbers](https://en.wikipedia.org/wiki/Prime_number) below a number `n`. Note that the implementation below requires seamless interaction with the C++20 (and beyond) `<ranges>` library and does not use manual iterator manipulation or index arithmetic.
 
 ```cpp
-#include <xstd/bit_set.hpp>
-#include <fmt/ranges.h>
-
-constexpr auto N = 100;
-using set_type = xstd::bit_set<N>;
-
-int main()
+template<class C>
+auto sift(C& primes, int m)
 {
-    // initialize all numbers from [2, N)
-    auto primes = std::views::iota(2, N) | std::ranges::to<set_type>();
-    
-    // find all primes below N
-    // iterate over candidate primes and remove their multiples
-    for (auto p : primes | std::views::take_while([](auto x) { return x * x < N; })) {
-        for (auto m : std::views::iota(p * p, N) | std::views::stride(p)) {
-            primes.erase(m);
+    primes.erase(m);
+}
+
+template<class C>
+struct generate_candidates
+{
+    auto operator()(int n) const
+    {
+        return std::views::iota(2, n) | std::ranges::to<C>();
+    }
+};
+
+template<class C>
+auto sift_primes(int n)
+{
+    auto primes = generate_candidates<C>()(n);
+    for (auto p
+        : primes
+        | std::views::take_while([&](auto x) { return x * x < n; })
+    ) {
+        for (auto m
+            : std::views::iota(p * p, n)
+            | std::views::stride(p)
+        ) {
+            sift(primes, m);
         }
     }
+    return primes;
+}
+```
 
-    // find all twin primes below N
-    // iterate over adjacent primes, filter if their difference is 2 and select the first
-    auto const twins = primes | std::views::pairwise | std::views::filter([](auto x) { 
-        return std::get<0>(x) + 2 == std::get<1>(x);
-    }) | std::views::elements<0> | std::ranges::to<set_type>();
+Given a set of primes, generating the [twin primes](https://en.wikipedia.org/wiki/Twin_prime) can be done by iterating over pairs of adjacent primes, filtering on their difference being exactly 2, selecting the first element of each pair, and converting that to a new set:
 
-    // pretty-print solution
-    fmt::println("{}", primes);
-    fmt::println("{}", twins);
+```cpp
+template<class C>
+auto filter_twins(C const& primes)
+{
+    return primes
+        | std::views::pairwise
+        | std::views::filter([](auto&& x) { auto&& [ first, second ] = x; return first + 2 == second; })
+        | std::views::elements<0>
+        | std::ranges::to<C>()
+    ;
+}
+```
+
+The calling code for these algorithms is listed below. Here, the pretty-printing as a `set` using `{}` delimiters is triggered by the nested `key_type`. Note that `xstd::bit_set<N>` acts as a **drop-in replacement** for `std::set<int>` (or `boost::container::flat_set<int>`). 
+
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/7bfjz15bP)
+```cpp
+int main()
+{
+    constexpr auto N = 100;
+    using C = xstd::bit_set<N>; /* or std::set<int> or boost::container::flat_set<int> */
+
+    auto primes = sift_primes<C>(N);
+    assert(fmt::format("{}", primes) == "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");
+
+    auto twins = filter_twins(primes);
+    assert(fmt::format("{}", twins)  == "{3, 5, 11, 17, 29, 41, 59, 71}");
+}
+```
+
+## Requirements for `set`-like behaviour
+
+Looking at the above code, the following four ingredients are necessary to implement the Sieve of Eratosthenes: 
+
+1. **Bidirectional iterators** `begin` and `end` in the `set`'s own namespace (to work with range-`for` and the `<ranges>` library);
+2. **Constructors** taking a pair of iterators or a range (in order for `std::ranges::to` to construct a `set`);
+3. A **nested type** `key_type` (in order for the `{fmt}` library to use `{}` delimiters);
+4. A **member function** `erase` to remove elements (for other applications: the rest of a `set`'s interface).
+
+`xstd::bit_set<N>` implements all four of the above requirements. Note that Visual C++ support is finicky at the moment because its `<ranges>` implementation cannot (yet) handle the `xstd::bit_set<N>` proxy iterators and proxy references correctly.
+
+## Retrofitting `set`-like behaviour onto `std::bitset<N>` and `boost::dynamic_bitset<>`
+
+Can we use Without access to their implementations, it's impossible to add nested types and member functions
+
+## Data-parallelism
+
+```cpp
+template<class C>
+struct generate_empty
+{
+    auto operator()(auto) const
+    {
+        return C();
+    }
+};
+
+template<int N, std::unsigned_integral Block>
+auto fill(xstd::bit_set<N, Block>& empty)
+{
+    empty.fill();
+}
+
+template<class C>
+struct generate_candidates
+{       
+    auto operator()(auto n) const
+    {
+        auto candidates = generate_empty<C>()(n);
+        fill(candidates);
+        sift(candidates, 0);
+        sift(candidates, 1);
+        return candidates;
+    }
+};
+
+template<class C>
+auto filter_twins(C const& primes)
+{
+    return primes & primes >> 2;
+}
+```
+
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/7GWced7Wa)
+```cpp
+int main()
+{
+    constexpr auto N = 100;
+    using C = xstd::bit_set<N>; /* or std::bitset<N> or boost::dynamic_bitset<> */
+
+    auto const primes = sift_primes<C>(N);
+    assert(fmt::format("{}", primes | xstd::views::as_set) == "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");
+
+    auto const twins = filter_twins(primes);
+    assert(fmt::format("{}", twins  | xstd::views::as_set) == "{3, 5, 11, 17, 29, 41, 59, 71}");
 }
 ```
 
@@ -106,31 +209,6 @@ How would the Sieve of Eratosthenes code look when using a sequence of bits? The
 | `xstd::bit_set<N>`        | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/shr5TEP9M) |
 | `std::bitset<N>`          | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/zGjofjToj) |
 | `boost::dynamic_bitset<>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/PeKoK8zvd) |
-
-### Ordered set of integers
-
-How would the Sieve of Eratosthenes code look when using an ordered set of integers? The links in the table below provide the full code examples for `std::set<int>` and `boost::container::flat_set<int>`. By design, `xstd::bit_set<N>` is an almost **drop-in replacement** for either of these `set` implementations.
-
-| Library                           | Try it online |
-| :------                           | :------------ |
-| `std::set<int>`                   | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/oEchb17d4) |
-| `boost::container::flat_set<int>` | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/e8easrhKa) |
-| `xstd::bit_set<N>`                | [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/YPGEfKzqh) |
-
-The essential difference is that `std::set<int>` and `boost::container::flat_set<int>` lack the bitwise operators `&` and `>>` to efficiently find twin primes. Instead, one has to iterate over the ordered set of primes using `std::adjacent_find` and write these one-by-one into a new `set`. This style of programming is also supported by `xstd::bit_set` and its proxy iterators seamlessly interact with the `std::adjacent_find` algorithm.
-
-```cpp
-// find all twin primes below N
-set_type twins;
-for (auto it = primes.begin(); it != primes.end() && std::next(it) != primes.end();) {
-    it = std::adjacent_find(it, primes.end(), [](auto p, auto q) {
-        return q - p == 2;
-    });
-    if (it != primes.end()) {
-        twins.insert(*it++);
-    }
-}
-```
 
 ## Documentation
 
@@ -211,7 +289,7 @@ The bitwise-shift operators (`<<=`, `>>=`, `<<`, `>>`) from `std::bitset` and `b
 
 With the exception of `operator~`, the non-member bitwise operators can be reimagined as **composable** and **data-parallel** versions of the set algorithms on sorted ranges. In C++23, the set algorithms are not (yet) composable, but the [range-v3](https://ericniebler.github.io/range-v3/) library contains lazy views for them.
 
-[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/1PozoWY5f)
+[![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/G1caEeMPb)
 
 | `xstd::bit_set<N>`      | `std::set<int>` with the range-v3 set algorithm views                                                |
 | :----------------       | :----------------------------------------------------------------------------------------------------|
@@ -240,7 +318,7 @@ The bitwise shift operators of `xstd::bit_set<N>` can be reimagined as set **tra
         <pre lang="cpp">
 auto b = a
     | std::views::transform([=](auto x) { return x + n; })
-    | std::views::filter([](auto x) { return x < N;  })
+    | std::views::filter   ([=](auto x) { return x < N; })
     | std::ranges::to&ltstd::set&gt;()
 ;</pre>
     </td>
@@ -252,8 +330,8 @@ auto b = a
     <td>
         <pre lang="cpp">
 auto b = a
-    | std::views::transform([=](auto x) { return x - n; })
-    | std::views::filter([](auto x) { return 0 <= x;  })
+    | std::views::transform([=](auto x) { return x - n;  })
+    | std::views::filter   ([=](auto x) { return 0 <= x; })
     | std::ranges::to&ltstd::set&gt;()
 ;</pre>
     </td>

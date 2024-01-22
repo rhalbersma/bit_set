@@ -5,7 +5,7 @@
 
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
-#include <ext/xstd/bitset.hpp>          // bitset
+#include <xstd/bitset.hpp>              // bitset
 #include <bitset/exhaustive.hpp>        // all_doubleton_set_pairs
 #include <bitset/primitives.hpp>        // mem_is_subset_of, mem_is_proper_subset_of
 #include <boost/mpl/vector.hpp>         // vector

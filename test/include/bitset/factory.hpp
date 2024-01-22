@@ -7,7 +7,7 @@
 
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
-#include <ext/xstd/bitset.hpp>          // bitset
+#include <xstd/bitset.hpp>              // bitset
 #include <concepts>                     // unsigned_integral
 #include <cstddef>                      // size_t
 

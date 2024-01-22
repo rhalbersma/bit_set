@@ -5,7 +5,7 @@
 
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
-#include <ext/xstd/bitset.hpp>          // bitset
+#include <xstd/bitset.hpp>              // bitset
 #include <bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set
 #include <bitset/primitives.hpp>        // mem_set, mem_reset, op_bit_not, mem_flip, mem_count, mem_size, mem_test, mem_all, mem_any, mem_none
                                         // mem_at, op_bit_and, op_bit_or, op_bit_xor, op_minus, mem_is_subset_of, mem_intersects, fn_iostream
