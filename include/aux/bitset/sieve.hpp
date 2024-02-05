@@ -6,13 +6,13 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/dynamic_bitset_fwd.hpp> // dynamic_bitset
+#include <cstddef>                      // size_t
 #include <ranges>                       // iota, stride, take_while
 #include <type_traits>                  // conditional_t
 
 namespace xstd {
 
-template<int N, std::unsigned_integral Block> 
-        requires (N >= 0) 
+template<std::size_t N, std::unsigned_integral Block> 
 class bit_set;
 
 template<class C>
@@ -31,7 +31,7 @@ auto size(C const& c)
 template<class C>
 struct generate_empty
 {
-        auto operator()(auto) const
+        auto operator()(std::size_t) const
         {
                 return C();
         }
@@ -40,7 +40,7 @@ struct generate_empty
 template<std::unsigned_integral Block, class Allocator>
 struct generate_empty<boost::dynamic_bitset<Block, Allocator>>
 {
-        auto operator()(boost::dynamic_bitset<Block, Allocator>::size_type n) const
+        auto operator()(std::size_t n) const
         {
                 return boost::dynamic_bitset<Block, Allocator>(n);
         }
@@ -52,7 +52,7 @@ auto fill(C& empty)
         empty.set();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 auto fill(xstd::bit_set<N, Block>& empty)
 {
         empty.fill();
@@ -64,8 +64,8 @@ auto sift(C& primes, std::size_t m)
         primes.reset(m);
 }
 
-template<int N, std::unsigned_integral Block>
-auto sift(xstd::bit_set<N, Block>& primes, int m)
+template<std::size_t N, std::unsigned_integral Block>
+auto sift(xstd::bit_set<N, Block>& primes, std::size_t m)
 {
         primes.pop(m);
 }
@@ -84,7 +84,7 @@ struct generate_candidates
 };
 
 template<class C>
-auto sift_primes(std::conditional_t<legacy_bitset<C>, std::size_t, int> n)
+auto sift_primes(std::size_t n)
 {    
         auto primes = generate_candidates<C>()(n);
         for (auto p 
@@ -95,6 +95,22 @@ auto sift_primes(std::conditional_t<legacy_bitset<C>, std::size_t, int> n)
                         : std::views::iota(p * p, n) 
                         | std::views::stride(p)
                 ) {
+                        sift(primes, m);
+                }
+        }
+        return primes;
+}
+
+template<class C>
+auto sift_primes2(std::size_t n)
+{    
+        auto primes = generate_candidates<C>()(n);
+        for (auto p : primes) {
+                auto const p_squared = p * p;
+                if (p_squared > n) { 
+                        break; 
+                }
+                for (auto m = p_squared; m < n; m += p) {
                         sift(primes, m);
                 }
         }

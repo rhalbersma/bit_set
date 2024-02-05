@@ -7,7 +7,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bit_set.hpp>     // bit_set
-#include <cassert>              // assert
 #include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <iosfwd>               // basic_istream, basic_ostream
@@ -18,38 +17,13 @@
 
 namespace xstd {
 
-template<std::size_t, std::unsigned_integral>
-class bitset;
-
-template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator&(bitset<N, Block> const&, bitset<N, Block> const&) noexcept;
-
-template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator|(bitset<N, Block> const&, bitset<N, Block> const&) noexcept;
-
-template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator^(bitset<N, Block> const&, bitset<N, Block> const&) noexcept;
-
-template<std::size_t N, std::unsigned_integral Block>
-constexpr auto operator-(bitset<N, Block> const&, bitset<N, Block> const&) noexcept;
-
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
         bit_set<N, Block> m_impl;
-
-        [[nodiscard]] constexpr explicit bitset(bit_set<N, Block> const& bs) noexcept
-        :
-                m_impl(bs)
-        {}
+       
 public:
-        using key_type               = std::size_t;
-        using key_compare            = std::less<key_type>;
-        using value_type             = key_type;
-        using value_compare          = key_compare;
-        using size_type              = std::size_t;
-        using difference_type        = std::ptrdiff_t;
-        using block_type             = Block;
+        using block_type = Block;
 
         class reference;
 
@@ -60,8 +34,8 @@ public:
 
         public:
                 using iterator_category = iter_type::iterator_category;
-                using value_type        = bitset::value_type;
-                using difference_type   = bitset::difference_type;
+                using value_type        = std::size_t;
+                using difference_type   = std::ptrdiff_t;
                 using pointer           = void;
                 using reference         = bitset::reference;
 
@@ -72,6 +46,11 @@ public:
                         m_it(it) 
                 {}
                 
+                [[nodiscard]] constexpr explicit iterator(iter_type&& it) noexcept 
+                : 
+                        m_it(std::move(it)) 
+                {}
+
                 [[nodiscard]] constexpr auto operator==(iterator const& other) const noexcept -> bool = default;
 
                 [[nodiscard]] constexpr auto operator*() const noexcept
@@ -104,6 +83,7 @@ public:
 
         class reference
         {
+                using value_type = std::iter_value_t<iterator>;
                 using ref_type = bit_set<N, Block>::reference;
                 ref_type m_ref;
 
@@ -121,6 +101,11 @@ public:
                         m_ref(ref)
                 {}
 
+                [[nodiscard]] constexpr explicit reference(ref_type&& ref) noexcept
+                :
+                        m_ref(std::move(ref))
+                {}
+
                 [[nodiscard]] constexpr auto operator==(reference const& other) const noexcept -> bool = default;
 
                 [[nodiscard]] constexpr auto operator&() const noexcept
@@ -130,14 +115,14 @@ public:
 
                 [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
                 {
-                        return static_cast<value_type>(m_ref);
+                        return m_ref;
                 }
 
                 template<class T>
                 [[nodiscard]] constexpr explicit(false) operator T() const noexcept(noexcept(T(m_ref)))
                         requires std::is_class_v<T> && std::constructible_from<T, ref_type>
                 {
-                        return static_cast<T>(m_ref);
+                        return m_ref;
                 }               
         };
 
@@ -147,9 +132,6 @@ public:
                 return ref;
         }
 
-        using pointer                = iterator;
-        using const_pointer          = iterator;
-        using const_reference        = reference;
         using const_iterator         = iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
@@ -168,16 +150,13 @@ public:
                 if (pos > str.size()) {
                         throw std::out_of_range("");
                 }
-                assert(m_impl.empty());
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
                 for (auto i = 0uz; i < M; ++i) {
                         auto const ch = str[pos + M - 1 - i];
                         if (Traits::eq(ch, one)) {
-                                m_impl.add(static_cast<int>(i));
-                        } else if (Traits::eq(ch, zero)) {
-                                assert(!m_impl.contains(static_cast<int>(i)));
-                        } else {
+                                m_impl.add(i);
+                        } else if (!Traits::eq(ch, zero)) {
                                 throw std::invalid_argument("");
                         }
                 }
@@ -223,7 +202,7 @@ public:
                 if (pos >= N) {
                         m_impl.clear();
                 } else {
-                        m_impl <<= static_cast<int>(pos);
+                        m_impl <<= pos;
                 }
                 return *this;
         }
@@ -233,7 +212,7 @@ public:
                 if (pos >= N) {
                         m_impl.clear();
                 } else {
-                        m_impl >>= static_cast<int>(pos);
+                        m_impl >>= pos;
                 }
                 return *this;
         }
@@ -250,9 +229,9 @@ public:
                         throw std::out_of_range("");
                 }
                 if (val) {
-                        m_impl.add(static_cast<int>(pos));
+                        m_impl.add(pos);
                 } else {
-                        m_impl.pop(static_cast<int>(pos));
+                        m_impl.pop(pos);
                 }
                 return *this;
         }
@@ -268,13 +247,13 @@ public:
                 if (pos >= N) {
                         throw std::out_of_range("");
                 }
-                m_impl.pop(static_cast<int>(pos));
+                m_impl.pop(pos);
                 return *this;
         }
 
         [[nodiscard]] constexpr auto operator~() const noexcept
         {
-                return bitset(~m_impl);
+                auto nrv = *this; nrv.flip(); return nrv;
         }
 
         constexpr auto& flip() noexcept
@@ -288,13 +267,13 @@ public:
                 if (pos >= N) {
                         throw std::out_of_range("");
                 }
-                m_impl.complement(static_cast<int>(pos));
+                m_impl.complement(pos);
                 return *this;
         }
 
         [[nodiscard]] constexpr auto operator[](std::size_t pos) const noexcept
         {
-                return m_impl.contains(static_cast<int>(pos));
+                return m_impl.contains(pos);
         }
 
         template<
@@ -306,7 +285,7 @@ public:
         {
                 auto str = std::basic_string<CharT, Traits, Allocator>(N, zero);
                 for (auto i = 0uz; i < N; ++i) {
-                        if (m_impl.contains(static_cast<int>(N - 1 - i))) {
+                        if (m_impl.contains(N - 1uz - i)) {
                                 str[i] = one;
                         }
                 }
@@ -330,7 +309,7 @@ public:
                 if (pos >= N) {
                         throw std::out_of_range("");
                 }
-                return m_impl.contains(static_cast<int>(pos));
+                return m_impl.contains(pos);
         }
 
         [[nodiscard]] constexpr auto all() const noexcept
@@ -353,7 +332,7 @@ public:
                 if (pos >= N) {
                         return bitset();
                 } else {
-                        return bitset(m_impl << static_cast<int>(pos));
+                        auto nrv = *this; nrv <<= pos; return nrv;
                 }
         }
 
@@ -362,7 +341,7 @@ public:
                 if (pos >= N) {
                         return bitset();
                 } else {
-                        return bitset(m_impl >> static_cast<int>(pos));
+                        auto nrv = *this; nrv >>= pos; return nrv;
                 }
         }
 
@@ -380,11 +359,6 @@ public:
         {
                 return this->m_impl.intersects(other.m_impl);
         }
-
-        friend constexpr auto operator&<>(bitset const&, bitset const&) noexcept;
-        friend constexpr auto operator|<>(bitset const&, bitset const&) noexcept;
-        friend constexpr auto operator^<>(bitset const&, bitset const&) noexcept;
-        friend constexpr auto operator-<>(bitset const&, bitset const&) noexcept;
 
         [[nodiscard]] constexpr auto begin()         noexcept { return       iterator(m_impl.begin()); }
         [[nodiscard]] constexpr auto begin()   const noexcept { return const_iterator(m_impl.begin()); }
@@ -405,25 +379,25 @@ public:
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator&(bitset<N, Block> const& lhs, bitset<N, Block> const& rhs) noexcept
 {
-        return bitset<N, Block>(lhs.m_impl & rhs.m_impl);
+        auto nrv = lhs; nrv &= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator|(bitset<N, Block> const& lhs, bitset<N, Block> const& rhs) noexcept
 {
-        return bitset<N, Block>(lhs.m_impl | rhs.m_impl);
+        auto nrv = lhs; nrv |= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator^(bitset<N, Block> const& lhs, bitset<N, Block> const& rhs) noexcept
 {
-        return bitset<N, Block>(lhs.m_impl ^ rhs.m_impl);
+        auto nrv = lhs; nrv ^= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator-(bitset<N, Block> const& lhs, bitset<N, Block> const& rhs) noexcept
 {
-        return bitset<N, Block>(lhs.m_impl - rhs.m_impl);
+        auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
 template<class CharT, class Traits, std::size_t N, std::unsigned_integral Block>

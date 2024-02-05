@@ -11,6 +11,7 @@
 #include <boost/mpl/vector.hpp>         // vector
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_CHECK_EQUAL_COLLECTIONS
 #include <algorithm>                    // copy
+#include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <iterator>                     // inserter
 #include <set>                          // set
@@ -20,8 +21,8 @@ BOOST_AUTO_TEST_SUITE(Implicit)
 using namespace xstd;
 
 using int_set_types = boost::mpl::vector
-<       std::set<int>
-,       boost::container::flat_set<int>
+<       std::set<std::size_t>
+,       boost::container::flat_set<std::size_t>
 ,       bit_set< 32, uint16_t>
 ,       bit_set< 33, uint16_t>
 ,       bit_set< 48, uint16_t>
@@ -46,18 +47,18 @@ using int_set_types = boost::mpl::vector
 #endif
 >;
 
-class int_
+class size_t_
 {
-        int m_value;
+        std::size_t m_value;
 public:
-        [[nodiscard]] constexpr explicit(false) int_(int v) noexcept : m_value(v) {}
-        [[nodiscard]] constexpr explicit(false) operator int() const noexcept { return m_value; }
+        [[nodiscard]] constexpr explicit(false) size_t_(std::size_t v) noexcept : m_value(v) {}
+        [[nodiscard]] constexpr explicit(false) operator std::size_t() const noexcept { return m_value; }
 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, int_set_types)
 {
         auto src = T({ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 });
-        std::set<int_> dst;
+        std::set<size_t_> dst;
         std::ranges::copy(src, std::inserter(dst, dst.end()));
         BOOST_CHECK_EQUAL_COLLECTIONS(src.begin(), src.end(), dst.begin(), dst.end());
 }

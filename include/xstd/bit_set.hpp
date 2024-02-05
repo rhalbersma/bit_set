@@ -7,9 +7,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <algorithm>            // lexicographical_compare_three_way, shift_left, shift_right
-                                // all_of, any_of, fill, find_if, fold_left, max, none_of, swap
+                                // all_of, any_of, fill, find_if, fold_left, for_each, max, none_of, swap
 #include <bit>                  // countl_zero, countr_zero, popcount
-#include <cassert>              // assert
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
@@ -27,24 +26,22 @@
 
 namespace xstd {
 
-template<int N, std::unsigned_integral Block> 
-        requires (N >= 0) 
+template<std::size_t N, std::unsigned_integral Block> 
 class bit_set;
 
-[[nodiscard]] constexpr auto aligned_size(int size, int alignment) noexcept
+[[nodiscard]] constexpr auto aligned_size(std::size_t size, std::size_t alignment) noexcept
 {
         return ((size - 1 + alignment) / alignment) * alignment;
 }
 
-template<int N, std::unsigned_integral Block = std::size_t>
+template<std::size_t N, std::unsigned_integral Block = std::size_t>
 using bit_set_aligned = bit_set<aligned_size(N, std::numeric_limits<Block>::digits), Block>;
 
-template<int N, std::unsigned_integral Block = std::size_t>
-        requires (N >= 0)
+template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
 {
 public:
-        using key_type               = int;
+        using key_type               = std::size_t;
         using key_compare            = std::less<key_type>;
         using value_type             = key_type;
         using value_compare          = key_compare;
@@ -75,13 +72,13 @@ public:
                         m_ptr(p),
                         m_val(v)
                 {
-                        assert(is_valid());
+                        [[assume(is_valid())]];
                 }
 
                 [[nodiscard]] constexpr auto operator==(iterator const& other) const noexcept
                         -> bool
                 {
-                        assert(is_comparable(other));
+                        [[assume(is_comparable(other))]];
                         if constexpr (N == 0) {
                                 return true;
                         } else {
@@ -92,17 +89,15 @@ public:
                 [[nodiscard]] constexpr auto operator*() const noexcept
                         -> reference
                 {
-                        if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_dereferenceable());
+                        [[assume(is_dereferenceable())]];
                         return { *m_ptr, m_val };
                 }
 
                 constexpr auto& operator++() noexcept
                 {
-                        if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_incrementable());
+                        [[assume(is_incrementable())]];
                         m_val = m_ptr->find_next(m_val + 1);
-                        assert(is_decrementable());
+                        [[assume(is_decrementable())]];
                         return *this;
                 }
 
@@ -113,10 +108,9 @@ public:
 
                 constexpr auto& operator--() noexcept
                 {
-                        if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_decrementable());
+                        [[assume(is_decrementable())]];
                         m_val = m_ptr->find_prev(m_val - 1);
-                        assert(is_incrementable());
+                        [[assume(is_incrementable())]];
                         return *this;
                 }
 
@@ -172,9 +166,8 @@ public:
                 :
                         m_ref(r),
                         m_val(v)
-                {
-                        if constexpr (N == 0) { std::unreachable(); } 
-                        assert(is_valid());
+                {                        
+                        [[assume(is_valid())]];
                 }
 
                 [[nodiscard]] constexpr auto operator==(reference const& other) const noexcept
@@ -222,9 +215,9 @@ public:
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
 private:        
-        static constexpr auto block_size = std::numeric_limits<Block>::digits;
+        static constexpr auto block_size = static_cast<value_type>(std::numeric_limits<Block>::digits);
         static constexpr auto num_bits   = aligned_size(N, block_size);
-        static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, 1);
+        static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, 1uz);
 
         block_type m_data[num_blocks]{};                        // zero-initialization
 
@@ -235,13 +228,11 @@ public:
         [[nodiscard]] constexpr bit_set(I first, I last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
-                if constexpr (N == 0) { assert(first == last); }
                 do_insert(first, last);
         }
 
         [[nodiscard]] constexpr bit_set(std::initializer_list<value_type> ilist) noexcept
         {
-                if constexpr (N == 0) { assert(std::ranges::empty(ilist)); }
                 do_insert(ilist.begin(), ilist.end());
         }
 
@@ -249,14 +240,12 @@ public:
         [[nodiscard]] constexpr bit_set(std::from_range_t, R&& rg) noexcept
                 requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
         {
-                if constexpr (N == 0) { assert(std::ranges::empty(rg)); }
                 do_insert(std::ranges::begin(rg), std::ranges::end(rg));
         }
 
         constexpr auto& operator=(std::initializer_list<value_type> ilist) noexcept
         {
                 clear();
-                if constexpr (N == 0) { assert(std::ranges::empty(ilist)); }
                 do_insert(ilist.begin(), ilist.end());
                 return *this;
         }
@@ -301,16 +290,12 @@ public:
         [[nodiscard]] constexpr auto front() const noexcept
                 -> const_reference
         {
-                if constexpr (N == 0) { std::unreachable(); }
-                assert(!empty());
                 return { *this, find_front() };
         }
 
         [[nodiscard]] constexpr auto back() const noexcept
                 -> const_reference                
         {
-                if constexpr (N == 0) { std::unreachable(); }
-                assert(!empty());
                 return { *this, find_back() };
         }
 
@@ -399,7 +384,7 @@ public:
         {
                 auto&& [ block, mask ] = block_mask(x);
                 block |= mask;
-                assert(contains(x));
+                [[assume(contains(x))]];                
         }
 
 private:
@@ -409,7 +394,7 @@ private:
                 auto&& [ block, mask ] = block_mask(x);
                 auto const inserted = !(block & mask);
                 block |= mask;
-                assert(contains(x));
+                [[assume(contains(x))]];                
                 return { { this, x },  inserted };
         }
 
@@ -448,9 +433,10 @@ private:
         constexpr auto do_insert(I first, S last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
-                for (auto x : std::ranges::subrange(first, last)) {
+                [[assume(N > 0 || first == last)]];
+                std::ranges::for_each(first, last, [this](auto x){
                         add(x);
-                }
+                });
         }
 
 public:
@@ -458,13 +444,11 @@ public:
         constexpr auto insert(I first, I last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
-                if constexpr (N == 0) { assert(first == last); }
                 do_insert(first, last);
         }
 
         constexpr auto insert(std::initializer_list<value_type> ilist) noexcept
         {
-                if constexpr (N == 0) { assert(std::ranges::empty(ilist)); }
                 do_insert(ilist.begin(), ilist.end());
         }
 
@@ -472,7 +456,6 @@ public:
         constexpr auto insert_range(R&& rg) noexcept
                 requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
         {
-                if constexpr (N == 0) { assert(std::ranges::empty(rg)); }
                 do_insert(std::ranges::begin(rg), std::ranges::end(rg));
         }
 
@@ -495,14 +478,14 @@ public:
                                 std::ranges::fill(m_data, ones);
                         }
                 }
-                assert(full());
+                [[assume(full())]];
         }
 
         constexpr auto pop(key_type x) noexcept
         {
                 auto&& [ block, mask ] = block_mask(x);
                 block &= static_cast<block_type>(~mask);
-                assert(!contains(x));
+                [[assume(!contains(x))]];
         }
 
         constexpr auto erase(key_type const& x) noexcept
@@ -510,24 +493,23 @@ public:
                 auto&& [ block, mask ] = block_mask(x);
                 auto const erased = static_cast<size_type>(static_cast<bool>(block & mask));
                 block &= static_cast<block_type>(~mask);
-                assert(!contains(x));
+                [[assume(!contains(x))]];                
                 return erased;
         }
 
         constexpr auto erase(const_iterator pos) noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(pos != end());
+                [[assume(pos != end())]];
                 pop(*pos++);
                 return pos;
         }
 
         constexpr auto erase(const_iterator first, const_iterator last) noexcept
         {
-                if constexpr (N == 0) { assert(first == last); }
-                for (auto x : std::ranges::subrange(first, last)) {
+                [[assume(N > 0 || first == last)]];
+                std::ranges::for_each(first, last, [this](auto x) {                        
                         pop(x);
-                }
+                });
                 return last;
         }
 
@@ -553,7 +535,7 @@ public:
                 } else if constexpr (num_blocks >= 3) {
                         std::ranges::fill(m_data, zero);
                 }
-                assert(empty());
+                [[assume(empty())]];
         }
 
         constexpr auto complement(value_type x) noexcept
@@ -698,14 +680,13 @@ public:
 
         constexpr auto& operator<<=(value_type n [[maybe_unused]]) noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_valid(n));
+                [[assume(is_valid(n))]];
                 if constexpr (num_blocks == 1) {
                         m_data[0] >>= n;
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div(n, block_size);
                         if (R_shift == 0) {
-                                std::shift_right(std::ranges::begin(m_data), std::ranges::end(m_data), n_blocks);
+                                std::shift_right(std::ranges::begin(m_data), std::ranges::end(m_data), static_cast<difference_type>(n_blocks));
                         } else {
                                 auto const L_shift = block_size - R_shift;
                                 for (auto&& [lhs, rhs] : std::views::zip(
@@ -732,14 +713,13 @@ public:
 
         constexpr auto& operator>>=(value_type n [[maybe_unused]]) noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(is_valid(n));
+                [[assume(is_valid(n))]];
                 if constexpr (num_blocks == 1) {
                         m_data[0] <<= n;
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div(n, block_size);
                         if (L_shift == 0) {
-                                std::shift_left(std::ranges::begin(m_data), std::ranges::end(m_data), n_blocks);
+                                std::shift_left(std::ranges::begin(m_data), std::ranges::end(m_data), static_cast<difference_type>(n_blocks));
                         } else {
                                 auto const R_shift = block_size - L_shift;
                                 for (auto&& [lhs, rhs] : std::views::zip(
@@ -801,7 +781,7 @@ public:
                                 (this->m_data[0] == other.m_data[0] && this->m_data[1] == other.m_data[1])
                         );
                 } else if constexpr (num_blocks >= 3) {
-                        auto i = 0;
+                        auto i = 0uz;
                         for (/* init-statement before loop */; i < num_blocks; ++i) {
                                 if (this->m_data[i] & ~other.m_data[i]) {
                                         return false;
@@ -859,7 +839,7 @@ private:
                 if constexpr (N == 0) {
                         return false;
                 } else {
-                        return 0 <= n && n < N;
+                        return n < N;
                 }
         } 
 
@@ -882,6 +862,7 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) noexcept
                 -> std::pair<block_type&, block_type>
         {
+                [[assume(is_valid(n))]];
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[index], static_cast<block_type>(left_mask >> offset) };
         }
@@ -889,6 +870,7 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) const noexcept
                 -> std::pair<block_type const&, block_type>
         {
+                [[assume(is_valid(n))]];                
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[index], static_cast<block_type>(left_mask >> offset) };
         }
@@ -902,31 +884,29 @@ private:
 
         [[nodiscard]] constexpr auto find_front() const noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(!empty());
+                [[assume(!empty())]];
                 if constexpr (num_blocks == 1) {
-                        return std::countl_zero(m_data[0]);
+                        return static_cast<value_type>(std::countl_zero(m_data[0]));
                 } else if constexpr (num_blocks == 2) {
-                        return m_data[0] ? std::countl_zero(m_data[0]) : block_size + std::countl_zero(m_data[1]);
+                        return m_data[0] ? static_cast<value_type>(std::countl_zero(m_data[0])) : block_size + static_cast<value_type>(std::countl_zero(m_data[1]));
                 } else if constexpr (num_blocks >= 3) {
                         auto const front = std::ranges::find_if(m_data, std::identity());
-                        assert(front != std::ranges::end(m_data));
-                        return static_cast<value_type>(std::ranges::distance(std::ranges::begin(m_data), front)) * block_size + std::countl_zero(*front);
+                        [[assume(front != std::ranges::end(m_data))]];
+                        return static_cast<value_type>(std::ranges::distance(std::ranges::begin(m_data), front)) * block_size + static_cast<value_type>(std::countl_zero(*front));
                 }
         }
 
         [[nodiscard]] constexpr auto find_back() const noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(!empty());
+                [[assume(!empty())]];
                 if constexpr (num_blocks == 1) {
-                        return last_bit - std::countr_zero(m_data[0]);
+                        return last_bit - static_cast<value_type>(std::countr_zero(m_data[0]));
                 } else if constexpr (num_blocks == 2) {
-                        return m_data[1] ? last_bit - std::countr_zero(m_data[1]) : left_bit - std::countr_zero(m_data[0]);
+                        return m_data[1] ? last_bit - static_cast<value_type>(std::countr_zero(m_data[1])) : left_bit - static_cast<value_type>(std::countr_zero(m_data[0]));
                 } else if constexpr (num_blocks >= 3) {
                         auto const back = std::ranges::find_if(m_data | std::views::reverse, std::identity());
-                        assert(back != std::ranges::rend(m_data));
-                        return last_bit - static_cast<value_type>(std::ranges::distance(std::ranges::rbegin(m_data), back)) * block_size - std::countr_zero(*back);
+                        [[assume(back != std::ranges::rend(m_data))]];
+                        return last_bit - static_cast<value_type>(std::ranges::distance(std::ranges::rbegin(m_data), back)) * block_size - static_cast<value_type>(std::countr_zero(*back));
                 }
         }
 
@@ -934,20 +914,20 @@ private:
         {
                 if constexpr (N > 0 && num_blocks == 1) {
                         if (m_data[0]) {
-                                return std::countl_zero(m_data[0]);
+                                return static_cast<value_type>(std::countl_zero(m_data[0]));
                         }
                 } else if constexpr (num_blocks == 2) {
                         if (m_data[0]) {
-                                return std::countl_zero(m_data[0]);
+                                return static_cast<value_type>(std::countl_zero(m_data[0]));
                         } else if (m_data[1]) {
-                                return block_size + std::countl_zero(m_data[1]);
+                                return block_size + static_cast<value_type>(std::countl_zero(m_data[1]));
                         }
                 } else if constexpr (num_blocks >= 3) {
                         if (
                                 auto const first = std::ranges::find_if(m_data, std::identity()); 
                                 first != std::ranges::end(m_data)
                         ) {
-                                return static_cast<value_type>(std::ranges::distance(std::ranges::begin(m_data), first)) * block_size + std::countl_zero(*first);
+                                return static_cast<value_type>(std::ranges::distance(std::ranges::begin(m_data), first)) * block_size + static_cast<value_type>(std::countl_zero(*first));
                         }
                 }
                 return N;
@@ -960,13 +940,13 @@ private:
                 }
                 if constexpr (num_blocks == 1) {
                         if (auto const block = static_cast<block_type>(m_data[0] << n); block) {
-                                return n + std::countl_zero(block);
+                                return n + static_cast<value_type>(std::countl_zero(block));
                         }
                 } else if constexpr (num_blocks >= 2) {
                         auto [ index, offset ] = index_offset(n);
                         if (offset) {
                                 if (auto const block = static_cast<block_type>(m_data[index] << offset); block) {
-                                        return n + std::countl_zero(block);
+                                        return n + static_cast<value_type>(std::countl_zero(block));
                                 }
                                 ++index;
                                 n += block_size - offset;
@@ -976,7 +956,7 @@ private:
                                 auto const next = std::ranges::find_if(rg, std::identity()); 
                                 next != std::ranges::end(rg)
                         ) {
-                                return n + static_cast<value_type>(std::ranges::distance(std::ranges::begin(rg), next)) * block_size + std::countl_zero(*next);                                
+                                return n + static_cast<value_type>(std::ranges::distance(std::ranges::begin(rg), next)) * block_size + static_cast<value_type>(std::countl_zero(*next));
                         }                       
                 }
                 return N;
@@ -984,160 +964,159 @@ private:
 
         [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
-                assert(!empty());
+                [[assume(!empty())]];
                 if constexpr (num_blocks == 1) {
-                        return n - std::countr_zero(static_cast<block_type>(m_data[0] >> (left_bit - n)));
+                        return n - static_cast<value_type>(std::countr_zero(static_cast<block_type>(m_data[0] >> (left_bit - n))));
                 } else if constexpr (num_blocks >= 2) {
                         auto [ index, offset ] = index_offset(n);
                         if (auto const reverse_offset = left_bit - offset; reverse_offset) {
                                 if (auto const block = static_cast<block_type>(m_data[index] >> reverse_offset); block) {
-                                        return n - std::countr_zero(block);
+                                        return n - static_cast<value_type>(std::countr_zero(block));
                                 }
                                 --index;
                                 n -= block_size - reverse_offset;
                         }
                         auto const rg = m_data | std::views::reverse | std::views::drop(last_block - index);
                         auto const prev = std::ranges::find_if(rg, std::identity());
-                        assert(prev != std::ranges::end(rg));
-                        return n - static_cast<value_type>(std::ranges::distance(std::ranges::begin(rg), prev)) * block_size - std::countr_zero(*prev); 
+                        [[assume(prev != std::ranges::end(rg))]];
+                        return n - static_cast<value_type>(std::ranges::distance(std::ranges::begin(rg), prev)) * block_size - static_cast<value_type>(std::countr_zero(*prev)); 
                 }
         }
 };
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator~(bit_set<N, Block> const& lhs) noexcept
 {
         auto nrv = lhs; nrv.complement(); return nrv;
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator&(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv &= rhs; return nrv;
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator|(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv |= rhs; return nrv;
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator^(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv ^= rhs; return nrv;
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, std::ranges::range_value_t<bit_set<N, Block>> n) noexcept
 {
         auto nrv = lhs; nrv <<= n; return nrv;
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, std::ranges::range_value_t<bit_set<N, Block>> n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 constexpr auto swap(bit_set<N, Block>& lhs, bit_set<N, Block>& rhs) noexcept
 {
         lhs.swap(rhs);
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto begin(bit_set<N, Block>& bs) noexcept
 {
         return bs.begin();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto begin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.begin();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto end(bit_set<N, Block>& bs) noexcept
 {
         return bs.end();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto end(bit_set<N, Block> const& bs) noexcept
 {
         return bs.end();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto rbegin(bit_set<N, Block>& bs) noexcept
 {
         return bs.rbegin();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto rbegin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.rbegin();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto rend(bit_set<N, Block>& bs) noexcept
 {
         return bs.rend();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto rend(bit_set<N, Block> const& bs) noexcept
 {
         return bs.rend();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto cbegin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.cbegin();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto cend(bit_set<N, Block> const& bs) noexcept
 {
         return bs.cend();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto crbegin(bit_set<N, Block> const& bs) noexcept
 {
         return bs.crbegin();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto crend(bit_set<N, Block> const& bs) noexcept
 {
         return bs.crend();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto size(bit_set<N, Block> const& bs) noexcept
 {
         return bs.size();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto ssize(bit_set<N, Block> const& bs) noexcept
 {
         return bs.ssize();
 }
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto empty(bit_set<N, Block> const& bs) noexcept
 {
         return bs.empty();

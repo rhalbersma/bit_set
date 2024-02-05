@@ -10,7 +10,7 @@
 namespace xstd {
 
 template<class C>
-auto sift(C& primes, int m)
+auto sift(C& primes, std::size_t m)
 {
         primes.erase(m);
 }
@@ -18,14 +18,14 @@ auto sift(C& primes, int m)
 template<class C>
 struct generate_candidates
 {
-        auto operator()(int n) const
+        auto operator()(std::size_t n) const
         {
-                return std::views::iota(2, n) | std::ranges::to<C>();
+                return std::views::iota(2uz, n) | std::ranges::to<C>();
         }
 };
 
 template<class C>
-auto sift_primes(int n)
+auto sift_primes(std::size_t n)
 {
         auto primes = generate_candidates<C>()(n);
         for (auto p
@@ -36,6 +36,22 @@ auto sift_primes(int n)
                         : std::views::iota(p * p, n)
                         | std::views::stride(p)
                 ) {
+                        sift(primes, m);
+                }
+        }
+        return primes;
+}
+
+template<class C>
+auto sift_primes2(std::size_t n)
+{    
+        auto primes = generate_candidates<C>()(n);
+        for (auto p : primes) {
+                auto const p_squared = p * p;
+                if (p_squared > n) { 
+                        break; 
+                }
+                for (auto m = p_squared; m < n; m += p) {
                         sift(primes, m);
                 }
         }

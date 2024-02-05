@@ -4,12 +4,9 @@
 #          http://www.boost.org/LICENSE_1_0.txt)
 
 set(Boost_USE_STATIC_LIBS ON)
-find_package(
-    Boost REQUIRED COMPONENTS
-    unit_test_framework
-)
+find_package(Boost REQUIRED)
 
-find_package(fmt REQUIRED)
+find_package(benchmark REQUIRED)
 
 set(cxx_compile_definitions
     BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
@@ -61,6 +58,12 @@ set(cxx_compile_options_warnings
     >
 )
 
+set(cxx_compile_options_optimization
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
+        -DNDEBUG -Ofast -march=native
+    >
+)
+
 set(cxx_compile_options_mbig_obj
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
 	    -Wa,-mbig-obj
@@ -83,18 +86,7 @@ foreach(t ${targets})
     target_link_libraries(
         ${target_id} PRIVATE
         ${CMAKE_PROJECT_NAME}
-        Boost::unit_test_framework
-        fmt::fmt
-    )
-
-    target_include_directories(
-        ${target_id} PRIVATE
-        ${current_include_dir}
-    )
-
-    target_include_directories(
-        ${target_id} SYSTEM PRIVATE
-        ${PROJECT_SOURCE_DIR}/../third_party/range-v3/include
+        benchmark::benchmark
     )
 
     target_compile_definitions(
@@ -105,6 +97,7 @@ foreach(t ${targets})
     target_compile_options(
         ${target_id} PRIVATE
         ${cxx_compile_options_warnings}
+        ${cxx_compile_options_optimization}
         ${cxx_compile_options_mbig_obj}
     )
 

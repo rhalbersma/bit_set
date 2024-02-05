@@ -29,7 +29,7 @@ struct ref_same_as_pred
         static constexpr auto value = std::same_as<R, T>;
 };
 
-template<int N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 struct ref_same_as_pred<xstd::bit_set<N, Block>>
 {
         template<class R, class T>
@@ -73,7 +73,7 @@ struct cmp_same_as_pred<boost::container::flat_set<Args...>>
 template<class X, class C, class T>
 inline constexpr auto cmp_same_as = cmp_same_as_pred<X>::template value<C, T>;
 
-template<class X, class T = int>
+template<class X, class T = std::size_t>
 struct nested_types
 {
         static_assert(std::same_as<typename X::value_type, T>);                         // [container.reqmts]/2

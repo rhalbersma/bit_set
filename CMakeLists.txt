@@ -29,4 +29,5 @@ target_compile_features(
 )
 
 include(CTest)
+add_subdirectory(benchmark)
 add_subdirectory(test)

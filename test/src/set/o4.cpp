@@ -10,6 +10,7 @@
 #include <xstd/bit_set.hpp>                     // bit_set
 #include <boost/mpl/vector.hpp>                 // vector
 #include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <cstddef>                              // size_t
 #include <cstdint>                              // uint8_t, uint16_t, uint32_t, uint64_t
 #include <set>                                  // set
 
@@ -18,8 +19,8 @@ BOOST_AUTO_TEST_SUITE(Quartic)
 using namespace xstd;
 
 using int_set_types = boost::mpl::vector
-<       std::set<int>
-,       boost::container::flat_set<int>
+<       std::set<std::size_t>
+,       boost::container::flat_set<std::size_t>
 ,       bit_set< 0, uint8_t>
 ,       bit_set< 8, uint8_t>
 ,       bit_set< 9, uint8_t>

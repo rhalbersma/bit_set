@@ -69,11 +69,11 @@ struct set_symmetric_difference
 
 struct transform_increment_filter
 {
-        auto operator()(auto const& is, int n) const
+        auto operator()(auto const& is, std::size_t n) const
         {
                 if constexpr (requires { is << n; }) {
                         using set_type = std::remove_cvref_t<decltype(is)>;
-                        constexpr auto N = static_cast<int>(set_type::max_size());
+                        constexpr auto N = set_type::max_size();
                         BOOST_CHECK(
                                 (is << n) == (is
                                         | std::views::transform([=](auto x) { return x + n; })
@@ -87,14 +87,15 @@ struct transform_increment_filter
 
 struct transform_decrement_filter
 {
-        auto operator()(auto const& is, int n) const
+        auto operator()(auto const& is, std::size_t n) const
         {
                 if constexpr (requires { is >> n; }) {
                         using set_type = std::remove_cvref_t<decltype(is)>;
+                        constexpr auto N = set_type::max_size();                        
                         BOOST_CHECK(
                                 (is >> n) == (is
                                         | std::views::transform([=](auto x) { return x - n;  })
-                                        | std::views::filter   ([=](auto x) { return 0 <= x; })
+                                        | std::views::filter   ([=](auto x) { return x < N; })
                                         | std::ranges::to<set_type>()
                                 )
                         );
