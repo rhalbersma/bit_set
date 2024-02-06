@@ -174,7 +174,7 @@ public:
         [[nodiscard]] constexpr auto to_string(CharT zero = CharT('0'), CharT one = CharT('1')) const noexcept(false)
         {
                 auto str = std::basic_string<CharT, Traits, Allocator>(N, zero);
-                for (auto i = 0uz; i < N; ++i) {
+                for (auto i : std::views::iota(0uz, N)) {
                         if (m_impl.contains(N - 1 - i)) {
                                 str[i] = one;
                         }

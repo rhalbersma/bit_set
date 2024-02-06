@@ -36,7 +36,7 @@ struct op_bit_and_assign
                 BOOST_CHECK_EQUAL(lhs.size(), rhs.size());
                 auto const src = lhs;
                 auto const& dst = lhs &= rhs;
-                for (auto i = 0uz, N = src.size(); i < N; ++i) {
+                for (auto const N = src.size(); auto i : std::views::iota(0uz, N)) {
                         BOOST_CHECK_EQUAL(dst[i], !rhs[i] ? false : src[i]);    // [bitset.members]/1
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/2
@@ -50,7 +50,7 @@ struct op_bit_or_assign
                 BOOST_CHECK_EQUAL(lhs.size(), rhs.size());
                 auto const src = lhs;
                 auto const& dst = lhs |= rhs;
-                for (auto i = 0uz, N = src.size(); i < N; ++i) {
+                for (auto const N = src.size(); auto i : std::views::iota(0uz, N)) {
                         BOOST_CHECK_EQUAL(dst[i], rhs[i] ? true : src[i]);      // [bitset.members]/3
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/4
@@ -64,7 +64,7 @@ struct op_bit_xor_assign
                 BOOST_CHECK_EQUAL(lhs.size(), rhs.size());
                 auto const src = lhs;
                 auto const& dst = lhs ^= rhs;
-                for (auto i = 0uz, N = src.size(); i < N; ++i) {
+                for (auto const N = src.size(); auto i : std::views::iota(0uz, N)) {
                         BOOST_CHECK_EQUAL(dst[i], rhs[i] ? !src[i] : src[i]);   // [bitset.members]/5
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));    // [bitset.members]/6
@@ -78,7 +78,7 @@ struct op_minus_assign
                 BOOST_CHECK_EQUAL(lhs.size(), rhs.size());
                 auto const src = lhs;
                 auto const& dst = lhs -= rhs;
-                for (auto i = 0uz, N = src.size(); i < N; ++i) {
+                for (auto const N = src.size(); auto i : std::views::iota(0uz, N)) {
                         BOOST_CHECK_EQUAL(dst[i], rhs[i] ? false : src[i]);
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(lhs));
@@ -91,7 +91,7 @@ struct op_shift_left_assign
         {
                 auto const src = bs;
                 auto const& dst = bs <<= pos;
-                for (auto I = 0uz, N = src.size(); I < N; ++I) {
+                for (auto const N = src.size(); auto I : std::views::iota(0uz, N)) {
                         if (I < pos) {
                                 BOOST_CHECK(!dst[I]);                           // [bitset.members]/7.1
                         } else {
@@ -108,7 +108,7 @@ struct op_shift_right_assign
         {
                 auto const src = bs;
                 auto const& dst = bs >>= pos;
-                for (auto I = 0uz, N = src.size(); I < N; ++I) {
+                for (auto const N = src.size(); auto I : std::views::iota(0uz, N)) {
                         if (pos >= N - I) {
                                 BOOST_CHECK(!dst[I]);                           // [bitset.members]/9.1
                         } else {
@@ -133,7 +133,7 @@ struct mem_set
                 if (pos < bs.size()) {
                         auto const src = bs;
                         auto const& dst = bs.set(pos, val);
-                        for (auto i = 0uz, N = src.size(); i < N; ++i) {
+                        for (auto const N = src.size(); auto i : std::views::iota(0uz, N)) {
                                                                                 // [bitset.members]/13
                                 BOOST_CHECK_EQUAL(dst[i], i == pos ? val : src[i]);
                         }                                                       // [bitset.members]/14
@@ -158,7 +158,7 @@ struct mem_reset
                 if (pos < bs.size()) {
                         auto const src = bs;
                         auto const& dst = bs.reset(pos);
-                        for (auto i = 0uz, N = src.size(); i < N; ++i) {
+                        for (auto const N = src.size(); auto i : std::views::iota(0uz, N)) {
                                                                                 // [bitset.members]/18
                                 BOOST_CHECK_EQUAL(dst[i], i == pos ? false : src[i]);
                         }                                                       // [bitset.members]/19
@@ -186,7 +186,7 @@ struct mem_flip
         {
                 auto const src = bs;
                 auto const& dst = bs.flip();
-                for (auto i = 0uz, N = src.size(); i < N; ++i) {
+                for (auto const N = src.size(); auto i : std::views::iota(0uz, N)) {
                         BOOST_CHECK_NE(dst[i], src[i]);                         // [bitset.members]/23
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(bs));     // [bitset.members]/24
@@ -197,7 +197,7 @@ struct mem_flip
                 if (pos < bs.size()) {
                         auto const src = bs;
                         auto const& dst = bs.flip(pos);
-                        for (auto i = 0uz, N = src.size(); i < N; ++i) {
+                        for (auto const N = src.size(); auto i : std::views(0uz, N)) {
                                                                                 // [bitset.members]/25
                                 BOOST_CHECK_EQUAL(dst[i], i == pos ? !src[i] : src[i]);
                         }                                                       // [bitset.members]/26
@@ -215,7 +215,7 @@ struct mem_count
         auto operator()(auto const& bs) const noexcept
         {
                 auto expected = 0uz;
-                for (auto i = 0uz, N = bs.size(); i < N; ++i) {
+                for (auto const N = bs.size(); auto i : std::views::iota(0uz, N)) {
                         expected += bs[i];
                 }
                 BOOST_CHECK_EQUAL(bs.count(), expected);                        // [bitset.members]/34
@@ -238,7 +238,7 @@ struct op_equal_to
         auto operator()(auto const& a, auto const& b) const noexcept
         {
                 auto expected = true;
-                for (auto i = 0uz, N = a.size(); i < N; ++i) {
+                for (auto const N = a.size(); auto i : std::views::iota(0uz, N)) {
                         expected &= a[i] == b[i];
                 }
                 BOOST_CHECK_EQUAL(a == b, expected);                            // [bitset.members]/36

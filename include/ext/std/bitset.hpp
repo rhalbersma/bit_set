@@ -7,14 +7,12 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <bitset>       // bitset
-#include <cassert>      // assert
 #include <concepts>     // constructible_from
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag, iter_value_t, reverse_iterator
 #include <ranges>       // begin, end, find_if, rbegin, rend
                         // iota, reverse
 #include <type_traits>  // is_class_v
-#include <utility>      // unreachable
 
 namespace std {
 
@@ -85,13 +83,13 @@ public:
                 m_ptr(p),
                 m_val(v)
         {
-                assert(is_valid());
+                [[assume(is_valid())]];
         }
 
         [[nodiscard]] constexpr auto operator==(bitset_iterator const& other) const noexcept
                 -> bool
         {
-                assert(is_comparable(other));
+                [[assume(is_comparable(other))]];
                 if constexpr (N == 0) {
                         return true;
                 } else {
@@ -101,17 +99,15 @@ public:
 
         [[nodiscard]] constexpr auto operator*() const noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); }
-                assert(is_dereferenceable());
+                [[assume(is_dereferenceable())]];
                 return reference(*m_ptr, m_val);
         }
 
         constexpr auto& operator++() noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); }
-                assert(is_incrementable());
+                [[assume(is_incrementable())]];
                 m_val = find_next(m_val);
-                assert(is_decrementable());
+                [[assume(is_decrementable())]];
                 return *this;
         }
 
@@ -122,10 +118,9 @@ public:
 
         constexpr auto& operator--() noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); }
-                assert(is_decrementable());
+                [[assume(is_decrementable())]];
                 m_val = find_prev(m_val);
-                assert(is_incrementable());
+                [[assume(is_incrementable())]];
                 return *this;
         }
 
@@ -148,7 +143,7 @@ private:
 
         [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
         {
-                assert(m_ptr->any());
+                [[assume(m_ptr->any())]];
                 return *std::ranges::find_if(std::views::iota(value_type(0), n) | std::views::reverse, [&](auto i) {
                         return (*m_ptr)[i];
                 });
@@ -201,8 +196,7 @@ public:
                 m_ref(r),
                 m_val(v)
         {
-                if constexpr (N == 0) { std::unreachable(); }
-                assert(is_valid());
+                [[assume(is_valid())]];
         }
 
         [[nodiscard]] constexpr auto operator==(bitset_reference const& other) const noexcept

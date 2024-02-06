@@ -22,7 +22,7 @@
                                 // input_range
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
-#include <utility>              // forward, pair, unreachable
+#include <utility>              // forward, pair
 
 namespace xstd {
 
@@ -41,13 +41,13 @@ template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
 {
 public:
+        using block_type        = Block;
         using key_type          = std::size_t;
         using key_compare       = std::less<key_type>;
         using value_type        = key_type;
         using value_compare     = key_compare;
         using size_type         = std::size_t;
         using difference_type   = std::ptrdiff_t;
-        using block_type        = Block;
 
         class reference;
 

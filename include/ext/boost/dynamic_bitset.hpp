@@ -40,28 +40,28 @@ public:
                 m_ptr(p),
                 m_val(v)
         {
-                assert(is_valid());
+                [[assume(is_valid())]];
         }
 
         [[nodiscard]] constexpr auto operator==(dynamic_bitset_iterator const& other) const noexcept
                 -> bool
         {
-                assert(is_comparable(other));
+                [[assume(is_comparable(other))]];
                 return this->m_val == other.m_val;
         }
 
         [[nodiscard]] constexpr auto operator*() const noexcept
                 -> reference
         {
-                assert(is_dereferenceable());
+                [[assume(is_dereferenceable())]];
                 return { *m_ptr, m_val };
         }
 
         auto& operator++() noexcept
         {
-                assert(is_incrementable());
+                [[assume(is_incrementable())]];
                 m_val = m_ptr->find_next(m_val);
-                assert(is_decrementable());
+                [[assume(is_decrementable())]];
                 return *this;
         }
 
@@ -72,9 +72,9 @@ public:
 
         auto& operator--() noexcept
         {
-                assert(is_decrementable());
+                [[assume(is_decrementable())]];
                 m_val = find_prev(m_val);
-                assert(is_incrementable());
+                [[assumme(is_incrementable())]];
                 return *this;
         }
 
@@ -86,7 +86,7 @@ public:
 private:
         [[nodiscard]] auto find_prev(value_type n) noexcept
         {
-                assert(m_ptr->any());
+                [[assume(m_ptr->any())]];
                 return *std::ranges::find_if(std::views::iota(value_type(0), std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) {
                         return (*m_ptr)[i];
                 });
@@ -114,7 +114,7 @@ private:
 
         [[nodiscard]] constexpr auto is_decrementable() const noexcept
         {
-                return m_ptr != nullptr && (m_val < m_ptr->size() || m_val == m_ptr->npos);
+                return m_ptr != nullptr && 0 < m_val && (m_val < m_ptr->size() || m_val == m_ptr->npos);
         }
 };
 
@@ -139,7 +139,7 @@ public:
                 m_ref(r),
                 m_val(v)
         {
-                assert(is_valid());
+                [[assume(is_valid())]];
         }
 
         [[nodiscard]] constexpr auto operator==(dynamic_bitset_reference const& other) const noexcept
