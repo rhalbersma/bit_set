@@ -182,6 +182,7 @@ class bitset_reference
         using value_type = std::iter_value_t<bitset_iterator<N>>;
         rimpl_type m_ref;
         value_type m_val;
+
 public:
         bitset_reference()                                   = delete;
         bitset_reference& operator=(bitset_reference const&) = delete;

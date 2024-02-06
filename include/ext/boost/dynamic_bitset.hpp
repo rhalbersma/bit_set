@@ -125,6 +125,7 @@ class dynamic_bitset_reference
         using value_type = std::iter_value_t<dynamic_bitset_iterator<Block, Allocator>>;
         rimpl_type m_ref;
         value_type m_val;
+
 public:
         dynamic_bitset_reference()                                           = delete;
         dynamic_bitset_reference& operator=(dynamic_bitset_reference const&) = delete;
