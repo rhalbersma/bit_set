@@ -109,7 +109,7 @@ auto filter_twins(C const& primes)
 }
 ```
 
-The calling code for these algorithms is listed below. Here, the pretty-printing as a `set` using `{}` delimiters is triggered by the nested `key_type`. Note that `xstd::bit_set<N>` acts as a **drop-in replacement** for `std::set<int>` (or `boost::container::flat_set<int>`). 
+The calling code for these algorithms is listed below. Here, the pretty-printing as a `set` using `{}` delimiters is triggered by the nested `key_type`. Note that `xstd::bit_set<N>` acts as a **drop-in replacement** for `std::set<int>` (or `boost::container::flat_set<int>`).
 
 [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/7bfjz15bP)
 ```cpp
@@ -128,7 +128,7 @@ int main()
 
 ## Requirements for `set`-like behaviour
 
-Looking at the above code, the following four ingredients are necessary to implement the Sieve of Eratosthenes: 
+Looking at the above code, the following four ingredients are necessary to implement the Sieve of Eratosthenes:
 
 1. **Bidirectional iterators** `begin` and `end` in the `set`'s own namespace (to work with range-`for` and the `<ranges>` library);
 2. **Constructors** taking a pair of iterators or a range (in order for `std::ranges::to` to construct a `set`);
@@ -161,7 +161,7 @@ auto fill(xstd::bit_set<N, Block>& empty)
 
 template<class C>
 struct generate_candidates
-{       
+{
     auto operator()(auto n) const
     {
         auto candidates = generate_empty<C>()(n);
@@ -342,58 +342,58 @@ auto b = a
 
 ### Iterators
 
-**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?  
-**A**: Using proxy iterators, which hold a pointer and an offset.  
+**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?
+**A**: Using proxy iterators, which hold a pointer and an offset.
 
-**Q**: What happens if you dereference a proxy iterator?  
-**A**: You get a proxy reference: `ref == *it`.  
+**Q**: What happens if you dereference a proxy iterator?
+**A**: You get a proxy reference: `ref == *it`.
 
-**Q**: What happens if you take the address of a proxy reference?  
-**A**: You get a proxy iterator: `it == &ref`.  
+**Q**: What happens if you take the address of a proxy reference?
+**A**: You get a proxy iterator: `it == &ref`.
 
-**Q**: How do you get any value out of a proxy reference?  
-**A**: They implicitly convert to `int`.  
+**Q**: How do you get any value out of a proxy reference?
+**A**: They implicitly convert to `int`.
 
-**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?  
-**A**: Indeed, proxy references break the equivalence between functions calls like `ref.mem_fn()` and `it->mem_fn()`.  
+**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?
+**A**: Indeed, proxy references break the equivalence between functions calls like `ref.mem_fn()` and `it->mem_fn()`.
 
-**Q**: How do you work around this?  
-**A**: `int` is not a class-type and does not have member functions, so this situation never occurs.  
+**Q**: How do you work around this?
+**A**: `int` is not a class-type and does not have member functions, so this situation never occurs.
 
-**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?  
-**A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.  
+**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?
+**A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.
 
-**Q**: So iterating over an `xstd::bit_set` is really fool-proof?  
-**A**: Yes, `xstd::bit_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).  
+**Q**: So iterating over an `xstd::bit_set` is really fool-proof?
+**A**: Yes, `xstd::bit_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
 
 ### Bit-layout
 
-**Q**: How is `xstd::bit_set` implemented?  
-**A**: It uses a stack-allocated array of unsigned integers as bit storage.  
+**Q**: How is `xstd::bit_set` implemented?
+**A**: It uses a stack-allocated array of unsigned integers as bit storage.
 
-**Q**: How is the set ordering mapped to the array's bit layout?  
-**A**: The most significant bit of the first array word maps onto set value `0`.  
-**A**: The least significant bit of the last array word maps onto set value `N - 1`.  
+**Q**: How is the set ordering mapped to the array's bit layout?
+**A**: The most significant bit of the first array word maps onto set value `0`.
+**A**: The least significant bit of the last array word maps onto set value `N - 1`.
 
-**Q**: I'm visually oriented, can you draw a diagram?  
-**A**: Sure, it looks like this for `bit_set<16, uint8_t>`:  
+**Q**: I'm visually oriented, can you draw a diagram?
+**A**: Sure, it looks like this for `bit_set<16, uint8_t>`:
 
 |value |01234567|89ABCDEF|
 |:---- |-------:|-------:|
 |word  |       0|       1|
 |offset|76543210|76543210|
 
-**Q**: Why is the set order mapped this way onto the array's bit-layout?  
-**A**: To be able to use **data-parallelism** for `(a < b) == std::ranges::lexicographical_compare(a, b)`.  
+**Q**: Why is the set order mapped this way onto the array's bit-layout?
+**A**: To be able to use **data-parallelism** for `(a < b) == std::ranges::lexicographical_compare(a, b)`.
 
-**Q**: How is efficient set comparison connected to the bit-ordering within words?  
-**A**: Take `bit_set<8, uint8_t>` and consider when `sL < sR` for ordered sets of integers `sL` and `sR`.  
+**Q**: How is efficient set comparison connected to the bit-ordering within words?
+**A**: Take `bit_set<8, uint8_t>` and consider when `sL < sR` for ordered sets of integers `sL` and `sR`.
 
-**Q**: Ah, lexicographical set comparison corresponds to bit comparison from most to least significant.  
-**A**: Indeed, and this is equivalent to doing the integer comparison `wL > wR` on the underlying words `wL` and `wR`.  
+**Q**: Ah, lexicographical set comparison corresponds to bit comparison from most to least significant.
+**A**: Indeed, and this is equivalent to doing the integer comparison `wL > wR` on the underlying words `wL` and `wR`.
 
-**Q**: So the set ordering a `bit_set` is equivalent to its representation as a bitstring?  
-**A**: Yes, indeed, and this property has been known for several decades:  
+**Q**: So the set ordering a `bit_set` is equivalent to its representation as a bitstring?
+**A**: Yes, indeed, and this property has been known for several decades:
 
 > "bit-0 is the leftmost, just like char-0 is the leftmost in character strings. [...]
 > This makes converting from and to unsigned integers a little counter-intuitive,
@@ -403,17 +403,17 @@ auto b = a
 
 ### Storage type
 
-**Q**: What storage type does `xstd::bit_set` use?  
-**A**: By default, `xstd::bit_set` uses an array of `std::size_t` integers.  
+**Q**: What storage type does `xstd::bit_set` use?
+**A**: By default, `xstd::bit_set` uses an array of `std::size_t` integers.
 
-**Q**: Can I customize the storage type?  
-**A**: Yes, the full class template signature is `template<int N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.  
+**Q**: Can I customize the storage type?
+**A**: Yes, the full class template signature is `template<int N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.
 
-**Q**: What other storage types can be used as template argument for `Block`?  
-**A**: Any type modelling the Standard Library `unsigned_integral` concept, which includes (for GCC and Clang) the non-Standard `__uint128_t`.  
+**Q**: What other storage types can be used as template argument for `Block`?
+**A**: Any type modelling the Standard Library `unsigned_integral` concept, which includes (for GCC and Clang) the non-Standard `__uint128_t`.
 
-**Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?  
-**A**: Yes, there are three special cases for 0, 1 and 2 words of storage, as well as the general case of 3 or more words.  
+**Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?
+**A**: Yes, there are three special cases for 0, 1 and 2 words of storage, as well as the general case of 3 or more words.
 
 ## Requirements
 

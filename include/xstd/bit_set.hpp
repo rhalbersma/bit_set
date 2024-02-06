@@ -26,7 +26,7 @@
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block> 
+template<std::size_t N, std::unsigned_integral Block>
 class bit_set;
 
 [[nodiscard]] constexpr auto aligned_size(std::size_t size, std::size_t alignment) noexcept
@@ -41,13 +41,13 @@ template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
 {
 public:
-        using key_type               = std::size_t;
-        using key_compare            = std::less<key_type>;
-        using value_type             = key_type;
-        using value_compare          = key_compare;
-        using size_type              = std::size_t;
-        using difference_type        = std::ptrdiff_t;
-        using block_type             = Block;
+        using key_type          = std::size_t;
+        using key_compare       = std::less<key_type>;
+        using value_type        = key_type;
+        using value_compare     = key_compare;
+        using size_type         = std::size_t;
+        using difference_type   = std::ptrdiff_t;
+        using block_type        = Block;
 
         class reference;
 
@@ -143,7 +143,7 @@ public:
                 [[nodiscard]] constexpr auto is_decrementable() const noexcept
                 {
                         return m_ptr != nullptr && bit_set::is_valid(m_val - 1);
-                }                                                 
+                }
         };
 
         class reference
@@ -152,7 +152,7 @@ public:
                 using value_type = bit_set::value_type;
                 rimpl_type m_ref;
                 value_type m_val;
-                
+
         public:
                 reference()                            = delete;
                 reference& operator=(reference const&) = delete;
@@ -166,7 +166,7 @@ public:
                 :
                         m_ref(r),
                         m_val(v)
-                {                        
+                {
                         [[assume(is_valid())]];
                 }
 
@@ -198,7 +198,7 @@ public:
                 [[nodiscard]] constexpr auto is_valid() const noexcept
                 {
                         return bit_set::is_valid(m_val);
-                }                
+                }
         };
 
         [[nodiscard]] friend constexpr auto format_as(reference const& ref) noexcept
@@ -214,7 +214,7 @@ public:
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-private:        
+private:
         static constexpr auto block_size = static_cast<value_type>(std::numeric_limits<Block>::digits);
         static constexpr auto num_bits   = aligned_size(N, block_size);
         static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, 1uz);
@@ -294,7 +294,7 @@ public:
         }
 
         [[nodiscard]] constexpr auto back() const noexcept
-                -> const_reference                
+                -> const_reference
         {
                 return { *this, find_back() };
         }
@@ -320,8 +320,8 @@ public:
                         } else if (num_blocks == 2) {
                                 return m_data[0] == ones && m_data[1] == used_bits;
                         } else if (num_blocks >= 3) {
-                                return std::ranges::all_of(m_data | std::views::take(num_blocks - 1), [](auto block) { 
-                                        return block == ones; 
+                                return std::ranges::all_of(m_data | std::views::take(num_blocks - 1), [](auto block) {
+                                        return block == ones;
                                 }) && m_data[last_block] == used_bits;
                         }
                 } else {
@@ -349,8 +349,8 @@ public:
                         return std::popcount(m_data[0]) + std::popcount(m_data[1]);
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::fold_left(
-                                m_data | std::views::transform([](auto block) { 
-                                        return std::popcount(block); 
+                                m_data | std::views::transform([](auto block) {
+                                        return std::popcount(block);
                                 }), 0, std::plus()
                         );
                 }
@@ -363,7 +363,7 @@ public:
 
         [[nodiscard]] static constexpr auto max_size() noexcept
         {
-                return static_cast<size_type>(N);
+                return N;
         }
 
         template<class... Args>
@@ -384,7 +384,7 @@ public:
         {
                 auto&& [ block, mask ] = block_mask(x);
                 block |= mask;
-                [[assume(contains(x))]];                
+                [[assume(contains(x))]];
         }
 
 private:
@@ -394,7 +394,7 @@ private:
                 auto&& [ block, mask ] = block_mask(x);
                 auto const inserted = !(block & mask);
                 block |= mask;
-                [[assume(contains(x))]];                
+                [[assume(contains(x))]];
                 return { { this, x },  inserted };
         }
 
@@ -493,7 +493,7 @@ public:
                 auto&& [ block, mask ] = block_mask(x);
                 auto const erased = static_cast<size_type>(static_cast<bool>(block & mask));
                 block &= static_cast<block_type>(~mask);
-                [[assume(!contains(x))]];                
+                [[assume(!contains(x))]];
                 return erased;
         }
 
@@ -507,7 +507,7 @@ public:
         constexpr auto erase(const_iterator first, const_iterator last) noexcept
         {
                 [[assume(N > 0 || first == last)]];
-                std::ranges::for_each(first, last, [this](auto x) {                        
+                std::ranges::for_each(first, last, [this](auto x) {
                         pop(x);
                 });
                 return last;
@@ -580,7 +580,7 @@ public:
         }
 
         [[nodiscard]] constexpr auto upper_bound(key_type const& x) noexcept
-                -> iterator        
+                -> iterator
         {
                 return { this, find_next(x + 1) };
         }
@@ -693,16 +693,16 @@ public:
                                         m_data | std::views::reverse,
                                         m_data | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform(
                                                 [=](auto first, auto second) -> block_type
-                                                { 
-                                                        return 
-                                                                static_cast<block_type>(second << L_shift) | 
+                                                {
+                                                        return
+                                                                static_cast<block_type>(second << L_shift) |
                                                                 static_cast<block_type>(first  >> R_shift)
-                                                        ; 
+                                                        ;
                                                 }
                                         )
                                 )) {
                                         lhs = rhs;
-                                }                               
+                                }
                                 m_data[n_blocks] = static_cast<block_type>(m_data[0] >> R_shift);
                         }
                         std::ranges::fill(m_data | std::views::reverse | std::views::drop(num_blocks - n_blocks), zero);
@@ -726,11 +726,11 @@ public:
                                         m_data,
                                         m_data | std::views::drop(n_blocks) | std::views::pairwise_transform(
                                                 [=](auto first, auto second) -> block_type
-                                                { 
-                                                        return 
-                                                                static_cast<block_type>(first  << L_shift) | 
+                                                {
+                                                        return
+                                                                static_cast<block_type>(first  << L_shift) |
                                                                 static_cast<block_type>(second >> R_shift)
-                                                        ; 
+                                                        ;
                                                 }
                                         )
                                 )) {
@@ -757,7 +757,7 @@ public:
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::none_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & ~rhs; }, 
+                                        [](auto lhs, auto rhs) { return lhs & ~rhs; },
                                         this->m_data, other.m_data
                                 ),
                                 std::identity()
@@ -792,7 +792,7 @@ public:
                         }
                         return (i == num_blocks) ? false : std::ranges::none_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & ~rhs; }, 
+                                        [](auto lhs, auto rhs) { return lhs & ~rhs; },
                                         this->m_data, other.m_data
                                 ) | std::views::drop(i),
                                 std::identity()
@@ -815,7 +815,7 @@ public:
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::any_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & rhs; }, 
+                                        [](auto lhs, auto rhs) { return lhs & rhs; },
                                         this->m_data, other.m_data
                                 ),
                                 std::identity()
@@ -841,7 +841,7 @@ private:
                 } else {
                         return n < N;
                 }
-        } 
+        }
 
         [[nodiscard]] static constexpr auto div(value_type numer, value_type denom) noexcept
                 -> std::pair<value_type, value_type>
@@ -870,7 +870,7 @@ private:
         [[nodiscard]] constexpr auto block_mask(value_type n) const noexcept
                 -> std::pair<block_type const&, block_type>
         {
-                [[assume(is_valid(n))]];                
+                [[assume(is_valid(n))]];
                 auto const [ index, offset ] = index_offset(n);
                 return { m_data[index], static_cast<block_type>(left_mask >> offset) };
         }
@@ -924,7 +924,7 @@ private:
                         }
                 } else if constexpr (num_blocks >= 3) {
                         if (
-                                auto const first = std::ranges::find_if(m_data, std::identity()); 
+                                auto const first = std::ranges::find_if(m_data, std::identity());
                                 first != std::ranges::end(m_data)
                         ) {
                                 return static_cast<value_type>(std::ranges::distance(std::ranges::begin(m_data), first)) * block_size + static_cast<value_type>(std::countl_zero(*first));
@@ -953,11 +953,11 @@ private:
                         }
                         auto const rg = m_data | std::views::drop(index);
                         if (
-                                auto const next = std::ranges::find_if(rg, std::identity()); 
+                                auto const next = std::ranges::find_if(rg, std::identity());
                                 next != std::ranges::end(rg)
                         ) {
                                 return n + static_cast<value_type>(std::ranges::distance(std::ranges::begin(rg), next)) * block_size + static_cast<value_type>(std::countl_zero(*next));
-                        }                       
+                        }
                 }
                 return N;
         }
@@ -979,7 +979,7 @@ private:
                         auto const rg = m_data | std::views::reverse | std::views::drop(last_block - index);
                         auto const prev = std::ranges::find_if(rg, std::identity());
                         [[assume(prev != std::ranges::end(rg))]];
-                        return n - static_cast<value_type>(std::ranges::distance(std::ranges::begin(rg), prev)) * block_size - static_cast<value_type>(std::countr_zero(*prev)); 
+                        return n - static_cast<value_type>(std::ranges::distance(std::ranges::begin(rg), prev)) * block_size - static_cast<value_type>(std::countr_zero(*prev));
                 }
         }
 };

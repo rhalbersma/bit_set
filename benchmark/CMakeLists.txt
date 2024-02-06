@@ -60,7 +60,7 @@ set(cxx_compile_options_warnings
 
 set(cxx_compile_options_optimization
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
-        -DNDEBUG -Ofast -march=native
+        -march=native
     >
 )
 

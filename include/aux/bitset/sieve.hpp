@@ -12,7 +12,7 @@
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block> 
+template<std::size_t N, std::unsigned_integral Block>
 class bit_set;
 
 template<class C>
@@ -72,7 +72,7 @@ auto sift(xstd::bit_set<N, Block>& primes, std::size_t m)
 
 template<class C>
 struct generate_candidates
-{       
+{
         auto operator()(auto n) const
         {
                 auto candidates = generate_empty<C>()(n);
@@ -85,14 +85,14 @@ struct generate_candidates
 
 template<class C>
 auto sift_primes(std::size_t n)
-{    
+{
         auto primes = generate_candidates<C>()(n);
-        for (auto p 
-                : primes 
+        for (auto p
+                : primes
                 | std::views::take_while([&](auto x) { return x * x < n; })
         ) {
-                for (auto m 
-                        : std::views::iota(p * p, n) 
+                for (auto m
+                        : std::views::iota(p * p, n)
                         | std::views::stride(p)
                 ) {
                         sift(primes, m);
@@ -103,12 +103,12 @@ auto sift_primes(std::size_t n)
 
 template<class C>
 auto sift_primes2(std::size_t n)
-{    
+{
         auto primes = generate_candidates<C>()(n);
         for (auto p : primes) {
                 auto const p_squared = p * p;
-                if (p_squared > n) { 
-                        break; 
+                if (p_squared > n) {
+                        break;
                 }
                 for (auto m = p_squared; m < n; m += p) {
                         sift(primes, m);

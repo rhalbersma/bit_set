@@ -44,12 +44,12 @@ auto sift_primes(std::size_t n)
 
 template<class C>
 auto sift_primes2(std::size_t n)
-{    
+{
         auto primes = generate_candidates<C>()(n);
         for (auto p : primes) {
                 auto const p_squared = p * p;
-                if (p_squared > n) { 
-                        break; 
+                if (p_squared > n) {
+                        break;
                 }
                 for (auto m = p_squared; m < n; m += p) {
                         sift(primes, m);

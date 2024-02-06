@@ -87,8 +87,8 @@ private:
         [[nodiscard]] auto find_prev(value_type n) noexcept
         {
                 assert(m_ptr->any());
-                return *std::ranges::find_if(std::views::iota(value_type(0), std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) { 
-                        return (*m_ptr)[i]; 
+                return *std::ranges::find_if(std::views::iota(value_type(0), std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) {
+                        return (*m_ptr)[i];
                 });
         }
 
@@ -115,7 +115,7 @@ private:
         [[nodiscard]] constexpr auto is_decrementable() const noexcept
         {
                 return m_ptr != nullptr && (m_val < m_ptr->size() || m_val == m_ptr->npos);
-        }         
+        }
 };
 
 template<std::unsigned_integral Block, class Allocator>
@@ -170,7 +170,7 @@ private:
         [[nodiscard]] constexpr auto is_valid() const noexcept
         {
                 return m_val < m_ref.size();
-        }                
+        }
 };
 
 template<std::unsigned_integral Block, class Allocator>

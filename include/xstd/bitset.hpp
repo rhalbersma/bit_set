@@ -12,6 +12,7 @@
 #include <iosfwd>               // basic_istream, basic_ostream
 #include <locale>               // ctype, use_facet
 #include <memory>               // allocator
+#include <ranges>               // iota
 #include <stdexcept>            // out_of_range
 #include <string>               // basic_string, char_traits
 
@@ -21,120 +22,9 @@ template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
         bit_set<N, Block> m_impl;
-       
+
 public:
         using block_type = Block;
-
-        class reference;
-
-        class iterator
-        {
-                using iter_type = bit_set<N, Block>::iterator;
-                iter_type m_it;
-
-        public:
-                using iterator_category = iter_type::iterator_category;
-                using value_type        = std::size_t;
-                using difference_type   = std::ptrdiff_t;
-                using pointer           = void;
-                using reference         = bitset::reference;
-
-                [[nodiscard]] constexpr iterator() noexcept = default;
-
-                [[nodiscard]] constexpr explicit iterator(iter_type const& it) noexcept 
-                : 
-                        m_it(it) 
-                {}
-                
-                [[nodiscard]] constexpr explicit iterator(iter_type&& it) noexcept 
-                : 
-                        m_it(std::move(it)) 
-                {}
-
-                [[nodiscard]] constexpr auto operator==(iterator const& other) const noexcept -> bool = default;
-
-                [[nodiscard]] constexpr auto operator*() const noexcept
-                {
-                        return reference(*m_it);
-                }
-
-                constexpr auto& operator++() noexcept
-                {
-                        ++m_it; 
-                        return *this;
-                }
-
-                constexpr auto operator++(int) noexcept
-                {
-                        auto nrv = *this; ++*this; return nrv;
-                }
-
-                constexpr auto& operator--() noexcept
-                {
-                        --m_it; 
-                        return *this;
-                }
-
-                constexpr auto operator--(int) noexcept
-                {
-                        auto nrv = *this; --*this; return nrv;
-                }                                                 
-        };
-
-        class reference
-        {
-                using value_type = std::iter_value_t<iterator>;
-                using ref_type = bit_set<N, Block>::reference;
-                ref_type m_ref;
-
-        public:
-                reference()                            = delete;
-                reference& operator=(reference const&) = delete;
-                reference& operator=(reference &&)     = delete;
-
-                              constexpr ~reference()                 noexcept = default;
-                [[nodiscard]] constexpr  reference(reference const&) noexcept = default;
-                [[nodiscard]] constexpr  reference(reference &&)     noexcept = default;
-
-                [[nodiscard]] constexpr explicit reference(ref_type const& ref) noexcept
-                :
-                        m_ref(ref)
-                {}
-
-                [[nodiscard]] constexpr explicit reference(ref_type&& ref) noexcept
-                :
-                        m_ref(std::move(ref))
-                {}
-
-                [[nodiscard]] constexpr auto operator==(reference const& other) const noexcept -> bool = default;
-
-                [[nodiscard]] constexpr auto operator&() const noexcept
-                {
-                        return iterator(&m_ref);
-                }
-
-                [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
-                {
-                        return m_ref;
-                }
-
-                template<class T>
-                [[nodiscard]] constexpr explicit(false) operator T() const noexcept(noexcept(T(m_ref)))
-                        requires std::is_class_v<T> && std::constructible_from<T, ref_type>
-                {
-                        return m_ref;
-                }               
-        };
-
-        [[nodiscard]] friend constexpr auto format_as(reference const& ref) noexcept
-                -> std::iter_value_t<iterator>
-        {
-                return ref;
-        }
-
-        using const_iterator         = iterator;
-        using reverse_iterator       = std::reverse_iterator<iterator>;
-        using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
         [[nodiscard]] constexpr bitset() noexcept = default;
 
@@ -152,7 +42,7 @@ public:
                 }
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
-                for (auto i = 0uz; i < M; ++i) {
+                for (auto i : std::views::iota(0uz, M)) {
                         auto const ch = str[pos + M - 1 - i];
                         if (Traits::eq(ch, one)) {
                                 m_impl.add(i);
@@ -285,7 +175,7 @@ public:
         {
                 auto str = std::basic_string<CharT, Traits, Allocator>(N, zero);
                 for (auto i = 0uz; i < N; ++i) {
-                        if (m_impl.contains(N - 1uz - i)) {
+                        if (m_impl.contains(N - 1 - i)) {
                                 str[i] = one;
                         }
                 }
@@ -360,20 +250,20 @@ public:
                 return this->m_impl.intersects(other.m_impl);
         }
 
-        [[nodiscard]] constexpr auto begin()         noexcept { return       iterator(m_impl.begin()); }
-        [[nodiscard]] constexpr auto begin()   const noexcept { return const_iterator(m_impl.begin()); }
-        [[nodiscard]] constexpr auto end()           noexcept { return       iterator(m_impl.end()); }
-        [[nodiscard]] constexpr auto end()     const noexcept { return const_iterator(m_impl.end()); }
+        [[nodiscard]] constexpr auto begin()         noexcept { return m_impl.begin(); }
+        [[nodiscard]] constexpr auto begin()   const noexcept { return m_impl.begin(); }
+        [[nodiscard]] constexpr auto end()           noexcept { return m_impl.end(); }
+        [[nodiscard]] constexpr auto end()     const noexcept { return m_impl.end(); }
 
-        [[nodiscard]] constexpr auto rbegin()        noexcept { return       reverse_iterator(m_impl.rbegin()); }
-        [[nodiscard]] constexpr auto rbegin()  const noexcept { return const_reverse_iterator(m_impl.rbegin()); }
-        [[nodiscard]] constexpr auto rend()          noexcept { return       reverse_iterator(m_impl.rend()); }
-        [[nodiscard]] constexpr auto rend()    const noexcept { return const_reverse_iterator(m_impl.rend()); }
+        [[nodiscard]] constexpr auto rbegin()        noexcept { return m_impl.rbegin(); }
+        [[nodiscard]] constexpr auto rbegin()  const noexcept { return m_impl.rbegin(); }
+        [[nodiscard]] constexpr auto rend()          noexcept { return m_impl.rend(); }
+        [[nodiscard]] constexpr auto rend()    const noexcept { return m_impl.rend(); }
 
-        [[nodiscard]] constexpr auto cbegin()  const noexcept { return const_iterator(m_impl.cbegin()); }
-        [[nodiscard]] constexpr auto cend()    const noexcept { return const_iterator(m_impl.cend());   }
-        [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator(m_impl.crbegin()); }
-        [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator(m_impl.crend());   }       
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return m_impl.cbegin(); }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return m_impl.cend();   }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return m_impl.crbegin(); }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return m_impl.crend();   }
 };
 
 template<std::size_t N, std::unsigned_integral Block>
@@ -426,6 +316,78 @@ auto& operator<<(std::basic_ostream<CharT, Traits>& os, bitset<N, Block> const& 
                 std::use_facet<std::ctype<CharT>>(os.getloc()).widen('0'),
                 std::use_facet<std::ctype<CharT>>(os.getloc()).widen('1')
         );
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto begin(bitset<N, Block>& bs) noexcept
+{
+        return bs.begin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto begin(bitset<N, Block> const& bs) noexcept
+{
+        return bs.begin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto end(bitset<N, Block>& bs) noexcept
+{
+        return bs.end();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto end(bitset<N, Block> const& bs) noexcept
+{
+        return bs.end();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rbegin(bitset<N, Block>& bs) noexcept
+{
+        return bs.rbegin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rbegin(bitset<N, Block> const& bs) noexcept
+{
+        return bs.rbegin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rend(bitset<N, Block>& bs) noexcept
+{
+        return bs.rend();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rend(bitset<N, Block> const& bs) noexcept
+{
+        return bs.rend();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto cbegin(bitset<N, Block> const& bs) noexcept
+{
+        return bs.cbegin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto cend(bitset<N, Block> const& bs) noexcept
+{
+        return bs.cend();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto crbegin(bitset<N, Block> const& bs) noexcept
+{
+        return bs.crbegin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto crend(bitset<N, Block> const& bs) noexcept
+{
+        return bs.crend();
 }
 
 }       // namespace xstd

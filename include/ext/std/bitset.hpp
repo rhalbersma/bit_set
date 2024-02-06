@@ -101,14 +101,14 @@ public:
 
         [[nodiscard]] constexpr auto operator*() const noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
+                if constexpr (N == 0) { std::unreachable(); }
                 assert(is_dereferenceable());
                 return reference(*m_ptr, m_val);
         }
 
         constexpr auto& operator++() noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
+                if constexpr (N == 0) { std::unreachable(); }
                 assert(is_incrementable());
                 m_val = find_next(m_val);
                 assert(is_decrementable());
@@ -122,7 +122,7 @@ public:
 
         constexpr auto& operator--() noexcept
         {
-                if constexpr (N == 0) { std::unreachable(); } 
+                if constexpr (N == 0) { std::unreachable(); }
                 assert(is_decrementable());
                 m_val = find_prev(m_val);
                 assert(is_incrementable());
@@ -177,7 +177,7 @@ private:
         [[nodiscard]] constexpr auto is_decrementable() const noexcept
         {
                 return m_ptr != nullptr && 0 < m_val && m_val <= N;
-        }        
+        }
 };
 
 template<std::size_t N>
@@ -201,7 +201,7 @@ public:
                 m_ref(r),
                 m_val(v)
         {
-                if constexpr (N == 0) { std::unreachable(); }                 
+                if constexpr (N == 0) { std::unreachable(); }
                 assert(is_valid());
         }
 
@@ -233,7 +233,7 @@ private:
         [[nodiscard]] constexpr auto is_valid() const noexcept
         {
                 return m_val < N;
-        } 
+        }
 };
 
 template<std::size_t N>

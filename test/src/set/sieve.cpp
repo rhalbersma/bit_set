@@ -21,22 +21,22 @@ inline constexpr auto N = 100uz;
 using set_types = boost::mpl::vector
 <       std::set<std::size_t>
 ,       boost::container::flat_set<std::size_t>
-,       xstd::bit_set<N>       
+,       xstd::bit_set<N>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, set_types)
 {
         std::locale::global(std::locale("en_US.UTF-8"));
-     
+
         auto const primes = xstd::sift_primes<T>(N);
         BOOST_CHECK_EQUAL(
-                fmt::format("{}", primes), 
+                fmt::format("{}", primes),
                 "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}"
-        );        
-        
+        );
+
         auto const twins = xstd::filter_twins(primes);
         BOOST_CHECK_EQUAL(
-                fmt::format("{}", twins), 
+                fmt::format("{}", twins),
                 "{3, 5, 7, 11, 13, 17, 19, 29, 31, 41, 43, 59, 61, 71, 73}"
         );
 }

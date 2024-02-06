@@ -91,7 +91,7 @@ struct transform_decrement_filter
         {
                 if constexpr (requires { is >> n; }) {
                         using set_type = std::remove_cvref_t<decltype(is)>;
-                        constexpr auto N = set_type::max_size();                        
+                        constexpr auto N = set_type::max_size();
                         BOOST_CHECK(
                                 (is >> n) == (is
                                         | std::views::transform([=](auto x) { return x - n;  })
