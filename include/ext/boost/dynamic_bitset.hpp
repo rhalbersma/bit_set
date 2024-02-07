@@ -74,7 +74,7 @@ public:
         {
                 [[assume(is_decrementable())]];
                 m_val = find_prev(m_val);
-                [[assumme(is_incrementable())]];
+                [[assume(is_incrementable())]];
                 return *this;
         }
 

@@ -197,7 +197,7 @@ struct mem_flip
                 if (pos < bs.size()) {
                         auto const src = bs;
                         auto const& dst = bs.flip(pos);
-                        for (auto const N = src.size(); auto i : std::views(0uz, N)) {
+                        for (auto const N = src.size(); auto i : std::views::iota(0uz, N)) {
                                                                                 // [bitset.members]/25
                                 BOOST_CHECK_EQUAL(dst[i], i == pos ? !src[i] : src[i]);
                         }                                                       // [bitset.members]/26

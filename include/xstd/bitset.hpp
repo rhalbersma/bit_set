@@ -89,20 +89,20 @@ public:
 
         constexpr auto& operator<<=(std::size_t pos) noexcept
         {
-                if (pos >= N) {
-                        m_impl.clear();
-                } else {
+                if (pos < N) {
                         m_impl <<= pos;
+                } else {
+                        m_impl.clear();
                 }
                 return *this;
         }
 
         constexpr auto& operator>>=(std::size_t pos) noexcept
         {
-                if (pos >= N) {
-                        m_impl.clear();
-                } else {
+                if (pos < N) {
                         m_impl >>= pos;
+                } else {
+                        m_impl.clear();
                 }
                 return *this;
         }
@@ -219,20 +219,12 @@ public:
 
         [[nodiscard]] constexpr auto operator<<(std::size_t pos) const noexcept
         {
-                if (pos >= N) {
-                        return bitset();
-                } else {
-                        auto nrv = *this; nrv <<= pos; return nrv;
-                }
+                auto nrv = *this; nrv <<= pos; return nrv;
         }
 
         [[nodiscard]] constexpr auto operator>>(std::size_t pos) const noexcept
         {
-                if (pos >= N) {
-                        return bitset();
-                } else {
-                        auto nrv = *this; nrv >>= pos; return nrv;
-                }
+                auto nrv = *this; nrv >>= pos; return nrv;
         }
 
         [[nodiscard]] constexpr auto is_subset_of(bitset const& other) const noexcept
