@@ -50,6 +50,7 @@ set(cxx_compile_options_warnings
         -Wextra
         -Wpedantic
         -Wconversion                        # NOTE: possibly triggered by range-v3 views::zip overload resolution
+        -Wnrvo
         -Wshadow
         -Wsign-compare
         -Wsign-conversion
@@ -58,6 +59,12 @@ set(cxx_compile_options_warnings
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:Release>>:
         -Wno-array-bounds                   # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
         -Wno-stringop-overflow              # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
+    >
+)
+
+set(cxx_compile_options_optimization
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
+        -march=native
     >
 )
 
@@ -105,6 +112,7 @@ foreach(t ${targets})
     target_compile_options(
         ${target_id} PRIVATE
         ${cxx_compile_options_warnings}
+        ${cxx_compile_options_optimization}
         ${cxx_compile_options_mbig_obj}
     )
 

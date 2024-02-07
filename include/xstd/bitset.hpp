@@ -34,7 +34,7 @@ public:
                 std::basic_string<CharT, Traits, Allocator>::size_type pos = 0,
                 std::basic_string<CharT, Traits, Allocator>::size_type n = std::basic_string<CharT, Traits, Allocator>::npos,
                 CharT zero = CharT('0'),
-                CharT one = CharT('1')
+                CharT one  = CharT('1')
         ) noexcept(false)
         {
                 if (pos > str.size()) {
@@ -89,9 +89,9 @@ public:
 
         constexpr auto& operator<<=(std::size_t pos) noexcept
         {
-                if (pos < N) {
+                if (pos < N) [[likely]] {
                         m_impl <<= pos;
-                } else {
+                } else [[unlikely]] {
                         m_impl.clear();
                 }
                 return *this;
@@ -99,9 +99,9 @@ public:
 
         constexpr auto& operator>>=(std::size_t pos) noexcept
         {
-                if (pos < N) {
+                if (pos < N) [[likely]] {
                         m_impl >>= pos;
-                } else {
+                } else [[unlikely]] {
                         m_impl.clear();
                 }
                 return *this;
@@ -192,7 +192,7 @@ public:
                 return m_impl.max_size();
         }
 
-        [[nodiscard]] bool operator==(bitset const&) const = default;
+        [[nodiscard]] constexpr auto operator==(bitset const&) const noexcept -> bool = default;
 
         [[nodiscard]] constexpr auto test(std::size_t pos) const noexcept(false)
         {

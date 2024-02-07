@@ -260,7 +260,7 @@ public:
                 } else if constexpr (num_blocks == 1) {
                         return other.m_data[0] <=> this->m_data[0];
                 } else if constexpr (num_blocks == 2) {
-                        constexpr auto tied = [](auto const& bs) {
+                        constexpr auto tied = [](auto const& bs) static {
                                 return std::tie(bs.m_data[0], bs.m_data[1]);
                         };
                         return tied(other) <=> tied(*this);
@@ -320,7 +320,7 @@ public:
                         } else if (num_blocks == 2) {
                                 return m_data[0] == ones && m_data[1] == used_bits;
                         } else if (num_blocks >= 3) {
-                                return std::ranges::all_of(m_data | std::views::take(num_blocks - 1), [](auto block) {
+                                return std::ranges::all_of(m_data | std::views::take(num_blocks - 1), [](auto block) static {
                                         return block == ones;
                                 }) && m_data[last_block] == used_bits;
                         }
@@ -332,7 +332,7 @@ public:
                         } else if constexpr (num_blocks == 2) {
                                 return m_data[0] == ones && m_data[1] == ones;
                         } else if constexpr (num_blocks >= 3) {
-                                return std::ranges::all_of(m_data, [](auto block) {
+                                return std::ranges::all_of(m_data, [](auto block) static {
                                         return block == ones;
                                 });
                         }
@@ -349,7 +349,7 @@ public:
                         return std::popcount(m_data[0]) + std::popcount(m_data[1]);
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::fold_left(
-                                m_data | std::views::transform([](auto block) {
+                                m_data | std::views::transform([](auto block) static {
                                         return std::popcount(block);
                                 }), 0, std::plus()
                         );
@@ -434,7 +434,7 @@ private:
                 requires std::constructible_from<value_type, decltype(*first)>
         {
                 [[assume(N > 0 || first == last)]];
-                std::ranges::for_each(first, last, [this](auto x){
+                std::ranges::for_each(first, last, [this](auto x) {
                         add(x);
                 });
         }
@@ -757,7 +757,7 @@ public:
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::none_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & ~rhs; },
+                                        [](auto lhs, auto rhs) static { return lhs & ~rhs; },
                                         this->m_data, other.m_data
                                 ),
                                 std::identity()
@@ -792,7 +792,7 @@ public:
                         }
                         return (i == num_blocks) ? false : std::ranges::none_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & ~rhs; },
+                                        [](auto lhs, auto rhs) static { return lhs & ~rhs; },
                                         this->m_data, other.m_data
                                 ) | std::views::drop(i),
                                 std::identity()
@@ -815,7 +815,7 @@ public:
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::any_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & rhs; },
+                                        [](auto lhs, auto rhs) static { return lhs & rhs; },
                                         this->m_data, other.m_data
                                 ),
                                 std::identity()
@@ -1015,13 +1015,13 @@ template<std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, std::ranges::range_value_t<bit_set<N, Block>> n) noexcept
+[[nodiscard]] constexpr auto operator<<(bit_set<N, Block> const& lhs, std::size_t n) noexcept
 {
         auto nrv = lhs; nrv <<= n; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, std::ranges::range_value_t<bit_set<N, Block>> n) noexcept
+[[nodiscard]] constexpr auto operator>>(bit_set<N, Block> const& lhs, std::size_t n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
 }

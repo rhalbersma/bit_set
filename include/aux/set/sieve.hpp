@@ -63,7 +63,7 @@ auto filter_twins(C const& primes)
 {
         return primes
                 | std::views::adjacent<3>
-                | std::views::filter([](auto&& x) { auto&& [ prev, self, next ] = x; return prev + 2 == self || self + 2 == next; })
+                | std::views::filter([](auto&& x) static { auto&& [ prev, self, next ] = x; return self - 2 == prev || self + 2 == next; })
                 | std::views::elements<1>
                 | std::ranges::to<C>()
         ;
