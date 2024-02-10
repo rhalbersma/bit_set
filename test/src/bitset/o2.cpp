@@ -11,7 +11,7 @@
                                         // op_shift_left_assign, op_shift_right_assign, op_bit_not, op_equal_to,
                                         // op_shift_left, op_shift_right, op_bit_and, op_bit_or, op_bit_xor, op_minus,
                                         // mem_is_subset_of, mem_is_proper_subset_of, mem_intersect
-#include <boost/mpl/vector.hpp>         // vector
+#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 
@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(Quadratic)
 
 using namespace xstd;
 
-using bitset_types = boost::mpl::vector
+using bitset_types = boost::mp11::mp_list
 <       std::bitset<0>
 ,       std::bitset<8>
 ,       boost::dynamic_bitset<>

@@ -25,7 +25,7 @@ struct generate_candidates
 };
 
 template<class C>
-auto sift_primes(std::size_t n)
+auto sift_primes0(std::size_t n)
 {
         auto primes = generate_candidates<C>()(n);
         for (auto p
@@ -43,16 +43,17 @@ auto sift_primes(std::size_t n)
 }
 
 template<class C>
-auto sift_primes2(std::size_t n)
+auto sift_primes1(std::size_t n)
 {
         auto primes = generate_candidates<C>()(n);
         for (auto p : primes) {
-                auto const p_squared = p * p;
-                if (p_squared > n) {
+                if (auto m = p * p; m < n) {
+                        do {
+                                sift(primes, m);
+                                m += p;
+                        } while(m < n);
+                } else {
                         break;
-                }
-                for (auto m = p_squared; m < n; m += p) {
-                        sift(primes, m);
                 }
         }
         return primes;

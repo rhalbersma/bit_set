@@ -22,7 +22,7 @@
                                 // input_range
 #include <tuple>                // tie
 #include <type_traits>          // common_type_t, is_class_v, make_signed_t
-#include <utility>              // forward, pair
+#include <utility>              // forward, move, pair
 
 namespace xstd {
 

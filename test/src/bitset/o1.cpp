@@ -9,7 +9,7 @@
 #include <bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set
 #include <bitset/primitives.hpp>        // mem_set, mem_reset, op_bit_not, mem_flip, mem_count, mem_size, mem_test, mem_all, mem_any, mem_none
                                         // mem_at, op_bit_and, op_bit_or, op_bit_xor, op_minus, mem_is_subset_of, mem_intersects, fn_iostream
-#include <boost/mpl/vector.hpp>         // vector
+#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(Linear)
 
 using namespace xstd;
 
-using bitset_types = boost::mpl::vector
+using bitset_types = boost::mp11::mp_list
 <       std::bitset<  0>
 ,       std::bitset<  1>
 ,       std::bitset< 64>

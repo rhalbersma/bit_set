@@ -3,13 +3,10 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-#define BOOST_MPL_LIMIT_VECTOR_SIZE 50
-
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
 #include <xstd/bitset.hpp>              // bitset
-#include <boost/mpl/vector.hpp>         // vector
+#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <concepts>                     // regular
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
@@ -18,7 +15,7 @@ BOOST_AUTO_TEST_SUITE(TypeTraits)
 
 using namespace xstd;
 
-using bitset_types = boost::mpl::vector
+using bitset_types = boost::mp11::mp_list
 <       std::bitset<  0>
 ,       std::bitset< 64>
 ,       std::bitset<128>

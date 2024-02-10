@@ -8,7 +8,8 @@
 #include <algorithm>            // max
 #include <array>                // array
 #include <initializer_list>     // initializer_list
-#include <ranges>               // cartesian_product, iota
+#include <ranges>               // to
+                                // cartesian_product, iota
 
 #if defined(_MSC_VER)
         // xstd::bit_set<0> gives bogus "unreachable code" warnings
@@ -43,8 +44,7 @@ auto empty_set(auto fun)
 template<class T, auto N = limit_v<T, L1>>
 auto full_set(auto fun)
 {
-        auto const v = std::views::iota(0uz, N);
-        auto isN = T(v.begin(), v.end()); [[assume(isN.size() == N)]];
+        auto isN = std::views::iota(0uz, N) | std::ranges::to<T>(); [[assume(isN.size() == N)]];
         fun(isN);
 }
 
@@ -70,8 +70,7 @@ template<class T, auto N = limit_v<T, L1>>
 auto all_cardinality_sets(auto fun)
 {
         for (auto i : std::views::iota(0uz, N + 1)) {
-                auto const v = std::views::iota(0uz, i);
-                auto is = T(v.begin(), v.end()); [[assume(is.size() == i)]];
+                auto is = std::views::iota(0uz, i) | std::ranges::to<T>(); [[assume(is.size() == i)]];
                 fun(is);
         }
 }

@@ -3,12 +3,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
-#define BOOST_MPL_LIMIT_VECTOR_SIZE 50
-
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set
-#include <boost/mpl/vector.hpp>         // vector
+#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_CHECK_EQUAL_COLLECTIONS
 #include <algorithm>                    // copy
 #include <cstddef>                      // size_t
@@ -20,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(Implicit)
 
 using namespace xstd;
 
-using int_set_types = boost::mpl::vector
+using int_set_types = boost::mp11::mp_list
 <       std::set<std::size_t>
 ,       boost::container::flat_set<std::size_t>
 ,       bit_set< 32, uint16_t>

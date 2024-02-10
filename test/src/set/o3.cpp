@@ -7,7 +7,7 @@
 #include <set/primitives.hpp>           // op_equal_to, op_less
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set
-#include <boost/mpl/vector.hpp>         // vector
+#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(Cubic)
 
 using namespace xstd;
 
-using int_set_types = boost::mpl::vector
+using int_set_types = boost::mp11::mp_list
 <       std::set<std::size_t>
 ,       boost::container::flat_set<std::size_t>
 ,       bit_set< 0, uint8_t>

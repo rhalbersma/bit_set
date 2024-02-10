@@ -45,7 +45,7 @@ public:
                 for (auto i : std::views::iota(0uz, M)) {
                         auto const ch = str[pos + M - 1 - i];
                         if (Traits::eq(ch, one)) {
-                                m_impl.add(i);
+                                set(i);
                         } else if (!Traits::eq(ch, zero)) {
                                 throw std::invalid_argument("");
                         }
@@ -119,9 +119,9 @@ public:
                         throw std::out_of_range("");
                 }
                 if (val) {
-                        m_impl.add(pos);
+                        m_impl.insert(pos);
                 } else {
-                        m_impl.pop(pos);
+                        m_impl.erase(pos);
                 }
                 return *this;
         }
@@ -137,7 +137,7 @@ public:
                 if (pos >= N) {
                         throw std::out_of_range("");
                 }
-                m_impl.pop(pos);
+                m_impl.erase(pos);
                 return *this;
         }
 

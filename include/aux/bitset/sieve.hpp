@@ -12,9 +12,6 @@
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block>
-class bit_set;
-
 template<class C>
 concept legacy_bitset = requires(C& bs, std::size_t pos)
 {
@@ -22,11 +19,12 @@ concept legacy_bitset = requires(C& bs, std::size_t pos)
         bs.reset(pos);
 };
 
-template<legacy_bitset C>
-auto size(C const& c)
+template<class C>
+concept modern_bitset = requires(C& bs, std::size_t pos)
 {
-        return c.count();
-}
+        bs.fill();
+        bs.erase(pos);
+};
 
 template<class C>
 struct generate_empty
@@ -46,28 +44,28 @@ struct generate_empty<boost::dynamic_bitset<Block, Allocator>>
         }
 };
 
-template<legacy_bitset C>
+template<class C>
 auto fill(C& empty)
 {
-        empty.set();
+        if constexpr (legacy_bitset<C>) {
+                empty.set();
+        } else if constexpr (modern_bitset<C>) {
+                empty.fill();
+        } else {
+                static_assert(false);
+        }
 }
 
-template<std::size_t N, std::unsigned_integral Block>
-auto fill(xstd::bit_set<N, Block>& empty)
-{
-        empty.fill();
-}
-
-template<legacy_bitset C>
+template<class C>
 auto sift(C& primes, std::size_t m)
 {
-        primes.reset(m);
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-auto sift(xstd::bit_set<N, Block>& primes, std::size_t m)
-{
-        primes.pop(m);
+        if constexpr (legacy_bitset<C>) {
+                primes.reset(m);
+        } else if constexpr (modern_bitset<C>) {
+                primes.erase(m);
+        } else {
+                static_assert(false);
+        }
 }
 
 template<class C>
@@ -84,7 +82,7 @@ struct generate_candidates
 };
 
 template<class C>
-auto sift_primes(std::size_t n)
+auto sift_primes0(std::size_t n)
 {
         auto primes = generate_candidates<C>()(n);
         for (auto p
@@ -102,7 +100,7 @@ auto sift_primes(std::size_t n)
 }
 
 template<class C>
-auto sift_primes2(std::size_t n)
+auto sift_primes1(std::size_t n)
 {
         auto primes = generate_candidates<C>()(n);
         for (auto p : primes) {
