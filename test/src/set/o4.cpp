@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <ext/boost/container/flat_set.hpp>     // flat_set
-#include <set/algorithms.hpp>                   // includes
+#include <set/composable.hpp>                   // includes
 #include <set/exhaustive.hpp>                   // all_doubleton_set_pairs
 #include <set/primitives.hpp>                   // op_compare_three_way
 #include <xstd/bit_set.hpp>                     // bit_set
@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_SUITE(Quartic)
 
 using namespace xstd;
 
-using int_set_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       std::set<std::size_t>
 ,       boost::container::flat_set<std::size_t>
 ,       bit_set< 0, uint8_t>
@@ -35,10 +35,10 @@ using int_set_types = boost::mp11::mp_list
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWay, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWay, T, Types)
 {
         all_doubleton_set_pairs<T>(op_compare_three_way());
-        all_doubleton_set_pairs<T>(parallel::includes());
+        all_doubleton_set_pairs<T>(composable::includes());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

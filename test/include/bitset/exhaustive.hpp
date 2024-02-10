@@ -31,23 +31,23 @@ inline constexpr auto L4 =   8uz;
 template<class T, auto N = limit_v<T, L0>>
 auto empty_set(auto fun)
 {
-        auto bs0 = make_bitset<T>(N); [[assume(bs0.none())]];
-        fun(bs0);
+        auto a = make_bitset<T>(N); [[assume(a.none())]];
+        fun(a);
 }
 
 template<class T, auto N = limit_v<T, L0>>
 auto full_set(auto fun)
 {
-        auto bsN = make_bitset<T>(N, true); [[assume(bsN.all())]];
-        fun(bsN);
+        auto a = make_bitset<T>(N, true); [[assume(a.all())]];
+        fun(a);
 }
 
 template<class T, auto N = limit_v<T, L0>>
 auto empty_set_pair(auto fun)
 {
-        auto bs0 = make_bitset<T>(N); [[assume(bs0.none())]];
-        auto bs1 = make_bitset<T>(N); [[assume(bs1.none())]];
-        fun(bs0, bs1);
+        auto a = make_bitset<T>(N); [[assume(a.none())]];
+        auto b = make_bitset<T>(N); [[assume(b.none())]];
+        fun(a, b);
 }
 
 // NOTE: these tests are O(N)
@@ -72,12 +72,12 @@ template<class T, auto N = limit_v<T, L1>>
 auto all_cardinality_sets(auto fun)
 {
         for (auto i : std::views::iota(0uz, N + 1)) {
-                auto bs = make_bitset<T>(N);
+                auto a = make_bitset<T>(N);
                 for (auto j : std::views::iota(0uz, i)) {
-                        bs.set(j);
+                        a.set(j);
                 }
-                [[assume(bs.count() == i)]];
-                fun(bs);
+                [[assume(a.count() == i)]];
+                fun(a);
         }
 }
 
@@ -85,8 +85,8 @@ template<class T, auto N = limit_v<T, L1>>
 auto all_singleton_sets(auto fun)
 {
         for (auto i : std::views::iota(0uz, N)) {
-                auto bs1 = make_bitset<T>(N); bs1.set(i); [[assume(bs1.count() == 1)]];
-                fun(bs1);
+                auto a = make_bitset<T>(N); a.set(i); [[assume(a.count() == 1)]];
+                fun(a);
         }
 }
 
@@ -99,9 +99,9 @@ auto all_singleton_set_pairs(auto fun)
                 std::views::iota(0uz, N),
                 std::views::iota(0uz, N))
         ) {
-                auto bs1_i = make_bitset<T>(N); bs1_i.set(i); [[assume(bs1_i.count() == 1)]];
-                auto bs1_j = make_bitset<T>(N); bs1_j.set(j); [[assume(bs1_j.count() == 1)]];
-                fun(bs1_i, bs1_j);
+                auto a = make_bitset<T>(N); a.set(i); [[assume(a.count() == 1)]];
+                auto b = make_bitset<T>(N); b.set(j); [[assume(b.count() == 1)]];
+                fun(a, b);
         }
 }
 
@@ -115,10 +115,10 @@ auto all_singleton_set_triples(auto fun)
                 std::views::iota(0uz, N),
                 std::views::iota(0uz, N)
         )) {
-                auto bs1_i = make_bitset<T>(N); bs1_i.set(i); [[assume(bs1_i.count() == 1)]];
-                auto bs1_j = make_bitset<T>(N); bs1_j.set(j); [[assume(bs1_j.count() == 1)]];
-                auto bs1_k = make_bitset<T>(N); bs1_k.set(k); [[assume(bs1_k.count() == 1)]];
-                fun(bs1_i, bs1_j, bs1_k);
+                auto a = make_bitset<T>(N); a.set(i); [[assume(a.count() == 1)]];
+                auto b = make_bitset<T>(N); b.set(j); [[assume(b.count() == 1)]];
+                auto c = make_bitset<T>(N); c.set(k); [[assume(c.count() == 1)]];
+                fun(a, b, c);
         }
 }
 
@@ -135,9 +135,9 @@ auto all_doubleton_set_pairs(auto fun)
                         std::views::iota(0uz, j),
                         std::views::iota(0uz, n)
                 )) {
-                        auto bs2_ij = make_bitset<T>(N); bs2_ij.set(i); bs2_ij.set(j); [[assume(bs2_ij.count() == 2)]];
-                        auto bs2_mn = make_bitset<T>(N); bs2_mn.set(m); bs2_mn.set(n); [[assume(bs2_mn.count() == 2)]];
-                        fun(bs2_ij, bs2_mn);
+                        auto a = make_bitset<T>(N); a.set(i); a.set(j); [[assume(a.count() == 2)]];
+                        auto b = make_bitset<T>(N); b.set(m); b.set(n); [[assume(b.count() == 2)]];
+                        fun(a, b);
                 }
         }
 }

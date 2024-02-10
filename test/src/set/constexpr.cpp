@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_SUITE(Constexpr)
 
 using namespace xstd;
 
-using int_set_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       bit_set<  0, uint8_t>
 ,       bit_set<  1, uint8_t>
 ,       bit_set<  7, uint8_t>
@@ -55,7 +55,7 @@ using int_set_types = boost::mp11::mp_list
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Empty, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Empty, T, Types)
 {
         constexpr auto b = T();
         static_assert(b.empty());
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Empty, T, int_set_types)
         static_assert((b <=> b) == std::strong_ordering::equal);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Full, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Full, T, Types)
 {
         constexpr auto b = ~T();
         static_assert(b.full());

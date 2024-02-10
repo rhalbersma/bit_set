@@ -413,8 +413,8 @@ struct mem_insert
                 BOOST_CHECK(r == a.find(t));                                    // [associative.reqmts.general]/73
         }
 
-        template<class X>
-        auto operator()(X& a, std::input_iterator auto i, std::input_iterator auto j) const
+        template<class X, std::input_iterator I>
+        auto operator()(X& a,  I i, I j) const
         {
                 static_assert(std::same_as<decltype(a.insert(i, j)), void>);    // [associative.reqmts.general]/75
                                                                                 // [associative.reqmts.general]/76

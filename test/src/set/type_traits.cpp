@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(TypeTraits)
 
 using namespace xstd;
 
-using int_set_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       std::set<std::size_t>
 ,       boost::container::flat_set<std::size_t>
 ,       bit_set<  0, uint8_t>
@@ -46,17 +46,17 @@ using int_set_types = boost::mp11::mp_list
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
 {
         static_assert(std::regular<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsTotallyOrdered, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TotallyOrdered, T, Types)
 {
         static_assert(std::totally_ordered<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsBiDirectional, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BidirectionalRange, T, Types)
 {
         static_assert(std::ranges::bidirectional_range<T>);
 }

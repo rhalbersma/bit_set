@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(Quadratic)
 
 using namespace xstd;
 
-using bitset_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       std::bitset<0>
 ,       std::bitset<8>
 ,       boost::dynamic_bitset<>
@@ -37,7 +37,7 @@ using bitset_types = boost::mp11::mp_list
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, Types)
 {
         all_singleton_set_pairs<T>(op_bit_and_assign());
         all_singleton_set_pairs<T>(op_bit_or_assign());

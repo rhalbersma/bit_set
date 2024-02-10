@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <ext/boost/container/flat_set.hpp>     // flat_set
-#include <set/algorithms.hpp>                   // includes, set_difference, set_intersection, set_symmetric_difference, set_union
+#include <set/composable.hpp>                   // includes, set_difference, set_intersection, set_symmetric_difference, set_union
 #include <set/exhaustive.hpp>                   // empty_set_pair
 #include <set/primitives.hpp>                   // constructor mem_swap,fn_swap, op_equal, op_not_equal_to,
                                                 // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal,
@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_SUITE(Constant)
 
 using namespace xstd;
 
-using int_set_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       std::set<std::size_t>
 ,       boost::container::flat_set<std::size_t>
 ,       bit_set<  0, uint8_t>
@@ -64,7 +64,7 @@ using int_set_types = boost::mp11::mp_list
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
 {
         [[maybe_unused]] auto _ = nested_types<T>();
         constructor<T>()();
@@ -81,11 +81,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         empty_set_pair<T>(op_less_equal());
         empty_set_pair<T>(op_greater_equal());
 
-        empty_set_pair<T>(parallel::includes());
-        empty_set_pair<T>(parallel::set_union());
-        empty_set_pair<T>(parallel::set_intersection());
-        empty_set_pair<T>(parallel::set_difference());
-        empty_set_pair<T>(parallel::set_symmetric_difference());
+        empty_set_pair<T>(composable::includes());
+        empty_set_pair<T>(composable::set_union());
+        empty_set_pair<T>(composable::set_intersection());
+        empty_set_pair<T>(composable::set_difference());
+        empty_set_pair<T>(composable::set_symmetric_difference());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

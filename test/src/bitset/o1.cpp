@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(Linear)
 
 using namespace xstd;
 
-using bitset_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       std::bitset<  0>
 ,       std::bitset<  1>
 ,       std::bitset< 64>
@@ -39,7 +39,7 @@ using bitset_types = boost::mp11::mp_list
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, bitset_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, Types)
 {
         all_cardinality_sets<T>(mem_set());
         all_singleton_sets<T>(mem_set());

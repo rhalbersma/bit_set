@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(Implicit)
 
 using namespace xstd;
 
-using int_set_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       std::set<std::size_t>
 ,       boost::container::flat_set<std::size_t>
 ,       bit_set< 32, uint16_t>
@@ -52,7 +52,7 @@ public:
         [[nodiscard]] constexpr explicit(false) operator std::size_t() const noexcept { return m_value; }
 };
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IntConstructible, T, Types)
 {
         auto src = T({ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 });
         std::set<size_t_> dst;

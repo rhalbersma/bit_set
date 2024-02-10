@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_SUITE(Quartic)
 
 using namespace xstd;
 
-using bitset_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       std::bitset< 0>
 ,       std::bitset<17>
 ,       boost::dynamic_bitset<>
@@ -34,12 +34,12 @@ using bitset_types = boost::mp11::mp_list
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsSubsetOf, T, bitset_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsSubsetOf, T, Types)
 {
         all_doubleton_set_pairs<T>(mem_is_subset_of());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IsProperSubsetOf, T, bitset_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsProperSubsetOf, T, Types)
 {
         all_doubleton_set_pairs<T>(mem_is_proper_subset_of());
 }

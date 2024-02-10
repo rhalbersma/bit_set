@@ -4,8 +4,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <ext/boost/container/flat_set.hpp>     // flat_set
-#include <set/algorithms.hpp>                   // includes, set_difference, set_intersection, set_symmetric_difference, set_union,
-                                                // transform_decrement_filter, transform_increment_filter
+#include <set/composable.hpp>                   // includes, set_difference, set_intersection, set_symmetric_difference, set_union,
+                                                // decrement, increment
 #include <set/exhaustive.hpp>                   // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
                                                 // all_singleton_sets, all_singleton_set_pairs, all_valid
 #include <set/primitives.hpp>                   // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_SUITE(Quadratic)
 
 using namespace xstd;
 
-using int_set_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       std::set<std::size_t>
 ,       boost::container::flat_set<std::size_t>
 ,       bit_set< 0, uint8_t>
@@ -43,7 +43,7 @@ using int_set_types = boost::mp11::mp_list
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
 {
         all_doubleton_arrays<T>([](auto const& a2) {
                 constructor<T>()(a2.begin(), a2.end());
@@ -142,20 +142,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, int_set_types)
         all_singleton_set_pairs<T>(op_less_equal());
         all_singleton_set_pairs<T>(op_greater_equal());
 
-        all_singleton_set_pairs<T>(parallel::includes());
-        all_singleton_set_pairs<T>(parallel::set_union());
-        all_singleton_set_pairs<T>(parallel::set_intersection());
-        all_singleton_set_pairs<T>(parallel::set_difference());
-        all_singleton_set_pairs<T>(parallel::set_symmetric_difference());
+        all_singleton_set_pairs<T>(composable::includes());
+        all_singleton_set_pairs<T>(composable::set_union());
+        all_singleton_set_pairs<T>(composable::set_intersection());
+        all_singleton_set_pairs<T>(composable::set_difference());
+        all_singleton_set_pairs<T>(composable::set_symmetric_difference());
 
         all_valid<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
-                        parallel::transform_decrement_filter()(bs1, pos);
+                        composable::increment()(bs1, pos);
                 });
         });
         all_valid<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
-                        parallel::transform_increment_filter()(bs1, pos);
+                        composable::decrement()(bs1, pos);
                 });
         });
 }
