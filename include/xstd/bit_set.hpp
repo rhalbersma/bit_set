@@ -299,7 +299,7 @@ public:
                 return { *this, find_back() };
         }
 
-        [[nodiscard]] constexpr auto empty() const noexcept
+        [[nodiscard]] constexpr bool empty() const noexcept
         {
                 if constexpr (N == 0) {
                         return true;
@@ -339,29 +339,24 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr auto ssize() const noexcept
+        [[nodiscard]] constexpr size_type size() const noexcept
         {
                 if constexpr (N == 0) {
-                        return 0;
+                        return 0uz;
                 } else if constexpr (num_blocks == 1) {
-                        return std::popcount(m_data[0]);
+                        return static_cast<size_type>(std::popcount(m_data[0]));
                 } else if constexpr (num_blocks == 2) {
-                        return std::popcount(m_data[0]) + std::popcount(m_data[1]);
+                        return static_cast<size_type>(std::popcount(m_data[0]) + std::popcount(m_data[1]));
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::fold_left(
                                 m_data | std::views::transform([](auto block) static {
-                                        return std::popcount(block);
-                                }), 0, std::plus()
+                                        return static_cast<size_type>(std::popcount(block));
+                                }), 0uz, std::plus()
                         );
                 }
         }
 
-        [[nodiscard]] constexpr auto size() const noexcept
-        {
-                return static_cast<size_type>(ssize());
-        }
-
-        [[nodiscard]] static constexpr auto max_size() noexcept
+        [[nodiscard]] static constexpr size_type max_size() noexcept
         {
                 return N;
         }
@@ -395,7 +390,7 @@ private:
                 auto const inserted = !(block & mask);
                 block |= mask;
                 [[assume(contains(x))]];
-                return { { this, x },  inserted };
+                return { { this, x }, inserted };
         }
 
 public:
@@ -1113,7 +1108,12 @@ template<std::size_t N, std::unsigned_integral Block>
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto ssize(bit_set<N, Block> const& bs) noexcept
 {
-        return bs.ssize();
+        return static_cast<
+                std::common_type_t<
+                        std::ptrdiff_t,
+                        std::make_signed_t<decltype(bs.size())>
+                >
+        >(bs.size());
 }
 
 template<std::size_t N, std::unsigned_integral Block>

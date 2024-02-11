@@ -12,12 +12,13 @@
 #include <algorithm>                                    // equal_range, lexicographical_compare_three_way
 #include <compare>                                      // strong_ordering
 #include <concepts>                                     // convertible_to, default_initializable, equality_comparable, same_as, signed_integral, unsigned_integral
+#include <cstddef>                                      // ptrdiff_t
 #include <initializer_list>                             // initializer_list
 #include <iterator>                                     // distance, empty, iter_difference_t, iter_value_t, next, prev, size, ssize
 #include <limits>                                       // max
 #include <memory>                                       // addressof
 #include <ranges>                                       // count, equal, find, lexicographical_compare, lower_bound, , subrange, upper_bound
-#include <type_traits>                                  // add_const_t, remove_reference_t
+#include <type_traits>                                  // add_const_t, common_type, make_signed_t, remove_reference_t
 #include <utility>                                      // pair
 
 namespace xstd {
@@ -414,7 +415,7 @@ struct mem_insert
         }
 
         template<class X, std::input_iterator I>
-        auto operator()(X& a,  I i, I j) const
+        auto operator()(X& a, I i, I j) const
         {
                 static_assert(std::same_as<decltype(a.insert(i, j)), void>);    // [associative.reqmts.general]/75
                                                                                 // [associative.reqmts.general]/76

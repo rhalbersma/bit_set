@@ -119,6 +119,24 @@ struct op_shift_right_assign
         }
 };
 
+struct op_shift_left
+{
+        auto operator()(auto const& bs, std::size_t pos) const noexcept
+        {
+                auto expected = bs; expected <<= pos;
+                BOOST_CHECK_EQUAL(bs << pos, expected);                         // [bitset.members]/42
+        }
+};
+
+struct op_shift_right
+{
+        auto operator()(auto const& bs, std::size_t pos) const noexcept
+        {
+                auto expected = bs; expected >>= pos;
+                BOOST_CHECK_EQUAL(bs >> pos, expected);                         // [bitset.members]/43
+        }
+};
+
 struct mem_set
 {
         auto operator()(auto& bs) const noexcept
@@ -278,24 +296,6 @@ struct mem_none
         auto operator()(auto const& bs) const noexcept
         {
                 BOOST_CHECK_EQUAL(bs.none(), bs.count() == 0);                  // [bitset.members]/41
-        }
-};
-
-struct op_shift_left
-{
-        auto operator()(auto const& bs, std::size_t pos) const noexcept
-        {
-                auto expected = bs; expected <<= pos;
-                BOOST_CHECK_EQUAL(bs << pos, expected);                         // [bitset.members]/42
-        }
-};
-
-struct op_shift_right
-{
-        auto operator()(auto const& bs, std::size_t pos) const noexcept
-        {
-                auto expected = bs; expected >>= pos;
-                BOOST_CHECK_EQUAL(bs >> pos, expected);                         // [bitset.members]/43
         }
 };
 
