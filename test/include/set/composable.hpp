@@ -15,8 +15,8 @@ namespace xstd::composable {
 
 struct includes
 {
-        template<class T>
-        auto operator()(T const& a, T const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {
                 if constexpr (requires { a.is_subset_of(b); }) {
                         BOOST_CHECK_EQUAL(a.is_subset_of(b), std::ranges::includes(a, b));
@@ -26,60 +26,60 @@ struct includes
 
 struct set_union
 {
-        template<class T>
-        auto operator()(T const& a, T const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {
                 if constexpr (requires { a | b; }) {
-                        BOOST_CHECK((a | b) == (ranges::views::set_union(a, b) | std::ranges::to<T>()));
+                        BOOST_CHECK((a | b) == (ranges::views::set_union(a, b) | std::ranges::to<X>()));
                 }
         }
 };
 
 struct set_intersection
 {
-        template<class T>
-        auto operator()(T const& a, T const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {
                 if constexpr (requires { a & b; }) {
-                        BOOST_CHECK((a & b) == (ranges::views::set_intersection(a, b) | std::ranges::to<T>()));
+                        BOOST_CHECK((a & b) == (ranges::views::set_intersection(a, b) | std::ranges::to<X>()));
                 }
         }
 };
 
 struct set_difference
 {
-        template<class T>
-        auto operator()(T const& a, T const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {
                 if constexpr (requires { a - b; }) {
-                        BOOST_CHECK((a - b) == (ranges::views::set_difference(a, b) | std::ranges::to<T>()));
+                        BOOST_CHECK((a - b) == (ranges::views::set_difference(a, b) | std::ranges::to<X>()));
                 }
         }
 };
 
 struct set_symmetric_difference
 {
-        template<class T>
-        auto operator()(T const& a, T const& b) const noexcept
+        template<class X>
+        auto operator()(X const& a, X const& b) const noexcept
         {
                 if constexpr (requires { a ^ b; }) {
-                        BOOST_CHECK((a ^ b) == (ranges::views::set_symmetric_difference(a, b) | std::ranges::to<T>()));
+                        BOOST_CHECK((a ^ b) == (ranges::views::set_symmetric_difference(a, b) | std::ranges::to<X>()));
                 }
         }
 };
 
 struct increment
 {
-        template<class T>
-        auto operator()(T const& a, std::size_t n) const
+        template<class X, std::integral Key = typename X::key_type>
+        auto operator()(X const& a, Key n) const
         {
                 if constexpr (requires { a << n; }) {
-                        constexpr auto N = T::max_size();
+                        constexpr auto N = static_cast<Key>(X::max_size());
                         BOOST_CHECK(
                                 (a << n) == (a
                                         | std::views::transform([=](auto x) { return x + n; })
                                         | std::views::filter   ([=](auto x) { return x < N; })
-                                        | std::ranges::to<T>()
+                                        | std::ranges::to<X>()
                                 )
                         );
                 }
@@ -88,16 +88,16 @@ struct increment
 
 struct decrement
 {
-        template<class T>
-        auto operator()(T const& a, std::size_t n) const
+        template<class X, std::integral Key = typename X::key_type>
+        auto operator()(X const& a, Key n) const
         {
                 if constexpr (requires { a >> n; }) {
-                        constexpr auto N = T::max_size();
+                        constexpr auto N = static_cast<Key>(X::max_size());
                         BOOST_CHECK(
                                 (a >> n) == (a
                                         | std::views::transform([=](auto x) { return x - n;  })
                                         | std::views::filter   ([=](auto x) { return x < N; })
-                                        | std::ranges::to<T>()
+                                        | std::ranges::to<X>()
                                 )
                         );
                 }

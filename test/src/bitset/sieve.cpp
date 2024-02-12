@@ -18,16 +18,16 @@ BOOST_AUTO_TEST_SUITE(Sieve)
 
 inline constexpr auto N = 100;
 
-using set_types = boost::mp11::mp_list
+using Types = boost::mp11::mp_list
 <       boost::dynamic_bitset<>
 ,         std::bitset<N>
 ,        xstd::bitset<N>
-,        xstd::bit_set<N>
+,        xstd::bit_set<std::size_t, N>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Format, C, set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
 {
-        auto const primes = xstd::sift_primes1<C>(N);
+        auto const primes = xstd::sift_primes1<T>(N);
         BOOST_CHECK_EQUAL(
                 fmt::format("{}", primes | xstd::views::as_set),
                 "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}")

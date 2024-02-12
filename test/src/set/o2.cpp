@@ -23,23 +23,24 @@ BOOST_AUTO_TEST_SUITE(Quadratic)
 
 using namespace xstd;
 
+using Key = int;
 using Types = boost::mp11::mp_list
-<       std::set<std::size_t>
-,       boost::container::flat_set<std::size_t>
-,       bit_set< 0, uint8_t>
-,       bit_set< 1, uint8_t>
-,       bit_set< 8, uint8_t>
-,       bit_set< 9, uint8_t>
-,       bit_set<16, uint8_t>
-,       bit_set<17, uint8_t>
-,       bit_set<24, uint8_t>
-,       bit_set<24, uint16_t>
-,       bit_set<24, uint32_t>
+<       std::set<Key>
+,       boost::container::flat_set<Key>
+,       bit_set<Key,  0, uint8_t>
+,       bit_set<Key,  1, uint8_t>
+,       bit_set<Key,  8, uint8_t>
+,       bit_set<Key,  9, uint8_t>
+,       bit_set<Key, 16, uint8_t>
+,       bit_set<Key, 17, uint8_t>
+,       bit_set<Key, 24, uint8_t>
+,       bit_set<Key, 24, uint16_t>
+,       bit_set<Key, 24, uint32_t>
 #if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
-,       bit_set<24, uint64_t>
+,       bit_set<Key, 24, uint64_t>
 #endif
 #if defined(__GNUG__)
-,       bit_set<24, __uint128_t>
+,       bit_set<Key, 24, __uint128_t>
 #endif
 >;
 
@@ -76,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
         });
 
         // boost::container::flat_set<Key>::erase invalidates iterators
-        if constexpr (!std::same_as<T, boost::container::flat_set<std::size_t>>) {
+        if constexpr (!std::same_as<T, boost::container::flat_set<Key>>) {
                 all_doubleton_sets<T>([](auto& is2) {
                         mem_erase()(is2, is2.begin(), is2.end());
                 });

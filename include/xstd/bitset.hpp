@@ -25,7 +25,7 @@ public:
         using block_type = Block;
 
 private:
-        bit_set<N, Block> m_impl;
+        bit_set<std::size_t, N, Block> m_impl;
 
 public:
         [[nodiscard]] constexpr bitset() noexcept = default;
@@ -235,7 +235,7 @@ public:
         [[nodiscard]] constexpr bool test(std::size_t pos) const noexcept(false)
         {
                 if (pos < N) [[likely]] {
-                       return m_impl.contains(pos);
+                        return m_impl.contains(pos);
                 } else [[unlikely]] {
                         throw std::out_of_range("");
                 }

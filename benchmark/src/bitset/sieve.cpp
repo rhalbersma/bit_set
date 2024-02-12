@@ -38,16 +38,16 @@ static void bm_filter_twins(benchmark::State& state) {
 BENCHMARK_TEMPLATE1(bm_sift_primes0, boost::dynamic_bitset<>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0, std::bitset<N>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0, xstd::bitset<N>);
-BENCHMARK_TEMPLATE1(bm_sift_primes0, xstd::bit_set<N>);
+//BENCHMARK_TEMPLATE1(bm_sift_primes0, (xstd::bit_set<std::size_t, N>));
 
 BENCHMARK_TEMPLATE1(bm_sift_primes1, boost::dynamic_bitset<>);
 BENCHMARK_TEMPLATE1(bm_sift_primes1, std::bitset<N>);
 BENCHMARK_TEMPLATE1(bm_sift_primes1, xstd::bitset<N>);
-BENCHMARK_TEMPLATE1(bm_sift_primes1, xstd::bit_set<N>);
+//BENCHMARK_TEMPLATE1(bm_sift_primes1, (xstd::bit_set<std::size_t, N>));
 
 BENCHMARK_TEMPLATE1(bm_filter_twins, boost::dynamic_bitset<>);
 BENCHMARK_TEMPLATE1(bm_filter_twins, std::bitset<N>);
 BENCHMARK_TEMPLATE1(bm_filter_twins, xstd::bitset<N>);
-BENCHMARK_TEMPLATE1(bm_filter_twins, xstd::bit_set<N>);
+//BENCHMARK_TEMPLATE1(bm_filter_twins, (xstd::bit_set<std::size_t, N>));
 
 BENCHMARK_MAIN();

@@ -15,15 +15,16 @@
 
 BOOST_AUTO_TEST_SUITE(Sieve)
 
-inline constexpr auto N = 100uz;
+inline constexpr auto N = 100;
 
-using set_types = boost::mp11::mp_list
-<       std::set<std::size_t>
-,       boost::container::flat_set<std::size_t>
-,       xstd::bit_set<N>
+using Key = int;
+using Types = boost::mp11::mp_list
+<       std::set<Key>
+,       boost::container::flat_set<Key>
+,       xstd::bit_set<Key, N>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, set_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
 {
         auto const primes = xstd::sift_primes1<T>(N);
         BOOST_CHECK_EQUAL(

@@ -33,16 +33,18 @@ static void bm_filter_twins(benchmark::State& state) {
         }
 }
 
-BENCHMARK_TEMPLATE1(bm_sift_primes0, std::set<std::size_t>);
-BENCHMARK_TEMPLATE1(bm_sift_primes0, boost::container::flat_set<std::size_t>);
-BENCHMARK_TEMPLATE1(bm_sift_primes0, xstd::bit_set<N>);
+using Key = int;
 
-BENCHMARK_TEMPLATE1(bm_sift_primes1, std::set<std::size_t>);
-BENCHMARK_TEMPLATE1(bm_sift_primes1, boost::container::flat_set<std::size_t>);
-BENCHMARK_TEMPLATE1(bm_sift_primes1, xstd::bit_set<N>);
+BENCHMARK_TEMPLATE1(bm_sift_primes0, std::set<Key>);
+BENCHMARK_TEMPLATE1(bm_sift_primes0, boost::container::flat_set<Key>);
+//BENCHMARK_TEMPLATE1(bm_sift_primes0, (xstd::bit_set<Key, N>));
 
-BENCHMARK_TEMPLATE1(bm_filter_twins, std::set<std::size_t>);
-BENCHMARK_TEMPLATE1(bm_filter_twins, boost::container::flat_set<std::size_t>);
-BENCHMARK_TEMPLATE1(bm_filter_twins, xstd::bit_set<N>);
+BENCHMARK_TEMPLATE1(bm_sift_primes1, std::set<Key>);
+BENCHMARK_TEMPLATE1(bm_sift_primes1, boost::container::flat_set<Key>);
+//BENCHMARK_TEMPLATE1(bm_sift_primes1, (xstd::bit_set<Key, N>));
+
+BENCHMARK_TEMPLATE1(bm_filter_twins, std::set<Key>);
+BENCHMARK_TEMPLATE1(bm_filter_twins, boost::container::flat_set<Key>);
+//BENCHMARK_TEMPLATE1(bm_filter_twins, (xstd::bit_set<Key, N>));
 
 BENCHMARK_MAIN();

@@ -9,23 +9,23 @@
 
 namespace xstd {
 
-template<class C>
-auto sift(C& primes, std::size_t m)
+template<class C, class Key = typename C::key_type>
+auto sift(C& primes, Key const& m)
 {
         primes.erase(m);
 }
 
-template<class C>
+template<class C, class Key = typename C::key_type>
 struct generate_candidates
 {
-        auto operator()(std::size_t n) const
+        auto operator()(Key n) const
         {
-                return std::views::iota(2uz, n) | std::ranges::to<C>();
+                return std::views::iota(Key(2), n) | std::ranges::to<C>();
         }
 };
 
-template<class C>
-auto sift_primes0(std::size_t n)
+template<class C, class Key = typename C::key_type>
+auto sift_primes0(Key n)
 {
         auto primes = generate_candidates<C>()(n);
         for (auto p
@@ -42,8 +42,8 @@ auto sift_primes0(std::size_t n)
         return primes;
 }
 
-template<class C>
-auto sift_primes1(std::size_t n)
+template<class C, class Key = typename C::key_type>
+auto sift_primes1(Key n)
 {
         auto primes = generate_candidates<C>()(n);
         for (auto p : primes) {
