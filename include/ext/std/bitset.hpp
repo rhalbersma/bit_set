@@ -17,19 +17,19 @@
 namespace std {
 
 template<std::size_t N>
-auto& operator-=(std::bitset<N>& lhs, std::bitset<N> const& rhs) noexcept
+bitset<N>& operator-=(std::bitset<N>& lhs, const std::bitset<N>& rhs) noexcept
 {
         return lhs &= ~rhs;
 }
 
 template<std::size_t N>
-auto operator-(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
+bitset<N> operator-(const std::bitset<N>& lhs, const std::bitset<N>& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
 template<std::size_t N>
-auto is_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
+bool is_subset_of(const std::bitset<N>& lhs, const std::bitset<N>& rhs) noexcept
 {
         if constexpr (N == 0) {
                 return true;
@@ -39,7 +39,7 @@ auto is_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
 }
 
 template<std::size_t N>
-auto is_proper_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
+bool is_proper_subset_of(const std::bitset<N>& lhs, const std::bitset<N>& rhs) noexcept
 {
         if constexpr (N == 0) {
                 return false;
@@ -49,7 +49,7 @@ auto is_proper_subset_of(std::bitset<N> const& lhs, std::bitset<N> const& rhs) n
 }
 
 template<std::size_t N>
-auto intersects(std::bitset<N> const& lhs, std::bitset<N> const& rhs) noexcept
+bool intersects(const std::bitset<N>& lhs, const std::bitset<N>& rhs) noexcept
 {
         if constexpr (N == 0) {
                 return false;
@@ -178,7 +178,7 @@ private:
 template<std::size_t N>
 class bitset_reference
 {
-        using rimpl_type = std::bitset<N> const&;
+        using rimpl_type = const std::bitset<N>&;
         using value_type = std::iter_value_t<bitset_iterator<N>>;
         rimpl_type m_ref;
         value_type m_val;
@@ -264,7 +264,7 @@ template<std::size_t N>
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto begin(std::bitset<N> const& bs) noexcept
+[[nodiscard]] constexpr auto begin(const std::bitset<N>& bs) noexcept
         -> bitset_iterator<N>
 {
         return { &bs, detail::find_first(&bs) };
@@ -278,7 +278,7 @@ template<std::size_t N>
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto end(std::bitset<N> const& bs) noexcept
+[[nodiscard]] constexpr auto end(const std::bitset<N>& bs) noexcept
         -> bitset_iterator<N>
 {
         return { &bs, N };
@@ -291,7 +291,7 @@ template<std::size_t N>
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto rbegin(std::bitset<N> const& bs) noexcept
+[[nodiscard]] constexpr auto rbegin(const std::bitset<N>& bs) noexcept
 {
         return std::reverse_iterator(std::ranges::end(bs));
 }
@@ -303,31 +303,31 @@ template<std::size_t N>
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto rend(std::bitset<N> const& bs) noexcept
+[[nodiscard]] constexpr auto rend(const std::bitset<N>& bs) noexcept
 {
         return std::reverse_iterator(std::ranges::begin(bs));
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto cbegin(std::bitset<N> const& bs) noexcept
+[[nodiscard]] constexpr auto cbegin(const std::bitset<N>& bs) noexcept
 {
         return std::ranges::begin(bs);
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto cend(std::bitset<N> const& bs) noexcept
+[[nodiscard]] constexpr auto cend(const std::bitset<N>& bs) noexcept
 {
         return std::ranges::end(bs);
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto crbegin(std::bitset<N> const& bs) noexcept
+[[nodiscard]] constexpr auto crbegin(const std::bitset<N>& bs) noexcept
 {
         return std::ranges::rbegin(bs);
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto crend(std::bitset<N> const& bs)  noexcept
+[[nodiscard]] constexpr auto crend(const std::bitset<N>& bs)  noexcept
 {
         return std::ranges::rend(bs);
 }

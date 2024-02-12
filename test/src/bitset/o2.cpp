@@ -55,8 +55,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, Types)
                 });
         });
 
-        all_singleton_set_pairs<T>(op_equal_to());
-
         any_value<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
                         op_shift_left()(bs1, pos);
@@ -68,14 +66,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, Types)
                 });
         });
 
-        all_singleton_set_pairs<T>(op_bit_and());
-        all_singleton_set_pairs<T>(op_bit_or());
-        all_singleton_set_pairs<T>(op_bit_xor());
-        all_singleton_set_pairs<T>(op_minus());
+        all_singleton_set_pairs<T>(op_equal_to());
 
         all_singleton_set_pairs<T>(mem_is_subset_of());
         all_singleton_set_pairs<T>(mem_is_proper_subset_of());
         all_singleton_set_pairs<T>(mem_intersects());
+
+        all_singleton_set_pairs<T>(op_bit_and());
+        all_singleton_set_pairs<T>(op_bit_or());
+        all_singleton_set_pairs<T>(op_bit_xor());
+        all_singleton_set_pairs<T>(op_minus());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

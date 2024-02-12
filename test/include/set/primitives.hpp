@@ -11,7 +11,7 @@
 #include <xstd/bit_set.hpp>
 #include <algorithm>                                    // equal_range, lexicographical_compare_three_way
 #include <compare>                                      // strong_ordering
-#include <concepts>                                     // convertible_to, default_initializable, equality_comparable, same_as, signed_integral, unsigned_integral
+#include <concepts>                                     // convertible_to, default_initializable, equality_comparable, integral, same_as, unsigned_integral
 #include <cstddef>                                      // ptrdiff_t
 #include <initializer_list>                             // initializer_list
 #include <iterator>                                     // distance, empty, iter_difference_t, iter_value_t, next, prev, size, ssize

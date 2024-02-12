@@ -8,6 +8,7 @@
 #include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_CHECK_EQUAL_COLLECTIONS
 #include <algorithm>                    // copy
+#include <concepts>                     // integral
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <iterator>                     // inserter
@@ -48,10 +49,10 @@ using Types = boost::mp11::mp_list
 template<std::integral Key>
 class Implicit
 {
-        Key m_value;
+        Key m_key;
 public:
-        [[nodiscard]] constexpr explicit(false) Implicit(Key v) noexcept : m_value(v) {}
-        [[nodiscard]] constexpr explicit(false) operator Key() const noexcept { return m_value; }
+        [[nodiscard]] constexpr explicit(false) Implicit(Key k)      noexcept : m_key(k) {}
+        [[nodiscard]] constexpr explicit(false) operator Key() const noexcept { return m_key; }
 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(ImplicitConstructible, T, Types)

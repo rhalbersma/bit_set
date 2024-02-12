@@ -30,7 +30,7 @@ private:
 public:
         [[nodiscard]] constexpr bitset() noexcept = default;
 
-        [[nodiscard]] constexpr bitset(unsigned long long) noexcept = delete;
+        [[nodiscard]] constexpr bitset(unsigned long long val) noexcept = delete;
 
         template<class charT, class traits, class Allocator>
         [[nodiscard]] constexpr explicit bitset(
@@ -67,20 +67,16 @@ public:
                 bitset(n == std::basic_string<charT>::npos ? std::basic_string<charT>(str) : std::basic_string<charT>(str, n), 0, n, zero, one)
         {}
 
-        [[nodiscard]] constexpr auto begin()         noexcept { return m_impl.begin(); }
-        [[nodiscard]] constexpr auto begin()   const noexcept { return m_impl.begin(); }
-        [[nodiscard]] constexpr auto end()           noexcept { return m_impl.end(); }
-        [[nodiscard]] constexpr auto end()     const noexcept { return m_impl.end(); }
+        [[nodiscard]] constexpr auto  begin(this auto&& self) noexcept { return self.m_impl.begin(); }
+        [[nodiscard]] constexpr auto  end  (this auto&& self) noexcept { return self.m_impl.end  (); }
 
-        [[nodiscard]] constexpr auto rbegin()        noexcept { return m_impl.rbegin(); }
-        [[nodiscard]] constexpr auto rbegin()  const noexcept { return m_impl.rbegin(); }
-        [[nodiscard]] constexpr auto rend()          noexcept { return m_impl.rend(); }
-        [[nodiscard]] constexpr auto rend()    const noexcept { return m_impl.rend(); }
+        [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept { return self.m_impl.rbegin(); }
+        [[nodiscard]] constexpr auto rend  (this auto&& self) noexcept { return self.m_impl.rend  (); }
 
-        [[nodiscard]] constexpr auto cbegin()  const noexcept { return m_impl.cbegin(); }
-        [[nodiscard]] constexpr auto cend()    const noexcept { return m_impl.cend();   }
+        [[nodiscard]] constexpr auto  cbegin() const noexcept { return m_impl.cbegin(); }
+        [[nodiscard]] constexpr auto  cend  () const noexcept { return m_impl.cend  (); }
         [[nodiscard]] constexpr auto crbegin() const noexcept { return m_impl.crbegin(); }
-        [[nodiscard]] constexpr auto crend()   const noexcept { return m_impl.crend();   }
+        [[nodiscard]] constexpr auto crend  () const noexcept { return m_impl.crend  (); }
 
         constexpr bitset& operator&=(const bitset& rhs) noexcept
         {
@@ -230,7 +226,7 @@ public:
                 return m_impl.max_size();
         }
 
-        [[nodiscard]] constexpr bool operator==(const bitset&) const noexcept = default;
+        [[nodiscard]] constexpr bool operator==(const bitset& rhs) const noexcept = default;
 
         [[nodiscard]] constexpr bool test(std::size_t pos) const noexcept(false)
         {
@@ -256,19 +252,19 @@ public:
                 return m_impl.empty();
         }
 
-        [[nodiscard]] constexpr auto is_subset_of(const bitset& other) const noexcept
+        [[nodiscard]] constexpr bool is_subset_of(const bitset& rhs) const noexcept
         {
-                return this->m_impl.is_subset_of(other.m_impl);
+                return m_impl.is_subset_of(rhs.m_impl);
         }
 
-        [[nodiscard]] constexpr auto is_proper_subset_of(const bitset& other) const noexcept
+        [[nodiscard]] constexpr bool is_proper_subset_of(const bitset& rhs) const noexcept
         {
-                return this->m_impl.is_proper_subset_of(other.m_impl);
+                return m_impl.is_proper_subset_of(rhs.m_impl);
         }
 
-        [[nodiscard]] constexpr auto intersects(const bitset& other) const noexcept
+        [[nodiscard]] constexpr bool intersects(const bitset& rhs) const noexcept
         {
-                return this->m_impl.intersects(other.m_impl);
+                return m_impl.intersects(rhs.m_impl);
         }
 };
 
@@ -345,31 +341,31 @@ template<std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator&(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
+[[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
 {
         auto nrv = lhs; nrv &= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator|(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
+[[nodiscard]] constexpr bitset<N, Block> operator|(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
 {
         auto nrv = lhs; nrv |= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator^(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
+[[nodiscard]] constexpr bitset<N, Block> operator^(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
 {
         auto nrv = lhs; nrv ^= rhs; return nrv;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator-(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
+[[nodiscard]] constexpr bitset<N, Block> operator-(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
 template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
-auto& operator>>(std::basic_istream<charT, traits>& is, bitset<N, Block>& x) noexcept(false)
+std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>& is, bitset<N, Block>& x) noexcept(false)
 {
         auto str = std::basic_string<charT, traits>(N, is.widen('0'));
         charT ch;
@@ -388,7 +384,7 @@ auto& operator>>(std::basic_istream<charT, traits>& is, bitset<N, Block>& x) noe
 }
 
 template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
-auto& operator<<(std::basic_ostream<charT, traits>& os, const bitset<N, Block>& x) noexcept(false)
+std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>& os, const bitset<N, Block>& x) noexcept(false)
 {
         return os << x.template to_string<charT, traits, std::allocator<charT>>(
                 std::use_facet<std::ctype<charT>>(os.getloc()).widen('0'),

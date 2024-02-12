@@ -10,7 +10,7 @@
                                 // all_of, any_of, fill, find_if, fold_left, for_each, max, none_of, swap
 #include <bit>                  // countl_zero, countr_zero, popcount
 #include <compare>              // strong_ordering
-#include <concepts>             // constructible_from, unsigned_integral
+#include <concepts>             // constructible_from, integral, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
 #include <functional>           // identity, less
 #include <initializer_list>     // initializer_list
@@ -122,7 +122,7 @@ public:
         private:
                 [[nodiscard]] constexpr auto is_valid() const noexcept
                 {
-                        return m_ptr != nullptr && m_val <= static_cast<value_type>(N);
+                        return m_ptr != nullptr && static_cast<std::size_t>(m_val) <= N;
                 }
 
                 [[nodiscard]] constexpr auto is_comparable(iterator other) const noexcept
@@ -831,7 +831,7 @@ private:
                 if constexpr (N == 0) {
                         return false;
                 } else {
-                        return n < static_cast<value_type>(N);
+                        return static_cast<std::size_t>(n) < N;
                 }
         }
 

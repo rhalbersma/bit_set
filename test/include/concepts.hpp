@@ -10,7 +10,7 @@
 namespace xstd {
 
 template<class T>
-concept resizeable = requires(T&& t)
+concept dynamic = requires(T&& t)
 {
         t.resize(std::declval<typename T::size_type>());
         t.resize(std::declval<typename T::size_type>(), std::declval<bool>());

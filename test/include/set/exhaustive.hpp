@@ -7,6 +7,7 @@
 
 #include <algorithm>            // max
 #include <array>                // array
+#include <concepts>             // integral
 #include <initializer_list>     // initializer_list
 #include <ranges>               // to
                                 // cartesian_product, iota

@@ -81,14 +81,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, Types)
 
         empty_set_pair<T>(op_equal_to());
 
+        empty_set_pair<T>(mem_is_subset_of());
+        empty_set_pair<T>(mem_is_proper_subset_of());
+        empty_set_pair<T>(mem_intersects());
+
         empty_set_pair<T>(op_bit_and());
         empty_set_pair<T>(op_bit_or());
         empty_set_pair<T>(op_bit_xor());
         empty_set_pair<T>(op_minus());
-
-        empty_set_pair<T>(mem_is_subset_of());
-        empty_set_pair<T>(mem_is_proper_subset_of());
-        empty_set_pair<T>(mem_intersects());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
