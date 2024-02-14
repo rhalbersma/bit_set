@@ -7,7 +7,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <algorithm>            // lexicographical_compare_three_way, shift_left, shift_right
-                                // all_of, any_of, fill, find_if, fold_left, for_each, max, none_of, swap
+                                // all_of, any_of, fill, fill_n, find_if, fold_left, for_each, max, none_of, swap
 #include <bit>                  // countl_zero, countr_zero, popcount
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, integral, unsigned_integral
@@ -263,11 +263,7 @@ public:
                         };
                         return tied(*this) == tied(other);
                 } else if constexpr (num_blocks >= 3) {
-                        if consteval {
-                                return std::ranges::equal(this->m_data, other.m_data);
-                        } else {
-                                return std::memcmp(this->m_data, other.m_data, sizeof(this->m_data)) == 0;
-                        }
+                        return std::ranges::equal(this->m_data, other.m_data);
                 }
         }
 
@@ -478,11 +474,7 @@ public:
                         if constexpr (num_blocks == 2) {
                                 m_data[0] = ones;
                         } else if (num_blocks >= 3) {
-                                if consteval {
-                                        std::ranges::fill(m_data | std::views::take(last_block), ones);
-                                } else {
-                                        std::memset(m_data, 0xFF, sizeof(m_data) - sizeof(block_type));
-                                }
+                                std::ranges::fill_n(m_data, last_block, ones);
                         }
                         m_data[last_block] = used_bits;
                 } else if constexpr (N > 0) {
@@ -492,11 +484,7 @@ public:
                                 m_data[0] = ones;
                                 m_data[1] = ones;
                         } else if constexpr (num_blocks >= 3) {
-                                if consteval {
-                                        std::ranges::fill(m_data, ones);
-                                } else {
-                                        std::memset(m_data, 0xFF, sizeof(m_data));
-                                }
+                                std::ranges::fill_n(m_data, num_blocks, ones);
                         }
                 }
                 [[assume(full())]];
@@ -554,11 +542,7 @@ public:
                         m_data[0] = zero;
                         m_data[1] = zero;
                 } else if constexpr (num_blocks >= 3) {
-                        if consteval {
-                                std::ranges::fill(m_data, zero);
-                        } else {
-                                std::memset(m_data, 0x00, sizeof(m_data));
-                        }
+                        std::ranges::fill_n(m_data, num_blocks, zero);
                 }
                 [[assume(empty())]];
         }
