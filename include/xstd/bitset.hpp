@@ -30,7 +30,7 @@ private:
 public:
         [[nodiscard]] constexpr bitset() noexcept = default;
 
-        [[nodiscard]] constexpr bitset(unsigned long long val) noexcept = delete;
+        [[nodiscard]] constexpr explicit(false) bitset(unsigned long long val) noexcept = delete;
 
         template<class charT, class traits, class Allocator>
         [[nodiscard]] constexpr explicit bitset(
@@ -67,16 +67,20 @@ public:
                 bitset(n == std::basic_string<charT>::npos ? std::basic_string<charT>(str) : std::basic_string<charT>(str, n), 0, n, zero, one)
         {}
 
-        [[nodiscard]] constexpr auto  begin(this auto&& self) noexcept { return self.m_impl.begin(); }
-        [[nodiscard]] constexpr auto  end  (this auto&& self) noexcept { return self.m_impl.end  (); }
+        [[nodiscard]] constexpr auto begin()         noexcept { return m_impl.begin();   }
+        [[nodiscard]] constexpr auto begin()   const noexcept { return m_impl.begin();   }
+        [[nodiscard]] constexpr auto end()           noexcept { return m_impl.end();     }
+        [[nodiscard]] constexpr auto end()     const noexcept { return m_impl.end();     }
 
-        [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept { return self.m_impl.rbegin(); }
-        [[nodiscard]] constexpr auto rend  (this auto&& self) noexcept { return self.m_impl.rend  (); }
+        [[nodiscard]] constexpr auto rbegin()        noexcept { return m_impl.rbegin();  }
+        [[nodiscard]] constexpr auto rbegin()  const noexcept { return m_impl.rbegin();  }
+        [[nodiscard]] constexpr auto rend()          noexcept { return m_impl.rend();    }
+        [[nodiscard]] constexpr auto rend()    const noexcept { return m_impl.rend();    }
 
-        [[nodiscard]] constexpr auto  cbegin() const noexcept { return m_impl.cbegin(); }
-        [[nodiscard]] constexpr auto  cend  () const noexcept { return m_impl.cend  (); }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return m_impl.cbegin();  }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return m_impl.cend();    }
         [[nodiscard]] constexpr auto crbegin() const noexcept { return m_impl.crbegin(); }
-        [[nodiscard]] constexpr auto crend  () const noexcept { return m_impl.crend  (); }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return m_impl.crend();   }
 
         constexpr bitset& operator&=(const bitset& rhs) noexcept
         {

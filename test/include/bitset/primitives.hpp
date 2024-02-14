@@ -53,7 +53,7 @@ struct op_bit_or_assign
                 for (auto const N = self.size(); auto i : std::views::iota(0uz, N)) {
                         BOOST_CHECK_EQUAL(dst[i], rhs[i] ? true : src[i]);      // [bitset.members]/3
                 }
-                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(self));   // [bitset.members]/2
+                BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(self));   // [bitset.members]/4
         }
 };
 

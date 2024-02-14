@@ -12,6 +12,7 @@
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, integral, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
+#include <cstring>              // memcmp, memset
 #include <functional>           // identity, less
 #include <initializer_list>     // initializer_list
 #include <iterator>             // bidirectional_iterator_tag, iter_value_t, reverse_iterator
@@ -250,7 +251,25 @@ public:
                 return *this;
         }
 
-        [[nodiscard]] constexpr auto operator==(bit_set const&) const noexcept -> bool = default;
+        [[nodiscard]] constexpr auto operator==(bit_set const& other) const noexcept
+        {
+                if constexpr (N == 0) {
+                        return true;
+                } else if constexpr (num_blocks == 1) {
+                        return this->m_data[0] == other.m_data[0];
+                } else if constexpr (num_blocks == 2) {
+                        constexpr auto tied = [](auto const& x) static {
+                                return std::tie(x.m_data[0], x.m_data[1]);
+                        };
+                        return tied(*this) == tied(other);
+                } else if constexpr (num_blocks >= 3) {
+                        if consteval {
+                                return std::ranges::equal(this->m_data, other.m_data);
+                        } else {
+                                return std::memcmp(this->m_data, other.m_data, sizeof(this->m_data)) == 0;
+                        }
+                }
+        }
 
         [[nodiscard]] constexpr auto operator<=>(bit_set const& other [[maybe_unused]]) const noexcept
         {
@@ -259,8 +278,8 @@ public:
                 } else if constexpr (num_blocks == 1) {
                         return other.m_data[0] <=> this->m_data[0];
                 } else if constexpr (num_blocks == 2) {
-                        constexpr auto tied = [](auto const& bs) static {
-                                return std::tie(bs.m_data[0], bs.m_data[1]);
+                        constexpr auto tied = [](auto const& x) static {
+                                return std::tie(x.m_data[0], x.m_data[1]);
                         };
                         return tied(other) <=> tied(*this);
                 } else if constexpr (num_blocks >= 3) {
@@ -273,18 +292,18 @@ public:
 
         [[nodiscard]] constexpr auto begin()         noexcept { return       iterator(this, find_first()); }
         [[nodiscard]] constexpr auto begin()   const noexcept { return const_iterator(this, find_first()); }
-        [[nodiscard]] constexpr auto end()           noexcept { return       iterator(this, N); }
-        [[nodiscard]] constexpr auto end()     const noexcept { return const_iterator(this, N); }
+        [[nodiscard]] constexpr auto end()           noexcept { return       iterator(this, N);            }
+        [[nodiscard]] constexpr auto end()     const noexcept { return const_iterator(this, N);            }
 
-        [[nodiscard]] constexpr auto rbegin()        noexcept { return       reverse_iterator(end()); }
-        [[nodiscard]] constexpr auto rbegin()  const noexcept { return const_reverse_iterator(end()); }
-        [[nodiscard]] constexpr auto rend()          noexcept { return       reverse_iterator(begin()); }
-        [[nodiscard]] constexpr auto rend()    const noexcept { return const_reverse_iterator(begin()); }
+        [[nodiscard]] constexpr auto rbegin()        noexcept { return       reverse_iterator(end());      }
+        [[nodiscard]] constexpr auto rbegin()  const noexcept { return const_reverse_iterator(end());      }
+        [[nodiscard]] constexpr auto rend()          noexcept { return       reverse_iterator(begin());    }
+        [[nodiscard]] constexpr auto rend()    const noexcept { return const_reverse_iterator(begin());    }
 
-        [[nodiscard]] constexpr auto cbegin()  const noexcept { return const_iterator(begin()); }
-        [[nodiscard]] constexpr auto cend()    const noexcept { return const_iterator(end());   }
-        [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator(rbegin()); }
-        [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator(rend());   }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return const_iterator(begin());            }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return const_iterator(end());              }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return const_reverse_iterator(rbegin());   }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return const_reverse_iterator(rend());     }
 
         [[nodiscard]] constexpr auto front() const noexcept
                 -> const_reference
@@ -319,7 +338,7 @@ public:
                         } else if (num_blocks == 2) {
                                 return m_data[0] == ones && m_data[1] == used_bits;
                         } else if (num_blocks >= 3) {
-                                return std::ranges::all_of(m_data | std::views::take(num_blocks - 1), [](auto block) static {
+                                return std::ranges::all_of(m_data | std::views::take(last_block), [](auto block) static {
                                         return block == ones;
                                 }) && m_data[last_block] == used_bits;
                         }
@@ -459,7 +478,11 @@ public:
                         if constexpr (num_blocks == 2) {
                                 m_data[0] = ones;
                         } else if (num_blocks >= 3) {
-                                std::ranges::fill(m_data | std::views::take(num_blocks - 1), ones);
+                                if consteval {
+                                        std::ranges::fill(m_data | std::views::take(last_block), ones);
+                                } else {
+                                        std::memset(m_data, 0xFF, sizeof(m_data) - sizeof(block_type));
+                                }
                         }
                         m_data[last_block] = used_bits;
                 } else if constexpr (N > 0) {
@@ -469,7 +492,11 @@ public:
                                 m_data[0] = ones;
                                 m_data[1] = ones;
                         } else if constexpr (num_blocks >= 3) {
-                                std::ranges::fill(m_data, ones);
+                                if consteval {
+                                        std::ranges::fill(m_data, ones);
+                                } else {
+                                        std::memset(m_data, 0xFF, sizeof(m_data));
+                                }
                         }
                 }
                 [[assume(full())]];
@@ -527,7 +554,11 @@ public:
                         m_data[0] = zero;
                         m_data[1] = zero;
                 } else if constexpr (num_blocks >= 3) {
-                        std::ranges::fill(m_data, zero);
+                        if consteval {
+                                std::ranges::fill(m_data, zero);
+                        } else {
+                                std::memset(m_data, 0x00, sizeof(m_data));
+                        }
                 }
                 [[assume(empty())]];
         }
