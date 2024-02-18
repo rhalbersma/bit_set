@@ -201,8 +201,8 @@ public:
         [[nodiscard]] constexpr auto operator[](std::size_t) noexcept = delete;
 
 
-        [[nodiscard]] constexpr unsigned long      to_ulong()  const noexcept = delete;
-        [[nodiscard]] constexpr unsigned long long to_ullong() const noexcept = delete;
+        [[nodiscard]] constexpr unsigned long      to_ulong()  const noexcept(false) = delete;
+        [[nodiscard]] constexpr unsigned long long to_ullong() const noexcept(false) = delete;
 
         template<
                 class charT = char,
