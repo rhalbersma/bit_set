@@ -251,7 +251,7 @@ public:
                 do_insert(ilist.begin(), ilist.end());
         }
 
-        constexpr auto& operator=(std::initializer_list<value_type> ilist) noexcept
+        constexpr bit_set& operator=(std::initializer_list<value_type> ilist) noexcept
         {
                 clear();
                 do_insert(ilist.begin(), ilist.end());
@@ -291,7 +291,7 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr auto full() const noexcept
+        [[nodiscard]] constexpr bool full() const noexcept
         {
                 if constexpr (has_unused_bits) {
                         if constexpr (num_blocks == 1) {
@@ -349,14 +349,14 @@ public:
         constexpr std::pair<iterator, bool> emplace(Args&&... args) noexcept
                 requires (sizeof...(args) == 1)
         {
-                return insert(value_type(std::forward<Args>(args)...));
+                return do_insert(value_type(std::forward<Args>(args)...));
         }
 
         template<class... Args>
         constexpr iterator emplace_hint(const_iterator hint, Args&&... args) noexcept
                 requires (sizeof...(args) == 1)
         {
-                return insert(hint, value_type(std::forward<Args>(args)...));
+                return do_insert(hint, value_type(std::forward<Args>(args)...));
         }
 
         constexpr void add(value_type x) noexcept
@@ -377,12 +377,12 @@ private:
         }
 
 public:
-        constexpr auto insert(const value_type& x) noexcept
+        constexpr std::pair<iterator, bool> insert(const value_type& x) noexcept
         {
                 return do_insert(x);
         }
 
-        constexpr auto insert(value_type&& x) noexcept
+        constexpr std::pair<iterator, bool> insert(value_type&& x) noexcept
         {
                 return do_insert(std::move(x));
         }
@@ -436,7 +436,7 @@ public:
                 do_insert(ilist.begin(), ilist.end());
         }
 
-        constexpr auto fill() noexcept
+        constexpr void fill() noexcept
         {
                 if constexpr (has_unused_bits) {
                         if constexpr (num_blocks == 2) {
@@ -490,27 +490,6 @@ public:
                 return last;
         }
 
-        constexpr void complement(value_type x) noexcept
-        {
-                auto&& [ block, mask ] = block_mask(x);
-                block ^= mask;
-        }
-
-        constexpr void complement() noexcept
-        {
-                if constexpr (N > 0 && num_blocks == 1) {
-                        m_data[0] = static_cast<block_type>(~m_data[0]);
-                } else if constexpr (num_blocks == 2) {
-                        m_data[0] = static_cast<block_type>(~m_data[0]);
-                        m_data[1] = static_cast<block_type>(~m_data[1]);
-                } else if constexpr (num_blocks >= 3) {
-                        for (auto& block : m_data) {
-                                block = static_cast<block_type>(~block);
-                        }
-                }
-                clear_unused_bits();
-        }
-
         constexpr void swap(bit_set& other [[maybe_unused]]) noexcept
         {
                 if constexpr (N > 0 && num_blocks == 1) {
@@ -534,6 +513,152 @@ public:
                         std::ranges::fill_n(m_data, num_blocks, zero);
                 }
                 [[assume(empty())]];
+        }
+
+        constexpr void complement(value_type x) noexcept
+        {
+                auto&& [ block, mask ] = block_mask(x);
+                block ^= mask;
+        }
+
+        constexpr void complement() noexcept
+        {
+                if constexpr (N > 0 && num_blocks == 1) {
+                        m_data[0] = static_cast<block_type>(~m_data[0]);
+                } else if constexpr (num_blocks == 2) {
+                        m_data[0] = static_cast<block_type>(~m_data[0]);
+                        m_data[1] = static_cast<block_type>(~m_data[1]);
+                } else if constexpr (num_blocks >= 3) {
+                        for (auto& block : m_data) {
+                                block = static_cast<block_type>(~block);
+                        }
+                }
+                clear_unused_bits();
+        }
+
+        constexpr bit_set& operator&=(bit_set const& other [[maybe_unused]]) noexcept
+        {
+                if constexpr (N > 0 && num_blocks == 1) {
+                        this->m_data[0] &= other.m_data[0];
+                } else if constexpr (num_blocks == 2) {
+                        this->m_data[0] &= other.m_data[0];
+                        this->m_data[1] &= other.m_data[1];
+                } else if constexpr (num_blocks >= 3) {
+                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
+                                lhs &= rhs;
+                        }
+                }
+                return *this;
+        }
+
+        constexpr bit_set& operator|=(bit_set const& other [[maybe_unused]]) noexcept
+        {
+                if constexpr (N > 0 && num_blocks == 1) {
+                        this->m_data[0] |= other.m_data[0];
+                } else if constexpr (num_blocks == 2) {
+                        this->m_data[0] |= other.m_data[0];
+                        this->m_data[1] |= other.m_data[1];
+                } else if constexpr (num_blocks >= 3) {
+                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
+                                lhs |= rhs;
+                        }
+                }
+                return *this;
+        }
+
+        constexpr bit_set& operator^=(bit_set const& other [[maybe_unused]]) noexcept
+        {
+                if constexpr (N > 0 && num_blocks == 1) {
+                        this->m_data[0] ^= other.m_data[0];
+                } else if constexpr (num_blocks == 2) {
+                        this->m_data[0] ^= other.m_data[0];
+                        this->m_data[1] ^= other.m_data[1];
+                } else if constexpr (num_blocks >= 3) {
+                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
+                                lhs ^= rhs;
+                        }
+                }
+                return *this;
+        }
+
+        constexpr bit_set& operator-=(bit_set const& other [[maybe_unused]]) noexcept
+        {
+                if constexpr (N > 0 && num_blocks == 1) {
+                        this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
+                } else if constexpr (num_blocks == 2) {
+                        this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
+                        this->m_data[1] &= static_cast<block_type>(~other.m_data[1]);
+                } else if constexpr (num_blocks >= 3) {
+                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
+                                lhs &= static_cast<block_type>(~rhs);
+                        }
+                }
+                return *this;
+        }
+
+        constexpr bit_set& operator<<=(value_type n [[maybe_unused]]) noexcept
+        {
+                [[assume(is_valid(n))]];
+                if constexpr (num_blocks == 1) {
+                        m_data[0] >>= n;
+                } else if constexpr (num_blocks >= 2) {
+                        auto const [ n_blocks, R_shift ] = div_mod(n, block_size);
+                        if (R_shift == 0) {
+                                std::shift_right(std::ranges::begin(m_data), std::ranges::end(m_data), static_cast<difference_type>(n_blocks));
+                        } else {
+                                auto const L_shift = block_size - R_shift;
+                                for (auto&& [lhs, rhs] : std::views::zip(
+                                        m_data | std::views::reverse,
+                                        m_data | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform(
+                                                [=](auto first, auto second) -> block_type
+                                                {
+                                                        return
+                                                                static_cast<block_type>(second << L_shift) |
+                                                                static_cast<block_type>(first  >> R_shift)
+                                                        ;
+                                                }
+                                        )
+                                )) {
+                                        lhs = rhs;
+                                }
+                                m_data[n_blocks] = static_cast<block_type>(m_data[0] >> R_shift);
+                        }
+                        std::ranges::fill(m_data | std::views::reverse | std::views::drop(num_blocks - n_blocks), zero);
+                }
+                clear_unused_bits();
+                return *this;
+        }
+
+        constexpr bit_set& operator>>=(value_type n [[maybe_unused]]) noexcept
+        {
+                [[assume(is_valid(n))]];
+                if constexpr (num_blocks == 1) {
+                        m_data[0] <<= n;
+                } else if constexpr (num_blocks >= 2) {
+                        auto const [ n_blocks, L_shift ] = div_mod(n, block_size);
+                        if (L_shift == 0) {
+                                std::shift_left(std::ranges::begin(m_data), std::ranges::end(m_data), static_cast<difference_type>(n_blocks));
+                        } else {
+                                auto const R_shift = block_size - L_shift;
+                                for (auto&& [lhs, rhs] : std::views::zip(
+                                        m_data,
+                                        m_data | std::views::drop(n_blocks) | std::views::pairwise_transform(
+                                                [=](auto first, auto second) -> block_type
+                                                {
+                                                        return
+                                                                static_cast<block_type>(first  << L_shift) |
+                                                                static_cast<block_type>(second >> R_shift)
+                                                        ;
+                                                }
+                                        )
+                                )) {
+                                        lhs = rhs;
+                                }
+                                m_data[last_block - n_blocks] = static_cast<block_type>(m_data[last_block] << L_shift);
+                        }
+                        std::ranges::fill(m_data | std::views::drop(num_blocks - n_blocks), zero);
+                }
+                return *this;
         }
 
         // observers
@@ -601,131 +726,6 @@ public:
                 >
         {
                 return { self.lower_bound(x), self.upper_bound(x) };
-        }
-
-        constexpr auto& operator&=(bit_set const& other [[maybe_unused]]) noexcept
-        {
-                if constexpr (N > 0 && num_blocks == 1) {
-                        this->m_data[0] &= other.m_data[0];
-                } else if constexpr (num_blocks == 2) {
-                        this->m_data[0] &= other.m_data[0];
-                        this->m_data[1] &= other.m_data[1];
-                } else if constexpr (num_blocks >= 3) {
-                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
-                                lhs &= rhs;
-                        }
-                }
-                return *this;
-        }
-
-        constexpr auto& operator|=(bit_set const& other [[maybe_unused]]) noexcept
-        {
-                if constexpr (N > 0 && num_blocks == 1) {
-                        this->m_data[0] |= other.m_data[0];
-                } else if constexpr (num_blocks == 2) {
-                        this->m_data[0] |= other.m_data[0];
-                        this->m_data[1] |= other.m_data[1];
-                } else if constexpr (num_blocks >= 3) {
-                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
-                                lhs |= rhs;
-                        }
-                }
-                return *this;
-        }
-
-        constexpr auto& operator^=(bit_set const& other [[maybe_unused]]) noexcept
-        {
-                if constexpr (N > 0 && num_blocks == 1) {
-                        this->m_data[0] ^= other.m_data[0];
-                } else if constexpr (num_blocks == 2) {
-                        this->m_data[0] ^= other.m_data[0];
-                        this->m_data[1] ^= other.m_data[1];
-                } else if constexpr (num_blocks >= 3) {
-                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
-                                lhs ^= rhs;
-                        }
-                }
-                return *this;
-        }
-
-        constexpr auto& operator-=(bit_set const& other [[maybe_unused]]) noexcept
-        {
-                if constexpr (N > 0 && num_blocks == 1) {
-                        this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
-                } else if constexpr (num_blocks == 2) {
-                        this->m_data[0] &= static_cast<block_type>(~other.m_data[0]);
-                        this->m_data[1] &= static_cast<block_type>(~other.m_data[1]);
-                } else if constexpr (num_blocks >= 3) {
-                        for (auto&& [lhs, rhs] : std::views::zip(this->m_data, other.m_data)) {
-                                lhs &= static_cast<block_type>(~rhs);
-                        }
-                }
-                return *this;
-        }
-
-        constexpr auto& operator<<=(value_type n [[maybe_unused]]) noexcept
-        {
-                [[assume(is_valid(n))]];
-                if constexpr (num_blocks == 1) {
-                        m_data[0] >>= n;
-                } else if constexpr (num_blocks >= 2) {
-                        auto const [ n_blocks, R_shift ] = div_mod(n, block_size);
-                        if (R_shift == 0) {
-                                std::shift_right(std::ranges::begin(m_data), std::ranges::end(m_data), static_cast<difference_type>(n_blocks));
-                        } else {
-                                auto const L_shift = block_size - R_shift;
-                                for (auto&& [lhs, rhs] : std::views::zip(
-                                        m_data | std::views::reverse,
-                                        m_data | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform(
-                                                [=](auto first, auto second) -> block_type
-                                                {
-                                                        return
-                                                                static_cast<block_type>(second << L_shift) |
-                                                                static_cast<block_type>(first  >> R_shift)
-                                                        ;
-                                                }
-                                        )
-                                )) {
-                                        lhs = rhs;
-                                }
-                                m_data[n_blocks] = static_cast<block_type>(m_data[0] >> R_shift);
-                        }
-                        std::ranges::fill(m_data | std::views::reverse | std::views::drop(num_blocks - n_blocks), zero);
-                }
-                clear_unused_bits();
-                return *this;
-        }
-
-        constexpr auto& operator>>=(value_type n [[maybe_unused]]) noexcept
-        {
-                [[assume(is_valid(n))]];
-                if constexpr (num_blocks == 1) {
-                        m_data[0] <<= n;
-                } else if constexpr (num_blocks >= 2) {
-                        auto const [ n_blocks, L_shift ] = div_mod(n, block_size);
-                        if (L_shift == 0) {
-                                std::shift_left(std::ranges::begin(m_data), std::ranges::end(m_data), static_cast<difference_type>(n_blocks));
-                        } else {
-                                auto const R_shift = block_size - L_shift;
-                                for (auto&& [lhs, rhs] : std::views::zip(
-                                        m_data,
-                                        m_data | std::views::drop(n_blocks) | std::views::pairwise_transform(
-                                                [=](auto first, auto second) -> block_type
-                                                {
-                                                        return
-                                                                static_cast<block_type>(first  << L_shift) |
-                                                                static_cast<block_type>(second >> R_shift)
-                                                        ;
-                                                }
-                                        )
-                                )) {
-                                        lhs = rhs;
-                                }
-                                m_data[last_block - n_blocks] = static_cast<block_type>(m_data[last_block] << L_shift);
-                        }
-                        std::ranges::fill(m_data | std::views::drop(num_blocks - n_blocks), zero);
-                }
-                return *this;
         }
 
         [[nodiscard]] constexpr bool is_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
@@ -1015,43 +1015,43 @@ constexpr void swap(bit_set<Key, N, Block>& x, bit_set<Key, N, Block>& y) noexce
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator~(bit_set<Key, N, Block> const& lhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator~(bit_set<Key, N, Block> const& lhs) noexcept
 {
         auto nrv = lhs; nrv.complement(); return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator&(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator&(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv &= rhs; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator|(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator|(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv |= rhs; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator^(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator^(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv ^= rhs; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator-(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator-(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<<(bit_set<Key, N, Block> const& lhs, std::type_identity_t<Key> n) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator<<(bit_set<Key, N, Block> const& lhs, std::type_identity_t<Key> n) noexcept
 {
         auto nrv = lhs; nrv <<= n; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator>>(bit_set<Key, N, Block> const& lhs, std::type_identity_t<Key> n) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator>>(bit_set<Key, N, Block> const& lhs, std::type_identity_t<Key> n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
 }
