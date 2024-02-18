@@ -6,10 +6,13 @@
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
 #include <xstd/bitset.hpp>              // bitset
+#include <xstd/bit_set.hpp>
+#include <concepts.hpp>                 // dynamic
 #include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <concepts>                     // regular
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <type_traits>                  // is_trivially
 
 BOOST_AUTO_TEST_SUITE(TypeTraits)
 
@@ -51,6 +54,18 @@ using Types = boost::mp11::mp_list
 BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
 {
         static_assert(std::regular<T>);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(Trivial, T, Types)
+{
+        if constexpr (!dynamic<T>) {
+                static_assert(std::is_trivially_destructible_v<T>);
+                static_assert(std::is_nothrow_default_constructible_v<T>);
+                static_assert(std::is_trivially_copy_constructible_v<T>);
+                static_assert(std::is_trivially_copy_assignable_v<T>);
+                static_assert(std::is_trivially_move_constructible_v<T>);
+                static_assert(std::is_trivially_move_assignable_v<T>);
+        }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
