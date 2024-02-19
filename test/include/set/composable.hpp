@@ -72,15 +72,15 @@ struct set_symmetric_difference
 
 struct increment
 {
-        template<class X, std::integral Key = typename X::key_type>
-        auto operator()(X const& a, Key n) const
+        template<class X>
+        auto operator()(X const& a, std::size_t n) const
         {
-                if constexpr (requires { a < n; }) {
-                        constexpr auto N = static_cast<Key>(X::max_size());
+                if constexpr (requires { a << n; }) {
+                        constexpr auto N = X::max_size();
                         BOOST_CHECK(
                                 (a << n) == (a
-                                        | std::views::transform([=](auto x) { return x + n;  })
-                                        | std::views::filter   ([=](auto x) { return x < N; })
+                                        | std::views::transform([=](std::size_t x) { return x + n; })
+                                        | std::views::filter   ([ ](std::size_t x) { return x < N; })
                                         | std::ranges::to<X>()
                                 )
                         );
@@ -90,30 +90,18 @@ struct increment
 
 struct decrement
 {
-        template<class X, std::integral Key = typename X::key_type>
-        auto operator()(X const& a, Key n) const
+        template<class X>
+        auto operator()(X const& a, std::size_t n) const
         {
                 if constexpr (requires { a >> n; }) {
-                        if constexpr (std::signed_integral<Key>) {
-                                BOOST_CHECK(
-                                        (a >> n) == (a
-                                                | std::views::transform([=](auto x) { return x - n;  })
-                                                | std::views::filter   ([ ](auto x) { return 0 <= x; })
-                                                | std::ranges::to<X>()
-                                        )
-                                );
-                        } else if constexpr (std::unsigned_integral<Key>) {
-                                constexpr auto N = static_cast<Key>(X::max_size());
-                                BOOST_CHECK(
-                                        (a >> n) == (a
-                                                | std::views::transform([=](auto x) { return x + n; })
-                                                | std::views::filter   ([ ](auto x) { return x < N; })
-                                                | std::ranges::to<X>()
-                                        )
-                                );
-                        } else {
-                                static_assert(false);
-                        }
+                        constexpr auto N = X::max_size();
+                        BOOST_CHECK(
+                                (a >> n) == (a
+                                        | std::views::transform([=](std::size_t x) { return x - n; })
+                                        | std::views::filter   ([ ](std::size_t x) { return x < N; })
+                                        | std::ranges::to<X>()
+                                )
+                        );
                 }
         }
 };
