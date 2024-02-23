@@ -12,7 +12,7 @@
 namespace xstd {
 
 template<class X, std::integral Key = typename X::key_type>
-auto sift(X& primes, Key const& m)
+auto sift(X& primes, Key m)
 {
         primes.erase(m);
 }

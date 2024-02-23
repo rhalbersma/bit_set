@@ -24,7 +24,8 @@ class as_set_view
 public:
         using key_type = std::ranges::range_value_t<V>;
 
-        [[nodiscard]] constexpr          as_set_view()       noexcept = default;
+        [[nodiscard]] constexpr as_set_view() noexcept = default;
+
         [[nodiscard]] constexpr explicit as_set_view(V base) noexcept
         :
                 base_(std::move(base))

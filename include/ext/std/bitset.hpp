@@ -77,33 +77,34 @@ private:
         value_type m_val;
 
 public:
-        [[nodiscard]] constexpr bitset_iterator()                           noexcept = default;
-        [[nodiscard]] constexpr bitset_iterator(pimpl_type p, value_type v) noexcept
+        [[nodiscard]] constexpr bitset_iterator() noexcept = default;
+
+        [[nodiscard]] constexpr bitset_iterator(pimpl_type ptr, value_type val) noexcept
         :
-                m_ptr(p),
-                m_val(v)
+                m_ptr(ptr),
+                m_val(val)
         {
                 [[assume(is_valid())]];
         }
 
-        [[nodiscard]] constexpr auto operator==(bitset_iterator const& other) const noexcept
-                -> bool
+        [[nodiscard]] friend constexpr bool operator==(bitset_iterator lhs, bitset_iterator rhs) noexcept
         {
-                [[assume(is_comparable(other))]];
+                [[assume(is_comparable(lhs, rhs))]];
                 if constexpr (N == 0) {
                         return true;
                 } else {
-                        return this->m_val == other.m_val;
+                        return lhs.m_val == rhs.m_val;
                 }
         }
 
         [[nodiscard]] constexpr auto operator*() const noexcept
+                -> bitset_reference<N>
         {
                 [[assume(is_dereferenceable())]];
-                return reference(*m_ptr, m_val);
+                return { *m_ptr, m_val };
         }
 
-        constexpr auto& operator++() noexcept
+        constexpr bitset_iterator& operator++() noexcept
         {
                 [[assume(is_incrementable())]];
                 m_val = find_next(m_val);
@@ -111,12 +112,12 @@ public:
                 return *this;
         }
 
-        constexpr auto operator++(int) noexcept
+        constexpr bitset_iterator operator++(int) noexcept
         {
                 auto nrv = *this; ++*this; return nrv;
         }
 
-        constexpr auto& operator--() noexcept
+        constexpr bitset_iterator& operator--() noexcept
         {
                 [[assume(is_decrementable())]];
                 m_val = find_prev(m_val);
@@ -124,13 +125,13 @@ public:
                 return *this;
         }
 
-        constexpr auto operator--(int) noexcept
+        constexpr bitset_iterator operator--(int) noexcept
         {
                 auto nrv = *this; --*this; return nrv;
         }
 
 private:
-        [[nodiscard]] constexpr auto find_next(value_type n) const noexcept
+        [[nodiscard]] constexpr value_type find_next(value_type n) const noexcept
         {
                 if constexpr (requires { m_ptr->_Find_next(n); }) {
                         return m_ptr->_Find_next(n);
@@ -141,7 +142,7 @@ private:
                 }
         }
 
-        [[nodiscard]] constexpr auto find_prev(value_type n) const noexcept
+        [[nodiscard]] constexpr value_type find_prev(value_type n) const noexcept
         {
                 [[assume(m_ptr->any())]];
                 return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
@@ -149,27 +150,27 @@ private:
                 });
         }
 
-        [[nodiscard]] constexpr auto is_valid() const noexcept
+        [[nodiscard]] constexpr bool is_valid() const noexcept
         {
                 return m_ptr != nullptr && m_val <= N;
         }
 
-        [[nodiscard]] constexpr auto is_comparable(bitset_iterator other) const noexcept
+        [[nodiscard]] static constexpr bool is_comparable(bitset_iterator lhs, bitset_iterator rhs) noexcept
         {
-                return this->m_ptr == other.m_ptr;
+                return lhs.m_ptr == rhs.m_ptr;
         }
 
-        [[nodiscard]] constexpr auto is_dereferenceable() const noexcept
-        {
-                return m_ptr != nullptr && m_val < N;
-        }
-
-        [[nodiscard]] constexpr auto is_incrementable() const noexcept
+        [[nodiscard]] constexpr bool is_dereferenceable() const noexcept
         {
                 return m_ptr != nullptr && m_val < N;
         }
 
-        [[nodiscard]] constexpr auto is_decrementable() const noexcept
+        [[nodiscard]] constexpr bool is_incrementable() const noexcept
+        {
+                return m_ptr != nullptr && m_val < N;
+        }
+
+        [[nodiscard]] constexpr bool is_decrementable() const noexcept
         {
                 return m_ptr != nullptr && 0 < m_val && m_val <= N;
         }
@@ -184,26 +185,26 @@ class bitset_reference
         value_type m_val;
 
 public:
-        bitset_reference()                                   = delete;
-        bitset_reference& operator=(bitset_reference const&) = delete;
-        bitset_reference& operator=(bitset_reference &&    ) = delete;
+        [[nodiscard]] constexpr bitset_reference() noexcept = delete;
 
-                      constexpr ~bitset_reference()                        noexcept = default;
-        [[nodiscard]] constexpr  bitset_reference(bitset_reference const&) noexcept = default;
-        [[nodiscard]] constexpr  bitset_reference(bitset_reference &&    ) noexcept = default;
-
-        [[nodiscard]] constexpr bitset_reference(rimpl_type r, value_type v) noexcept
+        [[nodiscard]] constexpr bitset_reference(rimpl_type ref, value_type val) noexcept
         :
-                m_ref(r),
-                m_val(v)
+                m_ref(ref),
+                m_val(val)
         {
                 [[assume(is_valid())]];
         }
 
-        [[nodiscard]] constexpr auto operator==(bitset_reference const& other) const noexcept
-                -> bool
+        [[nodiscard]] constexpr bitset_reference(const bitset_reference&) noexcept = default;
+        [[nodiscard]] constexpr bitset_reference(bitset_reference&&) noexcept = default;
+
+        constexpr ~bitset_reference() noexcept = default;
+        constexpr bitset_reference& operator=(const bitset_reference&) = delete;
+        constexpr bitset_reference& operator=(bitset_reference&&) = delete;
+
+        [[nodiscard]] friend constexpr bool operator==(bitset_reference lhs, bitset_reference rhs) noexcept
         {
-                return this->m_val == other.m_val;
+                return lhs.m_val == rhs.m_val;
         }
 
         [[nodiscard]] constexpr auto operator&() const noexcept
@@ -225,14 +226,14 @@ public:
         }
 
 private:
-        [[nodiscard]] constexpr auto is_valid() const noexcept
+        [[nodiscard]] constexpr bool is_valid() const noexcept
         {
                 return m_val < N;
         }
 };
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto format_as(bitset_reference<N> const& ref) noexcept
+[[nodiscard]] constexpr auto format_as(bitset_reference<N> ref) noexcept
         -> std::iter_value_t<bitset_iterator<N>>
 {
         return ref;
@@ -241,95 +242,97 @@ template<std::size_t N>
 namespace detail {
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto find_first(std::bitset<N> const* bs) noexcept
+[[nodiscard]] constexpr auto find_first(const std::bitset<N>& c) noexcept
+        -> std::iter_value_t<bitset_iterator<N>>
 {
         if constexpr (N == 0) {
                 return N;
-        } else if constexpr (requires { bs->_Find_first(); }) {
-                return bs->_Find_first();
+        } else if constexpr (requires { c._Find_first(); }) {
+                return c._Find_first();
         } else {
                 return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
-                        return (*bs)[i];
+                        return c[i];
                 });
         }
 }
 
 }       // namespace detail
 
+// range access
 template<std::size_t N>
-[[nodiscard]] constexpr auto begin(std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto begin(std::bitset<N>& c) noexcept
         -> bitset_iterator<N>
 {
-        return { &bs, detail::find_first(&bs) };
+        return { &c, detail::find_first(c) };
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto begin(const std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto begin(const std::bitset<N>& c) noexcept
         -> bitset_iterator<N>
 {
-        return { &bs, detail::find_first(&bs) };
+        return { &c, detail::find_first(c) };
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto end(std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto end(std::bitset<N>& c) noexcept
         -> bitset_iterator<N>
 {
-        return { &bs, N };
+        return { &c, N };
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto end(const std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto end(const std::bitset<N>& c) noexcept
         -> bitset_iterator<N>
 {
-        return { &bs, N };
+        return { &c, N };
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto rbegin(std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto cbegin(const std::bitset<N>& c) noexcept
 {
-        return std::reverse_iterator(std::ranges::end(bs));
+        return std::ranges::begin(c);
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto rbegin(const std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto cend(const std::bitset<N>& c) noexcept
 {
-        return std::reverse_iterator(std::ranges::end(bs));
+        return std::ranges::end(c);
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto rend(std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto rbegin(std::bitset<N>& c) noexcept
 {
-        return std::reverse_iterator(std::ranges::begin(bs));
+        return std::reverse_iterator(std::ranges::end(c));
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto rend(const std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto rbegin(const std::bitset<N>& c) noexcept
 {
-        return std::reverse_iterator(std::ranges::begin(bs));
+        return std::reverse_iterator(std::ranges::end(c));
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto cbegin(const std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto rend(std::bitset<N>& c) noexcept
 {
-        return std::ranges::begin(bs);
+        return std::reverse_iterator(std::ranges::begin(c));
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto cend(const std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto rend(const std::bitset<N>& c) noexcept
 {
-        return std::ranges::end(bs);
+        return std::reverse_iterator(std::ranges::begin(c));
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto crbegin(const std::bitset<N>& bs) noexcept
+[[nodiscard]] constexpr auto crbegin(const std::bitset<N>& c) noexcept
 {
-        return std::ranges::rbegin(bs);
+        return std::ranges::rbegin(c);
 }
 
 template<std::size_t N>
-[[nodiscard]] constexpr auto crend(const std::bitset<N>& bs)  noexcept
+[[nodiscard]] constexpr auto crend(const std::bitset<N>& c)  noexcept
 {
-        return std::ranges::rend(bs);
+        return std::ranges::rend(c);
 }
 
 }       // namespace std

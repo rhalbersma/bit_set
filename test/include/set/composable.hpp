@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>             // BOOST_CHECK, BOOST_CHECK_EQUAL
 #include <range/v3/view/set_algorithm.hpp>      // set_difference, set_intersection, set_symmetric_difference, set_union
 #include <algorithm>                            // includes
-#include <concepts>                             // integral, signed_integral, unsigned_integral
+#include <concepts>                             // integral
 #include <ranges>                               // to
                                                 // filter, transform
 
@@ -72,15 +72,16 @@ struct set_symmetric_difference
 
 struct increment
 {
-        template<class X>
+        template<class X, std::integral Key = X::key_type>
         auto operator()(X const& a, std::size_t n) const
         {
                 if constexpr (requires { a << n; }) {
                         constexpr auto N = X::max_size();
                         BOOST_CHECK(
                                 (a << n) == (a
-                                        | std::views::transform([=](std::size_t x) { return x + n; })
-                                        | std::views::filter   ([ ](std::size_t x) { return x < N; })
+                                        | std::views::transform([=](std::size_t x) { return x + n;  })
+                                        | std::views::filter   ([ ](std::size_t x) { return x < N;  })
+                                        | std::views::transform([ ](std::size_t x) { return Key(x); })
                                         | std::ranges::to<X>()
                                 )
                         );
@@ -90,15 +91,16 @@ struct increment
 
 struct decrement
 {
-        template<class X>
+        template<class X, std::integral Key = X::key_type>
         auto operator()(X const& a, std::size_t n) const
         {
                 if constexpr (requires { a >> n; }) {
                         constexpr auto N = X::max_size();
                         BOOST_CHECK(
                                 (a >> n) == (a
-                                        | std::views::transform([=](std::size_t x) { return x - n; })
-                                        | std::views::filter   ([ ](std::size_t x) { return x < N; })
+                                        | std::views::transform([=](std::size_t x) { return x - n;  })
+                                        | std::views::filter   ([ ](std::size_t x) { return x < N;  })
+                                        | std::views::transform([ ](std::size_t x) { return Key(x); })
                                         | std::ranges::to<X>()
                                 )
                         );

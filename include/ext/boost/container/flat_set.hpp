@@ -11,9 +11,9 @@
 namespace boost::container {
 
 template<class Key, class Compare, class KeyContainer>
-[[nodiscard]] auto operator<=>(flat_set<Key, Compare, KeyContainer> const& lhs, flat_set<Key, Compare, KeyContainer> const& rhs) noexcept
+[[nodiscard]] auto operator<=>(const flat_set<Key, Compare, KeyContainer>& x, const flat_set<Key, Compare, KeyContainer>& y) noexcept
 {
-        return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+        return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
 }
 
 }       // namespace boost::container

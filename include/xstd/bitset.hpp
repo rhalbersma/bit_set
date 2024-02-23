@@ -28,6 +28,7 @@ private:
         bit_set<std::size_t, N, Block> m_impl;
 
 public:
+        // constructors
         [[nodiscard]] constexpr bitset() noexcept = default;
 
         [[nodiscard]] constexpr explicit(false) bitset(unsigned long long val) noexcept = delete;
@@ -67,6 +68,7 @@ public:
                 bitset(n == std::basic_string<charT>::npos ? std::basic_string<charT>(str) : std::basic_string<charT>(str, n), 0, n, zero, one)
         {}
 
+        // iterators
         [[nodiscard]] constexpr auto begin()         noexcept { return m_impl.begin();   }
         [[nodiscard]] constexpr auto begin()   const noexcept { return m_impl.begin();   }
         [[nodiscard]] constexpr auto end()           noexcept { return m_impl.end();     }
@@ -82,6 +84,7 @@ public:
         [[nodiscard]] constexpr auto crbegin() const noexcept { return m_impl.crbegin(); }
         [[nodiscard]] constexpr auto crend()   const noexcept { return m_impl.crend();   }
 
+        // bitset operations
         constexpr bitset& operator&=(const bitset& rhs) noexcept
         {
                 m_impl &= rhs.m_impl;
@@ -193,6 +196,7 @@ public:
                 }
         }
 
+        // element access
         [[nodiscard]] constexpr bool operator[](std::size_t pos) const noexcept
         {
                 return m_impl.contains(pos);
@@ -220,6 +224,7 @@ public:
                 return str;
         }
 
+        // observers
         [[nodiscard]] constexpr std::size_t count() const noexcept
         {
                 return m_impl.size();
@@ -272,78 +277,7 @@ public:
         }
 };
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto begin(bitset<N, Block>& bs) noexcept
-{
-        return bs.begin();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto begin(const bitset<N, Block>& bs) noexcept
-{
-        return bs.begin();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto end(bitset<N, Block>& bs) noexcept
-{
-        return bs.end();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto end(const bitset<N, Block>& bs) noexcept
-{
-        return bs.end();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rbegin(bitset<N, Block>& bs) noexcept
-{
-        return bs.rbegin();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rbegin(const bitset<N, Block>& bs) noexcept
-{
-        return bs.rbegin();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rend(bitset<N, Block>& bs) noexcept
-{
-        return bs.rend();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rend(const bitset<N, Block>& bs) noexcept
-{
-        return bs.rend();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto cbegin(const bitset<N, Block>& bs) noexcept
-{
-        return bs.cbegin();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto cend(const bitset<N, Block>& bs) noexcept
-{
-        return bs.cend();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto crbegin(const bitset<N, Block>& bs) noexcept
-{
-        return bs.crbegin();
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto crend(const bitset<N, Block>& bs) noexcept
-{
-        return bs.crend();
-}
-
+// bitset operators
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
 {
@@ -394,6 +328,79 @@ std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>&
                 std::use_facet<std::ctype<charT>>(os.getloc()).widen('0'),
                 std::use_facet<std::ctype<charT>>(os.getloc()).widen('1')
         );
+}
+
+// range access
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto begin(bitset<N, Block>& c) noexcept
+{
+        return c.begin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto begin(const bitset<N, Block>& c) noexcept
+{
+        return c.begin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto end(bitset<N, Block>& c) noexcept
+{
+        return c.end();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto end(const bitset<N, Block>& c) noexcept
+{
+        return c.end();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto cbegin(const bitset<N, Block>& c) noexcept
+{
+        return xstd::begin(c);
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto cend(const bitset<N, Block>& c) noexcept
+{
+        return xstd::end(c);
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rbegin(bitset<N, Block>& c) noexcept
+{
+        return c.rbegin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rbegin(const bitset<N, Block>& c) noexcept
+{
+        return c.rbegin();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rend(bitset<N, Block>& c) noexcept
+{
+        return c.rend();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rend(const bitset<N, Block>& c) noexcept
+{
+        return c.rend();
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto crbegin(const bitset<N, Block>& c) noexcept
+{
+        return xstd::rbegin(c);
+}
+
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto crend(const bitset<N, Block>& c) noexcept
+{
+        return xstd::rend(c);
 }
 
 }       // namespace xstd

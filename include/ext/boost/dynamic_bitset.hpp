@@ -34,30 +34,30 @@ private:
         value_type m_val;
 
 public:
-        [[nodiscard]] constexpr dynamic_bitset_iterator()                           noexcept = default;
-        [[nodiscard]] constexpr dynamic_bitset_iterator(pimpl_type p, value_type v) noexcept
+        [[nodiscard]] constexpr dynamic_bitset_iterator() noexcept = default;
+
+        [[nodiscard]] constexpr dynamic_bitset_iterator(pimpl_type ptr, value_type val) noexcept
         :
-                m_ptr(p),
-                m_val(v)
+                m_ptr(ptr),
+                m_val(val)
         {
                 [[assume(is_valid())]];
         }
 
-        [[nodiscard]] constexpr auto operator==(dynamic_bitset_iterator const& other) const noexcept
-                -> bool
+        [[nodiscard]] friend constexpr bool operator==(dynamic_bitset_iterator lhs, dynamic_bitset_iterator rhs) noexcept
         {
-                [[assume(is_comparable(other))]];
-                return this->m_val == other.m_val;
+                [[assume(is_comparable(lhs, rhs))]];
+                return lhs.m_val == rhs.m_val;
         }
 
         [[nodiscard]] constexpr auto operator*() const noexcept
-                -> reference
+                -> dynamic_bitset_reference<Block, Allocator>
         {
                 [[assume(is_dereferenceable())]];
                 return { *m_ptr, m_val };
         }
 
-        auto& operator++() noexcept
+        dynamic_bitset_iterator& operator++() noexcept
         {
                 [[assume(is_incrementable())]];
                 m_val = m_ptr->find_next(m_val);
@@ -65,12 +65,12 @@ public:
                 return *this;
         }
 
-        auto operator++(int) noexcept
+        dynamic_bitset_iterator operator++(int) noexcept
         {
                 auto nrv = *this; ++*this; return nrv;
         }
 
-        auto& operator--() noexcept
+        dynamic_bitset_iterator& operator--() noexcept
         {
                 [[assume(is_decrementable())]];
                 m_val = find_prev(m_val);
@@ -78,13 +78,13 @@ public:
                 return *this;
         }
 
-        auto operator--(int) noexcept
+        dynamic_bitset_iterator operator--(int) noexcept
         {
                 auto nrv = *this; --*this; return nrv;
         }
 
 private:
-        [[nodiscard]] auto find_prev(value_type n) noexcept
+        [[nodiscard]] value_type find_prev(value_type n) noexcept
         {
                 [[assume(m_ptr->any())]];
                 return *std::ranges::find_if(std::views::iota(0uz, std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) {
@@ -92,27 +92,27 @@ private:
                 });
         }
 
-        [[nodiscard]] constexpr auto is_valid() const noexcept
+        [[nodiscard]] constexpr bool is_valid() const noexcept
         {
                 return m_ptr != nullptr && (m_val < m_ptr->size() || m_val == m_ptr->npos);
         }
 
-        [[nodiscard]] constexpr auto is_comparable(dynamic_bitset_iterator other) const noexcept
+        [[nodiscard]] friend constexpr bool is_comparable(dynamic_bitset_iterator lhs, dynamic_bitset_iterator rhs) noexcept
         {
-                return this->m_ptr == other.m_ptr;
+                return lhs.m_ptr == rhs.m_ptr;
         }
 
-        [[nodiscard]] constexpr auto is_dereferenceable() const noexcept
-        {
-                return m_ptr != nullptr && m_val < m_ptr->size();
-        }
-
-        [[nodiscard]] constexpr auto is_incrementable() const noexcept
+        [[nodiscard]] constexpr bool is_dereferenceable() const noexcept
         {
                 return m_ptr != nullptr && m_val < m_ptr->size();
         }
 
-        [[nodiscard]] constexpr auto is_decrementable() const noexcept
+        [[nodiscard]] constexpr bool is_incrementable() const noexcept
+        {
+                return m_ptr != nullptr && m_val < m_ptr->size();
+        }
+
+        [[nodiscard]] constexpr bool is_decrementable() const noexcept
         {
                 return m_ptr != nullptr && 0 < m_val && (m_val < m_ptr->size() || m_val == m_ptr->npos);
         }
@@ -127,26 +127,26 @@ class dynamic_bitset_reference
         value_type m_val;
 
 public:
-        dynamic_bitset_reference()                                           = delete;
-        dynamic_bitset_reference& operator=(dynamic_bitset_reference const&) = delete;
-        dynamic_bitset_reference& operator=(dynamic_bitset_reference &&    ) = delete;
+        [[nodiscard]] constexpr dynamic_bitset_reference() noexcept = delete;
 
-                      constexpr ~dynamic_bitset_reference()                                noexcept = default;
-        [[nodiscard]] constexpr  dynamic_bitset_reference(dynamic_bitset_reference const&) noexcept = default;
-        [[nodiscard]] constexpr  dynamic_bitset_reference(dynamic_bitset_reference &&    ) noexcept = default;
-
-        [[nodiscard]] constexpr dynamic_bitset_reference(rimpl_type r, value_type v) noexcept
+        [[nodiscard]] constexpr dynamic_bitset_reference(rimpl_type ref, value_type val) noexcept
         :
-                m_ref(r),
-                m_val(v)
+                m_ref(ref),
+                m_val(val)
         {
                 [[assume(is_valid())]];
         }
 
-        [[nodiscard]] constexpr auto operator==(dynamic_bitset_reference const& other) const noexcept
-                -> bool
+        [[nodiscard]] constexpr dynamic_bitset_reference(const dynamic_bitset_reference&) noexcept = default;
+        [[nodiscard]] constexpr dynamic_bitset_reference(dynamic_bitset_reference&&) noexcept = default;
+
+        constexpr ~dynamic_bitset_reference() noexcept = default;
+        constexpr dynamic_bitset_reference& operator=(const dynamic_bitset_reference&) = delete;
+        constexpr dynamic_bitset_reference& operator=(dynamic_bitset_reference&&) = delete;
+
+        [[nodiscard]] friend constexpr bool operator==(dynamic_bitset_reference lhs, dynamic_bitset_reference rhs) noexcept
         {
-                return this->m_val == other.m_val;
+                return lhs.m_val == rhs.m_val;
         }
 
         [[nodiscard]] constexpr auto operator&() const noexcept
@@ -168,14 +168,14 @@ public:
         }
 
 private:
-        [[nodiscard]] constexpr auto is_valid() const noexcept
+        [[nodiscard]] constexpr bool is_valid() const noexcept
         {
                 return m_val < m_ref.size();
         }
 };
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] constexpr auto format_as(dynamic_bitset_reference<Block, Allocator> const& ref) noexcept
+[[nodiscard]] constexpr auto format_as(dynamic_bitset_reference<Block, Allocator> ref) noexcept
         -> std::iter_value_t<dynamic_bitset_iterator<Block, Allocator>>
 {
         return ref;
@@ -210,6 +210,18 @@ template<std::unsigned_integral Block, class Allocator>
 }
 
 template<std::unsigned_integral Block, class Allocator>
+[[nodiscard]] auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
+{
+        return std::ranges::begin(bs);
+}
+
+template<std::unsigned_integral Block, class Allocator>
+[[nodiscard]] auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept
+{
+        return std::ranges::end(bs);
+}
+
+template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
         return std::reverse_iterator(std::ranges::end(bs));
@@ -231,18 +243,6 @@ template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rend(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
         return std::reverse_iterator(std::ranges::begin(bs));
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
-{
-        return std::ranges::begin(bs);
-}
-
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept
-{
-        return std::ranges::end(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
