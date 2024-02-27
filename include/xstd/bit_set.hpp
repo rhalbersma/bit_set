@@ -16,7 +16,7 @@
 #include <cstring>              // memcmp, memset
 #include <functional>           // identity, less
 #include <initializer_list>     // initializer_list
-#include <iterator>             // bidirectional_iterator_tag, iter_value_t, reverse_iterator
+#include <iterator>             // bidirectional_iterator_tag, iter_value_t, make_reverse_iterator, reverse_iterator
                                 // input_iterator, sentinel_for
 #include <limits>               // digits
 #include <ranges>               // begin, distance, empty, end, from_range_t, next, rbegin, rend
@@ -144,7 +144,7 @@ public:
                         const_reverse_iterator
                 >
         {
-                return std::reverse_iterator(self.end());
+                return std::make_reverse_iterator(self.end());
         }
 
         [[nodiscard]] constexpr auto rend(this auto&& self) noexcept
@@ -154,7 +154,7 @@ public:
                         const_reverse_iterator
                 >
         {
-                return std::reverse_iterator(self.begin());
+                return std::make_reverse_iterator(self.begin());
         }
 
         [[nodiscard]] constexpr const_iterator         cbegin()  const noexcept { return begin();  }
@@ -215,7 +215,7 @@ public:
                         return std::ranges::fold_left(
                                 m_data | std::views::transform([](auto block) static {
                                         return static_cast<size_type>(std::popcount(block));
-                                }), 0uz, std::plus()
+                                }), 0uz, std::plus<>()
                         );
                 }
         }
@@ -306,7 +306,6 @@ public:
                 auto&& [ block, mask ] = block_mask(x);
                 auto const erased = contains(block, mask);
                 erase(block, mask);
-                [[assume(!contains(block, mask))]];
                 return erased;
         }
 
@@ -670,26 +669,34 @@ private:
                 }
         }
 
-        [[nodiscard]] constexpr auto block_mask(this auto&& self, value_type n) noexcept
+        [[nodiscard]] constexpr auto block_mask(this auto&& self, size_type n) noexcept
                 -> std::conditional_t<
                         !std::is_const_v<std::remove_reference_t<decltype(self)>>,
                         std::pair<block_type&, block_type>,
                         std::pair<block_type, block_type>
                 >
         {
-                [[assume(is_valid(static_cast<size_type>(n)))]];
-                auto const [ index, offset ] = index_offset(static_cast<size_type>(n));
+                [[assume(is_valid(n))]];
+                auto const [ index, offset ] = index_offset(n);
                 return { self.m_data[index], static_cast<block_type>(left_mask >> offset) };
+        }
+
+        [[nodiscard]] constexpr auto block_mask(this auto&& self, value_type n) noexcept
+                requires (!std::same_as<value_type, size_type>)
+        {
+                return self.block_mask(static_cast<size_type>(n));
         }
 
         static constexpr void insert(block_type& block, block_type mask) noexcept
         {
                 block |= mask;
+                [[assume(contains(block, mask))]];
         }
 
         static constexpr void erase(block_type& block, block_type mask) noexcept
         {
                 block &= static_cast<block_type>(~mask);
+                [[assume(!contains(block, mask))]];
         }
 
         static constexpr void complement(block_type& block, block_type mask) noexcept
@@ -706,7 +713,6 @@ private:
         {
                 auto&& [ block, mask ] = block_mask(x);
                 insert(block, mask);
-                [[assume(contains(block, mask))]];
         }
 
         constexpr auto do_insert(value_type x) noexcept
@@ -715,7 +721,6 @@ private:
                 auto&& [ block, mask ] = block_mask(x);
                 auto const inserted = !contains(block, mask);
                 insert(block, mask);
-                [[assume(contains(block, mask))]];
                 return { { this, x }, inserted };
         }
 
@@ -740,7 +745,6 @@ private:
         {
                 auto&& [ block, mask ] = block_mask(x);
                 erase(block, mask);
-                [[assume(!contains(block, mask))]];
         }
 
         constexpr void clear_unused_bits() noexcept

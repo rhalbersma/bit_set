@@ -262,7 +262,7 @@ struct mem_count
                         std::ranges::fold_left(
                                 std::views::iota(0uz, N) | std::views::transform([&](auto i) {
                                         return self[i];
-                                }), 0uz, std::plus()
+                                }), 0uz, std::plus<>()
                         )
                 );                                                              // [bitset.members]/43
         }

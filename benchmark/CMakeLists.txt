@@ -34,13 +34,10 @@ set(cxx_compile_options_warnings
         -Wno-c++98-compat-pedantic
         -Wno-c++20-compat
         -Wno-c++20-compat-pedantic
-        -Wno-ctad-maybe-unsupported
-        -Wno-unsafe-buffer-usage
         -Wno-disabled-macro-expansion       # triggered by Boost.Test
         -Wno-global-constructors            # triggered by Boost.Test
         -Wno-used-but-marked-unused         # triggered by Boost.Test
-        -Wno-zero-as-null-pointer-constant  # triggered by Boost.Test
-        -Wno-padded                         # only affects performance
+        -Wno-zero-as-null-pointer-constant  # triggered by <=> comparisons against 0
     >
     $<$<CXX_COMPILER_ID:GNU>:
         -Wall
@@ -87,7 +84,7 @@ foreach(t ${targets})
     target_link_libraries(
         ${target_id} PRIVATE
         ${CMAKE_PROJECT_NAME}
-        benchmark::benchmark
+        benchmark::benchmark Boost::headers
     )
 
     target_compile_definitions(

@@ -8,7 +8,7 @@
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <concepts>                     // constructible_from, unsigned_integral
 #include <cstddef>                      // ptrdiff_t
-#include <iterator>                     // bidirectional_iterator_tag, iter_value_t, reverse_iterator
+#include <iterator>                     // bidirectional_iterator_tag, iter_value_t, make_reverse_iterator
 #include <ranges>                       // begin, end, find_if, min, rbegin, rend
                                         // iota, reverse
 #include <type_traits>                  // is_class_v
@@ -224,25 +224,25 @@ template<std::unsigned_integral Block, class Allocator>
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
-        return std::reverse_iterator(std::ranges::end(bs));
+        return std::make_reverse_iterator(std::ranges::end(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return std::reverse_iterator(std::ranges::end(bs));
+        return std::make_reverse_iterator(std::ranges::end(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rend(dynamic_bitset<Block, Allocator>& bs) noexcept
 {
-        return std::reverse_iterator(std::ranges::begin(bs));
+        return std::make_reverse_iterator(std::ranges::begin(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto rend(dynamic_bitset<Block, Allocator> const& bs) noexcept
 {
-        return std::reverse_iterator(std::ranges::begin(bs));
+        return std::make_reverse_iterator(std::ranges::begin(bs));
 }
 
 template<std::unsigned_integral Block, class Allocator>

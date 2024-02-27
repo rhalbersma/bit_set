@@ -9,7 +9,7 @@
 #include <bitset>       // bitset
 #include <concepts>     // constructible_from
 #include <cstddef>      // ptrdiff_t, size_t
-#include <iterator>     // bidirectional_iterator_tag, iter_value_t, reverse_iterator
+#include <iterator>     // bidirectional_iterator_tag, iter_value_t, make_reverse_iterator
 #include <ranges>       // begin, end, find_if, rbegin, rend
                         // iota, reverse
 #include <type_traits>  // is_class_v
@@ -302,25 +302,25 @@ template<std::size_t N>
 template<std::size_t N>
 [[nodiscard]] constexpr auto rbegin(std::bitset<N>& c) noexcept
 {
-        return std::reverse_iterator(std::ranges::end(c));
+        return std::make_reverse_iterator(std::ranges::end(c));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto rbegin(const std::bitset<N>& c) noexcept
 {
-        return std::reverse_iterator(std::ranges::end(c));
+        return std::make_reverse_iterator(std::ranges::end(c));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto rend(std::bitset<N>& c) noexcept
 {
-        return std::reverse_iterator(std::ranges::begin(c));
+        return std::make_reverse_iterator(std::ranges::begin(c));
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto rend(const std::bitset<N>& c) noexcept
 {
-        return std::reverse_iterator(std::ranges::begin(c));
+        return std::make_reverse_iterator(std::ranges::begin(c));
 }
 
 template<std::size_t N>
