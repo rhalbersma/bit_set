@@ -151,12 +151,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
 
         all_valid<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
-                        composable::increment()(bs1, static_cast<std::size_t>(pos));
+                        composable::increment_modulo()(bs1, static_cast<std::size_t>(pos));
                 });
         });
         all_valid<T>([](auto pos) {
                 all_singleton_sets<T>([&](auto const& bs1) {
-                        composable::decrement()(bs1, static_cast<std::size_t>(pos));
+                        composable::decrement_modulo()(bs1, static_cast<std::size_t>(pos));
                 });
         });
 }

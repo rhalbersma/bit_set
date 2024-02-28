@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>             // BOOST_CHECK, BOOST_CHECK_EQUAL
 #include <range/v3/view/set_algorithm.hpp>      // set_difference, set_intersection, set_symmetric_difference, set_union
 #include <algorithm>                            // includes
-#include <concepts>                             // integral
+#include <concepts>                             // integral, same_as
 #include <ranges>                               // to
                                                 // filter, transform
 
@@ -17,7 +17,7 @@ namespace xstd::composable {
 struct includes
 {
         template<class X>
-        auto operator()(X const& a, X const& b) const noexcept
+        auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a.is_subset_of(b); }) {
                         BOOST_CHECK_EQUAL(a.is_subset_of(b), std::ranges::includes(a, b));
@@ -28,7 +28,7 @@ struct includes
 struct set_union
 {
         template<class X>
-        auto operator()(X const& a, X const& b) const noexcept
+        auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a | b; }) {
                         BOOST_CHECK((a | b) == (ranges::views::set_union(a, b) | std::ranges::to<X>()));
@@ -39,7 +39,7 @@ struct set_union
 struct set_intersection
 {
         template<class X>
-        auto operator()(X const& a, X const& b) const noexcept
+        auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a & b; }) {
                         BOOST_CHECK((a & b) == (ranges::views::set_intersection(a, b) | std::ranges::to<X>()));
@@ -50,7 +50,7 @@ struct set_intersection
 struct set_difference
 {
         template<class X>
-        auto operator()(X const& a, X const& b) const noexcept
+        auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a - b; }) {
                         BOOST_CHECK((a - b) == (ranges::views::set_difference(a, b) | std::ranges::to<X>()));
@@ -61,7 +61,7 @@ struct set_difference
 struct set_symmetric_difference
 {
         template<class X>
-        auto operator()(X const& a, X const& b) const noexcept
+        auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a ^ b; }) {
                         BOOST_CHECK((a ^ b) == (ranges::views::set_symmetric_difference(a, b) | std::ranges::to<X>()));
@@ -70,40 +70,60 @@ struct set_symmetric_difference
 };
 
 
-struct increment
+struct increment_modulo
 {
         template<class X, std::integral Key = X::key_type>
-        auto operator()(X const& a, std::size_t n) const
+        auto operator()(const X& a, std::size_t n) const
         {
                 if constexpr (requires { a << n; }) {
                         constexpr auto N = X::max_size();
-                        BOOST_CHECK(
-                                (a << n) == (a
-                                        | std::views::transform([=](std::size_t x) { return x + n;  })
-                                        | std::views::filter   ([ ](std::size_t x) { return x < N;  })
-                                        | std::views::transform([ ](std::size_t x) { return Key(x); })
-                                        | std::ranges::to<X>()
-                                )
-                        );
+                        if constexpr (std::same_as<Key, std::size_t>) {
+                                BOOST_CHECK(
+                                        (a << n) == (a
+                                                | std::views::transform([=](auto x) { return x + n; })
+                                                | std::views::filter   ([ ](auto x) { return x < N; })
+                                                | std::ranges::to<X>()
+                                        )
+                                );
+                        } else {
+                                BOOST_CHECK(
+                                        (a << n) == (a
+                                                | std::views::transform([=](std::size_t x) { return x + n;  })
+                                                | std::views::filter   ([ ](std::size_t x) { return x < N;  })
+                                                | std::views::transform([ ](std::size_t x) { return Key(x); })
+                                                | std::ranges::to<X>()
+                                        )
+                                );
+                        }
                 }
         }
 };
 
-struct decrement
+struct decrement_modulo
 {
         template<class X, std::integral Key = X::key_type>
-        auto operator()(X const& a, std::size_t n) const
+        auto operator()(const X& a, std::size_t n) const
         {
                 if constexpr (requires { a >> n; }) {
                         constexpr auto N = X::max_size();
-                        BOOST_CHECK(
-                                (a >> n) == (a
-                                        | std::views::transform([=](std::size_t x) { return x - n;  })
-                                        | std::views::filter   ([ ](std::size_t x) { return x < N;  })
-                                        | std::views::transform([ ](std::size_t x) { return Key(x); })
-                                        | std::ranges::to<X>()
-                                )
-                        );
+                        if constexpr (std::same_as<Key, std::size_t>) {
+                                BOOST_CHECK(
+                                        (a >> n) == (a
+                                                | std::views::transform([=](auto x) { return x - n; })
+                                                | std::views::filter   ([ ](auto x) { return x < N; })
+                                                | std::ranges::to<X>()
+                                        )
+                                );
+                        } else {
+                                BOOST_CHECK(
+                                        (a >> n) == (a
+                                                | std::views::transform([=](std::size_t x) { return x - n;  })
+                                                | std::views::filter   ([ ](std::size_t x) { return x < N;  })
+                                                | std::views::transform([ ](std::size_t x) { return Key(x); })
+                                                | std::ranges::to<X>()
+                                        )
+                                );
+                        }
                 }
         }
 };

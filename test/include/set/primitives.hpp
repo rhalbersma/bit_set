@@ -206,7 +206,7 @@ struct mem_const_iterator
         }
 
         template<class X>
-        auto operator()(X const& a) const noexcept
+        auto operator()(const X& a) const noexcept
         {
                 using I = X::const_iterator;
                 static_assert(std::same_as<decltype(a.begin()) , I>);           // [container.reqmts]/24
@@ -233,10 +233,10 @@ struct mem_const_iterator
                 BOOST_CHECK(a.crend()   == const_cast<X const&>(a).rend()  );   // [container.rev.reqmts]/14
         }
 
-        template<class X>
-        auto operator()(typename X::iterator i, typename X::iterator j) const noexcept
+        template<class X, std::input_iterator I = X::iterator>
+        auto operator()(I i, I j) const noexcept
         {
-                if constexpr (std::random_access_iterator<typename X::iterator>) {              // [container.reqmts]/37
+                if constexpr (std::random_access_iterator<I>) {                                 // [container.reqmts]/37
                         static_assert(std::same_as<decltype(i <=> j), std::strong_ordering>);   // [container.reqmts]/36
                 }
         }
@@ -244,10 +244,10 @@ struct mem_const_iterator
 
 struct op_equal_to
 {
-        template<class X>
-        auto operator()(X const& a, X const& b) const noexcept
+        template<class X, std::integral Key = X::value_type>
+        auto operator()(const X& a, const X& b) const noexcept
         {
-                static_assert(std::equality_comparable<typename X::value_type>);        // [container.reqmts]/39
+                static_assert(std::equality_comparable<Key>);                           // [container.reqmts]/39
                 static_assert(std::convertible_to<decltype(a == b), bool>);             // [container.reqmts]/40
                 BOOST_CHECK_EQUAL(a == b, std::ranges::equal(a, b));                    // [container.reqmts]/41
                 static_assert(std::equivalence_relation<std::equal_to<X>, X, X>);       // [container.reqmts]/43
@@ -287,7 +287,7 @@ struct fn_swap
 struct mem_size
 {
         template<class X>
-        auto operator()(X const& a) const noexcept
+        auto operator()(const X& a) const noexcept
         {
                 static_assert(std::same_as<decltype(a.size()), typename X::size_type>);                         // [container.reqmts]/52
                 BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(a.size()), std::distance(a.begin(), a.end()));    // [container.reqmts]/53
@@ -297,7 +297,7 @@ struct mem_size
 struct mem_max_size
 {
         template<class X>
-        auto operator()(X const& a) const noexcept
+        auto operator()(const X& a) const noexcept
         {
                 static_assert(std::same_as<decltype(a.max_size()), typename X::size_type>);     // [container.reqmts]/56
                 BOOST_CHECK_LE(a.size(), a.max_size());                                         // [container.reqmts]/57
@@ -315,24 +315,24 @@ struct mem_empty
 
 struct mem_front
 {
-        template<class X>
-        auto operator()(X const& a [[maybe_unused]]) const noexcept
+        template<class X, class R = X::const_reference>
+        auto operator()(const X& a [[maybe_unused]]) const noexcept
         {
                 if constexpr (requires { a.front(); }) {
-                        static_assert(std::same_as<decltype(a.front()), typename X::const_reference>);  // [sequence.reqmts]/70
-                        BOOST_CHECK(a.empty() || (a.front() == *a.begin()));                            // [sequence.reqmts]/71
+                        static_assert(std::same_as<decltype(a.front()), R>);    // [sequence.reqmts]/70
+                        BOOST_CHECK(a.empty() || (a.front() == *a.begin()));    // [sequence.reqmts]/71
                 }
         }
 };
 
 struct mem_back
 {
-        template<class X>
-        auto operator()(X const& a [[maybe_unused]]) const noexcept
+        template<class X, class R = X::const_reference>
+        auto operator()(const X& a [[maybe_unused]]) const noexcept
         {
                 if constexpr (requires { a.back(); }) {
-                        static_assert(std::same_as<decltype(a.back()), typename X::const_reference>);   // [sequence.reqmts]/73
-                        BOOST_CHECK(a.empty() || (a.back() == *std::prev(a.end())));                    // [sequence.reqmts]/74
+                        static_assert(std::same_as<decltype(a.back()), R>);             // [sequence.reqmts]/73
+                        BOOST_CHECK(a.empty() || (a.back() == *std::prev(a.end())));    // [sequence.reqmts]/74
                 }
         }
 };
@@ -505,7 +505,7 @@ struct mem_find
         }
 
         template<class X>
-        auto operator()(X const& b, X::key_type const& k) const
+        auto operator()(const X& b, X::key_type const& k) const
         {
                 static_assert(std::same_as<decltype(b.find(k)), typename X::const_iterator>);   // [associative.reqmts.general]/141
                 BOOST_CHECK(b.find(k) == std::ranges::find(b, k));                              // [associative.reqmts.general]/142
@@ -515,7 +515,7 @@ struct mem_find
 struct mem_count
 {
         template<class X>
-        auto operator()(X const& b, X::key_type const& k) const
+        auto operator()(const X& b, X::key_type const& k) const
         {
                 static_assert(std::same_as<decltype(b.count(k)), typename X::size_type>);               // [associative.reqmts.general]/147
                 BOOST_CHECK_EQUAL(static_cast<std::ptrdiff_t>(b.count(k)), std::ranges::count(b, k));   // [associative.reqmts.general]/148
@@ -525,7 +525,7 @@ struct mem_count
 struct mem_contains
 {
         template<class X>
-        auto operator()(X const& b, X::key_type const& k) const
+        auto operator()(const X& b, X::key_type const& k) const
         {
                 static_assert(std::same_as<decltype(b.contains(k)), bool>);
                 BOOST_CHECK_EQUAL(b.contains(k), b.find(k) != b.end());                                 // [associative.reqmts.general]/154
@@ -542,7 +542,7 @@ struct mem_lower_bound
         }
 
         template<class X>
-        auto operator()(X const& b, X::key_type const& k) const
+        auto operator()(const X& b, X::key_type const& k) const
         {
                 static_assert(std::same_as<decltype(b.lower_bound(k)), typename X::const_iterator>);    // [associative.reqmts.general]/157
                 BOOST_CHECK(b.lower_bound(k) == std::ranges::lower_bound(b, k));                        // [associative.reqmts.general]/158
@@ -559,7 +559,7 @@ struct mem_upper_bound
         }
 
         template<class X>
-        auto operator()(X const& b, X::key_type const& k) const
+        auto operator()(const X& b, X::key_type const& k) const
         {
                 static_assert(std::same_as<decltype(b.upper_bound(k)), typename X::const_iterator>);    // [associative.reqmts.general]/163
                 BOOST_CHECK(b.upper_bound(k) == std::ranges::upper_bound(b, k));                        // [associative.reqmts.general]/164
@@ -577,7 +577,7 @@ struct mem_equal_range
         }
 
         template<class X>
-        auto operator()(X const& b, X::key_type const& k) const
+        auto operator()(const X& b, X::key_type const& k) const
         {
                 using const_iterator = X::const_iterator;
                 static_assert(std::same_as<decltype(b.equal_range(k)), std::pair<const_iterator, const_iterator>>);     // [associative.reqmts.general]/169

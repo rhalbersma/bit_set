@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <aux/set/sieve.hpp>            // filter_twins, sift_primes
+#include <aux/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set
 #include <boost/mp11/list.hpp>          // mp_list
@@ -26,13 +26,19 @@ using Types = boost::mp11::mp_list
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
 {
-        auto const primes = xstd::sift_primes1<T>(N);
+        auto const primes0 = xstd::sift_primes0<T>(N);
         BOOST_CHECK_EQUAL(
-                fmt::format("{}", primes),
+                fmt::format("{}", primes0),
                 "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}"
         );
 
-        auto const twins = xstd::filter_twins(primes);
+        auto const primes1 = xstd::sift_primes1<T>(N);
+        BOOST_CHECK_EQUAL(
+                fmt::format("{}", primes1),
+                "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}"
+        );
+
+        auto const twins = xstd::filter_twins(primes1);
         BOOST_CHECK_EQUAL(
                 fmt::format("{}", twins),
                 "{3, 5, 7, 11, 13, 17, 19, 29, 31, 41, 43, 59, 61, 71, 73}"
