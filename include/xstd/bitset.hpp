@@ -21,13 +21,11 @@ namespace xstd {
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
-public:
-        using block_type = Block;
-
-private:
         bit_set<std::size_t, N, Block> m_impl;
 
 public:
+        using block_type = Block;
+
         // constructors
         [[nodiscard]] constexpr bitset() noexcept = default;
 
@@ -85,29 +83,10 @@ public:
         [[nodiscard]] constexpr auto crend()   const noexcept { return m_impl.crend();   }
 
         // bitset operations
-        constexpr bitset& operator&=(const bitset& rhs) noexcept
-        {
-                m_impl &= rhs.m_impl;
-                return *this;
-        }
-
-        constexpr bitset& operator|=(const bitset& rhs) noexcept
-        {
-                m_impl |= rhs.m_impl;
-                return *this;
-        }
-
-        constexpr bitset& operator^=(const bitset& rhs) noexcept
-        {
-                m_impl ^= rhs.m_impl;
-                return *this;
-        }
-
-        constexpr bitset& operator-=(const bitset& rhs) noexcept
-        {
-                m_impl -= rhs.m_impl;
-                return *this;
-        }
+        constexpr bitset& operator&=(const bitset& rhs) noexcept { m_impl &= rhs.m_impl; return *this; }
+        constexpr bitset& operator|=(const bitset& rhs) noexcept { m_impl |= rhs.m_impl; return *this; }
+        constexpr bitset& operator^=(const bitset& rhs) noexcept { m_impl ^= rhs.m_impl; return *this; }
+        constexpr bitset& operator-=(const bitset& rhs) noexcept { m_impl -= rhs.m_impl; return *this; }
 
         constexpr bitset& operator<<=(std::size_t pos) noexcept
         {
@@ -129,15 +108,8 @@ public:
                 return *this;
         }
 
-        [[nodiscard]] constexpr bitset operator<<(std::size_t pos) const noexcept
-        {
-                auto nrv = *this; nrv <<= pos; return nrv;
-        }
-
-        [[nodiscard]] constexpr bitset operator>>(std::size_t pos) const noexcept
-        {
-                auto nrv = *this; nrv >>= pos; return nrv;
-        }
+        [[nodiscard]] constexpr bitset operator<<(std::size_t pos) const noexcept { auto nrv = *this; nrv <<= pos; return nrv; }
+        [[nodiscard]] constexpr bitset operator>>(std::size_t pos) const noexcept { auto nrv = *this; nrv >>= pos; return nrv; }
 
         constexpr bitset& set() noexcept
         {
@@ -225,15 +197,8 @@ public:
         }
 
         // observers
-        [[nodiscard]] constexpr std::size_t count() const noexcept
-        {
-                return m_impl.size();
-        }
-
-        [[nodiscard]] constexpr std::size_t size() const noexcept
-        {
-                return m_impl.max_size();
-        }
+        [[nodiscard]] constexpr std::size_t count() const noexcept { return m_impl.size();     }
+        [[nodiscard]] constexpr std::size_t size()  const noexcept { return m_impl.max_size(); }
 
         [[nodiscard]] constexpr bool operator==(const bitset& rhs) const noexcept = default;
 
@@ -246,35 +211,13 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr bool all() const noexcept
-        {
-                return m_impl.full();
-        }
+        [[nodiscard]] constexpr bool all()  const noexcept { return  m_impl.full();  }
+        [[nodiscard]] constexpr bool any()  const noexcept { return !m_impl.empty(); }
+        [[nodiscard]] constexpr bool none() const noexcept { return  m_impl.empty(); }
 
-        [[nodiscard]] constexpr bool any() const noexcept
-        {
-                return !m_impl.empty();
-        }
-
-        [[nodiscard]] constexpr bool none() const noexcept
-        {
-                return m_impl.empty();
-        }
-
-        [[nodiscard]] constexpr bool is_subset_of(const bitset& rhs) const noexcept
-        {
-                return m_impl.is_subset_of(rhs.m_impl);
-        }
-
-        [[nodiscard]] constexpr bool is_proper_subset_of(const bitset& rhs) const noexcept
-        {
-                return m_impl.is_proper_subset_of(rhs.m_impl);
-        }
-
-        [[nodiscard]] constexpr bool intersects(const bitset& rhs) const noexcept
-        {
-                return m_impl.intersects(rhs.m_impl);
-        }
+        [[nodiscard]] constexpr bool is_subset_of       (const bitset& rhs) const noexcept { return m_impl.is_subset_of(rhs.m_impl);        }
+        [[nodiscard]] constexpr bool is_proper_subset_of(const bitset& rhs) const noexcept { return m_impl.is_proper_subset_of(rhs.m_impl); }
+        [[nodiscard]] constexpr bool intersects         (const bitset& rhs) const noexcept { return m_impl.intersects(rhs.m_impl);          }
 };
 
 // bitset operators
