@@ -9,11 +9,12 @@
 #include <xstd/bit_set.hpp>     // bit_set
 #include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
+#include <format>               // format
 #include <iosfwd>               // basic_istream, basic_ostream
 #include <locale>               // ctype, use_facet
 #include <memory>               // allocator
 #include <ranges>               // iota
-#include <stdexcept>            // out_of_range
+#include <stdexcept>            // invalid_argument, out_of_range
 #include <string>               // basic_string, char_traits
 
 namespace xstd {
@@ -41,7 +42,7 @@ public:
         ) noexcept(false)
         {
                 if (pos > str.size()) {
-                        throw std::out_of_range("");
+                        throw out_of_range("bitset", pos);
                 }
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
@@ -127,7 +128,7 @@ public:
                         }
                         return *this;
                 } else [[unlikely]] {
-                        throw std::out_of_range("");
+                        throw out_of_range("set", pos);
                 }
         }
 
@@ -143,7 +144,7 @@ public:
                         m_impl.erase(pos);
                         return *this;
                 } else [[unlikely]] {
-                        throw std::out_of_range("");
+                        throw out_of_range("reset", pos);
                 }
         }
 
@@ -164,7 +165,7 @@ public:
                         m_impl.complement(pos);
                         return *this;
                 } else [[unlikely]] {
-                        throw std::out_of_range("");
+                        throw out_of_range("flip", pos);
                 }
         }
 
@@ -175,7 +176,6 @@ public:
         }
 
         [[nodiscard]] constexpr auto operator[](std::size_t) noexcept = delete;
-
 
         [[nodiscard]] constexpr unsigned long      to_ulong()  const noexcept(false) = delete;
         [[nodiscard]] constexpr unsigned long long to_ullong() const noexcept(false) = delete;
@@ -207,7 +207,7 @@ public:
                 if (pos < N) [[likely]] {
                         return m_impl.contains(pos);
                 } else [[unlikely]] {
-                        throw std::out_of_range("");
+                        throw out_of_range("test", pos);
                 }
         }
 
@@ -218,6 +218,12 @@ public:
         [[nodiscard]] constexpr bool is_subset_of       (const bitset& rhs) const noexcept { return m_impl.is_subset_of(rhs.m_impl);        }
         [[nodiscard]] constexpr bool is_proper_subset_of(const bitset& rhs) const noexcept { return m_impl.is_proper_subset_of(rhs.m_impl); }
         [[nodiscard]] constexpr bool intersects         (const bitset& rhs) const noexcept { return m_impl.intersects(rhs.m_impl);          }
+
+private:
+        static constexpr auto out_of_range(std::string mem_fn, std::size_t pos) noexcept(false)
+        {
+                return std::out_of_range(std::format("xstd::bitset<{2}>::{0}({1}): argument out of range [{1} >= {2}]", mem_fn, pos, N));
+        }
 };
 
 // bitset operators
