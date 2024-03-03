@@ -14,7 +14,8 @@
 #include <locale>               // ctype, use_facet
 #include <memory>               // allocator
 #include <ranges>               // iota
-#include <stdexcept>            // invalid_argument, out_of_range
+#include <source_location>      // source_location
+#include <stdexcept>            // invalid_argument, out_of_range, overflow_error
 #include <string>               // basic_string, char_traits
 
 namespace xstd {
@@ -42,7 +43,7 @@ public:
         ) noexcept(false)
         {
                 if (pos > str.size()) {
-                        throw out_of_range("bitset", pos);
+                        throw out_of_range(pos);
                 }
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
@@ -51,7 +52,7 @@ public:
                         if (traits::eq(ch, one)) {
                                 m_bits.insert(i);
                         } else if (!traits::eq(ch, zero)) {
-                                throw std::invalid_argument("");
+                                throw invalid_argument(ch, zero, one);
                         }
                 }
         }
@@ -128,7 +129,7 @@ public:
                         }
                         return *this;
                 } else [[unlikely]] {
-                        throw out_of_range("set", pos);
+                        throw out_of_range(pos);
                 }
         }
 
@@ -144,7 +145,7 @@ public:
                         m_bits.erase(pos);
                         return *this;
                 } else [[unlikely]] {
-                        throw out_of_range("reset", pos);
+                        throw out_of_range(pos);
                 }
         }
 
@@ -165,7 +166,7 @@ public:
                         m_bits.complement(pos);
                         return *this;
                 } else [[unlikely]] {
-                        throw out_of_range("flip", pos);
+                        throw out_of_range(pos);
                 }
         }
 
@@ -207,7 +208,7 @@ public:
                 if (pos < N) [[likely]] {
                         return m_bits.contains(pos);
                 } else [[unlikely]] {
-                        throw out_of_range("test", pos);
+                        throw out_of_range(pos);
                 }
         }
 
@@ -220,9 +221,28 @@ public:
         [[nodiscard]] constexpr bool intersects         (const bitset& rhs) const noexcept { return m_bits.intersects(rhs.m_bits);          }
 
 private:
-        static constexpr auto out_of_range(std::string mem_fn, std::size_t pos) noexcept(false)
+        template<class charT>
+        static constexpr auto invalid_argument(
+                charT ch, charT zero = charT('0'), charT one = charT('1'),
+                const std::source_location& loc = std::source_location::current()
+        ) noexcept(false)
         {
-                return std::out_of_range(std::format("xstd::bitset<{2}>::{0}({1}): argument out of range [{1} >= {2}]", mem_fn, pos, N));
+                return std::invalid_argument(
+                        std::format(
+                                "{}:{}:{}: exception: ‘{}‘: invalid argument ‘ch‘ [{} != {} or {}]",
+                                loc.file_name(), loc.line(), loc.column(), loc.function_name(), ch, zero, one
+                        )
+                );
+        }
+
+        static constexpr auto out_of_range(std::size_t pos, const std::source_location& loc = std::source_location::current()) noexcept(false)
+        {
+                return std::out_of_range(
+                        std::format(
+                                "{}:{}:{}: exception: ‘{}‘: argument ‘pos‘ is out of range [{} >= {}]",
+                                loc.file_name(), loc.line(), loc.column(), loc.function_name(), pos, N
+                        )
+                );
         }
 };
 
