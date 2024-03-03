@@ -22,7 +22,7 @@ namespace xstd {
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
-        bit_set<std::size_t, N, Block> m_impl;
+        bit_set<std::size_t, N, Block> m_bits;
 
 public:
         using block_type = Block;
@@ -49,7 +49,7 @@ public:
                 for (auto i : std::views::iota(0uz, M)) {
                         auto const ch = str[pos + M - 1 - i];
                         if (traits::eq(ch, one)) {
-                                m_impl.insert(i);
+                                m_bits.insert(i);
                         } else if (!traits::eq(ch, zero)) {
                                 throw std::invalid_argument("");
                         }
@@ -68,33 +68,33 @@ public:
         {}
 
         // iterators
-        [[nodiscard]] constexpr auto begin()         noexcept { return m_impl.begin();   }
-        [[nodiscard]] constexpr auto begin()   const noexcept { return m_impl.begin();   }
-        [[nodiscard]] constexpr auto end()           noexcept { return m_impl.end();     }
-        [[nodiscard]] constexpr auto end()     const noexcept { return m_impl.end();     }
+        [[nodiscard]] constexpr auto begin()         noexcept { return m_bits.begin();   }
+        [[nodiscard]] constexpr auto begin()   const noexcept { return m_bits.begin();   }
+        [[nodiscard]] constexpr auto end()           noexcept { return m_bits.end();     }
+        [[nodiscard]] constexpr auto end()     const noexcept { return m_bits.end();     }
 
-        [[nodiscard]] constexpr auto rbegin()        noexcept { return m_impl.rbegin();  }
-        [[nodiscard]] constexpr auto rbegin()  const noexcept { return m_impl.rbegin();  }
-        [[nodiscard]] constexpr auto rend()          noexcept { return m_impl.rend();    }
-        [[nodiscard]] constexpr auto rend()    const noexcept { return m_impl.rend();    }
+        [[nodiscard]] constexpr auto rbegin()        noexcept { return m_bits.rbegin();  }
+        [[nodiscard]] constexpr auto rbegin()  const noexcept { return m_bits.rbegin();  }
+        [[nodiscard]] constexpr auto rend()          noexcept { return m_bits.rend();    }
+        [[nodiscard]] constexpr auto rend()    const noexcept { return m_bits.rend();    }
 
-        [[nodiscard]] constexpr auto cbegin()  const noexcept { return m_impl.cbegin();  }
-        [[nodiscard]] constexpr auto cend()    const noexcept { return m_impl.cend();    }
-        [[nodiscard]] constexpr auto crbegin() const noexcept { return m_impl.crbegin(); }
-        [[nodiscard]] constexpr auto crend()   const noexcept { return m_impl.crend();   }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return m_bits.cbegin();  }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return m_bits.cend();    }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return m_bits.crbegin(); }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return m_bits.crend();   }
 
         // bitset operations
-        constexpr bitset& operator&=(const bitset& rhs) noexcept { m_impl &= rhs.m_impl; return *this; }
-        constexpr bitset& operator|=(const bitset& rhs) noexcept { m_impl |= rhs.m_impl; return *this; }
-        constexpr bitset& operator^=(const bitset& rhs) noexcept { m_impl ^= rhs.m_impl; return *this; }
-        constexpr bitset& operator-=(const bitset& rhs) noexcept { m_impl -= rhs.m_impl; return *this; }
+        constexpr bitset& operator&=(const bitset& rhs) noexcept { m_bits &= rhs.m_bits; return *this; }
+        constexpr bitset& operator|=(const bitset& rhs) noexcept { m_bits |= rhs.m_bits; return *this; }
+        constexpr bitset& operator^=(const bitset& rhs) noexcept { m_bits ^= rhs.m_bits; return *this; }
+        constexpr bitset& operator-=(const bitset& rhs) noexcept { m_bits -= rhs.m_bits; return *this; }
 
         constexpr bitset& operator<<=(std::size_t pos) noexcept
         {
                 if (pos < N) [[likely]] {
-                        m_impl <<= pos;
+                        m_bits <<= pos;
                 } else [[unlikely]] {
-                        m_impl.clear();
+                        m_bits.clear();
                 }
                 return *this;
         }
@@ -102,9 +102,9 @@ public:
         constexpr bitset& operator>>=(std::size_t pos) noexcept
         {
                 if (pos < N) [[likely]] {
-                        m_impl >>= pos;
+                        m_bits >>= pos;
                 } else [[unlikely]] {
-                        m_impl.clear();
+                        m_bits.clear();
                 }
                 return *this;
         }
@@ -114,7 +114,7 @@ public:
 
         constexpr bitset& set() noexcept
         {
-                m_impl.fill();
+                m_bits.fill();
                 return *this;
         }
 
@@ -122,9 +122,9 @@ public:
         {
                 if (pos < N) [[likely]] {
                         if (val) {
-                                m_impl.insert(pos);
+                                m_bits.insert(pos);
                         } else {
-                                m_impl.erase(pos);
+                                m_bits.erase(pos);
                         }
                         return *this;
                 } else [[unlikely]] {
@@ -134,14 +134,14 @@ public:
 
         constexpr bitset& reset() noexcept
         {
-                m_impl.clear();
+                m_bits.clear();
                 return *this;
         }
 
         constexpr bitset& reset(std::size_t pos) noexcept(false)
         {
                 if (pos < N) [[likely]] {
-                        m_impl.erase(pos);
+                        m_bits.erase(pos);
                         return *this;
                 } else [[unlikely]] {
                         throw out_of_range("reset", pos);
@@ -155,14 +155,14 @@ public:
 
         constexpr bitset& flip() noexcept
         {
-                m_impl.complement();
+                m_bits.complement();
                 return *this;
         }
 
         constexpr bitset& flip(std::size_t pos) noexcept(false)
         {
                 if (pos < N) [[likely]] {
-                        m_impl.complement(pos);
+                        m_bits.complement(pos);
                         return *this;
                 } else [[unlikely]] {
                         throw out_of_range("flip", pos);
@@ -172,7 +172,7 @@ public:
         // element access
         [[nodiscard]] constexpr bool operator[](std::size_t pos) const noexcept
         {
-                return m_impl.contains(pos);
+                return m_bits.contains(pos);
         }
 
         [[nodiscard]] constexpr auto operator[](std::size_t) noexcept = delete;
@@ -189,7 +189,7 @@ public:
         {
                 auto str = std::basic_string<charT, traits, Allocator>(N, zero);
                 for (auto i : std::views::iota(0uz, N)) {
-                        if (m_impl.contains(N - 1 - i)) {
+                        if (m_bits.contains(N - 1 - i)) {
                                 str[i] = one;
                         }
                 }
@@ -197,27 +197,27 @@ public:
         }
 
         // observers
-        [[nodiscard]] constexpr std::size_t count() const noexcept { return m_impl.size();     }
-        [[nodiscard]] constexpr std::size_t size()  const noexcept { return m_impl.max_size(); }
+        [[nodiscard]] constexpr std::size_t count() const noexcept { return m_bits.size();     }
+        [[nodiscard]] constexpr std::size_t size()  const noexcept { return m_bits.max_size(); }
 
         [[nodiscard]] constexpr bool operator==(const bitset& rhs) const noexcept = default;
 
         [[nodiscard]] constexpr bool test(std::size_t pos) const noexcept(false)
         {
                 if (pos < N) [[likely]] {
-                        return m_impl.contains(pos);
+                        return m_bits.contains(pos);
                 } else [[unlikely]] {
                         throw out_of_range("test", pos);
                 }
         }
 
-        [[nodiscard]] constexpr bool all()  const noexcept { return  m_impl.full();  }
-        [[nodiscard]] constexpr bool any()  const noexcept { return !m_impl.empty(); }
-        [[nodiscard]] constexpr bool none() const noexcept { return  m_impl.empty(); }
+        [[nodiscard]] constexpr bool all()  const noexcept { return  m_bits.full();  }
+        [[nodiscard]] constexpr bool any()  const noexcept { return !m_bits.empty(); }
+        [[nodiscard]] constexpr bool none() const noexcept { return  m_bits.empty(); }
 
-        [[nodiscard]] constexpr bool is_subset_of       (const bitset& rhs) const noexcept { return m_impl.is_subset_of(rhs.m_impl);        }
-        [[nodiscard]] constexpr bool is_proper_subset_of(const bitset& rhs) const noexcept { return m_impl.is_proper_subset_of(rhs.m_impl); }
-        [[nodiscard]] constexpr bool intersects         (const bitset& rhs) const noexcept { return m_impl.intersects(rhs.m_impl);          }
+        [[nodiscard]] constexpr bool is_subset_of       (const bitset& rhs) const noexcept { return m_bits.is_subset_of(rhs.m_bits);        }
+        [[nodiscard]] constexpr bool is_proper_subset_of(const bitset& rhs) const noexcept { return m_bits.is_proper_subset_of(rhs.m_bits); }
+        [[nodiscard]] constexpr bool intersects         (const bitset& rhs) const noexcept { return m_bits.intersects(rhs.m_bits);          }
 
 private:
         static constexpr auto out_of_range(std::string mem_fn, std::size_t pos) noexcept(false)
