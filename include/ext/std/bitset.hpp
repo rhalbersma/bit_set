@@ -6,7 +6,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <algorithm>    // lexicographical_compare_three_way
 #include <bitset>       // bitset
+#include <compare>      // strong_ordering
 #include <concepts>     // constructible_from
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag, iter_value_t, make_reverse_iterator
@@ -333,6 +335,16 @@ template<std::size_t N>
 [[nodiscard]] constexpr auto crend(const std::bitset<N>& c)  noexcept
 {
         return std::ranges::rend(c);
+}
+
+template<std::size_t N>
+[[nodiscard]] auto operator<=>(const std::bitset<N>& x, const std::bitset<N>& y) noexcept
+        -> std::strong_ordering
+{
+        return std::lexicographical_compare_three_way(
+                std::ranges::begin(x), std::ranges::end(x),
+                std::ranges::begin(y), std::ranges::end(y)
+        );
 }
 
 }       // namespace std

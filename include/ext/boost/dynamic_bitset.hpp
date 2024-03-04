@@ -6,6 +6,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
+#include <algorithm>                    // lexicographical_compare_three_way
+#include <compare>                      // strong_ordering
 #include <concepts>                     // constructible_from, unsigned_integral
 #include <cstddef>                      // ptrdiff_t
 #include <iterator>                     // bidirectional_iterator_tag, iter_value_t, make_reverse_iterator
@@ -121,7 +123,7 @@ private:
 template<std::unsigned_integral Block, class Allocator>
 class dynamic_bitset_reference
 {
-        using rimpl_type = dynamic_bitset<Block, Allocator> const&;
+        using rimpl_type = const dynamic_bitset<Block, Allocator>&;
         using value_type = std::iter_value_t<dynamic_bitset_iterator<Block, Allocator>>;
         rimpl_type m_ref;
         value_type m_val;
@@ -182,79 +184,89 @@ template<std::unsigned_integral Block, class Allocator>
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& bs) noexcept
+[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& c) noexcept
         -> dynamic_bitset_iterator<Block, Allocator>
 {
-        return { &bs, bs.find_first() };
+        return { &c, c.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto begin(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto begin(const dynamic_bitset<Block, Allocator>& c) noexcept
         -> dynamic_bitset_iterator<Block, Allocator>
 {
-        return { &bs, bs.find_first() };
+        return { &c, c.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto end(dynamic_bitset<Block, Allocator>& bs) noexcept
+[[nodiscard]] auto end(dynamic_bitset<Block, Allocator>& c) noexcept
         -> dynamic_bitset_iterator<Block, Allocator>
 {
-        return { &bs, bs.npos };
+        return { &c, c.npos };
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto end(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto end(const dynamic_bitset<Block, Allocator>& c) noexcept
         -> dynamic_bitset_iterator<Block, Allocator>
 {
-        return { &bs, bs.npos };
+        return { &c, c.npos };
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto cbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto cbegin(const dynamic_bitset<Block, Allocator>& c) noexcept
 {
-        return std::ranges::begin(bs);
+        return std::ranges::begin(c);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto cend(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto cend(const dynamic_bitset<Block, Allocator>& c) noexcept
 {
-        return std::ranges::end(bs);
+        return std::ranges::end(c);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator>& bs) noexcept
+[[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator>& c) noexcept
 {
-        return std::make_reverse_iterator(std::ranges::end(bs));
+        return std::make_reverse_iterator(std::ranges::end(c));
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto rbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto rbegin(const dynamic_bitset<Block, Allocator>& c) noexcept
 {
-        return std::make_reverse_iterator(std::ranges::end(bs));
+        return std::make_reverse_iterator(std::ranges::end(c));
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto rend(dynamic_bitset<Block, Allocator>& bs) noexcept
+[[nodiscard]] auto rend(dynamic_bitset<Block, Allocator>& c) noexcept
 {
-        return std::make_reverse_iterator(std::ranges::begin(bs));
+        return std::make_reverse_iterator(std::ranges::begin(c));
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto rend(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto rend(const dynamic_bitset<Block, Allocator>& c) noexcept
 {
-        return std::make_reverse_iterator(std::ranges::begin(bs));
+        return std::make_reverse_iterator(std::ranges::begin(c));
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto crbegin(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto crbegin(const dynamic_bitset<Block, Allocator>& bs) noexcept
 {
         return std::ranges::rbegin(bs);
 }
 
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto crend(dynamic_bitset<Block, Allocator> const& bs) noexcept
+[[nodiscard]] auto crend(const dynamic_bitset<Block, Allocator>& c) noexcept
 {
-        return std::ranges::rend(bs);
+        return std::ranges::rend(c);
+}
+
+template<std::unsigned_integral Block, class Allocator>
+[[nodiscard]] auto operator<=>(const dynamic_bitset<Block, Allocator>& x, const dynamic_bitset<Block, Allocator>& y) noexcept
+        -> std::strong_ordering
+{
+        return std::lexicographical_compare_three_way(
+                std::ranges::begin(x), std::ranges::end(x),
+                std::ranges::begin(y), std::ranges::end(y)
+        );
 }
 
 }       // namespace boost

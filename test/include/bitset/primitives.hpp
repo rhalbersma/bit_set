@@ -29,7 +29,7 @@ struct constructor
         // [bitset.cons]/2-8 describe constructors taking unsigned long long, basic_string and char const*
 };
 
-struct op_bit_and_assign
+struct mem_bit_and_assign
 {
         template<class X>
         auto operator()(X& self, const X& rhs) const noexcept
@@ -43,7 +43,7 @@ struct op_bit_and_assign
         }
 };
 
-struct op_bit_or_assign
+struct mem_bit_or_assign
 {
         template<class X>
         auto operator()(X& self, const X& rhs) const noexcept
@@ -57,7 +57,7 @@ struct op_bit_or_assign
         }
 };
 
-struct op_bit_xor_assign
+struct mem_bit_xor_assign
 {
         template<class X>
         auto operator()(X& self, const X& rhs) const noexcept
@@ -71,7 +71,7 @@ struct op_bit_xor_assign
         }
 };
 
-struct op_minus_assign
+struct mem_bit_minus_assign
 {
         template<class X>
         auto operator()(X& self, const X& rhs) const noexcept
@@ -85,7 +85,7 @@ struct op_minus_assign
         }
 };
 
-struct op_shift_left_assign
+struct mem_shift_left_assign
 {
         auto operator()(auto& self, std::size_t pos) const noexcept
         {
@@ -102,7 +102,7 @@ struct op_shift_left_assign
         }
 };
 
-struct op_shift_right_assign
+struct mem_shift_right_assign
 {
         auto operator()(auto& self, std::size_t pos) const noexcept
         {
@@ -119,7 +119,7 @@ struct op_shift_right_assign
         }
 };
 
-struct op_shift_left
+struct mem_shift_left
 {
         template<class X>
         auto operator()(const X& self, std::size_t pos) const noexcept
@@ -128,7 +128,7 @@ struct op_shift_left
         }
 };
 
-struct op_shift_right
+struct mem_shift_right
 {
         template<class X>
         auto operator()(const X& self, std::size_t pos) const noexcept
@@ -185,7 +185,7 @@ struct mem_reset
         }
 };
 
-struct op_bit_not
+struct mem_bit_not
 {
         template<class X>
         auto operator()(const X& self) const noexcept
@@ -222,7 +222,7 @@ struct mem_flip
         }
 };
 
-struct op_at
+struct mem_at
 {
         auto operator()(const auto& self, std::size_t pos) const noexcept
         {
@@ -279,7 +279,7 @@ struct mem_size
         }
 };
 
-struct op_equal_to
+struct mem_equal_to
 {
         template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
@@ -291,6 +291,41 @@ struct op_equal_to
                                 return self[i] == rhs[i];
                         })
                 );                                                              // [bitset.members]/45
+                BOOST_CHECK_EQUAL(self == rhs, std::ranges::equal(self, rhs));
+        }
+};
+
+struct mem_compare_three_way
+{
+        template<class X>
+        [[nodiscard]] static auto fn_to_string(const X& self) noexcept
+        {
+                if constexpr (requires { self.to_string(); }) {
+                        return self.to_string();
+                } else {
+                        std::string str; to_string(self, str); return str;
+                }
+        }
+
+        template<class X>
+        auto operator()(const X& self, const X& rhs) const noexcept
+        {
+                auto const self_str = fn_to_string(self);
+                auto const  rhs_str = fn_to_string(rhs);
+                BOOST_CHECK(
+                        (self <=> rhs) ==
+                        std::lexicographical_compare_three_way(
+                                std::ranges::rbegin(rhs_str),  std::ranges::rend(rhs_str),
+                                std::ranges::rbegin(self_str), std::ranges::rend(self_str)
+                        )
+                );
+                BOOST_CHECK(
+                        (self <=> rhs) ==
+                        std::lexicographical_compare_three_way(
+                                std::ranges::begin(self), std::ranges::end(self),
+                                std::ranges::begin(rhs),  std::ranges::end(rhs)
+                        )
+                );
         }
 };
 
@@ -333,7 +368,7 @@ struct mem_none
 struct mem_is_subset_of
 {
         template<class X>
-        [[nodiscard]] static auto op_call(const X& lhs, const X& rhs) noexcept
+        [[nodiscard]] static auto fn_is_subset_of(const X& lhs, const X& rhs) noexcept
         {
                 if constexpr (requires { lhs.is_subset_of(rhs); }) {
                         return lhs.is_subset_of(rhs);
@@ -345,14 +380,14 @@ struct mem_is_subset_of
         template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
         {
-                BOOST_CHECK_EQUAL(op_call(self, rhs), (self & ~rhs).none());
+                BOOST_CHECK_EQUAL(fn_is_subset_of(self, rhs), (self & ~rhs).none());
         }
 };
 
 struct mem_is_proper_subset_of
 {
         template<class X>
-        [[nodiscard]] static auto op_call(const X& lhs, const X& rhs) noexcept
+        [[nodiscard]] static auto fn_is_proper_subset_of(const X& lhs, const X& rhs) noexcept
         {
                 if constexpr (requires { lhs.is_proper_subset_of(rhs); }) {
                         return lhs.is_proper_subset_of(rhs);
@@ -364,14 +399,14 @@ struct mem_is_proper_subset_of
         template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
         {
-                BOOST_CHECK_EQUAL(op_call(self, rhs), mem_is_subset_of::op_call(self, rhs) && self != rhs);
+                BOOST_CHECK_EQUAL(fn_is_proper_subset_of(self, rhs), mem_is_subset_of::fn_is_subset_of(self, rhs) && self != rhs);
         }
 };
 
 struct mem_intersects
 {
         template<class X>
-        [[nodiscard]] static auto op_call(const X& lhs, const X& rhs) noexcept
+        [[nodiscard]] static auto fn_intersects(const X& lhs, const X& rhs) noexcept
         {
                 if constexpr (requires { lhs.intersects(rhs); }) {
                         return lhs.intersects(rhs);
@@ -383,7 +418,7 @@ struct mem_intersects
         template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
         {
-                BOOST_CHECK_EQUAL(op_call(self, rhs), (self & rhs).any());
+                BOOST_CHECK_EQUAL(fn_intersects(self, rhs), (self & rhs).any());
         }
 };
 
@@ -416,7 +451,7 @@ struct op_bit_xor
         }
 };
 
-struct op_minus
+struct op_bit_minus
 {
         template<class X>
         auto operator()(const X& lhs, const X& rhs) const noexcept
@@ -426,7 +461,7 @@ struct op_minus
         }
 };
 
-struct fn_iostream
+struct op_iostream
 {
         template<class X>
         auto operator()(const X& x) const noexcept

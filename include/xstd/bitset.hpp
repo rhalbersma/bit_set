@@ -201,7 +201,8 @@ public:
         [[nodiscard]] constexpr std::size_t count() const noexcept { return m_bits.size();     }
         [[nodiscard]] constexpr std::size_t size()  const noexcept { return m_bits.max_size(); }
 
-        [[nodiscard]] constexpr bool operator==(const bitset& rhs) const noexcept = default;
+        [[nodiscard]] constexpr bool operator== (const bitset& rhs) const noexcept = default;
+        [[nodiscard]] constexpr auto operator<=>(const bitset& rhs) const noexcept -> std::strong_ordering = default;
 
         [[nodiscard]] constexpr bool test(std::size_t pos) const noexcept(false)
         {

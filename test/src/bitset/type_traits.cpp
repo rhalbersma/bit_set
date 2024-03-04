@@ -16,8 +16,6 @@
 
 BOOST_AUTO_TEST_SUITE(TypeTraits)
 
-using namespace xstd;
-
 using Types = boost::mp11::mp_list
 <       std::bitset<  0>
 ,       std::bitset< 64>
@@ -25,31 +23,33 @@ using Types = boost::mp11::mp_list
 ,       std::bitset<192>
 ,       std::bitset<256>
 ,       boost::dynamic_bitset<>
-,       bitset<  0, uint8_t>
-,       bitset<  8, uint8_t>
-,       bitset< 16, uint8_t>
-,       bitset< 24, uint8_t>
-,       bitset<  0, uint16_t>
-,       bitset< 16, uint16_t>
-,       bitset< 32, uint16_t>
-,       bitset< 48, uint16_t>
-,       bitset<  0, uint32_t>
-,       bitset< 32, uint32_t>
-,       bitset< 64, uint32_t>
-,       bitset< 96, uint32_t>
+,       xstd::bitset<  0, uint8_t>
+,       xstd::bitset<  8, uint8_t>
+,       xstd::bitset< 16, uint8_t>
+,       xstd::bitset< 24, uint8_t>
+,       xstd::bitset<  0, uint16_t>
+,       xstd::bitset< 16, uint16_t>
+,       xstd::bitset< 32, uint16_t>
+,       xstd::bitset< 48, uint16_t>
+,       xstd::bitset<  0, uint32_t>
+,       xstd::bitset< 32, uint32_t>
+,       xstd::bitset< 64, uint32_t>
+,       xstd::bitset< 96, uint32_t>
 #if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
-,       bitset<  0, uint64_t>
-,       bitset< 64, uint64_t>
-,       bitset<128, uint64_t>
-,       bitset<192, uint64_t>
+,       xstd::bitset<  0, uint64_t>
+,       xstd::bitset< 64, uint64_t>
+,       xstd::bitset<128, uint64_t>
+,       xstd::bitset<192, uint64_t>
 #endif
 #if defined(__GNUG__)
-,       bitset<  0, __uint128_t>
-,       bitset<128, __uint128_t>
-,       bitset<256, __uint128_t>
-,       bitset<384, __uint128_t>
+,       xstd::bitset<  0, __uint128_t>
+,       xstd::bitset<128, __uint128_t>
+,       xstd::bitset<256, __uint128_t>
+,       xstd::bitset<384, __uint128_t>
 #endif
 >;
+
+using namespace xstd;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
 {
