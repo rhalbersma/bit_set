@@ -49,9 +49,11 @@ public:
                 auto const M = std::ranges::min(N, rlen);
                 for (auto i : std::views::iota(0uz, M)) {
                         auto const ch = str[pos + M - 1 - i];
-                        if (traits::eq(ch, one)) {
+                        if (traits::eq(ch, zero)) {
+                                continue;
+                        } else if (traits::eq(ch, one)) {
                                 m_bits.insert(i);
-                        } else if (!traits::eq(ch, zero)) {
+                        } else {
                                 throw invalid_argument(ch, zero, one);
                         }
                 }
