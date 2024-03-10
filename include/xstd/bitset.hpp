@@ -61,7 +61,7 @@ public:
 
         template<class charT>
         [[nodiscard]] constexpr explicit bitset(
-                charT const* str,
+                const charT* str,
                 std::basic_string<charT>::size_type n = std::basic_string<charT>::npos,
                 charT zero = charT('0'),
                 charT one = charT('1')

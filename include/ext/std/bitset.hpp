@@ -74,7 +74,7 @@ public:
         using reference         = bitset_reference<N>;
 
 private:
-        using pimpl_type = std::bitset<N>  const*;
+        using pimpl_type = const std::bitset<N>*;
         pimpl_type m_ptr;
         value_type m_val;
 

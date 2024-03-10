@@ -31,7 +31,7 @@ public:
         using reference         = dynamic_bitset_reference<Block, Allocator>;
 
 private:
-        using pimpl_type = dynamic_bitset<Block, Allocator>  const*;
+        using pimpl_type = const dynamic_bitset<Block, Allocator>*;
         pimpl_type m_ptr;
         value_type m_val;
 

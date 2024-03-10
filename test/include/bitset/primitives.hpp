@@ -26,7 +26,7 @@ struct constructor
                 BOOST_CHECK(a.none());                                          // [bitset.cons]/1
         }
 
-        // [bitset.cons]/2-8 describe constructors taking unsigned long long, basic_string and char const*
+        // [bitset.cons]/2-8 describe constructors taking unsigned long long, basic_string and const char*
 };
 
 struct mem_bit_and_assign

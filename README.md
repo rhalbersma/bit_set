@@ -264,7 +264,7 @@ The semantic differences between `xstd::bit_set<N>` and `std::bitset<N>` are:
 
 Functionality from `std::bitset<N>` that is not in `xstd::bit_set<N>`:
 
-- **No integer or string constructors**: `xstd::bit_set` cannot be constructed from `unsigned long long`, `std::string` or `char const*`.
+- **No integer or string constructors**: `xstd::bit_set` cannot be constructed from `unsigned long long`, `std::string` or `const char*`.
 - **No integer or string conversion operators**: `xstd::bit_set` does not convert to `unsigned long`, `unsigned long long` or `std::string`.
 - **No I/O streaming operators**: `xstd::bit_set` does not provide overloaded I/O streaming `operator<<` and `operator>>`.
 - **No hashing**: `xstd::bit_set` does not provide a specialization for `std::hash<>`.
