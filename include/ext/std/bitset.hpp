@@ -184,7 +184,7 @@ class bitset_reference
         using rimpl_type = const std::bitset<N>&;
         using value_type = std::iter_value_t<bitset_iterator<N>>;
         rimpl_type m_ref;
-        value_type m_val;
+        const value_type m_val;
 
 public:
         [[nodiscard]] constexpr bitset_reference() noexcept = delete;

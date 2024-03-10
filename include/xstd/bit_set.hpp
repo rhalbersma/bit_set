@@ -23,7 +23,7 @@
                                 // drop, pairwise_transform, reverse, take, transform, zip, zip_transform
                                 // input_range
 #include <tuple>                // tie
-#include <type_traits>          // common_type_t, is_class_v, make_signed_t, type_identity_t
+#include <type_traits>          // common_type_t, conditional_t, is_class_v, make_signed_t, type_identity_t
 #include <utility>              // declval, forward, move, pair
 
 namespace xstd {
@@ -119,9 +119,9 @@ public:
         // iterators
         [[nodiscard]] constexpr auto begin(this auto&& self) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        iterator,
-                        const_iterator
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        const_iterator,
+                        iterator
                 >
         {
                 return { &self, self.find_first() };
@@ -129,9 +129,9 @@ public:
 
         [[nodiscard]] constexpr auto end(this auto&& self) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        iterator,
-                        const_iterator
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        const_iterator,
+                        iterator
                 >
         {
                 return { &self, N };
@@ -139,9 +139,9 @@ public:
 
         [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        reverse_iterator,
-                        const_reverse_iterator
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        const_reverse_iterator,
+                        reverse_iterator
                 >
         {
                 return std::make_reverse_iterator(self.end());
@@ -149,9 +149,9 @@ public:
 
         [[nodiscard]] constexpr auto rend(this auto&& self) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        reverse_iterator,
-                        const_reverse_iterator
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        const_reverse_iterator,
+                        reverse_iterator
                 >
         {
                 return std::make_reverse_iterator(self.begin());
@@ -501,9 +501,9 @@ public:
         // set operations
         [[nodiscard]] constexpr auto find(this auto&& self, const key_type& x) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        iterator,
-                        const_iterator
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        const_iterator,
+                        iterator
                 >
         {
                 if (self.contains(x)) {
@@ -526,9 +526,9 @@ public:
 
         [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        iterator,
-                        const_iterator
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        const_iterator,
+                        iterator
                 >
         {
                 return { &self, self.find_next(x) };
@@ -536,9 +536,9 @@ public:
 
         [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        iterator,
-                        const_iterator
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        const_iterator,
+                        iterator
                 >
         {
                 return { &self, self.find_next(x + 1) };
@@ -546,9 +546,9 @@ public:
 
         [[nodiscard]] constexpr auto equal_range(this auto&& self, const key_type& x) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        std::pair<iterator, iterator>,
-                        std::pair<const_iterator, const_iterator>
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        std::pair<const_iterator, const_iterator>,
+                        std::pair<iterator, iterator>
                 >
         {
                 return { self.lower_bound(x), self.upper_bound(x) };
@@ -671,9 +671,9 @@ private:
 
         [[nodiscard]] constexpr auto block_mask(this auto&& self, size_type n) noexcept
                 -> std::conditional_t<
-                        !std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        std::pair<block_type&, block_type>,
-                        std::pair<block_type, block_type>
+                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
+                        std::pair<block_type, block_type>,
+                        std::pair<block_type&, block_type>
                 >
         {
                 [[assume(is_valid(n))]];

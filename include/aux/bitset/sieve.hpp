@@ -8,7 +8,6 @@
 #include <boost/dynamic_bitset_fwd.hpp> // dynamic_bitset
 #include <cstddef>                      // size_t
 #include <ranges>                       // iota, stride, take_while
-#include <type_traits>                  // conditional_t
 
 namespace xstd {
 
