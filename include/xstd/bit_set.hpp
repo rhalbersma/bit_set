@@ -1023,7 +1023,7 @@ private:
         private:
                 [[nodiscard]] constexpr bool is_valid() const noexcept
                 {
-                        return bit_set::is_valid(static_cast<size_type>(m_val));
+                        return bit_set::is_valid(m_val);
                 }
         };
 
