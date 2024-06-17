@@ -52,7 +52,7 @@ public:
                         if (traits::eq(ch, zero)) {
                                 continue;
                         } else if (traits::eq(ch, one)) {
-                                m_bits.insert(i);
+                                m_bits.add(i);
                         } else {
                                 throw invalid_argument(ch, zero, one);
                         }
@@ -125,9 +125,9 @@ public:
         {
                 if (pos < N) [[likely]] {
                         if (val) {
-                                m_bits.insert(pos);
+                                m_bits.add(pos);
                         } else {
-                                m_bits.erase(pos);
+                                m_bits.pop(pos);
                         }
                         return *this;
                 } else [[unlikely]] {
@@ -144,7 +144,7 @@ public:
         constexpr bitset& reset(std::size_t pos) noexcept(false)
         {
                 if (pos < N) [[likely]] {
-                        m_bits.erase(pos);
+                        m_bits.pop(pos);
                         return *this;
                 } else [[unlikely]] {
                         throw out_of_range(pos);

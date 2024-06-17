@@ -244,6 +244,12 @@ public:
                 return do_insert(position, value_type(std::forward<Args>(args)...));
         }
 
+        constexpr void add(value_type x) noexcept
+        {
+                auto&& [ block, mask ] = block_mask(x);
+                insert(block, mask);
+        }
+
         constexpr std::pair<iterator, bool> insert(const value_type& x) noexcept
         {
                 return do_insert(x);
@@ -292,6 +298,12 @@ public:
                         m_bits.fill(ones);
                 }
                 [[assume(full())]];
+        }
+
+        constexpr void pop(key_type x) noexcept
+        {
+                auto&& [ block, mask ] = block_mask(x);
+                erase(block, mask);
         }
 
         constexpr iterator erase(const_iterator position) noexcept
@@ -709,12 +721,6 @@ private:
                 return block & mask;
         }
 
-        constexpr void add(value_type x) noexcept
-        {
-                auto&& [ block, mask ] = block_mask(x);
-                insert(block, mask);
-        }
-
         constexpr auto do_insert(value_type x) noexcept
                 -> std::pair<iterator, bool>
         {
@@ -739,12 +745,6 @@ private:
                 std::ranges::for_each(first, last, [this](auto x) {
                         add(x);
                 });
-        }
-
-        constexpr void pop(key_type x) noexcept
-        {
-                auto&& [ block, mask ] = block_mask(x);
-                erase(block, mask);
         }
 
         constexpr void clear_unused_bits() noexcept
