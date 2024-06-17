@@ -1151,29 +1151,6 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto size(const bit_set<Key, N, Block>& c) noexcept
-{
-        return c.size();
-}
-
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto ssize(const bit_set<Key, N, Block>& c) noexcept
-{
-        return static_cast<
-                std::common_type_t<
-                        std::ptrdiff_t,
-                        std::make_signed_t<decltype(c.size())>
-                >
-        >(c.size());
-}
-
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto empty(const bit_set<Key, N, Block>& c) noexcept
-{
-        return c.empty();
-}
-
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr bit_set<Key, N, Block> operator~(const bit_set<Key, N, Block>& lhs) noexcept
 {
         auto nrv = lhs; nrv.complement(); return nrv;

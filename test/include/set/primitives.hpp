@@ -682,7 +682,7 @@ struct fn_size
 {
         auto operator()(auto const& c) const noexcept
         {
-                BOOST_CHECK_EQUAL(size(c), c.size());                           // [iterator.range]/16
+                BOOST_CHECK_EQUAL(std::size(c), c.size());                      // [iterator.range]/16
         }
 };
 
@@ -691,7 +691,7 @@ struct fn_ssize
         auto operator()(auto const& c) const noexcept
         {
                 using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
-                BOOST_CHECK_EQUAL(ssize(c), static_cast<R>(c.size()));          // [iterator.range]/18
+                BOOST_CHECK_EQUAL(std::ssize(c), static_cast<R>(c.size()));     // [iterator.range]/18
         }
 };
 
@@ -699,7 +699,7 @@ struct fn_empty
 {
         auto operator()(auto const& c) const noexcept
         {
-                BOOST_CHECK_EQUAL(empty(c), c.empty());                         // [iterator.range]/20
+                BOOST_CHECK_EQUAL(std::empty(c), c.empty());                    // [iterator.range]/20
         }
 };
 
