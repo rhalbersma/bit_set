@@ -5,8 +5,8 @@
 
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED)
-
 find_package(benchmark REQUIRED)
+find_package(fmt REQUIRED)
 
 set(cxx_compile_definitions
     BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
@@ -84,7 +84,9 @@ foreach(t ${targets})
     target_link_libraries(
         ${target_id} PRIVATE
         ${CMAKE_PROJECT_NAME}
-        benchmark::benchmark Boost::headers
+        Boost::headers
+        benchmark::benchmark
+        fmt::fmt
     )
 
     target_compile_definitions(

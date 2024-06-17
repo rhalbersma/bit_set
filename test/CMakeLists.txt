@@ -8,9 +8,6 @@ find_package(
     Boost REQUIRED COMPONENTS
     unit_test_framework
 )
-
-message(${Boost_INCLUDE_DIRS})
-
 find_package(fmt REQUIRED)
 
 set(cxx_compile_definitions
@@ -89,7 +86,8 @@ foreach(t ${targets})
     target_link_libraries(
         ${target_id} PRIVATE
         ${CMAKE_PROJECT_NAME}
-        Boost::unit_test_framework Boost::headers
+        Boost::headers
+        Boost::unit_test_framework
         fmt::fmt
     )
 
