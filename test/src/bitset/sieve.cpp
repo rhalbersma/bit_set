@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <aux/bitset/sieve.hpp>         // filter_twins, sift_primes0, sift_primes1
+#include <opt/bitset/sieve.hpp>         // filter_twins, sift_primes0, sift_primes1
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
 #include <ext/std/ranges.hpp>           // as_set

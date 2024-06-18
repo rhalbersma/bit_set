@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <aux/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
+#include <opt/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/container/flat_set.hpp> // flat_set
 #include <boost/mp11/list.hpp>          // mp_list
