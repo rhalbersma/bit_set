@@ -8,6 +8,7 @@
 
 #include <algorithm>    // lexicographical_compare_three_way
 #include <bitset>       // bitset
+#include <cassert>      // assert
 #include <compare>      // strong_ordering
 #include <concepts>     // constructible_from
 #include <cstddef>      // ptrdiff_t, size_t
@@ -86,12 +87,12 @@ public:
                 m_ptr(ptr),
                 m_val(val)
         {
-                [[assume(is_valid())]];
+                assert(is_valid());
         }
 
         [[nodiscard]] friend constexpr bool operator==(bitset_iterator lhs, bitset_iterator rhs) noexcept
         {
-                [[assume(is_comparable(lhs, rhs))]];
+                assert(is_comparable(lhs, rhs));
                 if constexpr (N == 0) {
                         return true;
                 } else {
@@ -102,15 +103,15 @@ public:
         [[nodiscard]] constexpr auto operator*() const noexcept
                 -> bitset_reference<N>
         {
-                [[assume(is_dereferenceable())]];
+                assert(is_dereferenceable());
                 return { *m_ptr, m_val };
         }
 
         constexpr bitset_iterator& operator++() noexcept
         {
-                [[assume(is_incrementable())]];
+                assert(is_incrementable());
                 m_val = find_next(m_val);
-                [[assume(is_decrementable())]];
+                assert(is_decrementable());
                 return *this;
         }
 
@@ -121,9 +122,9 @@ public:
 
         constexpr bitset_iterator& operator--() noexcept
         {
-                [[assume(is_decrementable())]];
+                assert(is_decrementable());
                 m_val = find_prev(m_val);
-                [[assume(is_incrementable())]];
+                assert(is_incrementable());
                 return *this;
         }
 
@@ -146,7 +147,7 @@ private:
 
         [[nodiscard]] constexpr value_type find_prev(value_type n) const noexcept
         {
-                [[assume(m_ptr->any())]];
+                assert(m_ptr->any());
                 return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
                         return (*m_ptr)[i];
                 });
@@ -194,7 +195,7 @@ public:
                 m_ref(ref),
                 m_val(val)
         {
-                [[assume(is_valid())]];
+                assert(is_valid());
         }
 
         [[nodiscard]] constexpr bitset_reference(const bitset_reference&) noexcept = default;

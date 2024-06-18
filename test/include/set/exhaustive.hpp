@@ -7,6 +7,7 @@
 
 #include <algorithm>            // max
 #include <array>                // array
+#include <cassert>              // assert
 #include <concepts>             // integral
 #include <initializer_list>     // initializer_list
 #include <ranges>               // to
@@ -38,22 +39,22 @@ inline constexpr auto limit_v = []() {
 template<class X>
 auto empty_set(auto fun)
 {
-        X a; [[assume(a.empty())]];
+        X a; assert(a.empty());
         fun(a);
 }
 
 template<class X, std::integral Key = typename X::key_type, Key N = limit_v<X, L1>>
 auto full_set(auto fun)
 {
-        auto a = std::views::iota(Key(0), N) | std::ranges::to<X>(); [[assume(a.size() == static_cast<std::size_t>(N))]];
+        auto a = std::views::iota(Key(0), N) | std::ranges::to<X>(); assert(a.size() == static_cast<std::size_t>(N));
         fun(a);
 }
 
 template<class X>
 auto empty_set_pair(auto fun)
 {
-        X a; [[assume(a.empty())]];
-        X b; [[assume(b.empty())]];
+        X a; assert(a.empty());
+        X b; assert(b.empty());
         fun(a, b);
 }
 
@@ -71,7 +72,7 @@ template<class X, std::integral Key = typename X::key_type, Key N = limit_v<X, L
 auto all_cardinality_sets(auto fun)
 {
         for (auto i : std::views::iota(Key(0), N + 1)) {
-                auto a = std::views::iota(Key(0), i) | std::ranges::to<X>(); [[assume(a.size() == static_cast<std::size_t>(i))]];
+                auto a = std::views::iota(Key(0), i) | std::ranges::to<X>(); assert(a.size() == static_cast<std::size_t>(i));
                 fun(a);
         }
 }
@@ -80,7 +81,7 @@ template<class X, std::integral Key = typename X::key_type, Key N = limit_v<X, L
 auto all_singleton_arrays(auto fun)
 {
         for (auto i : std::views::iota(Key(0), N)) {
-                auto a = std::array{ i }; [[assume(a.size() == 1)]];
+                auto a = std::array{ i }; assert(a.size() == 1);
                 fun(a);
         }
 }
@@ -89,7 +90,7 @@ template<class X, std::integral Key = typename X::key_type, Key N = limit_v<X, L
 auto all_singleton_ilists(auto fun)
 {
         for (auto i : std::views::iota(Key(0), N)) {
-                auto a = { i }; [[assume(a.size() == 1)]];
+                auto a = { i }; assert(a.size() == 1);
                 fun(a);
         }
 }
@@ -98,7 +99,7 @@ template<class X, std::integral Key = typename X::key_type, Key N = limit_v<X, L
 auto all_singleton_sets(auto fun)
 {
         for (auto i : std::views::iota(Key(0), N)) {
-                auto a = X({ i }); [[assume(a.size() == 1)]];
+                auto a = X({ i }); assert(a.size() == 1);
                 fun(a);
         }
 }
@@ -110,7 +111,7 @@ auto all_doubleton_arrays(auto fun)
 {
         for (auto j : std::views::iota(Key(1), std::ranges::max(N, Key(1)))) {
                 for (auto i : std::views::iota(Key(0), j)) {
-                        auto a = std::array{ i, j }; [[assume(a.size() == 2)]];
+                        auto a = std::array{ i, j }; assert(a.size() == 2);
                         fun(a);
                 }
         }
@@ -121,7 +122,7 @@ auto all_doubleton_ilists(auto fun)
 {
         for (auto j : std::views::iota(Key(1), std::ranges::max(N, Key(1)))) {
                 for (auto i : std::views::iota(Key(0), j)) {
-                        auto a = { i, j }; [[assume(a.size() == 2)]];
+                        auto a = { i, j }; assert(a.size() == 2);
                         fun(a);
                 }
         }
@@ -132,7 +133,7 @@ auto all_doubleton_sets(auto fun)
 {
         for (auto j : std::views::iota(Key(1), std::ranges::max(N, Key(1)))) {
                 for (auto i : std::views::iota(Key(0), j)) {
-                        auto a = X({ i, j }); [[assume(a.size() == 2)]];
+                        auto a = X({ i, j }); assert(a.size() == 2);
                         fun(a);
                 }
         }
@@ -145,8 +146,8 @@ auto all_singleton_set_pairs(auto fun)
                 std::views::iota(Key(0), N),
                 std::views::iota(Key(0), N)
         )) {
-                auto a = X({ i }); [[assume(a.size() == 1)]];
-                auto b = X({ j }); [[assume(b.size() == 1)]];
+                auto a = X({ i }); assert(a.size() == 1);
+                auto b = X({ j }); assert(b.size() == 1);
                 fun(a, b);
         }
 }
@@ -161,9 +162,9 @@ auto all_singleton_set_triples(auto fun)
                 std::views::iota(Key(0), N),
                 std::views::iota(Key(0), N)
         )) {
-                auto a = X({ i }); [[assume(a.size() == 1)]];
-                auto b = X({ j }); [[assume(b.size() == 1)]];
-                auto c = X({ k }); [[assume(c.size() == 1)]];
+                auto a = X({ i }); assert(a.size() == 1);
+                auto b = X({ j }); assert(b.size() == 1);
+                auto c = X({ k }); assert(c.size() == 1);
                 fun(a, b, c);
         }
 }
@@ -181,8 +182,8 @@ auto all_doubleton_set_pairs(auto fun)
                         std::views::iota(Key(0), j),
                         std::views::iota(Key(0), n)
                 )) {
-                        auto a = X({ i, j }); [[assume(a.size() == 2)]];
-                        auto b = X({ m, n }); [[assume(b.size() == 2)]];
+                        auto a = X({ i, j }); assert(a.size() == 2);
+                        auto b = X({ m, n }); assert(b.size() == 2);
                         fun(a, b);
                 }
         }

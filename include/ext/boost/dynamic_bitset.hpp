@@ -7,6 +7,7 @@
 
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <algorithm>                    // lexicographical_compare_three_way
+#include <cassert>                      // assert
 #include <compare>                      // strong_ordering
 #include <concepts>                     // constructible_from, unsigned_integral
 #include <cstddef>                      // ptrdiff_t
@@ -43,27 +44,27 @@ public:
                 m_ptr(ptr),
                 m_val(val)
         {
-                [[assume(is_valid())]];
+                assert(is_valid());
         }
 
         [[nodiscard]] friend constexpr bool operator==(dynamic_bitset_iterator lhs, dynamic_bitset_iterator rhs) noexcept
         {
-                [[assume(is_comparable(lhs, rhs))]];
+                assert(is_comparable(lhs, rhs));
                 return lhs.m_val == rhs.m_val;
         }
 
         [[nodiscard]] constexpr auto operator*() const noexcept
                 -> dynamic_bitset_reference<Block, Allocator>
         {
-                [[assume(is_dereferenceable())]];
+                assert(is_dereferenceable());
                 return { *m_ptr, m_val };
         }
 
         dynamic_bitset_iterator& operator++() noexcept
         {
-                [[assume(is_incrementable())]];
+                assert(is_incrementable());
                 m_val = m_ptr->find_next(m_val);
-                [[assume(is_decrementable())]];
+                assert(is_decrementable());
                 return *this;
         }
 
@@ -74,9 +75,9 @@ public:
 
         dynamic_bitset_iterator& operator--() noexcept
         {
-                [[assume(is_decrementable())]];
+                assert(is_decrementable());
                 m_val = find_prev(m_val);
-                [[assume(is_incrementable())]];
+                assert(is_incrementable());
                 return *this;
         }
 
@@ -88,7 +89,7 @@ public:
 private:
         [[nodiscard]] value_type find_prev(value_type n) noexcept
         {
-                [[assume(m_ptr->any())]];
+                assert(m_ptr->any());
                 return *std::ranges::find_if(std::views::iota(0uz, std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) {
                         return (*m_ptr)[i];
                 });
@@ -136,7 +137,7 @@ public:
                 m_ref(ref),
                 m_val(val)
         {
-                [[assume(is_valid())]];
+                assert(is_valid());
         }
 
         [[nodiscard]] constexpr dynamic_bitset_reference(const dynamic_bitset_reference&) noexcept = default;

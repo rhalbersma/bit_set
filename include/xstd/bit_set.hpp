@@ -10,6 +10,7 @@
                                 // all_of, any_of, fill_n, find_if, fold_left, for_each, max, none_of
 #include <array>                // array
 #include <bit>                  // countl_zero, countr_zero, popcount
+#include <cassert>              // assert
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, integral, same_as, unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
@@ -297,7 +298,7 @@ public:
                 } else if constexpr (N > 0) {
                         m_bits.fill(ones);
                 }
-                [[assume(full())]];
+                assert(full());
         }
 
         constexpr void pop(key_type x) noexcept
@@ -308,7 +309,7 @@ public:
 
         constexpr iterator erase(const_iterator position) noexcept
         {
-                [[assume(position != end())]];
+                assert(position != end());
                 pop(*position++);
                 return position;
         }
@@ -323,7 +324,7 @@ public:
 
         constexpr iterator erase(const_iterator first, const_iterator last) noexcept
         {
-                [[assume(N > 0 || first == last)]];
+                assert(N > 0 || first == last);
                 std::ranges::for_each(first, last, [this](auto x) {
                         pop(x);
                 });
@@ -342,7 +343,7 @@ public:
                 if constexpr (N > 0) {
                         m_bits.fill(zero);
                 }
-                [[assume(empty())]];
+                assert(empty());
         }
 
         constexpr void complement(value_type x) noexcept
@@ -428,7 +429,7 @@ public:
 
         constexpr bit_set& operator<<=(size_type n [[maybe_unused]]) noexcept
         {
-                [[assume(is_valid(n))]];
+                assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
                         m_bits[0] >>= n;
                 } else if constexpr (num_blocks >= 2) {
@@ -465,7 +466,7 @@ public:
 
         constexpr bit_set& operator>>=(size_type n [[maybe_unused]]) noexcept
         {
-                [[assume(is_valid(n))]];
+                assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
                         m_bits[0] <<= n;
                 } else if constexpr (num_blocks >= 2) {
@@ -688,7 +689,7 @@ private:
                         std::pair<block_type&, block_type>
                 >
         {
-                [[assume(is_valid(n))]];
+                assert(is_valid(n));
                 auto const [ index, offset ] = index_offset(n);
                 return { self.m_bits[index], static_cast<block_type>(left_mask >> offset) };
         }
@@ -702,13 +703,13 @@ private:
         static constexpr void insert(block_type& block, block_type mask) noexcept
         {
                 block |= mask;
-                [[assume(contains(block, mask))]];
+                assert(contains(block, mask));
         }
 
         static constexpr void erase(block_type& block, block_type mask) noexcept
         {
                 block &= static_cast<block_type>(~mask);
-                [[assume(!contains(block, mask))]];
+                assert(!contains(block, mask));
         }
 
         static constexpr void complement(block_type& block, block_type mask) noexcept
@@ -741,7 +742,7 @@ private:
         constexpr void do_insert(I first, S last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
-                [[assume(N > 0 || first == last)]];
+                assert(N > 0 || first == last);
                 std::ranges::for_each(first, last, [this](auto x) {
                         add(x);
                 });
@@ -756,28 +757,28 @@ private:
 
         [[nodiscard]] constexpr size_type find_front() const noexcept
         {
-                [[assume(!empty())]];
+                assert(!empty());
                 if constexpr (num_blocks == 1) {
                         return static_cast<size_type>(std::countl_zero(m_bits[0]));
                 } else if constexpr (num_blocks == 2) {
                         return m_bits[0] ? static_cast<size_type>(std::countl_zero(m_bits[0])) : block_size + static_cast<size_type>(std::countl_zero(m_bits[1]));
                 } else if constexpr (num_blocks >= 3) {
                         auto const front = std::ranges::find_if(m_bits, std::identity());
-                        [[assume(front != std::ranges::end(m_bits))]];
+                        assert(front != std::ranges::end(m_bits));
                         return static_cast<size_type>(std::ranges::distance(std::ranges::begin(m_bits), front)) * block_size + static_cast<size_type>(std::countl_zero(*front));
                 }
         }
 
         [[nodiscard]] constexpr size_type find_back() const noexcept
         {
-                [[assume(!empty())]];
+                assert(!empty());
                 if constexpr (num_blocks == 1) {
                         return last_bit - static_cast<size_type>(std::countr_zero(m_bits[0]));
                 } else if constexpr (num_blocks == 2) {
                         return m_bits[1] ? last_bit - static_cast<size_type>(std::countr_zero(m_bits[1])) : left_bit - static_cast<size_type>(std::countr_zero(m_bits[0]));
                 } else if constexpr (num_blocks >= 3) {
                         auto const back = std::ranges::find_if(m_bits | std::views::reverse, std::identity());
-                        [[assume(back != std::ranges::rend(m_bits))]];
+                        assert(back != std::ranges::rend(m_bits));
                         return last_bit - static_cast<size_type>(std::ranges::distance(std::ranges::rbegin(m_bits), back)) * block_size - static_cast<size_type>(std::countr_zero(*back));
                 }
         }
@@ -842,7 +843,7 @@ private:
 
         [[nodiscard]] constexpr size_type find_prev(size_type n) const noexcept
         {
-                [[assume(!empty())]];
+                assert(!empty());
                 if constexpr (num_blocks == 1) {
                         return n - static_cast<size_type>(std::countr_zero(static_cast<block_type>(m_bits[0] >> (left_bit - n))));
                 } else if constexpr (num_blocks >= 2) {
@@ -856,7 +857,7 @@ private:
                         }
                         auto const rg = m_bits | std::views::reverse | std::views::drop(last_block - index);
                         auto const prev = std::ranges::find_if(rg, std::identity());
-                        [[assume(prev != std::ranges::end(rg))]];
+                        assert(prev != std::ranges::end(rg));
                         return n - static_cast<size_type>(std::ranges::distance(std::ranges::begin(rg), prev)) * block_size - static_cast<size_type>(std::countr_zero(*prev));
                 }
         }
@@ -884,7 +885,7 @@ private:
                         m_ptr(ptr),
                         m_val(val)
                 {
-                        [[assume(is_valid())]];
+                        assert(is_valid());
                 }
 
                 [[nodiscard]] constexpr proxy_const_iterator(pimpl_type ptr, value_type val) noexcept
@@ -895,7 +896,7 @@ private:
 
                 [[nodiscard]] friend constexpr bool operator==(proxy_const_iterator lhs [[maybe_unused]], proxy_const_iterator rhs [[maybe_unused]]) noexcept
                 {
-                        [[assume(is_comparable(lhs, rhs))]];
+                        assert(is_comparable(lhs, rhs));
                         if constexpr (N == 0) {
                                 return true;
                         } else {
@@ -906,15 +907,15 @@ private:
                 [[nodiscard]] constexpr auto operator*() const noexcept
                         -> proxy_const_reference
                 {
-                        [[assume(is_dereferenceable())]];
+                        assert(is_dereferenceable());
                         return { *m_ptr, m_val };
                 }
 
                 constexpr proxy_const_iterator& operator++() noexcept
                 {
-                        [[assume(is_incrementable())]];
+                        assert(is_incrementable());
                         m_val = m_ptr->find_next(m_val + 1);
-                        [[assume(is_decrementable())]];
+                        assert(is_decrementable());
                         return *this;
                 }
 
@@ -925,9 +926,9 @@ private:
 
                 constexpr proxy_const_iterator& operator--() noexcept
                 {
-                        [[assume(is_decrementable())]];
+                        assert(is_decrementable());
                         m_val = m_ptr->find_prev(m_val - 1);
-                        [[assume(is_incrementable())]];
+                        assert(is_incrementable());
                         return *this;
                 }
 
@@ -979,7 +980,7 @@ private:
                         m_ref(ref),
                         m_val(val)
                 {
-                        [[assume(is_valid())]];
+                        assert(is_valid());
                 }
 
                 [[nodiscard]] constexpr proxy_const_reference(const proxy_const_reference&) noexcept = default;
