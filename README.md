@@ -425,7 +425,7 @@ This single-header library has no other dependencies than the C++ Standard Libra
 | Linux    | Clang      | $\geq$ 18    | CI currently being ported to GitHub Actions |
 | Windows  | Visual C++ | $\geq$ 17.10 | CI currently being ported to GitHub Actions |
 
-Note that running the unit tests requires the presence of [range-v3](https://github.com/ericniebler/range-v3), [fmtlib](https://github.com/fmtlib/fmt) and [Google Benchmark](https://github.com/google/benchmark).
+Note that the benchmarks and unit tests depend on [Boost](https://www.boost.io/), [fmtlib](https://github.com/fmtlib/fmt), [Google Benchmark](https://github.com/google/benchmark) and [range-v3](https://github.com/ericniebler/range-v3). 
 
 ## License
 
