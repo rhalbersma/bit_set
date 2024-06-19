@@ -73,7 +73,7 @@ public:
 private:
         static constexpr auto block_size = static_cast<size_type>(std::numeric_limits<Block>::digits);
         static constexpr auto num_bits   = aligned_size(N, block_size);
-        static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, 1uz);
+        static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, std::size_t(1));
 
         std::array<block_type, num_blocks> m_bits{};            // zero-initialization
 
@@ -185,7 +185,7 @@ public:
                         } else if (num_blocks == 2) {
                                 return m_bits[0] == ones && m_bits[1] == used_bits;
                         } else if (num_blocks >= 3) {
-                                return std::ranges::all_of(m_bits | std::views::take(last_block), [](auto block) static {
+                                return std::ranges::all_of(m_bits | std::views::take(last_block), [](auto block) {
                                         return block == ones;
                                 }) && m_bits[last_block] == used_bits;
                         }
@@ -197,7 +197,7 @@ public:
                         } else if constexpr (num_blocks == 2) {
                                 return m_bits[0] == ones && m_bits[1] == ones;
                         } else if constexpr (num_blocks >= 3) {
-                                return std::ranges::all_of(m_bits, [](auto block) static {
+                                return std::ranges::all_of(m_bits, [](auto block) {
                                         return block == ones;
                                 });
                         }
@@ -207,16 +207,16 @@ public:
         [[nodiscard]] constexpr size_type size() const noexcept
         {
                 if constexpr (N == 0) {
-                        return 0uz;
+                        return std::size_t(0);
                 } else if constexpr (num_blocks == 1) {
                         return static_cast<size_type>(std::popcount(m_bits[0]));
                 } else if constexpr (num_blocks == 2) {
                         return static_cast<size_type>(std::popcount(m_bits[0]) + std::popcount(m_bits[1]));
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::fold_left(
-                                m_bits | std::views::transform([](auto block) static {
+                                m_bits | std::views::transform([](auto block) {
                                         return static_cast<size_type>(std::popcount(block));
-                                }), 0uz, std::plus<>()
+                                }), std::size_t(0), std::plus<>()
                         );
                 }
         }
@@ -581,7 +581,7 @@ public:
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::none_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) static { return lhs & ~rhs; },
+                                        [](auto lhs, auto rhs) { return lhs & ~rhs; },
                                         this->m_bits, other.m_bits
                                 ),
                                 std::identity()
@@ -605,7 +605,7 @@ public:
                                 (this->m_bits[0] == other.m_bits[0] && this->m_bits[1] == other.m_bits[1])
                         );
                 } else if constexpr (num_blocks >= 3) {
-                        auto i = 0uz;
+                        auto i = std::size_t(0);
                         for (/* init-statement before loop */; i < num_blocks; ++i) {
                                 if (this->m_bits[i] & ~other.m_bits[i]) {
                                         return false;
@@ -616,7 +616,7 @@ public:
                         }
                         return (i == num_blocks) ? false : std::ranges::none_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) static { return lhs & ~rhs; },
+                                        [](auto lhs, auto rhs) { return lhs & ~rhs; },
                                         this->m_bits, other.m_bits
                                 ) | std::views::drop(i),
                                 std::identity()
@@ -638,7 +638,7 @@ public:
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::any_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) static { return lhs & rhs; },
+                                        [](auto lhs, auto rhs) { return lhs & rhs; },
                                         this->m_bits, other.m_bits
                                 ),
                                 std::identity()
@@ -676,7 +676,7 @@ private:
                 -> std::pair<size_type, size_type>
         {
                 if constexpr (num_blocks == 1) {
-                        return { 0uz, n };
+                        return { std::size_t(0), n };
                 } else if constexpr (num_blocks >= 2) {
                         return div_mod(n, block_size);
                 }

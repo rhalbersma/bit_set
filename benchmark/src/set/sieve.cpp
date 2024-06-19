@@ -11,7 +11,7 @@
 #include <boost/preprocessor.hpp>       // BOOST_PP_COMMA
 
 using Key = std::size_t;
-constexpr Key N = 1'000'000uz;
+constexpr Key N = std::size_t(1'000'000);
 
 template<class X>
 static void bm_sift_primes0(benchmark::State& state) {

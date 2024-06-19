@@ -90,7 +90,7 @@ private:
         [[nodiscard]] value_type find_prev(value_type n) noexcept
         {
                 assert(m_ptr->any());
-                return *std::ranges::find_if(std::views::iota(0uz, std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) {
+                return *std::ranges::find_if(std::views::iota(std::size_t(0), std::ranges::min(n, m_ptr->size())) | std::views::reverse, [&](auto i) {
                         return (*m_ptr)[i];
                 });
         }

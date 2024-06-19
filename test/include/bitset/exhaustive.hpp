@@ -56,7 +56,7 @@ auto empty_set_pair(auto fun)
 template<class X, auto N = limit_v<X, L1>>
 auto all_valid(auto fun)
 {
-        for (auto i : std::views::iota(0uz, N)) {
+        for (auto i : std::views::iota(std::size_t(0), N)) {
                 fun(i);
         }
 }
@@ -64,7 +64,7 @@ auto all_valid(auto fun)
 template<class X, auto N = limit_v<X, L1>>
 auto any_value(auto fun)
 {
-        for (auto i : std::views::iota(0uz, N + 1)) {
+        for (auto i : std::views::iota(std::size_t(0), N + 1)) {
                 fun(i);
         }
 }
@@ -72,9 +72,9 @@ auto any_value(auto fun)
 template<class X, auto N = limit_v<X, L1>>
 auto all_cardinality_sets(auto fun)
 {
-        for (auto i : std::views::iota(0uz, N + 1)) {
+        for (auto i : std::views::iota(std::size_t(0), N + 1)) {
                 auto a = make_bitset<X>(N);
-                for (auto j : std::views::iota(0uz, i)) {
+                for (auto j : std::views::iota(std::size_t(0), i)) {
                         a.set(j);
                 }
                 assert(a.count() == i);
@@ -85,7 +85,7 @@ auto all_cardinality_sets(auto fun)
 template<class X, auto N = limit_v<X, L1>>
 auto all_singleton_sets(auto fun)
 {
-        for (auto i : std::views::iota(0uz, N)) {
+        for (auto i : std::views::iota(std::size_t(0), N)) {
                 auto a = make_bitset<X>(N); a.set(i); assert(a.count() == 1);
                 fun(a);
         }
@@ -97,8 +97,8 @@ template<class X, auto N = limit_v<X, L2>>
 auto all_singleton_set_pairs(auto fun)
 {
         for (auto [ i, j ] : std::views::cartesian_product(
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N))
+                std::views::iota(std::size_t(0), N),
+                std::views::iota(std::size_t(0), N))
         ) {
                 auto a = make_bitset<X>(N); a.set(i); assert(a.count() == 1);
                 auto b = make_bitset<X>(N); b.set(j); assert(b.count() == 1);
@@ -112,9 +112,9 @@ template<class X, auto N = limit_v<X, L3>>
 auto all_singleton_set_triples(auto fun)
 {
         for (auto [ i, j, k ] : std::views::cartesian_product(
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N)
+                std::views::iota(std::size_t(0), N),
+                std::views::iota(std::size_t(0), N),
+                std::views::iota(std::size_t(0), N)
         )) {
                 auto a = make_bitset<X>(N); a.set(i); assert(a.count() == 1);
                 auto b = make_bitset<X>(N); b.set(j); assert(b.count() == 1);
@@ -129,12 +129,12 @@ template<class X, auto N = limit_v<X, L4>>
 auto all_doubleton_set_pairs(auto fun)
 {
         for (auto [ j, n ] : std::views::cartesian_product(
-                std::views::iota(1uz, std::ranges::max(N, 1uz)),
-                std::views::iota(1uz, std::ranges::max(N, 1uz))
+                std::views::iota(std::size_t(1), std::ranges::max(N, std::size_t(1))),
+                std::views::iota(std::size_t(1), std::ranges::max(N, std::size_t(1)))
         )) {
                 for (auto [ i, m ] : std::views::cartesian_product(
-                        std::views::iota(0uz, j),
-                        std::views::iota(0uz, n)
+                        std::views::iota(std::size_t(0), j),
+                        std::views::iota(std::size_t(0), n)
                 )) {
                         auto a = make_bitset<X>(N); a.set(i); a.set(j); assert(a.count() == 2);
                         auto b = make_bitset<X>(N); b.set(m); b.set(n); assert(b.count() == 2);

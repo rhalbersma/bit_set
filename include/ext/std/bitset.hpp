@@ -148,7 +148,7 @@ private:
         [[nodiscard]] constexpr value_type find_prev(value_type n) const noexcept
         {
                 assert(m_ptr->any());
-                return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
+                return *std::ranges::find_if(std::views::iota(std::size_t(0), n) | std::views::reverse, [&](auto i) {
                         return (*m_ptr)[i];
                 });
         }
@@ -253,7 +253,7 @@ template<std::size_t N>
         } else if constexpr (requires { c._Find_first(); }) {
                 return c._Find_first();
         } else {
-                return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
+                return *std::ranges::find_if(std::views::iota(std::size_t(0), N), [&](auto i) {
                         return c[i];
                 });
         }
