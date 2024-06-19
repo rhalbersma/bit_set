@@ -420,12 +420,12 @@ auto b = a
 This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) compilers:
 
 | Platform | Compiler   | Versions     | Build |
-| :------- | :-------   | -------:     | :---- |
-| Linux    | GCC        | 14, 15-trunk | CI currently being ported to GitHub Actions |
-| Linux    | Clang      | 18, 19-trunk | CI currently being ported to GitHub Actions |
-| Windows  | Visual C++ | 17.10        | CI currently being ported to GitHub Actions |
+| :------- | :-------   | :-------     | :---- |
+| Linux    | GCC        | $\geq$ 14    | CI currently being ported to GitHub Actions |
+| Linux    | Clang      | $\geq$ 18    | CI currently being ported to GitHub Actions |
+| Windows  | Visual C++ | $\geq$ 17.10 | CI currently being ported to GitHub Actions |
 
-Note that this library makes liberal use of C++23 features, such as the `fold_left`, `shift_left` and `shift_right` algorithms, the `pairwise_transform`, `zip` and `zip_transform` views, the `to` range conversion, the `uz` literal for `size_t` and explicit object parameters (deducing `this`). GCC 14 and 15-trunk, Clang 18 and 19-trunk (both only with the GCC 14 or higher standard library) and Visual C++ 17.10 and higher are supported at the moment. Also note that running the unit tests requires the presence of the [range-v3](https://github.com/ericniebler/range-v3) library (for the set algorithm views).
+Note that running the unit tests requires the presence of [range-v3](https://github.com/ericniebler/range-v3), [fmtlib](https://github.com/fmtlib/fmt) and [Google Benchmark](https://github.com/google/benchmark).
 
 ## License
 
