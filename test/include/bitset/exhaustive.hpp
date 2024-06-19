@@ -9,6 +9,7 @@
 #include <concepts.hpp>         // dynamic
 #include <algorithm>            // max
 #include <cassert>              // assert
+#include <cstddef>              // size_t
 #include <ranges>               // cartesian_product, iota
 
 #if defined(_MSC_VER)
@@ -21,11 +22,11 @@ namespace xstd {
 template<class X, auto Limit>
 inline constexpr auto limit_v = dynamic<X> ? Limit : X().size();
 
-inline constexpr auto L0 = 128uz;
-inline constexpr auto L1 =  64uz;
-inline constexpr auto L2 =  32uz;
-inline constexpr auto L3 =  16uz;
-inline constexpr auto L4 =   8uz;
+inline constexpr auto L0 = std::size_t(128);
+inline constexpr auto L1 = std::size_t( 64);
+inline constexpr auto L2 = std::size_t( 32);
+inline constexpr auto L3 = std::size_t( 16);
+inline constexpr auto L4 = std::size_t(  8);
 
 // NOTE: these tests are O(1)
 
