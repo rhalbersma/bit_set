@@ -291,7 +291,18 @@ struct mem_equal_to
                                 return self[i] == rhs[i];
                         })
                 );                                                              // [bitset.members]/45
+#if defined(_MSC_VER)               
+                BOOST_CHECK_EQUAL(
+                        self == rhs, 
+                        std::ranges::equal(
+                                std::ranges::begin(self), std::ranges::end(self), 
+                                std::ranges::begin(rhs),  std::ranges::end(rhs)
+                        )
+                );
+#else
+                // range version not working with Visual C++
                 BOOST_CHECK_EQUAL(self == rhs, std::ranges::equal(self, rhs));
+#endif
         }
 };
 
