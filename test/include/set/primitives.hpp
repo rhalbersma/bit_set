@@ -233,7 +233,7 @@ struct mem_const_iterator
                 BOOST_CHECK(a.crend()   == const_cast<X const&>(a).rend()  );   // [container.rev.reqmts]/14
         }
 
-        template<class X, std::input_iterator I = X::iterator>
+        template<std::input_iterator I>
         auto operator()(I i, I j) const noexcept
         {
                 if constexpr (std::random_access_iterator<I>) {                                 // [container.reqmts]/37
@@ -244,7 +244,7 @@ struct mem_const_iterator
 
 struct op_equal_to
 {
-        template<class X, std::integral Key = X::value_type>
+        template<class X, class Key = X::value_type>
         auto operator()(const X& a, const X& b) const noexcept
         {
                 static_assert(std::equality_comparable<Key>);                           // [container.reqmts]/39

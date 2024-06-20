@@ -72,7 +72,7 @@ struct set_symmetric_difference
 
 struct increment_modulo
 {
-        template<class X, std::integral Key = X::key_type>
+        template<class X, class Key = X::key_type>
         auto operator()(const X& a, std::size_t n) const
         {
                 if constexpr (requires { a << n; }) {
@@ -101,7 +101,7 @@ struct increment_modulo
 
 struct decrement_modulo
 {
-        template<class X, std::integral Key = X::key_type>
+        template<class X, class Key = X::key_type>
         auto operator()(const X& a, std::size_t n) const
         {
                 if constexpr (requires { a >> n; }) {
