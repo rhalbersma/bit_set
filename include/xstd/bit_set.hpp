@@ -34,10 +34,10 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
 class bit_set;
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bool operator== (const bit_set<Key, N, Block>& x, const bit_set<Key, N, Block>& y) noexcept;
+[[nodiscard]] constexpr bool operator== (bit_set<Key, N, Block> const& x, bit_set<Key, N, Block> const& y) noexcept;
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<=>(const bit_set<Key, N, Block>& x, const bit_set<Key, N, Block>& y) noexcept -> std::strong_ordering;
+[[nodiscard]] constexpr auto operator<=>(bit_set<Key, N, Block> const& x, bit_set<Key, N, Block> const& y) noexcept -> std::strong_ordering;
 
 [[nodiscard]] constexpr std::size_t aligned_size(std::size_t size, std::size_t alignment) noexcept
 {
@@ -81,41 +81,34 @@ public:
         // construct/copy/destroy
         [[nodiscard]] constexpr bit_set() noexcept = default;   // zero-initialization
 
-        template<std::input_iterator I>
-        [[nodiscard]] constexpr bit_set(I first, I last) noexcept
+        template<std::input_iterator I, std::sentinel_for<I> S>
+        [[nodiscard]] constexpr bit_set(I first, S last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
-                do_insert(first, last);
+                insert(first, last);
         }
 
         template<std::ranges::input_range R>
         [[nodiscard]] constexpr bit_set(std::from_range_t, R&& rg) noexcept
                 requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
         {
-                do_insert(std::ranges::begin(rg), std::ranges::end(rg));
+                insert(std::ranges::begin(rg), std::ranges::end(rg));
         }
-
-        [[nodiscard]] constexpr bit_set(const bit_set& x) noexcept = default;
-        [[nodiscard]] constexpr bit_set(bit_set&& x) noexcept = default;
 
         [[nodiscard]] constexpr bit_set(std::initializer_list<value_type> il) noexcept
         {
-                do_insert(il.begin(), il.end());
+                insert(il.begin(), il.end());
         }
-
-        constexpr ~bit_set() noexcept = default;
-        constexpr bit_set& operator=(const bit_set& x) noexcept = default;
-        constexpr bit_set& operator=(bit_set&& x) noexcept = default;
 
         constexpr bit_set& operator=(std::initializer_list<value_type> il) noexcept
         {
                 clear();
-                do_insert(il.begin(), il.end());
+                insert(il.begin(), il.end());
                 return *this;
         }
 
-        friend constexpr bool operator==  <>(const bit_set&, const bit_set&) noexcept;
-        friend constexpr auto operator<=> <>(const bit_set&, const bit_set&) noexcept -> std::strong_ordering;
+        friend constexpr bool operator==  <>(bit_set const&, bit_set const&) noexcept;
+        friend constexpr auto operator<=> <>(bit_set const&, bit_set const&) noexcept -> std::strong_ordering;
 
         // iterators
         [[nodiscard]] constexpr auto begin(this auto&& self) noexcept
@@ -248,7 +241,7 @@ public:
         constexpr void add(value_type x) noexcept
         {
                 auto&& [ block, mask ] = block_mask(x);
-                insert(block, mask);
+                bit_insert(block, mask);
         }
 
         constexpr std::pair<iterator, bool> insert(const value_type& x) noexcept
@@ -271,23 +264,25 @@ public:
                 return do_insert(position, std::move(x));
         }
 
-        template<std::input_iterator I>
-        constexpr void insert(I first, I last) noexcept
+        template<std::input_iterator I, std::sentinel_for<I> S>
+        constexpr void insert(I first, S last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
-                do_insert(first, last);
+                std::ranges::for_each(first, last, [this](auto x) {
+                        add(x);
+                });
         }
 
         template<std::ranges::input_range R>
         constexpr void insert_range(R&& rg) noexcept
                 requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
         {
-                do_insert(std::ranges::begin(rg), std::ranges::end(rg));
+                insert(std::ranges::begin(rg), std::ranges::end(rg));
         }
 
         constexpr void insert(std::initializer_list<value_type> ilist) noexcept
         {
-                do_insert(ilist.begin(), ilist.end());
+                insert(ilist.begin(), ilist.end());
         }
 
         constexpr void fill() noexcept
@@ -304,7 +299,7 @@ public:
         constexpr void pop(key_type x) noexcept
         {
                 auto&& [ block, mask ] = block_mask(x);
-                erase(block, mask);
+                bit_erase(block, mask);
         }
 
         constexpr iterator erase(const_iterator position) noexcept
@@ -317,14 +312,13 @@ public:
         constexpr size_type erase(const key_type& x) noexcept
         {
                 auto&& [ block, mask ] = block_mask(x);
-                auto const erased = contains(block, mask);
-                erase(block, mask);
+                auto const erased = bit_intersects(block, mask);
+                bit_erase(block, mask);
                 return erased;
         }
 
         constexpr iterator erase(const_iterator first, const_iterator last) noexcept
         {
-                assert(N > 0 || first == last);
                 std::ranges::for_each(first, last, [this](auto x) {
                         pop(x);
                 });
@@ -349,7 +343,7 @@ public:
         constexpr void complement(value_type x) noexcept
         {
                 auto&& [ block, mask ] = block_mask(x);
-                complement(block, mask);
+                bit_complement(block, mask);
         }
 
         constexpr void complement() noexcept
@@ -364,10 +358,10 @@ public:
                                 block = static_cast<block_type>(~block);
                         }
                 }
-                clear_unused_bits();
+                bit_erase_unused();
         }
 
-        constexpr bit_set& operator&=(const bit_set& other [[maybe_unused]]) noexcept
+        constexpr bit_set& operator&=(bit_set const& other [[maybe_unused]]) noexcept
         {
                 if constexpr (N > 0 && num_blocks == 1) {
                         this->m_bits[0] &= other.m_bits[0];
@@ -382,7 +376,7 @@ public:
                 return *this;
         }
 
-        constexpr bit_set& operator|=(const bit_set& other [[maybe_unused]]) noexcept
+        constexpr bit_set& operator|=(bit_set const& other [[maybe_unused]]) noexcept
         {
                 if constexpr (N > 0 && num_blocks == 1) {
                         this->m_bits[0] |= other.m_bits[0];
@@ -397,7 +391,7 @@ public:
                 return *this;
         }
 
-        constexpr bit_set& operator^=(const bit_set& other [[maybe_unused]]) noexcept
+        constexpr bit_set& operator^=(bit_set const& other [[maybe_unused]]) noexcept
         {
                 if constexpr (N > 0 && num_blocks == 1) {
                         this->m_bits[0] ^= other.m_bits[0];
@@ -412,7 +406,7 @@ public:
                 return *this;
         }
 
-        constexpr bit_set& operator-=(const bit_set& other [[maybe_unused]]) noexcept
+        constexpr bit_set& operator-=(bit_set const& other [[maybe_unused]]) noexcept
         {
                 if constexpr (N > 0 && num_blocks == 1) {
                         this->m_bits[0] &= static_cast<block_type>(~other.m_bits[0]);
@@ -460,7 +454,7 @@ public:
                                 zero
                         );
                 }
-                clear_unused_bits();
+                bit_erase_unused();
                 return *this;
         }
 
@@ -534,7 +528,7 @@ public:
         [[nodiscard]] constexpr bool contains(const key_type& x) const noexcept
         {
                 auto&& [ block, mask ] = block_mask(x);
-                return contains(block, mask);
+                return bit_intersects(block, mask);
         }
 
         [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept
@@ -567,21 +561,21 @@ public:
                 return { self.lower_bound(x), self.upper_bound(x) };
         }
 
-        [[nodiscard]] constexpr bool is_subset_of(const bit_set& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr bool is_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
         {
                 if constexpr (N == 0) {
                         return true;
                 } else if constexpr (num_blocks == 1) {
-                        return !(this->m_bits[0] & ~other.m_bits[0]);
+                        return bit_is_subset_of(this->m_bits[0], other.m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
-                        return !(
-                                (this->m_bits[0] & ~other.m_bits[0]) ||
-                                (this->m_bits[1] & ~other.m_bits[1])
-                        );
+                        return
+                                bit_is_subset_of(this->m_bits[0], other.m_bits[0]) && 
+                                bit_is_subset_of(this->m_bits[1], other.m_bits[1])
+                        ;
                 } else if constexpr (num_blocks >= 3) {
-                        return std::ranges::none_of(
+                        return std::ranges::all_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & ~rhs; },
+                                        [](auto lhs, auto rhs) { return bit_is_subset_of(lhs, rhs); },
                                         this->m_bits, other.m_bits
                                 ),
                                 std::identity()
@@ -589,34 +583,37 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr bool is_proper_subset_of(const bit_set& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr bool is_proper_subset_of(bit_set const& other [[maybe_unused]]) const noexcept
         {
                 if constexpr (N == 0) {
                         return false;
                 } else if constexpr (num_blocks == 1) {
-                        return !(
-                                (this->m_bits[0] & ~other.m_bits[0]) ||
-                                (this->m_bits[0] == other.m_bits[0])
-                        );
-                } else if constexpr (num_blocks == 2) {
-                        return !(
-                                (this->m_bits[0] & ~other.m_bits[0]) ||
-                                (this->m_bits[1] & ~other.m_bits[1]) ||
-                                (this->m_bits[0] == other.m_bits[0] && this->m_bits[1] == other.m_bits[1])
-                        );
+                        return this->is_subset_of(other) && *this != other;
+                } else if constexpr (num_blocks == 2) {                         
+                        if (!bit_is_subset_of(this->m_bits[0], other.m_bits[0])) {
+                                return false;
+                        }                                
+                        if (bit_not_equal_to(this->m_bits[0], other.m_bits[0])) {
+                                return bit_is_subset_of(this->m_bits[1], other.m_bits[1]);
+                        } else { 
+                                return
+                                        bit_is_subset_of(this->m_bits[1], other.m_bits[1]) &&
+                                        bit_not_equal_to(this->m_bits[1], other.m_bits[1])
+                                ;
+                        }                        
                 } else if constexpr (num_blocks >= 3) {
                         auto i = std::size_t(0);
                         for (/* init-statement before loop */; i < num_blocks; ++i) {
-                                if (this->m_bits[i] & ~other.m_bits[i]) {
+                                if (!bit_is_subset_of(this->m_bits[i], other.m_bits[i])) {
                                         return false;
                                 }
-                                if (this->m_bits[i] != other.m_bits[i]) {
+                                if (bit_not_equal_to(this->m_bits[i], other.m_bits[i])) {
                                         break;
                                 }
                         }
-                        return (i == num_blocks) ? false : std::ranges::none_of(
+                        return (i == num_blocks) ? false : std::ranges::all_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & ~rhs; },
+                                        [](auto lhs, auto rhs) { return bit_is_subset_of(lhs, rhs); },
                                         this->m_bits, other.m_bits
                                 ) | std::views::drop(i),
                                 std::identity()
@@ -624,21 +621,21 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr bool intersects(const bit_set& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr bool intersects(bit_set const& other [[maybe_unused]]) const noexcept
         {
                 if constexpr (N == 0) {
                         return false;
                 } else if constexpr (num_blocks == 1) {
-                        return this->m_bits[0] & other.m_bits[0];
+                        return bit_intersects(this->m_bits[0], other.m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
                         return
-                                (this->m_bits[0] & other.m_bits[0]) ||
-                                (this->m_bits[1] & other.m_bits[1])
+                                bit_intersects(this->m_bits[0], other.m_bits[0]) ||
+                                bit_intersects(this->m_bits[1], other.m_bits[1])
                         ;
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::any_of(
                                 std::views::zip_transform(
-                                        [](auto lhs, auto rhs) { return lhs & rhs; },
+                                        [](auto lhs, auto rhs) { return bit_intersects(lhs, rhs); },
                                         this->m_bits, other.m_bits
                                 ),
                                 std::identity()
@@ -647,14 +644,15 @@ public:
         }
 
 private:
-        static constexpr auto zero            = static_cast<block_type>( 0);
-        static constexpr auto ones            = static_cast<block_type>(-1);
-        static constexpr auto has_unused_bits = num_bits > N;
         static constexpr auto num_unused_bits = num_bits - N;
-        static constexpr auto used_bits       = static_cast<block_type>(ones << num_unused_bits);
+        static constexpr auto has_unused_bits = num_bits > N;
         static constexpr auto last_block      = num_blocks - 1;
         static constexpr auto last_bit        = num_bits - 1;
         static constexpr auto left_bit        = block_size - 1;
+        static constexpr auto zero            = static_cast<block_type>( 0);
+        static constexpr auto ones            = static_cast<block_type>(-1);
+        static constexpr auto used_bits       = static_cast<block_type>(ones << num_unused_bits);
+        static constexpr auto unused_bits     = static_cast<block_type>(~used_bits);
         static constexpr auto left_mask       = static_cast<block_type>(static_cast<block_type>(1) << left_bit);
 
         [[nodiscard]] static constexpr bool is_valid(size_type n) noexcept
@@ -700,34 +698,52 @@ private:
                 return self.block_mask(static_cast<size_type>(n));
         }
 
-        static constexpr void insert(block_type& block, block_type mask) noexcept
+        static constexpr void bit_insert(block_type& block, block_type mask) noexcept
         {
                 block |= mask;
-                assert(contains(block, mask));
+                assert(bit_intersects(block, mask));
         }
 
-        static constexpr void erase(block_type& block, block_type mask) noexcept
+        static constexpr void bit_erase(block_type& block, block_type mask) noexcept
         {
                 block &= static_cast<block_type>(~mask);
-                assert(!contains(block, mask));
+                assert(!bit_intersects(block, mask));
         }
 
-        static constexpr void complement(block_type& block, block_type mask) noexcept
+        constexpr void bit_erase_unused() noexcept
+        {
+                if constexpr (has_unused_bits) {
+                        m_bits[last_block] &= used_bits;
+                        assert(!bit_intersects(m_bits[last_block], unused_bits));
+                }
+        }
+
+        static constexpr void bit_complement(block_type& block, block_type mask) noexcept
         {
                 block ^= mask;
         }
 
-        [[nodiscard]] static constexpr bool contains(block_type block, block_type mask) noexcept
-        {
-                return block & mask;
+        [[nodiscard]] static constexpr bool bit_is_subset_of(block_type lhs, block_type rhs) noexcept
+        {                
+                return !(lhs & ~rhs);
+        }
+
+        [[nodiscard]] static constexpr bool bit_not_equal_to(block_type lhs, block_type rhs) noexcept
+        {                
+                return lhs != rhs;
+        }
+
+        [[nodiscard]] static constexpr bool bit_intersects(block_type lhs, block_type rhs) noexcept
+        {                
+                return lhs & rhs;
         }
 
         constexpr auto do_insert(value_type x) noexcept
                 -> std::pair<iterator, bool>
         {
                 auto&& [ block, mask ] = block_mask(x);
-                auto const inserted = !contains(block, mask);
-                insert(block, mask);
+                auto const inserted = !bit_intersects(block, mask);
+                bit_insert(block, mask);
                 return { { this, x }, inserted };
         }
 
@@ -736,23 +752,6 @@ private:
         {
                 add(x);
                 return { this, x };
-        }
-
-        template<std::input_iterator I, std::sentinel_for<I> S>
-        constexpr void do_insert(I first, S last) noexcept
-                requires std::constructible_from<value_type, decltype(*first)>
-        {
-                assert(N > 0 || first == last);
-                std::ranges::for_each(first, last, [this](auto x) {
-                        add(x);
-                });
-        }
-
-        constexpr void clear_unused_bits() noexcept
-        {
-                if constexpr (has_unused_bits) {
-                        m_bits[last_block] &= used_bits;
-                }
         }
 
         [[nodiscard]] constexpr size_type find_front() const noexcept
@@ -872,26 +871,26 @@ private:
                 using reference         = bit_set::reference;
 
         private:
-                using pimpl_type = const bit_set*;
-                using size_type = bit_set::size_type;
+                using pimpl_type = bit_set const*;
+                using index_type = bit_set::size_type;
                 pimpl_type m_ptr;
-                size_type m_val;
+                index_type m_idx;
 
         public:
                 [[nodiscard]] constexpr proxy_const_iterator() noexcept = default;
 
-                [[nodiscard]] constexpr proxy_const_iterator(pimpl_type ptr, size_type val) noexcept
+                [[nodiscard]] constexpr proxy_const_iterator(pimpl_type ptr, index_type idx) noexcept
                 :
                         m_ptr(ptr),
-                        m_val(val)
+                        m_idx(idx)
                 {
                         assert(is_valid());
                 }
 
                 [[nodiscard]] constexpr proxy_const_iterator(pimpl_type ptr, value_type val) noexcept
-                        requires (!std::same_as<value_type, size_type>)
+                        requires (!std::same_as<value_type, index_type>)
                 :
-                        proxy_const_iterator(ptr, static_cast<size_type>(val))
+                        proxy_const_iterator(ptr, static_cast<index_type>(val))
                 {}
 
                 [[nodiscard]] friend constexpr bool operator==(proxy_const_iterator lhs [[maybe_unused]], proxy_const_iterator rhs [[maybe_unused]]) noexcept
@@ -900,7 +899,7 @@ private:
                         if constexpr (N == 0) {
                                 return true;
                         } else {
-                                return lhs.m_val == rhs.m_val;
+                                return lhs.m_idx == rhs.m_idx;
                         }
                 }
 
@@ -908,13 +907,13 @@ private:
                         -> proxy_const_reference
                 {
                         assert(is_dereferenceable());
-                        return { *m_ptr, m_val };
+                        return { *m_ptr, m_idx };
                 }
 
                 constexpr proxy_const_iterator& operator++() noexcept
                 {
                         assert(is_incrementable());
-                        m_val = m_ptr->find_next(m_val + 1);
+                        m_idx = m_ptr->find_next(m_idx + 1);
                         assert(is_decrementable());
                         return *this;
                 }
@@ -927,7 +926,7 @@ private:
                 constexpr proxy_const_iterator& operator--() noexcept
                 {
                         assert(is_decrementable());
-                        m_val = m_ptr->find_prev(m_val - 1);
+                        m_idx = m_ptr->find_prev(m_idx - 1);
                         assert(is_incrementable());
                         return *this;
                 }
@@ -940,7 +939,7 @@ private:
         private:
                 [[nodiscard]] constexpr bool is_valid() const noexcept
                 {
-                        return m_ptr != nullptr && m_val <= N;
+                        return m_ptr != nullptr && m_idx <= N;
                 }
 
                 [[nodiscard]] static constexpr bool is_comparable(iterator lhs, iterator rhs) noexcept
@@ -950,63 +949,60 @@ private:
 
                 [[nodiscard]] constexpr bool is_dereferenceable() const noexcept
                 {
-                        return m_ptr != nullptr && bit_set::is_valid(m_val);
+                        return m_ptr != nullptr && bit_set::is_valid(m_idx);
                 }
 
                 [[nodiscard]] constexpr bool is_incrementable() const noexcept
                 {
-                        return m_ptr != nullptr && bit_set::is_valid(m_val);
+                        return m_ptr != nullptr && bit_set::is_valid(m_idx);
                 }
 
                 [[nodiscard]] constexpr bool is_decrementable() const noexcept
                 {
-                        return m_ptr != nullptr && bit_set::is_valid(m_val - 1);
+                        return m_ptr != nullptr && bit_set::is_valid(m_idx - 1);
                 }
         };
 
         class proxy_const_reference
         {
-                using rimpl_type = const bit_set&;
-                using  size_type = bit_set::size_type;
+                using rimpl_type = bit_set const&;
+                using index_type = bit_set::size_type;
                 using value_type = bit_set::value_type;
                 rimpl_type m_ref;
-                const size_type m_val;
+                index_type m_idx;
 
         public:
-                [[nodiscard]] constexpr proxy_const_reference() noexcept = delete;
-
-                [[nodiscard]] constexpr proxy_const_reference(rimpl_type ref, size_type val) noexcept
+                 [[nodiscard]] constexpr proxy_const_reference(rimpl_type ref, index_type idx) noexcept
                 :
                         m_ref(ref),
-                        m_val(val)
+                        m_idx(idx)
                 {
                         assert(is_valid());
                 }
 
-                [[nodiscard]] constexpr proxy_const_reference(const proxy_const_reference&) noexcept = default;
-                [[nodiscard]] constexpr proxy_const_reference(proxy_const_reference&&) noexcept = default;
+                [[nodiscard]] constexpr proxy_const_reference(proxy_const_reference const&) noexcept = default;
+                [[nodiscard]] constexpr proxy_const_reference(proxy_const_reference &&    ) noexcept = default;
 
-                constexpr ~proxy_const_reference() noexcept = default;
-                constexpr proxy_const_reference& operator=(const proxy_const_reference&) noexcept = delete;
-                constexpr proxy_const_reference& operator=(proxy_const_reference&&) noexcept = delete;
+                constexpr proxy_const_reference& operator=(proxy_const_reference const&) noexcept = delete;
+                constexpr proxy_const_reference& operator=(proxy_const_reference &&    ) noexcept = delete;
 
                 [[nodiscard]] friend constexpr bool operator==(proxy_const_reference lhs, proxy_const_reference rhs) noexcept
                 {
-                        return lhs.m_val == rhs.m_val;
+                        return lhs.m_idx == rhs.m_idx;
                 }
 
                 [[nodiscard]] constexpr auto operator&() const noexcept
                         -> proxy_const_iterator
                 {
-                        return { &m_ref, m_val };
+                        return { &m_ref, m_idx };
                 }
 
                 [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
                 {
-                        if constexpr (std::same_as<size_type, value_type>) {
-                                return m_val;
+                        if constexpr (std::same_as<index_type, value_type>) {
+                                return m_idx;
                         } else {
-                                return static_cast<value_type>(m_val);
+                                return static_cast<value_type>(m_idx);
                         }
                 }
 
@@ -1014,17 +1010,17 @@ private:
                 [[nodiscard]] constexpr explicit(false) operator T() const noexcept(noexcept(T(std::declval<value_type>())))
                         requires std::is_class_v<T> && std::constructible_from<T, value_type>
                 {
-                        if constexpr (std::same_as<size_type, value_type>) {
-                                return m_val;
+                        if constexpr (std::same_as<index_type, value_type>) {
+                                return m_idx;
                         } else {
-                                return static_cast<value_type>(m_val);
+                                return static_cast<value_type>(m_idx);
                         }
                 }
 
         private:
                 [[nodiscard]] constexpr bool is_valid() const noexcept
                 {
-                        return bit_set::is_valid(m_val);
+                        return bit_set::is_valid(m_idx);
                 }
         };
 
@@ -1036,7 +1032,7 @@ private:
 };
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bool operator==(const bit_set<Key, N, Block>& x [[maybe_unused]], const bit_set<Key, N, Block>& y [[maybe_unused]]) noexcept
+[[nodiscard]] constexpr bool operator==(bit_set<Key, N, Block> const& x [[maybe_unused]], bit_set<Key, N, Block> const& y [[maybe_unused]]) noexcept
 {
         if constexpr (N == 0) {
                 return true;
@@ -1046,7 +1042,7 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<=>(const bit_set<Key, N, Block>& x [[maybe_unused]], const bit_set<Key, N, Block>& y [[maybe_unused]]) noexcept
+[[nodiscard]] constexpr auto operator<=>(bit_set<Key, N, Block> const& x [[maybe_unused]], bit_set<Key, N, Block> const& y [[maybe_unused]]) noexcept
         -> std::strong_ordering
 {
         if constexpr (N == 0) {
@@ -1086,7 +1082,7 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto begin(const bit_set<Key, N, Block>& c) noexcept
+[[nodiscard]] constexpr auto begin(bit_set<Key, N, Block> const& c) noexcept
 {
         return c.begin();
 }
@@ -1098,19 +1094,19 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto end(const bit_set<Key, N, Block>& c) noexcept
+[[nodiscard]] constexpr auto end(bit_set<Key, N, Block> const& c) noexcept
 {
         return c.end();
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto cbegin(const bit_set<Key, N, Block>& c) noexcept
+[[nodiscard]] constexpr auto cbegin(bit_set<Key, N, Block> const& c) noexcept
 {
         return xstd::begin(c);
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto cend(const bit_set<Key, N, Block>& c) noexcept
+[[nodiscard]] constexpr auto cend(bit_set<Key, N, Block> const& c) noexcept
 {
         return xstd::end(c);
 }
@@ -1122,7 +1118,7 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rbegin(const bit_set<Key, N, Block>& c) noexcept
+[[nodiscard]] constexpr auto rbegin(bit_set<Key, N, Block> const& c) noexcept
 {
         return c.rbegin();
 }
@@ -1134,61 +1130,61 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rend(const bit_set<Key, N, Block>& c) noexcept
+[[nodiscard]] constexpr auto rend(bit_set<Key, N, Block> const& c) noexcept
 {
         return c.rend();
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto crbegin(const bit_set<Key, N, Block>& c) noexcept
+[[nodiscard]] constexpr auto crbegin(bit_set<Key, N, Block> const& c) noexcept
 {
         return xstd::rbegin(c);
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto crend(const bit_set<Key, N, Block>& c) noexcept
+[[nodiscard]] constexpr auto crend(bit_set<Key, N, Block> const& c) noexcept
 {
         return xstd::rend(c);
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator~(const bit_set<Key, N, Block>& lhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator~(bit_set<Key, N, Block> const& lhs) noexcept
 {
         auto nrv = lhs; nrv.complement(); return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator&(const bit_set<Key, N, Block>& lhs, const bit_set<Key, N, Block>& rhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator&(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv &= rhs; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator|(const bit_set<Key, N, Block>& lhs, const bit_set<Key, N, Block>& rhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator|(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv |= rhs; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator^(const bit_set<Key, N, Block>& lhs, const bit_set<Key, N, Block>& rhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator^(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv ^= rhs; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator-(const bit_set<Key, N, Block>& lhs, const bit_set<Key, N, Block>& rhs) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator-(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator<<(const bit_set<Key, N, Block>& lhs, std::size_t n) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator<<(bit_set<Key, N, Block> const& lhs, std::size_t n) noexcept
 {
         auto nrv = lhs; nrv <<= n; return nrv;
 }
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator>>(const bit_set<Key, N, Block>& lhs, std::size_t n) noexcept
+[[nodiscard]] constexpr bit_set<Key, N, Block> operator>>(bit_set<Key, N, Block> const& lhs, std::size_t n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
 }
