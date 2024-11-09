@@ -50,6 +50,7 @@ template<std::integral Key>
 class Implicit
 {
         Key m_key;
+
 public:
         [[nodiscard]] constexpr explicit(false) Implicit(Key k)      noexcept : m_key(k) {}
         [[nodiscard]] constexpr explicit(false) operator Key() const noexcept { return m_key; }
