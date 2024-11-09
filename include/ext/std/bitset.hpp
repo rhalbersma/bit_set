@@ -6,7 +6,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/proxy.hpp>       // bidirectional_proxy_iterator, bidirectional_proxy_reference
+#include <xstd/proxy.hpp>       // bidirectional_proxy_iterator
 #include <algorithm>            // lexicographical_compare_three_way
 #include <bitset>               // bitset
 #include <cassert>              // assert
@@ -95,34 +95,31 @@ template<std::size_t N>
         });
 }
 
-template<std::size_t N> using bitset_reference = xstd::bidirectional_proxy_reference<bitset<N>>;
-template<std::size_t N> using bitset_iterator  = xstd::bidirectional_proxy_iterator <bitset<N>>;
-
 // range access
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(bitset<N>& c) noexcept
-        -> bitset_iterator<N>
+        -> xstd::bidirectional_proxy_iterator<bitset<N>>
 {
         return { &c, find_first(c) };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(bitset<N> const& c) noexcept
-        -> bitset_iterator<N>
+        -> xstd::bidirectional_proxy_iterator<bitset<N>>
 {
         return { &c, find_first(c) };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto end(bitset<N>& c) noexcept
-        -> bitset_iterator<N>
+        -> xstd::bidirectional_proxy_iterator<bitset<N>>
 {
         return { &c, N };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto end(bitset<N> const& c) noexcept
-        -> bitset_iterator<N>
+        -> xstd::bidirectional_proxy_iterator<bitset<N>>
 {
         return { &c, N };
 }

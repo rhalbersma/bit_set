@@ -5,7 +5,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/proxy.hpp>               // bidirectional_proxy_iterator, bidirectional_proxy_reference
+#include <xstd/proxy.hpp>               // bidirectional_proxy_iterator
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <cassert>                      // assert
@@ -33,33 +33,30 @@ template<std::unsigned_integral Block, class Allocator>
         });
 }
 
-template<std::unsigned_integral Block, class Allocator> using dynamic_bitset_reference = xstd::bidirectional_proxy_reference<dynamic_bitset<Block, Allocator>>;
-template<std::unsigned_integral Block, class Allocator> using dynamic_bitset_iterator  = xstd::bidirectional_proxy_iterator <dynamic_bitset<Block, Allocator>>;
-
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& c) noexcept
-        -> dynamic_bitset_iterator<Block, Allocator>
+        -> xstd::bidirectional_proxy_iterator<dynamic_bitset<Block, Allocator>>
 {
         return { &c, c.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto begin(dynamic_bitset<Block, Allocator> const& c) noexcept
-        -> dynamic_bitset_iterator<Block, Allocator>
+        -> xstd::bidirectional_proxy_iterator<dynamic_bitset<Block, Allocator>>
 {
         return { &c, c.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto end(dynamic_bitset<Block, Allocator>& c) noexcept
-        -> dynamic_bitset_iterator<Block, Allocator>
+        -> xstd::bidirectional_proxy_iterator<dynamic_bitset<Block, Allocator>>
 {
         return { &c, c.npos };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto end(dynamic_bitset<Block, Allocator> const& c) noexcept
-        -> dynamic_bitset_iterator<Block, Allocator>
+        -> xstd::bidirectional_proxy_iterator<dynamic_bitset<Block, Allocator>>
 {
         return { &c, c.npos };
 }
