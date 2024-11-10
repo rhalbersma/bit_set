@@ -826,8 +826,8 @@ private:
                 }
         }
 
-        friend constexpr size_type find_next(bit_set const& c, size_type n) noexcept { return c.find_next(n); }
-        friend constexpr size_type find_prev(bit_set const& c, size_type n) noexcept { return c.find_prev(n); }
+        [[nodiscard]] friend constexpr size_type find_next(bit_set const& c, size_type n) noexcept { return c.find_next(n); }
+        [[nodiscard]] friend constexpr size_type find_prev(bit_set const& c, size_type n) noexcept { return c.find_prev(n); }
 };
 
 template<std::integral Key, std::size_t N, std::unsigned_integral Block>

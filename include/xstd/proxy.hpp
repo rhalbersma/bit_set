@@ -21,13 +21,10 @@ concept has_value_type = requires
 };
 
 template<class T> 
-struct container_of
+struct with_value_type
 {
         using value_type = T;
 };
-
-template<class Container>
-using value_t = typename Container::value_type; 
 
 template<class Container>
 class bidirectional_proxy_reference;
@@ -42,7 +39,7 @@ class bidirectional_proxy_iterator
 
 public:
         using iterator_category = std::bidirectional_iterator_tag;
-        using value_type        = value_t<std::conditional_t<has_value_type<Container>, Container, container_of<std::size_t>>>;
+        using value_type        = std::conditional_t<has_value_type<Container>, Container, with_value_type<std::size_t>>::value_type;
         using difference_type   = std::ptrdiff_t;
         using pointer           = void;
         using reference         = bidirectional_proxy_reference<Container>;
@@ -104,8 +101,8 @@ class bidirectional_proxy_reference
         index_type m_idx;
 
 public:
+        using value_type = std::conditional_t<has_value_type<Container>, Container, with_value_type<std::size_t>>::value_type;
         using iterator   = bidirectional_proxy_iterator<Container>;
-        using value_type = value_t<std::conditional_t<has_value_type<Container>, Container, container_of<std::size_t>>>;
 
         [[nodiscard]] constexpr bidirectional_proxy_reference() noexcept = delete;
 
@@ -154,7 +151,7 @@ public:
 
 template<class Container>
 [[nodiscard]] constexpr auto format_as(bidirectional_proxy_reference<Container> ref) noexcept
-        -> value_t<bidirectional_proxy_reference<Container>>
+        -> bidirectional_proxy_reference<Container>::value_type
 {
         return ref;
 }
