@@ -11,13 +11,14 @@
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag
 #include <type_traits>  // conditional_t, is_class_v
+#include <utility>      // declval
 
 namespace xstd {
 
-template<class Container>
+template<class Bits>
 concept has_value_type = requires 
 { 
-        typename Container::value_type; 
+        typename Bits::value_type; 
 };
 
 template<class T> 
@@ -26,36 +27,34 @@ struct with_value_type
         using value_type = T;
 };
 
-template<class Container>
+template<class Bits>
 class bidirectional_proxy_reference;
 
-template<class Container>
+template<class Bits>
 class bidirectional_proxy_iterator
 {
-        using pimpl_type = Container const*;
-        using index_type = std::size_t;
-        pimpl_type m_ptr;
-        index_type m_idx;
+        Bits const* m_ptr;
+        std::size_t m_idx;
 
 public:
         using iterator_category = std::bidirectional_iterator_tag;
-        using value_type        = std::conditional_t<has_value_type<Container>, Container, with_value_type<std::size_t>>::value_type;
+        using value_type        = std::conditional_t<has_value_type<Bits>, Bits, with_value_type<std::size_t>>::value_type;
         using difference_type   = std::ptrdiff_t;
         using pointer           = void;
-        using reference         = bidirectional_proxy_reference<Container>;
+        using reference         = bidirectional_proxy_reference<Bits>;
 
         [[nodiscard]] constexpr bidirectional_proxy_iterator() noexcept = default;
 
-        [[nodiscard]] constexpr bidirectional_proxy_iterator(pimpl_type ptr, index_type idx) noexcept
+        [[nodiscard]] constexpr bidirectional_proxy_iterator(Bits const* ptr, std::size_t idx) noexcept
         :
                 m_ptr(ptr),
                 m_idx(idx)
         {}
 
-        [[nodiscard]] constexpr bidirectional_proxy_iterator(pimpl_type ptr, value_type val) noexcept
-                requires (!std::same_as<value_type, index_type>)
+        [[nodiscard]] constexpr bidirectional_proxy_iterator(Bits const* ptr, value_type val) noexcept
+                requires (!std::same_as<value_type, std::size_t>)
         :
-                bidirectional_proxy_iterator(ptr, static_cast<index_type>(val))
+                bidirectional_proxy_iterator(ptr, static_cast<std::size_t>(val))
         {}
 
         [[nodiscard]] friend constexpr bool operator==(bidirectional_proxy_iterator lhs, bidirectional_proxy_iterator rhs) noexcept
@@ -92,21 +91,19 @@ public:
         }
 };
 
-template<class Container>
+template<class Bits>
 class bidirectional_proxy_reference
 {
-        using rimpl_type = Container const&;
-        using index_type = std::size_t;
-        rimpl_type m_ref;
-        index_type m_idx;
+        Bits const& m_ref;
+        std::size_t m_idx;
 
 public:
-        using value_type = std::conditional_t<has_value_type<Container>, Container, with_value_type<std::size_t>>::value_type;
-        using iterator   = bidirectional_proxy_iterator<Container>;
+        using value_type = std::conditional_t<has_value_type<Bits>, Bits, with_value_type<std::size_t>>::value_type;
+        using iterator   = bidirectional_proxy_iterator<Bits>;
 
         [[nodiscard]] constexpr bidirectional_proxy_reference() noexcept = delete;
 
-        [[nodiscard]] constexpr bidirectional_proxy_reference(rimpl_type ref, index_type idx) noexcept
+        [[nodiscard]] constexpr bidirectional_proxy_reference(Bits const& ref, std::size_t idx) noexcept
         :
                 m_ref(ref),
                 m_idx(idx)
@@ -130,7 +127,7 @@ public:
 
         [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
         {
-                if constexpr (std::same_as<index_type, value_type>) {
+                if constexpr (std::same_as<value_type, std::size_t>) {
                         return m_idx;
                 } else {
                         return static_cast<value_type>(m_idx);
@@ -141,7 +138,7 @@ public:
         [[nodiscard]] constexpr explicit(false) operator T() const noexcept(noexcept(T(std::declval<value_type>())))
                 requires std::is_class_v<T> && std::constructible_from<T, value_type>
         {
-                if constexpr (std::same_as<index_type, value_type>) {
+                if constexpr (std::same_as<value_type, std::size_t>) {
                         return m_idx;
                 } else {
                         return static_cast<value_type>(m_idx);
@@ -149,9 +146,9 @@ public:
         }
 };
 
-template<class Container>
-[[nodiscard]] constexpr auto format_as(bidirectional_proxy_reference<Container> ref) noexcept
-        -> bidirectional_proxy_reference<Container>::value_type
+template<class Bits>
+[[nodiscard]] constexpr auto format_as(bidirectional_proxy_reference<Bits> ref) noexcept
+        -> bidirectional_proxy_reference<Bits>::value_type
 {
         return ref;
 }

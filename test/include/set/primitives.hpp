@@ -19,7 +19,7 @@
 #include <memory>                                       // addressof
 #include <ranges>                                       // count, equal, find, lexicographical_compare, lower_bound, , subrange, upper_bound
 #include <type_traits>                                  // add_const_t, common_type, make_signed_t, remove_reference_t
-#include <utility>                                      // pair
+#include <utility>                                      // declval, pair
 
 namespace xstd {
 
