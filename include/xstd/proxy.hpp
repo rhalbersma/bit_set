@@ -110,10 +110,10 @@ public:
         {}
 
         [[nodiscard]] constexpr bidirectional_proxy_reference(bidirectional_proxy_reference const&) noexcept = default;
-        [[nodiscard]] constexpr bidirectional_proxy_reference(bidirectional_proxy_reference&&) noexcept = default;
+        [[nodiscard]] constexpr bidirectional_proxy_reference(bidirectional_proxy_reference &&    ) noexcept = default;
 
         constexpr bidirectional_proxy_reference& operator=(bidirectional_proxy_reference const&) = delete;
-        constexpr bidirectional_proxy_reference& operator=(bidirectional_proxy_reference&&) = delete;
+        constexpr bidirectional_proxy_reference& operator=(bidirectional_proxy_reference &&    ) = delete;
 
         [[nodiscard]] friend constexpr bool operator==(bidirectional_proxy_reference lhs, bidirectional_proxy_reference rhs) noexcept
         {
