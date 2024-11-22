@@ -862,7 +862,7 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block, class P
 constexpr auto erase_if(bit_set<Key, N, Block>& c, Predicate pred)
         -> typename bit_set<Key, N, Block>::size_type
 {
-        auto original_size = c.size();
+        auto const original_size = c.size();
         for (auto i = c.begin(), last = c.end(); i != last;) {
                 if (pred(*i)) {
                         i = c.erase(i);
