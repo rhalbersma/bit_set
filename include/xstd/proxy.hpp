@@ -7,7 +7,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <cassert>      // assert
-#include <concepts>     // constructible_from, integral, same_as
+#include <concepts>     // constructible_from, same_as
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag
 #include <type_traits>  // conditional_t, is_class_v
