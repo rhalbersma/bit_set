@@ -15,10 +15,10 @@
 
 namespace xstd {
 
-template<class Bits>
+template<class T>
 concept has_value_type = requires 
 { 
-        typename Bits::value_type; 
+        typename T::value_type; 
 };
 
 template<class T> 
