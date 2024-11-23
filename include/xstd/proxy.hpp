@@ -101,19 +101,11 @@ public:
         using value_type = std::conditional_t<has_value_type<Bits>, Bits, with_value_type<std::size_t>>::value_type;
         using iterator   = bidirectional_bit_iterator<Bits>;
 
-        [[nodiscard]] constexpr bidirectional_bit_reference() noexcept = delete;
-
         [[nodiscard]] constexpr bidirectional_bit_reference(Bits const& ref, std::size_t idx) noexcept
         :
                 m_ref(ref),
                 m_idx(idx)
         {}
-
-        [[nodiscard]] constexpr bidirectional_bit_reference(bidirectional_bit_reference const&) noexcept = default;
-        [[nodiscard]] constexpr bidirectional_bit_reference(bidirectional_bit_reference &&    ) noexcept = default;
-
-        constexpr bidirectional_bit_reference& operator=(bidirectional_bit_reference const&) noexcept = delete;
-        constexpr bidirectional_bit_reference& operator=(bidirectional_bit_reference &&    ) noexcept = delete;
 
         [[nodiscard]] friend constexpr bool operator==(bidirectional_bit_reference lhs, bidirectional_bit_reference rhs) noexcept
         {
