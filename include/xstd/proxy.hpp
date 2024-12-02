@@ -7,6 +7,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <cassert>      // assert
+#include <compare>      // strong_ordering
 #include <concepts>     // constructible_from, same_as
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag
@@ -112,6 +113,12 @@ public:
                 return lhs.m_idx == rhs.m_idx;
         }
 
+        [[nodiscard]] friend constexpr auto operator<=>(bidirectional_bit_reference lhs, bidirectional_bit_reference rhs) noexcept
+                -> std::strong_ordering
+        {
+                return lhs.m_idx <=> rhs.m_idx;
+        }
+
         [[nodiscard]] constexpr iterator operator&() const noexcept
         {
                 return { &m_ref, m_idx };
@@ -126,15 +133,11 @@ public:
                 }
         }
 
-        template<class T>
+        template<std::constructible_from<value_type> T>
         [[nodiscard]] constexpr explicit(false) operator T() const noexcept(noexcept(T(std::declval<value_type>())))
-                requires std::is_class_v<T> && std::constructible_from<T, value_type>
+                requires std::is_class_v<T>
         {
-                if constexpr (std::same_as<value_type, std::size_t>) {
-                        return m_idx;
-                } else {
-                        return static_cast<value_type>(m_idx);
-                }
+                return operator value_type();
         }
 };
 
