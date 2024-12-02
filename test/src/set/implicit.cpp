@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ImplicitConstructible, T, Types)
         auto src = T({ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 });
         std::set<Implicit<Key>> dst;
         std::ranges::copy(src, std::inserter(dst, dst.end()));
-        //BOOST_CHECK_EQUAL_COLLECTIONS(src.begin(), src.end(), dst.begin(), dst.end());
+        BOOST_CHECK_EQUAL_COLLECTIONS(src.begin(), src.end(), dst.begin(), dst.end());
 }
 
 BOOST_AUTO_TEST_SUITE_END()
