@@ -49,13 +49,11 @@ using Types = boost::mp11::mp_list
 ,       bit_set<Key,  63, uint32_t>
 ,       bit_set<Key,  64, uint32_t>
 ,       bit_set<Key,  65, uint32_t>
-#if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
 ,       bit_set<Key,   0, uint64_t>
 ,       bit_set<Key,   1, uint64_t>
 ,       bit_set<Key,  63, uint64_t>
 ,       bit_set<Key,  64, uint64_t>
 ,       bit_set<Key,  65, uint64_t>
-#endif
 #if defined(__GNUG__)
 ,       bit_set<Key,   0, __uint128_t>
 ,       bit_set<Key,   1, __uint128_t>

@@ -35,12 +35,10 @@ using Types = boost::mp11::mp_list
 ,       xstd::bitset< 32, uint32_t>
 ,       xstd::bitset< 64, uint32_t>
 ,       xstd::bitset< 96, uint32_t>
-#if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
 ,       xstd::bitset<  0, uint64_t>
 ,       xstd::bitset< 64, uint64_t>
 ,       xstd::bitset<128, uint64_t>
 ,       xstd::bitset<192, uint64_t>
-#endif
 #if defined(__GNUG__)
 ,       xstd::bitset<  0, __uint128_t>
 ,       xstd::bitset<128, __uint128_t>

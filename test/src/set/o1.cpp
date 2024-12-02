@@ -33,9 +33,7 @@ using Types = boost::mp11::mp_list
 ,       bit_set<Key, 24, uint8_t>
 ,       bit_set<Key, 24, uint16_t>
 ,       bit_set<Key, 24, uint32_t>
-#if defined(__GNUG__) || defined(_MSC_VER) && defined(WIN64)
 ,       bit_set<Key, 24, uint64_t>
-#endif
 #if defined(__GNUG__)
 ,       bit_set<Key, 24, __uint128_t>
 #endif
