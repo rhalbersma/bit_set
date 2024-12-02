@@ -8,7 +8,7 @@
 
 #include <cassert>      // assert
 #include <compare>      // strong_ordering
-#include <concepts>     // constructible_from, same_as
+#include <concepts>     // constructible_from, integral, same_as
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag
 #include <type_traits>  // conditional_t, is_class_v
@@ -16,17 +16,17 @@
 
 namespace xstd {
 
-template<class T>
-concept has_value_type = requires 
-{ 
-        typename T::value_type; 
-};
+template<class Bits>
+concept integral_value_type = std::integral<typename Bits::value_type>;
 
 template<class T> 
-struct with_value_type
+struct value_type_identity
 {
         using value_type = T;
 };
+
+template<class Bits, class T>
+using integral_value_t_or = std::conditional_t<integral_value_type<Bits>, Bits, value_type_identity<T>>::value_type;
 
 template<class Bits>
 class bidirectional_bit_reference;
@@ -39,7 +39,7 @@ class bidirectional_bit_iterator
 
 public:
         using iterator_category = std::bidirectional_iterator_tag;
-        using value_type        = std::conditional_t<has_value_type<Bits>, Bits, with_value_type<std::size_t>>::value_type;
+        using value_type        = integral_value_t_or<Bits, std::size_t>;
         using difference_type   = std::ptrdiff_t;
         using pointer           = void;
         using reference         = bidirectional_bit_reference<Bits>;
@@ -99,7 +99,7 @@ class bidirectional_bit_reference
         std::size_t m_idx;
 
 public:
-        using value_type = std::conditional_t<has_value_type<Bits>, Bits, with_value_type<std::size_t>>::value_type;
+        using value_type = integral_value_t_or<Bits, std::size_t>;
         using iterator   = bidirectional_bit_iterator<Bits>;
 
         [[nodiscard]] constexpr bidirectional_bit_reference(Bits const& ref, std::size_t idx) noexcept
@@ -107,17 +107,6 @@ public:
                 m_ref(ref),
                 m_idx(idx)
         {}
-
-        [[nodiscard]] friend constexpr bool operator==(bidirectional_bit_reference lhs, bidirectional_bit_reference rhs) noexcept
-        {
-                return lhs.m_idx == rhs.m_idx;
-        }
-
-        [[nodiscard]] friend constexpr auto operator<=>(bidirectional_bit_reference lhs, bidirectional_bit_reference rhs) noexcept
-                -> std::strong_ordering
-        {
-                return lhs.m_idx <=> rhs.m_idx;
-        }
 
         [[nodiscard]] constexpr iterator operator&() const noexcept
         {
