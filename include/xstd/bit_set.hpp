@@ -64,7 +64,7 @@ namespace bit {
 template<std::unsigned_integral Block>
 [[nodiscard]] constexpr bool is_subset_of(Block lhs, Block rhs) noexcept
 {
-        return !(lhs & ~rhs);
+        return not (lhs & ~rhs);
 }  
 
 template<std::unsigned_integral Block>
@@ -172,9 +172,9 @@ public:
                 if constexpr (N == 0) {
                         return true;
                 } else if constexpr (num_blocks == 1) {
-                        return !m_bits[0];
+                        return not m_bits[0];
                 } else if constexpr (num_blocks == 2) {
-                        return !(m_bits[0] || m_bits[1]);
+                        return not (m_bits[0] or m_bits[1]);
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::none_of(m_bits, std::identity());
                 }
@@ -186,11 +186,11 @@ public:
                         if constexpr (num_blocks == 1) {
                                 return m_bits[0] == used_bits;
                         } else if (num_blocks == 2) {
-                                return m_bits[0] == ones && m_bits[1] == used_bits;
+                                return m_bits[0] == ones and m_bits[1] == used_bits;
                         } else if (num_blocks >= 3) {
                                 return std::ranges::all_of(m_bits | std::views::take(last_block), [](auto block) {
                                         return block == ones;
-                                }) && m_bits[last_block] == used_bits;
+                                }) and m_bits[last_block] == used_bits;
                         }
                 } else {
                         if constexpr (N == 0) {
@@ -198,7 +198,7 @@ public:
                         } else if constexpr (num_blocks == 1) {
                                 return m_bits[0] == ones;
                         } else if constexpr (num_blocks == 2) {
-                                return m_bits[0] == ones && m_bits[1] == ones;
+                                return m_bits[0] == ones and m_bits[1] == ones;
                         } else if constexpr (num_blocks >= 3) {
                                 return std::ranges::all_of(m_bits, [](auto block) {
                                         return block == ones;
@@ -311,7 +311,7 @@ public:
         {
                 auto&& [ block, mask ] = block_mask(x);
                 block &= static_cast<block_type>(~mask);
-                assert(!contains(x));
+                assert(not contains(x));
         }
 
         constexpr iterator erase(const_iterator position) noexcept
@@ -326,7 +326,7 @@ public:
                 auto&& [ block, mask ] = block_mask(x);
                 auto const erased = bit::intersects(block, mask);
                 block &= static_cast<block_type>(~mask);
-                assert(!contains(x));
+                assert(not contains(x));
                 return erased;
         }
 
@@ -361,7 +361,7 @@ public:
 
         constexpr void complement() noexcept
         {
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (N > 0 and num_blocks == 1) {
                         m_bits[0] = static_cast<block_type>(~m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
                         m_bits[0] = static_cast<block_type>(~m_bits[0]);
@@ -376,7 +376,7 @@ public:
 
         constexpr bit_set& operator&=(bit_set const& other [[maybe_unused]]) noexcept
         {
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (N > 0 and num_blocks == 1) {
                         this->m_bits[0] &= other.m_bits[0];
                 } else if constexpr (num_blocks == 2) {
                         this->m_bits[0] &= other.m_bits[0];
@@ -391,7 +391,7 @@ public:
 
         constexpr bit_set& operator|=(bit_set const& other [[maybe_unused]]) noexcept
         {
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (N > 0 and num_blocks == 1) {
                         this->m_bits[0] |= other.m_bits[0];
                 } else if constexpr (num_blocks == 2) {
                         this->m_bits[0] |= other.m_bits[0];
@@ -406,7 +406,7 @@ public:
 
         constexpr bit_set& operator^=(bit_set const& other [[maybe_unused]]) noexcept
         {
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (N > 0 and num_blocks == 1) {
                         this->m_bits[0] ^= other.m_bits[0];
                 } else if constexpr (num_blocks == 2) {
                         this->m_bits[0] ^= other.m_bits[0];
@@ -421,7 +421,7 @@ public:
 
         constexpr bit_set& operator-=(bit_set const& other [[maybe_unused]]) noexcept
         {
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (N > 0 and num_blocks == 1) {
                         this->m_bits[0] &= static_cast<block_type>(~other.m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
                         this->m_bits[0] &= static_cast<block_type>(~other.m_bits[0]);
@@ -570,7 +570,7 @@ public:
                         return bit::is_subset_of(this->m_bits[0], other.m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
                         return
-                                bit::is_subset_of(this->m_bits[0], other.m_bits[0]) && 
+                                bit::is_subset_of(this->m_bits[0], other.m_bits[0]) and 
                                 bit::is_subset_of(this->m_bits[1], other.m_bits[1])
                         ;
                 } else if constexpr (num_blocks >= 3) {
@@ -587,24 +587,24 @@ public:
                         return false;
                 } else if constexpr (num_blocks == 1) {
                         return 
-                                bit::is_subset_of(this->m_bits[0], other.m_bits[0]) &&
+                                bit::is_subset_of(this->m_bits[0], other.m_bits[0]) and
                                 this->m_bits[0] != other.m_bits[0]
                         ;
                 } else if constexpr (num_blocks == 2) {                         
-                        if (!bit::is_subset_of(this->m_bits[0], other.m_bits[0])) {
+                        if (not bit::is_subset_of(this->m_bits[0], other.m_bits[0])) {
                                 return false;
                         } else if (this->m_bits[0] != other.m_bits[0]) {
                                 return bit::is_subset_of(this->m_bits[1], other.m_bits[1]);
                         } else { 
                                 return
-                                        bit::is_subset_of(this->m_bits[1], other.m_bits[1]) &&
+                                        bit::is_subset_of(this->m_bits[1], other.m_bits[1]) and
                                         this->m_bits[1] != other.m_bits[1]
                                 ;
                         }                        
                 } else if constexpr (num_blocks >= 3) {
                         auto i = std::size_t(0);
                         for (/* init-statement before loop */; i < num_blocks; ++i) {
-                                if (!bit::is_subset_of(this->m_bits[i], other.m_bits[i])) {
+                                if (not bit::is_subset_of(this->m_bits[i], other.m_bits[i])) {
                                         return false;
                                 }
                                 if (this->m_bits[i] != other.m_bits[i]) {
@@ -626,7 +626,7 @@ public:
                         return bit::intersects(this->m_bits[0], other.m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
                         return
-                                bit::intersects(this->m_bits[0], other.m_bits[0]) ||
+                                bit::intersects(this->m_bits[0], other.m_bits[0]) or
                                 bit::intersects(this->m_bits[1], other.m_bits[1])
                         ;
                 } else if constexpr (num_blocks >= 3) {
@@ -687,7 +687,7 @@ private:
         }
 
         [[nodiscard]] constexpr auto block_mask(this auto&& self, value_type n) noexcept
-                requires (!std::same_as<value_type, size_type>)
+                requires (not std::same_as<value_type, size_type>)
         {
                 return self.block_mask(static_cast<size_type>(n));
         }
@@ -696,7 +696,7 @@ private:
         {
                 if constexpr (has_unused_bits) {
                         m_bits[last_block] &= used_bits;
-                        assert(!bit::intersects(m_bits[last_block], unused_bits));
+                        assert(not bit::intersects(m_bits[last_block], unused_bits));
                 }
         }
 
@@ -704,7 +704,7 @@ private:
                 -> std::pair<iterator, bool>
         {
                 auto&& [ block, mask ] = block_mask(x);
-                auto const inserted = !bit::intersects(block, mask);
+                auto const inserted = not bit::intersects(block, mask);
                 block |= mask;
                 assert(contains(x));
                 return { { this, x }, inserted };
@@ -719,7 +719,7 @@ private:
 
         [[nodiscard]] constexpr size_type find_front() const noexcept
         {
-                assert(!empty());
+                assert(not empty());
                 if constexpr (num_blocks == 1) {
                         return bit::firstl_one(m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
@@ -733,7 +733,7 @@ private:
 
         [[nodiscard]] constexpr size_type find_back() const noexcept
         {
-                assert(!empty());
+                assert(not empty());
                 if constexpr (num_blocks == 1) {
                         return last_bit - bit::firstr_one(m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
@@ -747,7 +747,7 @@ private:
 
         [[nodiscard]] constexpr size_type find_first() const noexcept
         {
-                if constexpr (N > 0 && num_blocks == 1) {
+                if constexpr (N > 0 and num_blocks == 1) {
                         if (m_bits[0]) {
                                 return bit::firstl_one(m_bits[0]);
                         }
@@ -799,14 +799,14 @@ private:
         }
 
         [[nodiscard]] constexpr size_type find_next(value_type n) const noexcept
-                requires (!std::same_as<value_type, size_type>)
+                requires (not std::same_as<value_type, size_type>)
         {
                 return find_next(static_cast<size_type>(n));
         }
 
         [[nodiscard]] constexpr size_type find_prev(size_type n) const noexcept
         {
-                assert(!empty());
+                assert(not empty());
                 --n;
                 if constexpr (num_blocks == 1) {
                         return n - bit::firstr_one(static_cast<block_type>(m_bits[0] >> (left_bit - n)));

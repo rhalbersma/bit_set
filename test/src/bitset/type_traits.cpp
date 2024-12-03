@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Trivial, T, Types)
 {
-        if constexpr (!dynamic<T>) {
+        if constexpr (not dynamic<T>) {
                 static_assert(std::is_trivially_destructible_v<T>);
                 static_assert(std::is_nothrow_default_constructible_v<T>);
                 static_assert(std::is_trivially_copy_constructible_v<T>);

@@ -254,7 +254,7 @@ Almost all existing `std::bitset<N>` code has **a direct translation** (i.e. ach
 | `bs.size()`                     | `bs.max_size()`                 | a `static` member                               |
 | `bs.test(n)` <br> `bs[n]`       | `bs.contains(n)`                | no bounds-checking or `out_of_range` exceptions |
 | `bs.all()`                      | `bs.full()`                     | not a member of `std::set<int>`                 |
-| `bs.any()`                      | `!bs.empty()`                   | |
+| `bs.any()`                      | `not bs.empty()`                | |
 | `bs.none()`                     | `bs.empty()`                    | |
 
 The semantic differences between `xstd::bit_set<N>` and `std::bitset<N>` are:
@@ -275,11 +275,11 @@ I/O functionality can be obtained through third-party libraries such as [{fmt}](
 
 The set predicates `is_subset`, `is_proper_subset` and `intersects` from `boost::dynamic_bitset` are present in `xstd::bit_set` with **identical syntax** and **identical semantics**. Note that these set predicates are not present in `std::bitset`. Efficient emulation of these set predicates for `std::bitset` is not possible using **single-pass** and **short-circuiting** semantics.
 
-| `xstd::bit_set<N>` <br> `boost::dynamic_bitset<>`  | `std::bitset<N>`            |
-| :------------------------------------------------  | :---------------            |
-| `a.is_subset_of(b)`                                | `(a & ~b).none()`           |
-| `a.is_proper_subset_of(b)`                         | `(a & ~b).none() && a != b` |
-| `a.intersects(b)`                                  | `(a & b).any()`             |
+| `xstd::bit_set<N>` <br> `boost::dynamic_bitset<>`  | `std::bitset<N>`             |
+| :------------------------------------------------  | :---------------             |
+| `a.is_subset_of(b)`                                | `(a & ~b).none()`            |
+| `a.is_proper_subset_of(b)`                         | `(a & ~b).none() and a != b` |
+| `a.intersects(b)`                                  | `(a & b).any()`              |
 
 ### 4 The bitwise operators from `std::bitset` and `boost::dynamic_bitset` reimagined as set algorithms
 
@@ -342,40 +342,40 @@ auto b = a
 
 ### Iterators
 
-**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?
+**Q**: How can you iterate over individual bits? I thought a byte was the unit of addressing?  
 **A**: Using proxy iterators, which hold a pointer and an offset.
 
-**Q**: What happens if you dereference a proxy iterator?
+**Q**: What happens if you dereference a proxy iterator?  
 **A**: You get a proxy reference: `ref == *it`.
 
-**Q**: What happens if you take the address of a proxy reference?
+**Q**: What happens if you take the address of a proxy reference?  
 **A**: You get a proxy iterator: `it == &ref`.
 
-**Q**: How do you get any value out of a proxy reference?
+**Q**: How do you get any value out of a proxy reference?  
 **A**: They implicitly convert to `int`.
 
-**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?
+**Q**: How can proxy references work if C++ does not allow overloading of `operator.`?  
 **A**: Indeed, proxy references break the equivalence between functions calls like `ref.mem_fn()` and `it->mem_fn()`.
 
-**Q**: How do you work around this?
+**Q**: How do you work around this?  
 **A**: `int` is not a class-type and does not have member functions, so this situation never occurs.
 
-**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?
+**Q**: Aren't there too many implicit conversions when assigning a proxy reference to an implicitly `int`-constructible class?  
 **A**: No, proxy references also implicity convert to any class type that is implicitly constructible from an `int`.
 
-**Q**: So iterating over an `xstd::bit_set` is really fool-proof?
+**Q**: So iterating over an `xstd::bit_set` is really fool-proof?  
 **A**: Yes, `xstd::bit_set` iterators are [easy to use correctly and hard to use incorrectly](http://www.aristeia.com/Papers/IEEE_Software_JulAug_2004_revised.htm).
 
 ### Bit-layout
 
-**Q**: How is `xstd::bit_set` implemented?
+**Q**: How is `xstd::bit_set` implemented?  
 **A**: It uses a stack-allocated array of unsigned integers as bit storage.
 
-**Q**: How is the set ordering mapped to the array's bit layout?
+**Q**: How is the set ordering mapped to the array's bit layout?  
 **A**: The most significant bit of the first array word maps onto set value `0`.
 **A**: The least significant bit of the last array word maps onto set value `N - 1`.
 
-**Q**: I'm visually oriented, can you draw a diagram?
+**Q**: I'm visually oriented, can you draw a diagram?  
 **A**: Sure, it looks like this for `bit_set<16, uint8_t>`:
 
 |value |01234567|89ABCDEF|
@@ -383,16 +383,16 @@ auto b = a
 |word  |       0|       1|
 |offset|76543210|76543210|
 
-**Q**: Why is the set order mapped this way onto the array's bit-layout?
+**Q**: Why is the set order mapped this way onto the array's bit-layout?  
 **A**: To be able to use **data-parallelism** for `(a < b) == std::ranges::lexicographical_compare(a, b)`.
 
-**Q**: How is efficient set comparison connected to the bit-ordering within words?
+**Q**: How is efficient set comparison connected to the bit-ordering within words?  
 **A**: Take `bit_set<8, uint8_t>` and consider when `sL < sR` for ordered sets of integers `sL` and `sR`.
 
-**Q**: Ah, lexicographical set comparison corresponds to bit comparison from most to least significant.
+**Q**: Ah, lexicographical set comparison corresponds to bit comparison from most to least significant?  
 **A**: Indeed, and this is equivalent to doing the integer comparison `wL > wR` on the underlying words `wL` and `wR`.
 
-**Q**: So the set ordering a `bit_set` is equivalent to its representation as a bitstring?
+**Q**: So the set ordering a `bit_set` is equivalent to its representation as a bitstring?  
 **A**: Yes, indeed, and this property has been known for several decades:
 
 > "bit-0 is the leftmost, just like char-0 is the leftmost in character strings. [...]
@@ -403,16 +403,16 @@ auto b = a
 
 ### Storage type
 
-**Q**: What storage type does `xstd::bit_set` use?
+**Q**: What storage type does `xstd::bit_set` use?  
 **A**: By default, `xstd::bit_set` uses an array of `std::size_t` integers.
 
-**Q**: Can I customize the storage type?
+**Q**: Can I customize the storage type?  
 **A**: Yes, the full class template signature is `template<int N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.
 
-**Q**: What other storage types can be used as template argument for `Block`?
+**Q**: What other storage types can be used as template argument for `Block`?  
 **A**: Any type modelling the Standard Library `unsigned_integral` concept, which includes (for GCC and Clang) the non-Standard `__uint128_t`.
 
-**Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?
+**Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?  
 **A**: Yes, there are three special cases for 0, 1 and 2 words of storage, as well as the general case of 3 or more words.
 
 ## Requirements

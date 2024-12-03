@@ -46,7 +46,7 @@ bool is_proper_subset_of(bitset<N> const& lhs, bitset<N> const& rhs) noexcept
         if constexpr (N == 0) {
                 return false;
         } else {
-                return is_subset_of(lhs, rhs) && lhs != rhs;
+                return is_subset_of(lhs, rhs) and lhs != rhs;
         }
 }
 

@@ -258,7 +258,7 @@ struct op_not_equal_to
 {
         auto operator()(auto const& a, auto const& b) const noexcept
         {
-                BOOST_CHECK_EQUAL(a != b, !(a == b));                           // [container.reqmts]/44
+                BOOST_CHECK_EQUAL(a != b, not (a == b));                        // [container.reqmts]/44
         }
 };
 
@@ -269,7 +269,7 @@ struct mem_swap
                 static_assert(std::same_as<decltype(a.swap(b)), void>);         // [container.reqmts]/45
                 auto a1 = a, b1 = b;
                 a1.swap(b1);
-                BOOST_CHECK(a1 == b && b1 == a);                                // [container.reqmts]/46
+                BOOST_CHECK(a1 == b and b1 == a);                               // [container.reqmts]/46
         }
 };
 
@@ -280,7 +280,7 @@ struct fn_swap
                 auto a1 = a, b1 = b;
                 auto a2 = a, b2 = b;
                 swap(a1, b1); a2.swap(b2);
-                BOOST_CHECK(a1 == a2 && b1 == b2);                              // [container.reqmts]/48
+                BOOST_CHECK(a1 == a2 and b1 == b2);                             // [container.reqmts]/48
         }
 };
 
@@ -320,7 +320,7 @@ struct mem_front
         {
                 if constexpr (requires { a.front(); }) {
                         static_assert(std::same_as<decltype(a.front()), R>);    // [sequence.reqmts]/70
-                        BOOST_CHECK(a.empty() || (a.front() == *a.begin()));    // [sequence.reqmts]/71
+                        BOOST_CHECK(a.empty() or (a.front() == *a.begin()));    // [sequence.reqmts]/71
                 }
         }
 };
@@ -332,7 +332,7 @@ struct mem_back
         {
                 if constexpr (requires { a.back(); }) {
                         static_assert(std::same_as<decltype(a.back()), R>);             // [sequence.reqmts]/73
-                        BOOST_CHECK(a.empty() || (a.back() == *std::prev(a.end())));    // [sequence.reqmts]/74
+                        BOOST_CHECK(a.empty() or (a.back() == *std::prev(a.end())));    // [sequence.reqmts]/74
                 }
         }
 };
@@ -350,7 +350,7 @@ struct mem_emplace
                 );
 
                 static_assert(std::constructible_from<typename X::value_type, Args...>);                // [associative.reqmts.general]/48
-                auto emplaced = !a.contains(typename X::value_type(std::forward<Args>(args)...));
+                auto emplaced = not a.contains(typename X::value_type(std::forward<Args>(args)...));
                 auto r = a.emplace(std::forward<Args>(args)...);                                        // [associative.reqmts.general]/49
                                                                                 // [associative.reqmts.general]/50
                 BOOST_CHECK(r == std::make_pair(a.find(typename X::value_type(std::forward<Args>(args)...)), emplaced));
@@ -380,7 +380,7 @@ struct mem_insert
         {
                 static_assert(std::same_as<decltype(a.insert(t)), std::pair<typename X::iterator, bool>>);      // [associative.reqmts.general]/61
                 static_assert(std::constructible_from<typename X::value_type, decltype(t)>);                    // [associative.reqmts.general]/62
-                auto const inserted = !a.contains(t);
+                auto const inserted = not a.contains(t);
                 auto const r = a.insert(t);                                                                     // [associative.reqmts.general]/63
                 BOOST_CHECK(r == std::make_pair(a.find(t), inserted));                                          // [associative.reqmts.general]/64
         }
@@ -391,7 +391,7 @@ struct mem_insert
                 static_assert(std::same_as<decltype(a.insert(t)), std::pair<typename X::iterator, bool>>);
                                                                                 // [associative.reqmts.general]/62
                 static_assert(std::constructible_from<typename X::value_type, decltype(t)>);
-                auto const inserted = !a.contains(t);
+                auto const inserted = not a.contains(t);
                 auto const r = a.insert(t);                                     // [associative.reqmts.general]/63
                 BOOST_CHECK(r == std::make_pair(a.find(t), inserted));          // [associative.reqmts.general]/64
         }
@@ -604,7 +604,7 @@ struct op_less
 {
         auto operator()(auto const& a) const noexcept
         {                                                                       // [tab:container.opt]
-                BOOST_CHECK(!(a < a));                                          // irreflexive
+                BOOST_CHECK(not (a < a));                                       // irreflexive
         }
 
         auto operator()(auto const& a, auto const& b) const noexcept
@@ -612,12 +612,12 @@ struct op_less
                 static_assert(std::convertible_to<decltype(a < b), bool>);
                 BOOST_CHECK_EQUAL(a < b, (a <=> b) < 0);
                 BOOST_CHECK_EQUAL(a < b, std::ranges::lexicographical_compare(a, b));
-                BOOST_CHECK(!(a < b) || !(b < a));                              // asymmetric
+                BOOST_CHECK(not (a < b) or not (b < a));                        // asymmetric
         }
 
         auto operator()(auto const& a, auto const& b, auto const& c) const noexcept
         {                                                                       // [tab:container.opt]
-                BOOST_CHECK(!(a < b && b < c) || a < c);                        // transitive
+                BOOST_CHECK(not (a < b and b < c) or a < c);                    // transitive
         }
 };
 
@@ -637,7 +637,7 @@ struct op_less_equal
         {                                                                       // [tab:container.opt]
                 static_assert(std::convertible_to<decltype(a <= b), bool>);
                 BOOST_CHECK_EQUAL(a <= b, (a <=> b) <= 0);
-                BOOST_CHECK_EQUAL(a <= b, !(b < a));
+                BOOST_CHECK_EQUAL(a <= b, not (b < a));
         }
 };
 
@@ -647,7 +647,7 @@ struct op_greater_equal
         {                                                                       // [tab:container.opt]
                 static_assert(std::convertible_to<decltype(a >= b), bool>);
                 BOOST_CHECK_EQUAL(a >= b, (a <=> b) >= 0);
-                BOOST_CHECK_EQUAL(a >= b, !(a < b));
+                BOOST_CHECK_EQUAL(a >= b, not (a < b));
         }
 };
 

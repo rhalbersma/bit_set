@@ -69,8 +69,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Full, T, Types)
         constexpr auto b = ~T();
         static_assert(b.full());
         static_assert(b.size() == b.max_size());
-        static_assert(b.empty() || b.front() == *b.cbegin());
-        static_assert(b.empty() || b.back()  == *b.crbegin());
+        static_assert(b.empty() or b.front() == *b.cbegin());
+        static_assert(b.empty() or b.back()  == *b.crbegin());
         static_assert(b == b);
         static_assert((b <=> b) == std::strong_ordering::equal);
 }

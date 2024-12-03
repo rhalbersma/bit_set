@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
         });
 
         // boost::container::flat_set<Key>::erase invalidates iterators
-        if constexpr (!std::same_as<T, boost::container::flat_set<Key>>) {
+        if constexpr (not std::same_as<T, boost::container::flat_set<Key>>) {
                 all_doubleton_sets<T>([](auto& is2) {
                         mem_erase()(is2, is2.begin(), is2.end());
                 });

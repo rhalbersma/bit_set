@@ -215,9 +215,9 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr bool all()  const noexcept { return  m_bits.full();  }
-        [[nodiscard]] constexpr bool any()  const noexcept { return !m_bits.empty(); }
-        [[nodiscard]] constexpr bool none() const noexcept { return  m_bits.empty(); }
+        [[nodiscard]] constexpr bool all()  const noexcept { return     m_bits.full();  }
+        [[nodiscard]] constexpr bool any()  const noexcept { return not m_bits.empty(); }
+        [[nodiscard]] constexpr bool none() const noexcept { return     m_bits.empty(); }
 
         [[nodiscard]] constexpr bool is_subset_of       (bitset const& rhs) const noexcept { return m_bits.is_subset_of(rhs.m_bits);        }
         [[nodiscard]] constexpr bool is_proper_subset_of(bitset const& rhs) const noexcept { return m_bits.is_proper_subset_of(rhs.m_bits); }
@@ -280,14 +280,14 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
         auto str = std::basic_string<charT, traits>(N, is.widen('0'));
         charT ch;
         auto i = std::size_t(0);
-        for (/* init-statement before loop */; i < N && !is.eof() && (is.peek() == is.widen('0') || is.peek() == is.widen('1')); ++i) {
+        for (/* init-statement before loop */; i < N and not is.eof() and (is.peek() == is.widen('0') or is.peek() == is.widen('1')); ++i) {
                 is >> ch;
                 if (ch == is.widen('1')) {
                         str[i] = ch;
                 }
         }
         x = bitset<N, Block>(str);
-        if (N > 0 && i == 0) {
+        if (N > 0 and i == 0) {
                 is.setstate(std::basic_istream<charT, traits>::ios_base::failbit);
         }
         return is;

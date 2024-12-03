@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
         });
 
         // boost::container::flat_set<Key>::erase invalidates iterators
-        if constexpr (!std::same_as<T, boost::container::flat_set<Key>>) {
+        if constexpr (not std::same_as<T, boost::container::flat_set<Key>>) {
                 full_set<T>([](auto& isN) {
                         for (auto first = isN.begin(), last = isN.end(); first != last; /* expression inside loop */) {
                                 mem_erase()(isN, first++);

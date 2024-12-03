@@ -37,7 +37,7 @@ struct mem_bit_and_assign
                 auto const src = self;
                 auto const& dst = self &= rhs;
                 for (auto const N = self.size(); auto i : std::views::iota(std::size_t(0), N)) {
-                        BOOST_CHECK_EQUAL(dst[i], !rhs[i] ? false : src[i]);    // [bitset.members]/1
+                        BOOST_CHECK_EQUAL(dst[i], not rhs[i] ? false : src[i]); // [bitset.members]/1
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(self));   // [bitset.members]/2
         }
@@ -65,7 +65,7 @@ struct mem_bit_xor_assign
                 auto const src = self;
                 auto const& dst = self ^= rhs;
                 for (auto const N = self.size(); auto i : std::views::iota(std::size_t(0), N)) {
-                        BOOST_CHECK_EQUAL(dst[i], rhs[i] ? !src[i] : src[i]);   // [bitset.members]/5
+                        BOOST_CHECK_EQUAL(dst[i], rhs[i] ? not src[i] : src[i]);// [bitset.members]/5
                 }
                 BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(self));   // [bitset.members]/6
         }
@@ -93,7 +93,7 @@ struct mem_shift_left_assign
                 auto const& dst = self <<= pos;
                 for (auto const N = self.size(); auto I : std::views::iota(std::size_t(0), N)) {
                         if (I < pos) {
-                                BOOST_CHECK(!dst[I]);                           // [bitset.members]/7.1
+                                BOOST_CHECK(not dst[I]);                        // [bitset.members]/7.1
                         } else {
                                 BOOST_CHECK_EQUAL(dst[I], src[I - pos]);        // [bitset.members]/7.2
                         }
@@ -110,7 +110,7 @@ struct mem_shift_right_assign
                 auto const& dst = self >>= pos;
                 for (auto const N = self.size(); auto I : std::views::iota(std::size_t(0), N)) {
                         if (pos >= N - I) {
-                                BOOST_CHECK(!dst[I]);                           // [bitset.members]/9.1
+                                BOOST_CHECK(not dst[I]);                        // [bitset.members]/9.1
                         } else {
                                 BOOST_CHECK_EQUAL(dst[I], src[I + pos]);        // [bitset.members]/9.2
                         }
@@ -213,11 +213,11 @@ struct mem_flip
                         auto const src = self;
                         auto const& dst = self.flip(pos);
                         for (auto i : std::views::iota(std::size_t(0), N)) {
-                                BOOST_CHECK_EQUAL(dst[i], i == pos ? !src[i] : src[i]); // [bitset.members]/27
+                                BOOST_CHECK_EQUAL(dst[i], i == pos ? not src[i] : src[i]);      // [bitset.members]/27
                         }
-                        BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(self));   // [bitset.members]/28
+                        BOOST_CHECK_EQUAL(std::addressof(dst), std::addressof(self));           // [bitset.members]/28
                 } else {
-                        BOOST_CHECK_THROW(self.flip(pos), std::out_of_range);           // [bitset.members]/29
+                        BOOST_CHECK_THROW(self.flip(pos), std::out_of_range);                   // [bitset.members]/29
                 }
         }
 };
@@ -273,7 +273,7 @@ struct mem_size
         template<class X>
         auto operator()(const X& self) const noexcept
         {
-                if constexpr (!dynamic<X>) {
+                if constexpr (not dynamic<X>) {
                         BOOST_CHECK_EQUAL(self.size(), X().size());             // [bitset.members]/44
                 }
         }
@@ -410,7 +410,7 @@ struct mem_is_proper_subset_of
         template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
         {
-                BOOST_CHECK_EQUAL(fn_is_proper_subset_of(self, rhs), mem_is_subset_of::fn_is_subset_of(self, rhs) && self != rhs);
+                BOOST_CHECK_EQUAL(fn_is_proper_subset_of(self, rhs), mem_is_subset_of::fn_is_subset_of(self, rhs) and self != rhs);
         }
 };
 
