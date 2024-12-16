@@ -12,7 +12,6 @@
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag
 #include <type_traits>  // conditional_t, is_class_v
-#include <utility>      // declval
 
 namespace xstd {
 

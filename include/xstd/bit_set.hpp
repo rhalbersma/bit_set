@@ -25,7 +25,7 @@
                                 // drop, pairwise_transform, reverse, take, transform, zip
                                 // input_range
 #include <type_traits>          // common_type_t, conditional_t, is_class_v, make_signed_t, type_identity_t
-#include <utility>              // declval, forward, move, pair
+#include <utility>              // forward, move, pair
 
 namespace xstd {
 
