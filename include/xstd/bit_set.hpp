@@ -643,11 +643,12 @@ private:
         static constexpr auto last_block      = num_blocks - 1;
         static constexpr auto last_bit        = num_bits - 1;
         static constexpr auto left_bit        = block_size - 1;
+        static constexpr auto unit            = static_cast<block_type>( 1);
         static constexpr auto zero            = static_cast<block_type>( 0);
         static constexpr auto ones            = static_cast<block_type>(-1);
         static constexpr auto used_bits       = static_cast<block_type>(ones << num_unused_bits);
         static constexpr auto unused_bits     = static_cast<block_type>(~used_bits);
-        static constexpr auto left_mask       = static_cast<block_type>(static_cast<block_type>(1) << left_bit);
+        static constexpr auto left_mask       = static_cast<block_type>(unit << left_bit);
 
         [[nodiscard]] static constexpr bool is_valid(size_type n) noexcept
         {

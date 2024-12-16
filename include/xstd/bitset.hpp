@@ -124,9 +124,9 @@ public:
         constexpr bitset& set(std::size_t pos, bool val = true) noexcept(false)
         {
                 if (pos < N) [[likely]] {
-                        if (val) {
+                        if (val) [[likely]] {
                                 m_bits.add(pos);
-                        } else {
+                        } else [[unlikely]] {
                                 m_bits.pop(pos);
                         }
                         return *this;
@@ -219,9 +219,9 @@ public:
         [[nodiscard]] constexpr bool any()  const noexcept { return not m_bits.empty(); }
         [[nodiscard]] constexpr bool none() const noexcept { return     m_bits.empty(); }
 
-        [[nodiscard]] constexpr bool is_subset_of       (bitset const& rhs) const noexcept { return m_bits.is_subset_of(rhs.m_bits);        }
+        [[nodiscard]] constexpr bool is_subset_of       (bitset const& rhs) const noexcept { return m_bits.is_subset_of       (rhs.m_bits); }
         [[nodiscard]] constexpr bool is_proper_subset_of(bitset const& rhs) const noexcept { return m_bits.is_proper_subset_of(rhs.m_bits); }
-        [[nodiscard]] constexpr bool intersects         (bitset const& rhs) const noexcept { return m_bits.intersects(rhs.m_bits);          }
+        [[nodiscard]] constexpr bool intersects         (bitset const& rhs) const noexcept { return m_bits.intersects         (rhs.m_bits); }
 
 private:
         template<class charT>
