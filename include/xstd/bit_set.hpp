@@ -30,14 +30,14 @@
 namespace xstd {
 
 // class template bit_set
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, std::unsigned_integral Block>
 class bit_set;
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bool operator== (bit_set<Key, N, Block> const& x, bit_set<Key, N, Block> const& y) noexcept;
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bool operator== (bit_set<N, Block> const& x, bit_set<N, Block> const& y) noexcept;
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<=>(bit_set<Key, N, Block> const& x, bit_set<Key, N, Block> const& y) noexcept -> std::strong_ordering;
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto operator<=>(bit_set<N, Block> const& x, bit_set<N, Block> const& y) noexcept -> std::strong_ordering;
 
 [[nodiscard]] constexpr std::size_t aligned_size(std::size_t size, std::size_t alignment) noexcept
 {
@@ -75,23 +75,23 @@ template<std::unsigned_integral Block>
 
 }       // namespace bit
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block = std::size_t>
-using bit_set_aligned = bit_set<Key, aligned_size(N, std::numeric_limits<Block>::digits), Block>;
+template<std::size_t N, std::unsigned_integral Block = std::size_t>
+using bit_set_aligned = bit_set<aligned_size(N, std::numeric_limits<Block>::digits), Block>;
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block = std::size_t>
+template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
 {
         static constexpr auto block_size = static_cast<std::size_t>(std::numeric_limits<Block>::digits);
         static constexpr auto num_bits   = aligned_size(N, block_size);
-        static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, std::size_t(1));
+        static constexpr auto num_blocks = std::ranges::max(num_bits / block_size, 1uz);
 
         std::array<Block, num_blocks> m_bits{};            // zero-initialization
 
 public:
-        using key_type               = Key;
-        using key_compare            = std::less<Key>;
-        using value_type             = Key;
-        using value_compare          = std::less<Key>;
+        using key_type               = std::size_t;
+        using key_compare            = std::less<key_type>;
+        using value_type             = std::size_t;
+        using value_compare          = std::less<key_type>;
         using block_type             = Block;
         using pointer                = void;
         using const_pointer          = void;
@@ -210,7 +210,7 @@ public:
         [[nodiscard]] constexpr size_type size() const noexcept
         {
                 if constexpr (N == 0) {
-                        return std::size_t(0);
+                        return 0uz;
                 } else if constexpr (num_blocks == 1) {
                         return bit::count(m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
@@ -219,7 +219,7 @@ public:
                         return std::ranges::fold_left(
                                 m_bits | std::views::transform([](auto block) {
                                         return bit::count(block);
-                                }), std::size_t(0), std::plus<>()
+                                }), 0uz, std::plus<>()
                         );
                 }
         }
@@ -602,7 +602,7 @@ public:
                                 ;
                         }                        
                 } else if constexpr (num_blocks >= 3) {
-                        auto i = std::size_t(0);
+                        auto i = 0uz;
                         for (/* init-statement before loop */; i < num_blocks; ++i) {
                                 if (not bit::is_subset_of(this->m_bits[i], other.m_bits[i])) {
                                         return false;
@@ -669,7 +669,7 @@ private:
                 -> std::pair<size_type, size_type>
         {
                 if constexpr (num_blocks == 1) {
-                        return { std::size_t(0), n };
+                        return { 0uz, n };
                 } else if constexpr (num_blocks >= 2) {
                         return div_mod(n, block_size);
                 }
@@ -685,12 +685,6 @@ private:
                 assert(is_valid(n));
                 auto const [ index, offset ] = index_offset(n);
                 return { self.m_bits[index], static_cast<block_type>(left_mask >> offset) };
-        }
-
-        [[nodiscard]] constexpr auto block_mask(this auto&& self, value_type n) noexcept
-                requires (not std::same_as<value_type, size_type>)
-        {
-                return self.block_mask(static_cast<size_type>(n));
         }
 
         constexpr void erase_unused() noexcept
@@ -799,12 +793,6 @@ private:
                 return N;
         }
 
-        [[nodiscard]] constexpr size_type find_next(value_type n) const noexcept
-                requires (not std::same_as<value_type, size_type>)
-        {
-                return find_next(static_cast<size_type>(n));
-        }
-
         [[nodiscard]] constexpr size_type find_prev(size_type n) const noexcept
         {
                 assert(not empty());
@@ -831,8 +819,8 @@ private:
         [[nodiscard]] friend constexpr size_type find_prev(bit_set const& c, size_type n) noexcept { return c.find_prev(n); }
 };
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bool operator==(bit_set<Key, N, Block> const& x [[maybe_unused]], bit_set<Key, N, Block> const& y [[maybe_unused]]) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bool operator==(bit_set<N, Block> const& x [[maybe_unused]], bit_set<N, Block> const& y [[maybe_unused]]) noexcept
 {
         if constexpr (N == 0) {
                 return true;
@@ -841,8 +829,8 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
         }
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<=>(bit_set<Key, N, Block> const& x [[maybe_unused]], bit_set<Key, N, Block> const& y [[maybe_unused]]) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto operator<=>(bit_set<N, Block> const& x [[maybe_unused]], bit_set<N, Block> const& y [[maybe_unused]]) noexcept
         -> std::strong_ordering
 {
         if constexpr (N == 0) {
@@ -852,16 +840,16 @@ template<std::integral Key, std::size_t N, std::unsigned_integral Block>
         }
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-constexpr void swap(bit_set<Key, N, Block>& x, bit_set<Key, N, Block>& y) noexcept(noexcept(x.swap(y)))
+template<std::size_t N, std::unsigned_integral Block>
+constexpr void swap(bit_set<N, Block>& x, bit_set<N, Block>& y) noexcept(noexcept(x.swap(y)))
 {
         x.swap(y);
 }
 
 // erasure for bit_set
-template<std::integral Key, std::size_t N, std::unsigned_integral Block, class Predicate>
-constexpr auto erase_if(bit_set<Key, N, Block>& c, Predicate pred)
-        -> typename bit_set<Key, N, Block>::size_type
+template<std::size_t N, std::unsigned_integral Block, class Predicate>
+constexpr auto erase_if(bit_set<N, Block>& c, Predicate pred)
+        -> typename bit_set<N, Block>::size_type
 {
         auto const original_size = c.size();
         for (auto i = c.begin(), last = c.end(); i != last;) {
@@ -875,116 +863,116 @@ constexpr auto erase_if(bit_set<Key, N, Block>& c, Predicate pred)
 }
 
 // range access
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto begin(bit_set<Key, N, Block>& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto begin(bit_set<N, Block>& c) noexcept
 {
         return c.begin();
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto begin(bit_set<Key, N, Block> const& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto begin(bit_set<N, Block> const& c) noexcept
 {
         return c.begin();
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto end(bit_set<Key, N, Block>& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto end(bit_set<N, Block>& c) noexcept
 {
         return c.end();
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto end(bit_set<Key, N, Block> const& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto end(bit_set<N, Block> const& c) noexcept
 {
         return c.end();
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto cbegin(bit_set<Key, N, Block> const& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto cbegin(bit_set<N, Block> const& c) noexcept
 {
         return xstd::begin(c);
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto cend(bit_set<Key, N, Block> const& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto cend(bit_set<N, Block> const& c) noexcept
 {
         return xstd::end(c);
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rbegin(bit_set<Key, N, Block>& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rbegin(bit_set<N, Block>& c) noexcept
 {
         return c.rbegin();
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rbegin(bit_set<Key, N, Block> const& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rbegin(bit_set<N, Block> const& c) noexcept
 {
         return c.rbegin();
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rend(bit_set<Key, N, Block>& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rend(bit_set<N, Block>& c) noexcept
 {
         return c.rend();
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto rend(bit_set<Key, N, Block> const& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto rend(bit_set<N, Block> const& c) noexcept
 {
         return c.rend();
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto crbegin(bit_set<Key, N, Block> const& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto crbegin(bit_set<N, Block> const& c) noexcept
 {
         return xstd::rbegin(c);
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto crend(bit_set<Key, N, Block> const& c) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto crend(bit_set<N, Block> const& c) noexcept
 {
         return xstd::rend(c);
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator~(bit_set<Key, N, Block> const& lhs) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bit_set<N, Block> operator~(bit_set<N, Block> const& lhs) noexcept
 {
         auto nrv = lhs; nrv.complement(); return nrv;
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator&(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bit_set<N, Block> operator&(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv &= rhs; return nrv;
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator|(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bit_set<N, Block> operator|(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv |= rhs; return nrv;
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator^(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bit_set<N, Block> operator^(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv ^= rhs; return nrv;
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator-(bit_set<Key, N, Block> const& lhs, bit_set<Key, N, Block> const& rhs) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bit_set<N, Block> operator-(bit_set<N, Block> const& lhs, bit_set<N, Block> const& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator<<(bit_set<Key, N, Block> const& lhs, std::size_t n) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bit_set<N, Block> operator<<(bit_set<N, Block> const& lhs, std::size_t n) noexcept
 {
         auto nrv = lhs; nrv <<= n; return nrv;
 }
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_set<Key, N, Block> operator>>(bit_set<Key, N, Block> const& lhs, std::size_t n) noexcept
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr bit_set<N, Block> operator>>(bit_set<N, Block> const& lhs, std::size_t n) noexcept
 {
         auto nrv = lhs; nrv >>= n; return nrv;
 }

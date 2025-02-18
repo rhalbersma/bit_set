@@ -10,8 +10,7 @@
 #include <benchmark/benchmark.h>        // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN
 #include <boost/preprocessor.hpp>       // BOOST_PP_COMMA
 
-using Key = std::size_t;
-constexpr Key N = std::size_t(1'000'000);
+constexpr auto N = 1'000'000uz;
 
 template<class X>
 static void bm_sift_primes0(benchmark::State& state) {
@@ -35,16 +34,16 @@ static void bm_filter_twins(benchmark::State& state) {
         }
 }
 
-BENCHMARK_TEMPLATE1(bm_sift_primes0, boost::container::flat_set<Key>);
-BENCHMARK_TEMPLATE1(bm_sift_primes0, std::set<Key>);
-BENCHMARK_TEMPLATE1(bm_sift_primes0, xstd::bit_set<Key BOOST_PP_COMMA() N>);
+BENCHMARK_TEMPLATE1(bm_sift_primes0, boost::container::flat_set<std::size_t>);
+BENCHMARK_TEMPLATE1(bm_sift_primes0, std::set<std::size_t>);
+BENCHMARK_TEMPLATE1(bm_sift_primes0, xstd::bit_set<N>);
 
-BENCHMARK_TEMPLATE1(bm_sift_primes1, boost::container::flat_set<Key>);
-BENCHMARK_TEMPLATE1(bm_sift_primes1, std::set<Key>);
-BENCHMARK_TEMPLATE1(bm_sift_primes1, xstd::bit_set<Key BOOST_PP_COMMA() N>);
+BENCHMARK_TEMPLATE1(bm_sift_primes1, boost::container::flat_set<std::size_t>);
+BENCHMARK_TEMPLATE1(bm_sift_primes1, std::set<std::size_t>);
+BENCHMARK_TEMPLATE1(bm_sift_primes1, xstd::bit_set<N>);
 
-BENCHMARK_TEMPLATE1(bm_filter_twins, std::set<Key>);
-BENCHMARK_TEMPLATE1(bm_filter_twins, xstd::bit_set<Key BOOST_PP_COMMA() N>);
-BENCHMARK_TEMPLATE1(bm_filter_twins, boost::container::flat_set<Key>);
+BENCHMARK_TEMPLATE1(bm_filter_twins, std::set<std::size_t>);
+BENCHMARK_TEMPLATE1(bm_filter_twins, xstd::bit_set<N>);
+BENCHMARK_TEMPLATE1(bm_filter_twins, boost::container::flat_set<std::size_t>);
 
 BENCHMARK_MAIN();

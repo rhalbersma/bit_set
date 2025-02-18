@@ -17,31 +17,30 @@ BOOST_AUTO_TEST_SUITE(TypeTraits)
 
 using namespace xstd;
 
-using Key = int;
 using Types = boost::mp11::mp_list
-<       std::set<Key>
-,       boost::container::flat_set<Key>
-,       bit_set<Key,   0, uint8_t>
-,       bit_set<Key,   8, uint8_t>
-,       bit_set<Key,  16, uint8_t>
-,       bit_set<Key,  24, uint8_t>
-,       bit_set<Key,   0, uint16_t>
-,       bit_set<Key,  16, uint16_t>
-,       bit_set<Key,  32, uint16_t>
-,       bit_set<Key,  48, uint16_t>
-,       bit_set<Key,   0, uint32_t>
-,       bit_set<Key,  32, uint32_t>
-,       bit_set<Key,  64, uint32_t>
-,       bit_set<Key,  96, uint32_t>
-,       bit_set<Key,   0, uint64_t>
-,       bit_set<Key,  64, uint64_t>
-,       bit_set<Key, 128, uint64_t>
-,       bit_set<Key, 192, uint64_t>
+<       std::set<std::size_t>
+,       boost::container::flat_set<std::size_t>
+,       bit_set<  0, uint8_t>
+,       bit_set<  8, uint8_t>
+,       bit_set< 16, uint8_t>
+,       bit_set< 24, uint8_t>
+,       bit_set<  0, uint16_t>
+,       bit_set< 16, uint16_t>
+,       bit_set< 32, uint16_t>
+,       bit_set< 48, uint16_t>
+,       bit_set<  0, uint32_t>
+,       bit_set< 32, uint32_t>
+,       bit_set< 64, uint32_t>
+,       bit_set< 96, uint32_t>
+,       bit_set<  0, uint64_t>
+,       bit_set< 64, uint64_t>
+,       bit_set<128, uint64_t>
+,       bit_set<192, uint64_t>
 #if defined(__GNUG__)
-,       bit_set<Key,   0, __uint128_t>
-,       bit_set<Key, 128, __uint128_t>
-,       bit_set<Key, 256, __uint128_t>
-,       bit_set<Key, 384, __uint128_t>
+,       bit_set<  0, __uint128_t>
+,       bit_set<128, __uint128_t>
+,       bit_set<256, __uint128_t>
+,       bit_set<384, __uint128_t>
 #endif
 >;
 

@@ -72,58 +72,36 @@ struct set_symmetric_difference
 
 struct increment_modulo
 {
-        template<class X, class Key = X::key_type>
+        template<class X>
         auto operator()(const X& a, std::size_t n) const
         {
                 if constexpr (requires { a << n; }) {
                         constexpr auto N = X::max_size();
-                        if constexpr (std::same_as<Key, std::size_t>) {
-                                BOOST_CHECK(
-                                        (a << n) == (a
-                                                | std::views::transform([=](auto x) { return x + n; })
-                                                | std::views::filter   ([ ](auto x) { return x < N; })
-                                                | std::ranges::to<X>()
-                                        )
-                                );
-                        } else {
-                                BOOST_CHECK(
-                                        (a << n) == (a
-                                                | std::views::transform([=](std::size_t x) { return x + n;  })
-                                                | std::views::filter   ([ ](std::size_t x) { return x < N;  })
-                                                | std::views::transform([ ](std::size_t x) { return Key(x); })
-                                                | std::ranges::to<X>()
-                                        )
-                                );
-                        }
+                        BOOST_CHECK(
+                                (a << n) == (a
+                                        | std::views::transform([=](auto x) { return x + n; })
+                                        | std::views::filter   ([ ](auto x) { return x < N; })
+                                        | std::ranges::to<X>()
+                                )
+                        );
                 }
         }
 };
 
 struct decrement_modulo
 {
-        template<class X, class Key = X::key_type>
+        template<class X>
         auto operator()(const X& a, std::size_t n) const
         {
                 if constexpr (requires { a >> n; }) {
                         constexpr auto N = X::max_size();
-                        if constexpr (std::same_as<Key, std::size_t>) {
-                                BOOST_CHECK(
-                                        (a >> n) == (a
-                                                | std::views::transform([=](auto x) { return x - n; })
-                                                | std::views::filter   ([ ](auto x) { return x < N; })
-                                                | std::ranges::to<X>()
-                                        )
-                                );
-                        } else {
-                                BOOST_CHECK(
-                                        (a >> n) == (a
-                                                | std::views::transform([=](std::size_t x) { return x - n;  })
-                                                | std::views::filter   ([ ](std::size_t x) { return x < N;  })
-                                                | std::views::transform([ ](std::size_t x) { return Key(x); })
-                                                | std::ranges::to<X>()
-                                        )
-                                );
-                        }
+                        BOOST_CHECK(
+                                (a >> n) == (a
+                                        | std::views::transform([=](auto x) { return x - n; })
+                                        | std::views::filter   ([ ](auto x) { return x < N; })
+                                        | std::ranges::to<X>()
+                                )
+                        );
                 }
         }
 };

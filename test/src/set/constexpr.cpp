@@ -12,45 +12,44 @@ BOOST_AUTO_TEST_SUITE(Constexpr)
 
 using namespace xstd;
 
-using Key = int;
 using Types = boost::mp11::mp_list
-<       bit_set<Key,    0, uint8_t>
-,       bit_set<Key,    1, uint8_t>
-,       bit_set<Key,    7, uint8_t>
-,       bit_set<Key,    8, uint8_t>
-,       bit_set<Key,    9, uint8_t>
-,       bit_set<Key,   15, uint8_t>
-,       bit_set<Key,   16, uint8_t>
-,       bit_set<Key,   17, uint8_t>
-,       bit_set<Key,   24, uint8_t>
-,       bit_set<Key,    0, uint16_t>
-,       bit_set<Key,    1, uint16_t>
-,       bit_set<Key,   15, uint16_t>
-,       bit_set<Key,   16, uint16_t>
-,       bit_set<Key,   17, uint16_t>
-,       bit_set<Key,   31, uint16_t>
-,       bit_set<Key,   32, uint16_t>
-,       bit_set<Key,   33, uint16_t>
-,       bit_set<Key,   48, uint16_t>
-,       bit_set<Key,    0, uint32_t>
-,       bit_set<Key,    1, uint32_t>
-,       bit_set<Key,   31, uint32_t>
-,       bit_set<Key,   32, uint32_t>
-,       bit_set<Key,   33, uint32_t>
-,       bit_set<Key,   63, uint32_t>
-,       bit_set<Key,   64, uint32_t>
-,       bit_set<Key,   65, uint32_t>
-,       bit_set<Key,    0, uint64_t>
-,       bit_set<Key,    1, uint64_t>
-,       bit_set<Key,   63, uint64_t>
-,       bit_set<Key,   64, uint64_t>
-,       bit_set<Key,   65, uint64_t>
+<       bit_set<  0, uint8_t>
+,       bit_set<  1, uint8_t>
+,       bit_set<  7, uint8_t>
+,       bit_set<  8, uint8_t>
+,       bit_set<  9, uint8_t>
+,       bit_set< 15, uint8_t>
+,       bit_set< 16, uint8_t>
+,       bit_set< 17, uint8_t>
+,       bit_set< 24, uint8_t>
+,       bit_set<  0, uint16_t>
+,       bit_set<  1, uint16_t>
+,       bit_set< 15, uint16_t>
+,       bit_set< 16, uint16_t>
+,       bit_set< 17, uint16_t>
+,       bit_set< 31, uint16_t>
+,       bit_set< 32, uint16_t>
+,       bit_set< 33, uint16_t>
+,       bit_set< 48, uint16_t>
+,       bit_set<  0, uint32_t>
+,       bit_set<  1, uint32_t>
+,       bit_set< 31, uint32_t>
+,       bit_set< 32, uint32_t>
+,       bit_set< 33, uint32_t>
+,       bit_set< 63, uint32_t>
+,       bit_set< 64, uint32_t>
+,       bit_set< 65, uint32_t>
+,       bit_set<  0, uint64_t>
+,       bit_set<  1, uint64_t>
+,       bit_set< 63, uint64_t>
+,       bit_set< 64, uint64_t>
+,       bit_set< 65, uint64_t>
 #if defined(__GNUG__)
-,       bit_set<Key,    0, __uint128_t>
-,       bit_set<Key,    1, __uint128_t>
-,       bit_set<Key,  127, __uint128_t>
-,       bit_set<Key,  128, __uint128_t>
-,       bit_set<Key,  129, __uint128_t>
+,       bit_set<  0, __uint128_t>
+,       bit_set<  1, __uint128_t>
+,       bit_set<127, __uint128_t>
+,       bit_set<128, __uint128_t>
+,       bit_set<129, __uint128_t>
 #endif
 >;
 

@@ -68,7 +68,7 @@ template<std::size_t N>
         } else if constexpr (requires { c._Find_first(); }) {
                 return c._Find_first();
         } else {
-                return *std::ranges::find_if(std::views::iota(std::size_t(0), N), [&](auto i) {
+                return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
                         return c[i];
                 });
         }
@@ -90,7 +90,7 @@ template<std::size_t N>
 [[nodiscard]] std::size_t find_prev(bitset<N> const& c, std::size_t n) noexcept
 {
         assert(c.any());
-        return *std::ranges::find_if(std::views::iota(std::size_t(0), n) | std::views::reverse, [&](auto i) {
+        return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
                 return c[i];
         });
 }

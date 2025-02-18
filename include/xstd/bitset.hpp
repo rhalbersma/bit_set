@@ -23,7 +23,7 @@ namespace xstd {
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
-        bit_set<std::size_t, N, Block> m_bits;
+        bit_set<N, Block> m_bits;
 
 public:
         using block_type = Block;
@@ -47,7 +47,7 @@ public:
                 }
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
-                for (auto i : std::views::iota(std::size_t(0), M)) {
+                for (auto i : std::views::iota(0uz, M)) {
                         auto const ch = str[pos + M - 1 - i];
                         if (traits::eq(ch, zero)) {
                                 continue;
@@ -191,7 +191,7 @@ public:
         [[nodiscard]] constexpr std::basic_string<charT, traits, Allocator> to_string(charT zero = charT('0'), charT one = charT('1')) const noexcept(false)
         {
                 auto str = std::basic_string<charT, traits, Allocator>(N, zero);
-                for (auto i : std::views::iota(std::size_t(0), N)) {
+                for (auto i : std::views::iota(0uz, N)) {
                         if (m_bits.contains(N - 1 - i)) {
                                 str[i] = one;
                         }
@@ -279,7 +279,7 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
 {
         auto str = std::basic_string<charT, traits>(N, is.widen('0'));
         charT ch;
-        auto i = std::size_t(0);
+        auto i = 0uz;
         for (/* init-statement before loop */; i < N and not is.eof() and (is.peek() == is.widen('0') or is.peek() == is.widen('1')); ++i) {
                 is >> ch;
                 if (ch == is.widen('1')) {

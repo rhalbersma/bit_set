@@ -30,8 +30,8 @@ struct ref_same_as_pred
         static constexpr auto value = std::same_as<R, T>;
 };
 
-template<std::integral Key, std::size_t N, std::unsigned_integral Block>
-struct ref_same_as_pred<xstd::bit_set<Key, N, Block>>
+template<std::size_t N, std::unsigned_integral Block>
+struct ref_same_as_pred<xstd::bit_set<N, Block>>
 {
         template<class R, class T>
         static constexpr auto value = std::convertible_to<R, std::add_const_t<std::remove_reference_t<T>>&>;

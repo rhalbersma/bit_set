@@ -18,19 +18,18 @@ BOOST_AUTO_TEST_SUITE(Quartic)
 
 using namespace xstd;
 
-using Key = int;
 using Types = boost::mp11::mp_list
-<       std::set<Key>
-,       boost::container::flat_set<Key>
-,       bit_set<Key,  0, uint8_t>
-,       bit_set<Key,  8, uint8_t>
-,       bit_set<Key,  9, uint8_t>
-,       bit_set<Key, 17, uint8_t>
-,       bit_set<Key, 17, uint16_t>
-,       bit_set<Key, 17, uint32_t>
-,       bit_set<Key, 17, uint64_t>
+<       std::set<std::size_t>
+,       boost::container::flat_set<std::size_t>
+,       bit_set< 0, uint8_t>
+,       bit_set< 8, uint8_t>
+,       bit_set< 9, uint8_t>
+,       bit_set<17, uint8_t>
+,       bit_set<17, uint16_t>
+,       bit_set<17, uint32_t>
+,       bit_set<17, uint64_t>
 #if defined(__GNUG__)
-,       bit_set<Key, 17, __uint128_t>
+,       bit_set<17, __uint128_t>
 #endif
 >;
 

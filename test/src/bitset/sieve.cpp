@@ -16,13 +16,13 @@
 
 BOOST_AUTO_TEST_SUITE(Sieve)
 
-inline constexpr auto N = 100;
+inline constexpr auto N = 100uz;
 
 using Types = boost::mp11::mp_list
 <       boost::dynamic_bitset<>
 ,         std::bitset<N>
 ,        xstd::bitset<N>
-,        xstd::bit_set<std::size_t, N>
+,        xstd::bit_set<N>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)

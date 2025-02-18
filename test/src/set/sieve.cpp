@@ -15,13 +15,12 @@
 
 BOOST_AUTO_TEST_SUITE(Sieve)
 
-inline constexpr auto N = 100;
+inline constexpr auto N = 100uz;
 
-using Key = int;
 using Types = boost::mp11::mp_list
-<       std::set<Key>
-,       boost::container::flat_set<Key>
-,       xstd::bit_set<Key, N>
+<       std::set<std::size_t>
+,       boost::container::flat_set<std::size_t>
+,       xstd::bit_set<N>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)

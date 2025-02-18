@@ -28,7 +28,7 @@ template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] constexpr std::size_t find_prev(dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept
 {
         assert(c.any());
-        return *std::ranges::find_if(std::views::iota(std::size_t(0), std::ranges::min(n, c.size())) | std::views::reverse, [&](auto i) {
+        return *std::ranges::find_if(std::views::iota(0uz, std::ranges::min(n, c.size())) | std::views::reverse, [&](auto i) {
                 return c[i];
         });
 }
