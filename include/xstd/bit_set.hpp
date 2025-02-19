@@ -6,7 +6,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/proxy.hpp>       // bidirectional_bit_iterator, bidirectional_bit_reference
+#include <xstd/proxy.hpp>       // bit_iterator, bit_reference
 #include <algorithm>            // shift_left, shift_right
                                 // all_of, any_of, fill_n, find_if, fold_left, for_each, max, none_of
 #include <array>                // array
@@ -95,12 +95,12 @@ public:
         using block_type             = Block;
         using pointer                = void;
         using const_pointer          = void;
-        using reference              = bidirectional_bit_reference<bit_set>;
-        using const_reference        = bidirectional_bit_reference<bit_set>;
+        using reference              = bidirectional::bit_reference<bit_set>;
+        using const_reference        = bidirectional::bit_reference<bit_set>;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = bidirectional_bit_iterator<bit_set>;
-        using const_iterator         = bidirectional_bit_iterator<bit_set>;
+        using iterator               = bidirectional::bit_iterator<bit_set>;
+        using const_iterator         = bidirectional::bit_iterator<bit_set>;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
