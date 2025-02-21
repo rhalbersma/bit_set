@@ -35,28 +35,28 @@ template<std::unsigned_integral Block, class Allocator>
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto begin(dynamic_bitset<Block, Allocator>& c) noexcept
-        -> xstd::bidirectional::bit_iterator<dynamic_bitset<Block, Allocator>>
+        -> xstd::bit::bidirectional::const_iterator<dynamic_bitset<Block, Allocator>>
 {
         return { &c, c.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto begin(dynamic_bitset<Block, Allocator> const& c) noexcept
-        -> xstd::bidirectional::bit_iterator<dynamic_bitset<Block, Allocator>>
+        -> xstd::bit::bidirectional::const_iterator<dynamic_bitset<Block, Allocator>>
 {
         return { &c, c.find_first() };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto end(dynamic_bitset<Block, Allocator>& c) noexcept
-        -> xstd::bidirectional::bit_iterator<dynamic_bitset<Block, Allocator>>
+        -> xstd::bit::bidirectional::const_iterator<dynamic_bitset<Block, Allocator>>
 {
         return { &c, c.npos };
 }
 
 template<std::unsigned_integral Block, class Allocator>
 [[nodiscard]] auto end(dynamic_bitset<Block, Allocator> const& c) noexcept
-        -> xstd::bidirectional::bit_iterator<dynamic_bitset<Block, Allocator>>
+        -> xstd::bit::bidirectional::const_iterator<dynamic_bitset<Block, Allocator>>
 {
         return { &c, c.npos };
 }

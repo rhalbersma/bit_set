@@ -98,28 +98,28 @@ template<std::size_t N>
 // range access
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(bitset<N>& c) noexcept
-        -> xstd::bidirectional::bit_iterator<bitset<N>>
+        -> xstd::bit::bidirectional::const_iterator<bitset<N>>
 {
         return { &c, find_first(c) };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto begin(bitset<N> const& c) noexcept
-        -> xstd::bidirectional::bit_iterator<bitset<N>>
+        -> xstd::bit::bidirectional::const_iterator<bitset<N>>
 {
         return { &c, find_first(c) };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto end(bitset<N>& c) noexcept
-        -> xstd::bidirectional::bit_iterator<bitset<N>>
+        -> xstd::bit::bidirectional::const_iterator<bitset<N>>
 {
         return { &c, N };
 }
 
 template<std::size_t N>
 [[nodiscard]] constexpr auto end(bitset<N> const& c) noexcept
-        -> xstd::bidirectional::bit_iterator<bitset<N>>
+        -> xstd::bit::bidirectional::const_iterator<bitset<N>>
 {
         return { &c, N };
 }

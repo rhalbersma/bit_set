@@ -90,17 +90,17 @@ class bit_set
 public:
         using key_type               = std::size_t;
         using key_compare            = std::less<key_type>;
-        using value_type             = std::size_t;
-        using value_compare          = std::less<key_type>;
+        using value_type             = key_type;
+        using value_compare          = key_compare;
         using block_type             = Block;
         using pointer                = void;
-        using const_pointer          = void;
-        using reference              = bidirectional::bit_reference<bit_set>;
-        using const_reference        = bidirectional::bit_reference<bit_set>;
+        using const_pointer          = pointer;
+        using reference              = bit::bidirectional::const_reference<bit_set>;
+        using const_reference        = reference;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = bidirectional::bit_iterator<bit_set>;
-        using const_iterator         = bidirectional::bit_iterator<bit_set>;
+        using iterator               = bit::bidirectional::const_iterator<bit_set>;
+        using const_iterator         = iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 

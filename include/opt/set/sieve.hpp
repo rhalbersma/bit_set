@@ -6,28 +6,29 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <concepts>     // integral
+#include <cstddef>      // size_t
 #include <ranges>       // to
                         // adjacent, elements, filter, iota, stride, take_while
 
 namespace xstd {
 
-template<class X, std::integral Key = typename X::key_type>
-auto sift(X& primes, Key m)
+template<class X>
+auto sift(X& primes, std::size_t m)
 {
         primes.erase(m);
 }
 
-template<class X, std::integral Key = typename X::key_type>
+template<class X>
 struct generate_candidates
 {
-        auto operator()(Key n) const
+        auto operator()(std::size_t n) const
         {
-                return std::views::iota(Key(2), n) | std::ranges::to<X>();
+                return std::views::iota(2uz, n) | std::ranges::to<X>();
         }
 };
 
-template<class X, std::integral Key = typename X::key_type>
-auto sift_primes0(Key n)
+template<class X>
+auto sift_primes0(std::size_t n)
 {
         auto primes = generate_candidates<X>()(n);
         for (auto p
@@ -44,8 +45,8 @@ auto sift_primes0(Key n)
         return primes;
 }
 
-template<class X, std::integral Key = typename X::key_type>
-auto sift_primes1(Key n)
+template<class X>
+auto sift_primes1(std::size_t n)
 {
         auto primes = generate_candidates<X>()(n);
         for (auto p : primes) {
