@@ -7,7 +7,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/proxy.hpp>       // bit_iterator, bit_reference
-#include <algorithm>            // shift_left, shift_right
+#include <algorithm>            // lexicographical_compare_three_way, shift_left, shift_right
                                 // all_of, any_of, fill_n, find_if, fold_left, for_each, max, none_of
 #include <array>                // array
 #include <bit>                  // countl_zero, countr_zero, popcount
@@ -438,28 +438,28 @@ public:
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        m_bits[0] >>= n;
+                        m_bits[0] <<= n;
                 } else if constexpr (num_blocks >= 2) {
-                        auto const [ n_blocks, R_shift ] = div_mod(n, block_size);
-                        if (R_shift == 0) {
+                        auto const [ n_blocks, L_shift ] = div_mod(n, block_size);
+                        if (L_shift == 0) {
                                 std::shift_right(m_bits.begin(), m_bits.end(), static_cast<difference_type>(n_blocks));
                         } else {
-                                auto const L_shift = block_size - R_shift;
+                                auto const R_shift = block_size - L_shift;
                                 for (auto&& [ lhs, rhs ] : std::views::zip(
                                         m_bits | std::views::reverse,
                                         m_bits | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform(
                                                 [=](auto first, auto second) -> block_type
                                                 {
                                                         return
-                                                                static_cast<block_type>(second << L_shift) |
-                                                                static_cast<block_type>(first  >> R_shift)
+                                                                static_cast<block_type>(first  << L_shift) |
+                                                                static_cast<block_type>(second >> R_shift)
                                                         ;
                                                 }
                                         )
                                 )) {
                                         lhs = rhs;
                                 }
-                                m_bits[n_blocks] = static_cast<block_type>(m_bits[0] >> R_shift);
+                                m_bits[n_blocks] = static_cast<block_type>(m_bits[0] << L_shift);
                         }
                         std::ranges::fill_n(
                                 std::ranges::next(m_bits.rbegin(), static_cast<difference_type>(num_blocks - n_blocks)),
@@ -475,28 +475,28 @@ public:
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        m_bits[0] <<= n;
+                        m_bits[0] >>= n;
                 } else if constexpr (num_blocks >= 2) {
-                        auto const [ n_blocks, L_shift ] = div_mod(n, block_size);
-                        if (L_shift == 0) {
+                        auto const [ n_blocks, R_shift ] = div_mod(n, block_size);
+                        if (R_shift == 0) {
                                 std::shift_left(m_bits.begin(), m_bits.end(), static_cast<difference_type>(n_blocks));
                         } else {
-                                auto const R_shift = block_size - L_shift;
+                                auto const L_shift = block_size - R_shift;
                                 for (auto&& [ lhs, rhs ] : std::views::zip(
                                         m_bits,
                                         m_bits | std::views::drop(n_blocks) | std::views::pairwise_transform(
                                                 [=](auto first, auto second) -> block_type
                                                 {
                                                         return
-                                                                static_cast<block_type>(first  << L_shift) |
-                                                                static_cast<block_type>(second >> R_shift)
+                                                                static_cast<block_type>(first  >> R_shift) |
+                                                                static_cast<block_type>(second << L_shift)
                                                         ;
                                                 }
                                         )
                                 )) {
                                         lhs = rhs;
                                 }
-                                m_bits[last_block - n_blocks] = static_cast<block_type>(m_bits[last_block] << L_shift);
+                                m_bits[last_block - n_blocks] = static_cast<block_type>(m_bits[last_block] >> R_shift);
                         }
                         std::ranges::fill_n(
                                 std::ranges::next(m_bits.begin(), static_cast<difference_type>(num_blocks - n_blocks)),
@@ -646,11 +646,10 @@ private:
         static constexpr auto unit            = static_cast<block_type>( 1);
         static constexpr auto zero            = static_cast<block_type>( 0);
         static constexpr auto ones            = static_cast<block_type>(-1);
-        static constexpr auto used_bits       = static_cast<block_type>(ones << num_unused_bits);
+        static constexpr auto used_bits       = static_cast<block_type>(ones >> num_unused_bits);
         static constexpr auto unused_bits     = static_cast<block_type>(~used_bits);
-        static constexpr auto left_mask       = static_cast<block_type>(unit << left_bit);
 
-        [[nodiscard]] static constexpr bool is_valid(size_type n) noexcept
+        [[nodiscard]] static constexpr bool is_valid(size_type n [[maybe_unused]]) noexcept
         {
                 if constexpr (N == 0) {
                         return false;
@@ -684,7 +683,7 @@ private:
         {
                 assert(is_valid(n));
                 auto const [ index, offset ] = index_offset(n);
-                return { self.m_bits[index], static_cast<block_type>(left_mask >> offset) };
+                return { self.m_bits[index], static_cast<block_type>(unit << offset) };
         }
 
         constexpr void erase_unused() noexcept
@@ -716,13 +715,13 @@ private:
         {
                 assert(not empty());
                 if constexpr (num_blocks == 1) {
-                        return bit::firstl_one(m_bits[0]);
+                        return bit::firstr_one(m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
-                        return m_bits[0] ? bit::firstl_one(m_bits[0]) : block_size + bit::firstl_one(m_bits[1]);
+                        return m_bits[0] ? bit::firstr_one(m_bits[0]) : bit::firstr_one(m_bits[1]) + block_size;
                 } else if constexpr (num_blocks >= 3) {
                         auto const front = std::ranges::find_if(m_bits, std::identity());
                         assert(front != std::ranges::end(m_bits));
-                        return std::ranges::subrange(std::ranges::begin(m_bits), front).size() * block_size + bit::firstl_one(*front);
+                        return bit::firstr_one(*front) + std::ranges::subrange(std::ranges::begin(m_bits), front).size() * block_size;
                 }
         }
 
@@ -730,13 +729,13 @@ private:
         {
                 assert(not empty());
                 if constexpr (num_blocks == 1) {
-                        return last_bit - bit::firstr_one(m_bits[0]);
+                        return last_bit - bit::firstl_one(m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
-                        return m_bits[1] ? last_bit - bit::firstr_one(m_bits[1]) : left_bit - bit::firstr_one(m_bits[0]);
+                        return m_bits[1] ? last_bit - bit::firstl_one(m_bits[1]) : left_bit - bit::firstl_one(m_bits[0]);
                 } else if constexpr (num_blocks >= 3) {
                         auto const back = std::ranges::find_if(m_bits | std::views::reverse, std::identity());
                         assert(back != std::ranges::rend(m_bits));
-                        return last_bit - std::ranges::subrange(std::ranges::rbegin(m_bits), back).size() * block_size - bit::firstr_one(*back);
+                        return last_bit - std::ranges::subrange(std::ranges::rbegin(m_bits), back).size() * block_size - bit::firstl_one(*back);
                 }
         }
 
@@ -744,20 +743,20 @@ private:
         {
                 if constexpr (N > 0 and num_blocks == 1) {
                         if (m_bits[0]) {
-                                return bit::firstl_one(m_bits[0]);
+                                return bit::firstr_one(m_bits[0]);
                         }
                 } else if constexpr (num_blocks == 2) {
                         if (m_bits[0]) {
-                                return bit::firstl_one(m_bits[0]);
+                                return bit::firstr_one(m_bits[0]);
                         } else if (m_bits[1]) {
-                                return block_size + bit::firstl_one(m_bits[1]);
+                                return bit::firstr_one(m_bits[1]) + block_size;
                         }
                 } else if constexpr (num_blocks >= 3) {
                         if (
                                 auto const first = std::ranges::find_if(m_bits, std::identity());
                                 first != std::ranges::end(m_bits)
                         ) {
-                                return std::ranges::subrange(std::ranges::begin(m_bits), first).size() * block_size + bit::firstl_one(*first);
+                                return bit::firstr_one(*first) + std::ranges::subrange(std::ranges::begin(m_bits), first).size() * block_size;
                         }
                 }
                 return N;
@@ -770,14 +769,14 @@ private:
                         return N;
                 }
                 if constexpr (num_blocks == 1) {
-                        if (auto const block = static_cast<block_type>(m_bits[0] << n); block) {
-                                return n + bit::firstl_one(block);
+                        if (auto const block = static_cast<block_type>(m_bits[0] >> n); block) {
+                                return bit::firstr_one(block) + n;
                         }
                 } else if constexpr (num_blocks >= 2) {
                         auto [ index, offset ] = index_offset(n);
                         if (offset) {
-                                if (auto const block = static_cast<block_type>(m_bits[index] << offset); block) {
-                                        return n + bit::firstl_one(block);
+                                if (auto const block = static_cast<block_type>(m_bits[index] >> offset); block) {
+                                        return bit::firstr_one(block) + n;
                                 }
                                 ++index;
                                 n += block_size - offset;
@@ -787,7 +786,7 @@ private:
                                 auto const next = std::ranges::find_if(rg, std::identity());
                                 next != std::ranges::end(rg)
                         ) {
-                                return n + std::ranges::subrange(std::ranges::begin(rg), next).size() * block_size + bit::firstl_one(*next);
+                                return bit::firstr_one(*next) + std::ranges::subrange(std::ranges::begin(rg), next).size() * block_size + n;
                         }
                 }
                 return N;
@@ -798,12 +797,12 @@ private:
                 assert(not empty());
                 --n;
                 if constexpr (num_blocks == 1) {
-                        return n - bit::firstr_one(static_cast<block_type>(m_bits[0] >> (left_bit - n)));
+                        return n - bit::firstl_one(static_cast<block_type>(m_bits[0] << (left_bit - n)));
                 } else if constexpr (num_blocks >= 2) {
                         auto [ index, offset ] = index_offset(n);
                         if (auto const reverse_offset = left_bit - offset; reverse_offset) {
-                                if (auto const block = static_cast<block_type>(m_bits[index] >> reverse_offset); block) {
-                                        return n - bit::firstr_one(block);
+                                if (auto const block = static_cast<block_type>(m_bits[index] << reverse_offset); block) {
+                                        return n - bit::firstl_one(block);
                                 }
                                 --index;
                                 n -= block_size - reverse_offset;
@@ -811,7 +810,7 @@ private:
                         auto const rg = m_bits | std::views::reverse | std::views::drop(last_block - index);
                         auto const prev = std::ranges::find_if(rg, std::identity());
                         assert(prev != std::ranges::end(rg));
-                        return n - std::ranges::subrange(std::ranges::begin(rg), prev).size() * block_size - bit::firstr_one(*prev);
+                        return n - std::ranges::subrange(std::ranges::begin(rg), prev).size() * block_size - bit::firstl_one(*prev);
                 }
         }
 
@@ -829,6 +828,21 @@ template<std::size_t N, std::unsigned_integral Block>
         }
 }
 
+struct compare_three_way
+{
+        template<std::unsigned_integral Block>
+        [[nodiscard]] constexpr auto operator()(Block lhs, Block rhs) const noexcept
+                -> std::strong_ordering
+        {
+                if (auto const set_symmetric_difference = static_cast<Block>(lhs ^ rhs); set_symmetric_difference == 0) {
+                        return std::strong_ordering::equal;
+                } else {
+                        auto const lsb = static_cast<Block>(1) << bit::firstr_one(set_symmetric_difference); 
+                        return (lhs & lsb) == 0 ? std::strong_ordering::greater : std::strong_ordering::less;
+                }
+        }
+};
+
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator<=>(bit_set<N, Block> const& x [[maybe_unused]], bit_set<N, Block> const& y [[maybe_unused]]) noexcept
         -> std::strong_ordering
@@ -836,7 +850,11 @@ template<std::size_t N, std::unsigned_integral Block>
         if constexpr (N == 0) {
                 return std::strong_ordering::equal;
         } else {
-                return y.m_bits <=> x.m_bits;
+                return std::lexicographical_compare_three_way(
+                        x.m_bits.begin(), x.m_bits.end(), 
+                        y.m_bits.begin(), y.m_bits.end(),
+                        compare_three_way()
+                );
         }
 }
 
