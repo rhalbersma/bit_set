@@ -8,7 +8,6 @@
 #include <boost/test/unit_test.hpp>             // BOOST_CHECK, BOOST_CHECK_EQUAL
 #include <range/v3/view/set_algorithm.hpp>      // set_difference, set_intersection, set_symmetric_difference, set_union
 #include <algorithm>                            // includes
-#include <concepts>                             // integral, same_as
 #include <ranges>                               // to
                                                 // filter, transform
 
