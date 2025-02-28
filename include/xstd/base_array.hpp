@@ -60,11 +60,11 @@ public:
                                 x.m_bits.begin(), x.m_bits.end(), 
                                 y.m_bits.begin(), y.m_bits.end(),
                                 [](auto lhs, auto rhs) {
-                                        if (auto const ssd = static_cast<Block>(lhs ^ rhs); ssd == 0) {
+                                        if (auto const ssd = static_cast<Block>(lhs ^ rhs); ssd == zero) {
                                                 return std::strong_ordering::equal;
                                         } else {
-                                                auto const lsb = static_cast<Block>(1) << countr_zero(ssd); 
-                                                return (lhs & lsb) == 0 ? std::strong_ordering::greater : std::strong_ordering::less;
+                                                auto const lsb = static_cast<Block>(unit << countr_zero(ssd)); 
+                                                return bit_intersects(lhs, lsb) ? std::strong_ordering::less : std::strong_ordering::greater;
                                         }
                                 }
                         );

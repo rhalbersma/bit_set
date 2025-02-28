@@ -7,17 +7,26 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <cassert>      // assert
-#include <concepts>     // constructible_from
+#include <concepts>     // constructible_from, convertible_to
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag
 #include <type_traits>  // is_class_v, is_convertible_v, is_nothrow_constructible_v
 
-namespace xstd::bit::bidirectional {
-
-template<class> class const_iterator;
-template<class> class const_reference;
+namespace xstd::bidirectional {
 
 template<class Bits>
+concept bit_range = requires(Bits const& c, std::size_t n)
+{
+        { find_first(c)   } -> std::convertible_to<std::size_t>;
+        { find_last(c)    } -> std::convertible_to<std::size_t>;
+        { find_next(c, n) } -> std::convertible_to<std::size_t>;
+        { find_prev(c, n) } -> std::convertible_to<std::size_t>;
+};
+        
+template<bit_range> class const_iterator;
+template<bit_range> class const_reference;
+
+template<bit_range Bits>
 class const_iterator
 {
         Bits const* m_ptr;
@@ -72,7 +81,21 @@ public:
         }
 };
 
-template<class Bits>
+template<bit_range Bits>
+[[nodiscard]] constexpr auto begin(Bits const& c) noexcept
+        -> const_iterator<Bits>
+{
+        return { &c, find_first(c) };
+}
+
+template<bit_range Bits>
+[[nodiscard]] constexpr auto end(Bits const& c) noexcept
+        -> const_iterator<Bits>
+{
+        return { &c, find_last(c) };
+}
+
+template<bit_range Bits>
 class const_reference
 {
         Bits const& m_ref;
@@ -105,13 +128,13 @@ public:
         }
 };
 
-template<class Bits>
+template<bit_range Bits>
 [[nodiscard]] constexpr auto format_as(const_reference<Bits> ref) noexcept
         -> std::size_t
 {
         return ref;
 }
 
-}       // namespace xstd::bit::bidirectional
+}       // namespace xstd::bidirectional
 
 #endif  // include guard
