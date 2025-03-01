@@ -59,6 +59,12 @@ template<std::size_t N>
         });
 }
 
+template<std::size_t N>
+[[nodiscard]] bool contains(const bitset<N>& c, std::size_t n) noexcept
+{
+        return c[n];
+}
+
 template<std::size_t N> [[nodiscard]] constexpr auto begin  (      bitset<N>& c) noexcept { return xstd::bidirectional::begin(c); }
 template<std::size_t N> [[nodiscard]] constexpr auto begin  (const bitset<N>& c) noexcept { return xstd::bidirectional::begin(c); }
 template<std::size_t N> [[nodiscard]] constexpr auto end    (      bitset<N>& c) noexcept { return xstd::bidirectional::end(c); }

@@ -46,6 +46,7 @@ class bit_set
         [[nodiscard]] friend constexpr std::size_t find_last (const bit_set& c)                noexcept { return c.m_bits.find_last();  }
         [[nodiscard]] friend constexpr std::size_t find_next (const bit_set& c, std::size_t n) noexcept { return c.m_bits.find_next(n); }
         [[nodiscard]] friend constexpr std::size_t find_prev (const bit_set& c, std::size_t n) noexcept { return c.m_bits.find_prev(n); }
+        [[nodiscard]] friend constexpr bool        contains  (const bit_set& c, std::size_t n) noexcept { return c.m_bits.test(n);      }
 
 public:
         using key_type               = std::size_t;

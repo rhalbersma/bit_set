@@ -32,6 +32,7 @@ class bitset
         [[nodiscard]] friend constexpr std::size_t find_last (const bitset& c)                noexcept { return c.m_bits.find_last();  }
         [[nodiscard]] friend constexpr std::size_t find_next (const bitset& c, std::size_t n) noexcept { return c.m_bits.find_next(n); }
         [[nodiscard]] friend constexpr std::size_t find_prev (const bitset& c, std::size_t n) noexcept { return c.m_bits.find_prev(n); }
+        [[nodiscard]] friend constexpr bool        contains  (const bitset& c, std::size_t n) noexcept { return c.m_bits.test(n);      }
 
 public:
         using block_type             = Block;
