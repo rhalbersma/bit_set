@@ -25,7 +25,6 @@ concept bit_range =
         {
                 { find_next(c, n) } -> std::convertible_to<std::size_t>;
                 { find_prev(c, n) } -> std::convertible_to<std::size_t>;
-                { contains (c, n) } -> std::convertible_to<bool>;
         }
 ;
 
@@ -62,7 +61,6 @@ public:
         [[nodiscard]] constexpr reference operator*() const noexcept
         {
                 assert(m_ptr != nullptr);
-                assert(contains(*m_ptr, m_idx));
                 return { *m_ptr, m_idx };
         }
 
@@ -118,9 +116,7 @@ public:
         :
                 m_ref(ref),
                 m_idx(idx)
-        {
-                assert(contains(m_ref, m_idx));
-        }
+        {}
 
         [[nodiscard]] constexpr iterator operator&() const noexcept
         {

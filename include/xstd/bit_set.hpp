@@ -6,8 +6,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/base_array.hpp>  // base_array
+#include <xstd/bit/array.hpp>   // array
 #include <xstd/proxy.hpp>       // const_iterator, const_reference
+#include <xstd/utility.hpp>     // aligned_size
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
 #include <concepts>             // constructible_from, unsigned_integral
@@ -17,7 +18,7 @@
 #include <iterator>             // make_reverse_iterator, reverse_iterator, 
                                 // input_iterator, sentinel_for
 #include <limits>               // digits
-#include <ranges>               // begin, empty, end, from_range_t, next, rbegin, rend, subrange
+#include <ranges>               // begin, empty, end, from_range_t, next, rbegin, rend
                                 // input_range
 #include <type_traits>          // conditional_t
 #include <utility>              // forward, move, pair
@@ -40,13 +41,12 @@ using bit_set_aligned = bit_set<aligned_size(N, std::numeric_limits<Block>::digi
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
 {
-        base_array<N, Block> m_bits;
+        bit::array<N, Block> m_bits;
 
         [[nodiscard]] friend constexpr std::size_t find_first(const bit_set& c)                noexcept { return c.m_bits.find_first(); }
         [[nodiscard]] friend constexpr std::size_t find_last (const bit_set& c)                noexcept { return c.m_bits.find_last();  }
         [[nodiscard]] friend constexpr std::size_t find_next (const bit_set& c, std::size_t n) noexcept { return c.m_bits.find_next(n); }
         [[nodiscard]] friend constexpr std::size_t find_prev (const bit_set& c, std::size_t n) noexcept { return c.m_bits.find_prev(n); }
-        [[nodiscard]] friend constexpr bool        contains  (const bit_set& c, std::size_t n) noexcept { return c.m_bits.test(n);      }
 
 public:
         using key_type               = std::size_t;
@@ -177,8 +177,8 @@ public:
         constexpr void insert(I first, S last) noexcept
                 requires std::constructible_from<value_type, decltype(*first)>
         {
-                for (auto x : std::ranges::subrange(first, last)) {
-                        m_bits.set(x);
+                while (first != last) {
+                        m_bits.set(*first++);
                 }
         }
 
@@ -213,8 +213,8 @@ public:
 
         constexpr iterator erase(const_iterator first, const_iterator last) noexcept
         {
-                for (auto x : std::ranges::subrange(first, last)) {
-                        m_bits.reset(x);
+                while (first != last) {
+                        m_bits.reset(*first++);
                 }
                 return last;
         }
@@ -314,13 +314,13 @@ private:
 };
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bool operator==(const bit_set<N, Block>& x [[maybe_unused]], const bit_set<N, Block>& y [[maybe_unused]]) noexcept
+[[nodiscard]] constexpr bool operator==(const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept
 {
         return x.m_bits == y.m_bits;
 }
 
 template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<=>(const bit_set<N, Block>& x [[maybe_unused]], const bit_set<N, Block>& y [[maybe_unused]]) noexcept
+[[nodiscard]] constexpr auto operator<=>(const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept
         -> std::strong_ordering
 {
         return x.m_bits <=> y.m_bits;
@@ -334,10 +334,10 @@ constexpr void swap(bit_set<N, Block>& x, bit_set<N, Block>& y) noexcept(noexcep
 
 // erasure for bit_set
 template<std::size_t N, std::unsigned_integral Block, class Predicate>
-constexpr auto erase_if(bit_set<N, Block>& c, Predicate pred)
-        -> typename bit_set<N, Block>::size_type
+constexpr typename bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred)
 {
-        auto const original_size = c.size();
+        // [set.erasure]/1
+        auto original_size = c.size();
         for (auto i = c.begin(), last = c.end(); i != last;) {
                 if (pred(*i)) {
                         i = c.erase(i);

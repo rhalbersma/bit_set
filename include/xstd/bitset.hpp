@@ -9,8 +9,8 @@
 #include <string>               // basic_string, char_traits, string
 #include <iosfwd>               // basic_istream, basic_ostream
 
-#include <xstd/base_array.hpp>  // base_array
-#include <xstd/proxy.hpp>
+#include <xstd/bit/array.hpp>   // array
+#include <xstd/proxy.hpp>       // const_iterator, const_reference
 #include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <format>               // format
@@ -26,13 +26,12 @@ namespace xstd {
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
-        base_array<N, Block> m_bits;
+        bit::array<N, Block> m_bits;
 
         [[nodiscard]] friend constexpr std::size_t find_first(const bitset& c)                noexcept { return c.m_bits.find_first(); }
         [[nodiscard]] friend constexpr std::size_t find_last (const bitset& c)                noexcept { return c.m_bits.find_last();  }
         [[nodiscard]] friend constexpr std::size_t find_next (const bitset& c, std::size_t n) noexcept { return c.m_bits.find_next(n); }
         [[nodiscard]] friend constexpr std::size_t find_prev (const bitset& c, std::size_t n) noexcept { return c.m_bits.find_prev(n); }
-        [[nodiscard]] friend constexpr bool        contains  (const bitset& c, std::size_t n) noexcept { return c.m_bits.test(n);      }
 
 public:
         using block_type             = Block;
@@ -213,7 +212,7 @@ public:
         [[nodiscard]] constexpr std::size_t count() const noexcept { return m_bits.count(); }
         [[nodiscard]] constexpr std::size_t size()  const noexcept { return m_bits.size();  }
 
-        [[nodiscard]] constexpr bool operator== (const bitset& rhs) const noexcept = default;
+        [[nodiscard]] constexpr bool operator== (const bitset& rhs) const noexcept                         = default;
         [[nodiscard]] constexpr auto operator<=>(const bitset& rhs) const noexcept -> std::strong_ordering = default;
 
         [[nodiscard]] constexpr bool test(std::size_t pos) const

@@ -45,12 +45,6 @@ template<std::unsigned_integral Block, class Allocator>
         });
 }
 
-template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] constexpr bool contains(dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept
-{
-        return c[n];
-}
-
 template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto begin  (      dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::bidirectional::begin(c); }
 template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto begin  (const dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::bidirectional::begin(c); }
 template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto end    (      dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::bidirectional::end(c); }
