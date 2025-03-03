@@ -59,7 +59,7 @@ public:
                                         if (auto const ssd = static_cast<Block>(lhs ^ rhs); ssd == zero) {
                                                 return std::strong_ordering::equal;
                                         } else {
-                                                auto const lsb = static_cast<Block>(unit << countr_zero(ssd)); 
+                                                auto const lsb = bit_mask(countr_zero(ssd)); 
                                                 return bit::intersects(lhs, lsb) ? std::strong_ordering::less : std::strong_ordering::greater;
                                         }
                                 }
@@ -564,9 +564,14 @@ private:
         {
                 if constexpr (num_blocks == 1) {
                         return { 0uz, n };
-                } else if constexpr (num_blocks >= 2) {
+                } else {
                         return div_mod(n, bits_per_block);
                 }
+        }
+
+        [[nodiscard]] static constexpr auto bit_mask(std::size_t n) noexcept
+        {
+                return static_cast<Block>(unit << n);
         }
 
         [[nodiscard]] constexpr auto block_mask(this auto&& self, std::size_t n) noexcept
@@ -577,7 +582,7 @@ private:
                 >
         {
                 auto const [ index, offset ] = index_offset(n);
-                return { self.m_bits[index], static_cast<Block>(unit << offset) };
+                return { self.m_bits[index], bit_mask(offset) };
         }
 
         constexpr void erase_unused() noexcept

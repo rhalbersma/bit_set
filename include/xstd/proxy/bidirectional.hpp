@@ -50,7 +50,9 @@ public:
         :
                 m_ptr(ptr),
                 m_idx(idx)
-        {}
+        {
+                assert(m_ptr != nullptr);
+        }
 
         [[nodiscard]] friend constexpr bool operator==(const_iterator lhs, const_iterator rhs) noexcept
         {
