@@ -5,7 +5,7 @@
 
 set(Boost_USE_STATIC_LIBS ON)
 find_package(
-    Boost REQUIRED COMPONENTS
+    Boost CONFIG REQUIRED COMPONENTS
     unit_test_framework
 )
 find_package(fmt REQUIRED)
