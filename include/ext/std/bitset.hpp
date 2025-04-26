@@ -59,10 +59,10 @@ template<std::size_t N>
         });
 }
 
-template<std::size_t N> [[nodiscard]] constexpr auto begin  (      bitset<N>& c) noexcept { return xstd::bidirectional::begin(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto begin  (const bitset<N>& c) noexcept { return xstd::bidirectional::begin(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto end    (      bitset<N>& c) noexcept { return xstd::bidirectional::end(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto end    (const bitset<N>& c) noexcept { return xstd::bidirectional::end(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto begin  (      bitset<N>& c) noexcept { return xstd::proxy::bidirectional::begin(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto begin  (const bitset<N>& c) noexcept { return xstd::proxy::bidirectional::begin(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto end    (      bitset<N>& c) noexcept { return xstd::proxy::bidirectional::end(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto end    (const bitset<N>& c) noexcept { return xstd::proxy::bidirectional::end(c); }
 template<std::size_t N> [[nodiscard]] constexpr auto cbegin (const bitset<N>& c) noexcept { return std::ranges::begin(c); }
 template<std::size_t N> [[nodiscard]] constexpr auto cend   (const bitset<N>& c) noexcept { return std::ranges::end(c);   }
 template<std::size_t N> [[nodiscard]] constexpr auto rbegin (      bitset<N>& c) noexcept { return std::make_reverse_iterator(std::ranges::end(c)); }

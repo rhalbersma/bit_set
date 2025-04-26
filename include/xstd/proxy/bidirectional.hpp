@@ -12,7 +12,7 @@
 #include <iterator>     // bidirectional_iterator_tag
 #include <type_traits>  // is_class_v, is_convertible_v, is_nothrow_constructible_v
 
-namespace xstd::bidirectional {
+namespace xstd::proxy::bidirectional {
 
 template<class Bits>
 concept bit_range = 
@@ -145,6 +145,6 @@ template<bit_range Bits>
         return ref;
 }
 
-}       // namespace xstd::bidirectional
+}       // namespace xstd::proxy::bidirectional
 
 #endif  // include guard

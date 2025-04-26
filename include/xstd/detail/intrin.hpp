@@ -1,5 +1,5 @@
-#ifndef XSTD_BIT_INTRIN_HPP
-#define XSTD_BIT_INTRIN_HPP
+#ifndef XSTD_DETAIL_INTRIN_HPP
+#define XSTD_DETAIL_INTRIN_HPP
 
 //          Copyright Rein Halbersma 2014-2025.
 // Distributed under the Boost Software License, Version 1.0.
@@ -10,7 +10,7 @@
 #include <concepts>     // unsigned_integral
 #include <cstddef>      // size_t
 
-namespace xstd::bit {
+namespace xstd::detail {
 
 [[nodiscard]] constexpr std::size_t countl_zero(std::unsigned_integral auto block) noexcept
 {
@@ -27,6 +27,6 @@ namespace xstd::bit {
         return static_cast<std::size_t>(std::popcount(block));
 }
 
-}       // namespace xstd::bit
+}       // namespace xstd::detail
 
 #endif  // include guard

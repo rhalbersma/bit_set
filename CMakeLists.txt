@@ -3,7 +3,7 @@
 #    (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 4.0)
 project(
     bit_set
     HOMEPAGE_URL https://github.com/rhalbersma/${PROJECT_NAME}
@@ -25,7 +25,7 @@ target_include_directories(
 
 target_compile_features(
     ${PROJECT_NAME} INTERFACE
-    cxx_std_23
+    cxx_std_26
 )
 
 include(CTest)

@@ -1,5 +1,5 @@
-#ifndef XSTD_BIT_PRED_HPP
-#define XSTD_BIT_PRED_HPP
+#ifndef XSTD_DETAIL_PRED_HPP
+#define XSTD_DETAIL_PRED_HPP
 
 //          Copyright Rein Halbersma 2014-2025.
 // Distributed under the Boost Software License, Version 1.0.
@@ -8,26 +8,26 @@
 
 #include <concepts>     // unsigned_integral
 
-namespace xstd::bit {
+namespace xstd::detail {
 
 template<std::unsigned_integral Block>
-[[nodiscard]] constexpr bool intersects(Block lhs, Block rhs) noexcept
+[[nodiscard]] constexpr bool bit_intersects(Block lhs, Block rhs) noexcept
 {
         return lhs & rhs;
 }   
 
 template<std::unsigned_integral Block>
-[[nodiscard]] constexpr bool is_subset_of(Block lhs, Block rhs) noexcept
+[[nodiscard]] constexpr bool bit_is_subset_of(Block lhs, Block rhs) noexcept
 {
         return not (lhs & ~rhs);
 }  
 
 template<std::unsigned_integral Block>
-[[nodiscard]] constexpr bool not_equal_to(Block lhs, Block rhs) noexcept
+[[nodiscard]] constexpr bool bit_not_equal_to(Block lhs, Block rhs) noexcept
 {
         return lhs != rhs;
 }
 
-}       // namespace xstd::bit
+}       // namespace xstd::detail
 
 #endif  // include guard

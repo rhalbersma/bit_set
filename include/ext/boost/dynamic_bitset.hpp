@@ -45,10 +45,10 @@ template<std::unsigned_integral Block, class Allocator>
         });
 }
 
-template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto begin  (      dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::bidirectional::begin(c); }
-template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto begin  (const dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::bidirectional::begin(c); }
-template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto end    (      dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::bidirectional::end(c); }
-template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto end    (const dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::bidirectional::end(c); }
+template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto begin  (      dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::proxy::bidirectional::begin(c); }
+template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto begin  (const dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::proxy::bidirectional::begin(c); }
+template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto end    (      dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::proxy::bidirectional::end(c); }
+template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto end    (const dynamic_bitset<Block, Allocator>& c) noexcept { return xstd::proxy::bidirectional::end(c); }
 template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto cbegin (const dynamic_bitset<Block, Allocator>& c) noexcept { return std::ranges::begin(c); }
 template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto cend   (const dynamic_bitset<Block, Allocator>& c) noexcept { return std::ranges::end(c);   }
 template<std::unsigned_integral Block, class Allocator> [[nodiscard]] constexpr auto rbegin (      dynamic_bitset<Block, Allocator>& c) noexcept { return std::make_reverse_iterator(std::ranges::end(c)); }

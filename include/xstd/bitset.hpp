@@ -6,27 +6,27 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <string>               // basic_string, char_traits, string
-#include <iosfwd>               // basic_istream, basic_ostream
+#include <string>                       // basic_string, char_traits, string
+#include <iosfwd>                       // basic_istream, basic_ostream
 
-#include <xstd/bit/array.hpp>   // array
-#include <xstd/proxy.hpp>       // const_iterator, const_reference
-#include <concepts>             // unsigned_integral
-#include <cstddef>              // size_t
-#include <format>               // format
-#include <ios>                  // ios_base
-#include <locale>               // ctype, use_facet
-#include <memory>               // allocator
-#include <ranges>               // iota
-#include <source_location>      // source_location
-#include <stdexcept>            // invalid_argument, out_of_range, overflow_error
+#include <xstd/detail/array.hpp>        // array
+#include <xstd/proxy.hpp>               // const_iterator, const_reference
+#include <concepts>                     // unsigned_integral
+#include <cstddef>                      // size_t
+#include <format>                       // format
+#include <ios>                          // ios_base
+#include <locale>                       // ctype, use_facet
+#include <memory>                       // allocator
+#include <ranges>                       // iota
+#include <source_location>              // source_location
+#include <stdexcept>                    // invalid_argument, out_of_range, overflow_error
 
 namespace xstd {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
-        bit::array<N, Block> m_bits;
+        detail::array<N, Block> m_bits;
 
         [[nodiscard]] friend constexpr std::size_t find_first(const bitset& c)                noexcept { return c.m_bits.find_first(); }
         [[nodiscard]] friend constexpr std::size_t find_last (const bitset& c)                noexcept { return c.m_bits.find_last();  }
@@ -35,7 +35,7 @@ class bitset
 
 public:
         using block_type             = Block;
-        using iterator               = bidirectional::const_iterator<bitset>;
+        using iterator               = proxy::bidirectional::const_iterator<bitset>;
         using const_iterator         = iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;        
@@ -86,13 +86,13 @@ public:
         [[nodiscard]] constexpr auto begin(this auto&& self) noexcept
                 -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
         {
-                return bidirectional::begin(self);
+                return proxy::bidirectional::begin(self);
         }
 
         [[nodiscard]] constexpr auto end(this auto&& self) noexcept
                 -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
         {
-                return bidirectional::end(self);
+                return proxy::bidirectional::end(self);
         }
 
         [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept
