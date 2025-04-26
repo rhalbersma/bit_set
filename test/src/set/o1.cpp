@@ -42,8 +42,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
 {
         all_singleton_arrays<T>([](auto const& a1) {
                 constructor<T>()(a1.begin(), a1.end());
+                // boost::container::flat_set<std::size_t> does not have from_range constructor
+                if constexpr (not std::same_as<T, boost::container::flat_set<std::size_t>>) {
+                        constructor<T>()(std::from_range, a1);
+                }
         });
         all_singleton_ilists<T>([](auto ilist1) {
+                // boost::container::flat_set<std::size_t> does not have from_range constructor
+                if constexpr (not std::same_as<T, boost::container::flat_set<std::size_t>>) {
+                        constructor<T>()(std::from_range, ilist1);
+                }
                 constructor<T>()(ilist1);
         });
 

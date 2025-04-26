@@ -151,6 +151,16 @@ struct constructor
                 BOOST_CHECK(u == u1);                                                   // [associative.reqmts.general]/27
         }
 
+        template<std::ranges::input_range R>
+        auto operator()(std::from_range_t, R&& rg) const
+        {
+                static_assert(std::default_initializable<typename X::key_compare>);     // [associative.reqmts.general]/32
+                X u(std::from_range, rg);
+                X u1;
+                u1.insert(std::ranges::begin(rg), std::ranges::end(rg));
+                BOOST_CHECK(u == u1);                                                   // [associative.reqmts.general]/33
+        }
+
         auto operator()(std::initializer_list<typename X::value_type> il) const
         {
                 X u(il);
