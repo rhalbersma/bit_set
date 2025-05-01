@@ -1,5 +1,5 @@
-#ifndef XSTD_XSTD_SUBDIR_BIT_SUBDIR_PRED_HPP
-#define XSTD_XSTD_SUBDIR_BIT_SUBDIR_PRED_HPP
+#ifndef XSTD_SUBDIR_BIT_SUBDIR_PRED_HPP
+#define XSTD_SUBDIR_BIT_SUBDIR_PRED_HPP
 
 //          Copyright Rein Halbersma 2014-2025.
 // Distributed under the Boost Software License, Version 1.0.
