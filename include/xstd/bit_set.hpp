@@ -6,22 +6,22 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/detail/array.hpp>        // array
-#include <xstd/proxy.hpp>               // const_iterator, const_reference
-#include <xstd/utility.hpp>             // aligned_size
-#include <cassert>                      // assert
-#include <compare>                      // strong_ordering
-#include <concepts>                     // constructible_from, unsigned_integral
-#include <cstddef>                      // ptrdiff_t, size_t
-#include <functional>                   // less
-#include <initializer_list>             // initializer_list
-#include <iterator>                     // make_reverse_iterator, reverse_iterator, 
-                                        // input_iterator, sentinel_for
-#include <limits>                       // digits
-#include <ranges>                       // begin, empty, end, from_range_t, next, rbegin, rend
-                                        // input_range
-#include <type_traits>                  // conditional_t
-#include <utility>                      // forward, move, pair
+#include <xstd/bit/array.hpp>   // array
+#include <xstd/proxy.hpp>       // const_iterator, const_reference
+#include <xstd/utility.hpp>     // aligned_size
+#include <cassert>              // assert
+#include <compare>              // strong_ordering
+#include <concepts>             // constructible_from, unsigned_integral
+#include <cstddef>              // ptrdiff_t, size_t
+#include <functional>           // less
+#include <initializer_list>     // initializer_list
+#include <iterator>             // make_reverse_iterator, reverse_iterator, 
+                                // input_iterator, sentinel_for
+#include <limits>               // digits
+#include <ranges>               // begin, empty, end, from_range_t, next, rbegin, rend
+                                // input_range
+#include <type_traits>          // conditional_t
+#include <utility>              // forward, move, pair
 
 namespace xstd {
 
@@ -41,7 +41,7 @@ using bit_set_aligned = bit_set<aligned_size(N, std::numeric_limits<Block>::digi
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bit_set
 {
-        detail::array<N, Block> m_bits;
+        bit::array<N, Block> m_bits{};
 
         [[nodiscard]] friend constexpr std::size_t find_first(const bit_set& c)                noexcept { return c.m_bits.find_first(); }
         [[nodiscard]] friend constexpr std::size_t find_last (const bit_set& c)                noexcept { return c.m_bits.find_last();  }

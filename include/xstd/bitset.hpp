@@ -6,27 +6,27 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <string>                       // basic_string, char_traits, string
-#include <iosfwd>                       // basic_istream, basic_ostream
+#include <string>               // basic_string, char_traits, string
+#include <iosfwd>               // basic_istream, basic_ostream
 
-#include <xstd/detail/array.hpp>        // array
-#include <xstd/proxy.hpp>               // const_iterator, const_reference
-#include <concepts>                     // unsigned_integral
-#include <cstddef>                      // size_t
-#include <format>                       // format
-#include <ios>                          // ios_base
-#include <locale>                       // ctype, use_facet
-#include <memory>                       // allocator
-#include <ranges>                       // iota
-#include <source_location>              // source_location
-#include <stdexcept>                    // invalid_argument, out_of_range, overflow_error
+#include <xstd/bit/array.hpp>   // array
+#include <xstd/proxy.hpp>       // const_iterator, const_reference
+#include <concepts>             // unsigned_integral
+#include <cstddef>              // size_t
+#include <format>               // format
+#include <ios>                  // ios_base
+#include <locale>               // ctype, use_facet
+#include <memory>               // allocator
+#include <ranges>               // iota
+#include <source_location>      // source_location
+#include <stdexcept>            // invalid_argument, out_of_range, overflow_error
 
 namespace xstd {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 class bitset
 {
-        detail::array<N, Block> m_bits;
+        bit::array<N, Block> m_bits{};
 
         [[nodiscard]] friend constexpr std::size_t find_first(const bitset& c)                noexcept { return c.m_bits.find_first(); }
         [[nodiscard]] friend constexpr std::size_t find_last (const bitset& c)                noexcept { return c.m_bits.find_last();  }
