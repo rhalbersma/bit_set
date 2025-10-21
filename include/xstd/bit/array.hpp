@@ -10,7 +10,7 @@
 #include <xstd/bit/pred.hpp>    // intersects, is_subset_of, not_equal_to
 #include <xstd/utility.hpp>     // aligned_size
 #include <algorithm>            // lexicographical_compare_three_way (P2022R3) 
-                                // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
+                                // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                // array
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
@@ -239,20 +239,12 @@ struct array
                                 std::ranges::shift_right(m_bits, static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const R_shift = bits_per_block - L_shift;
-                                for (auto&& [ lhs, rhs ] : std::views::zip(
-                                        m_bits | std::views::reverse,
-                                        m_bits | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform(
-                                                [=](auto first, auto second) -> Block
-                                                {
-                                                        return
-                                                                static_cast<Block>(first  << L_shift) |
-                                                                static_cast<Block>(second >> R_shift)
-                                                        ;
-                                                }
-                                        )
-                                )) {
-                                        lhs = rhs;
-                                }
+                                std::ranges::copy(
+                                        m_bits | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform([=](auto first, auto second) -> Block {
+                                                return static_cast<Block>(first << L_shift) | static_cast<Block>(second >> R_shift);
+                                        }),
+                                        m_bits.rbegin()
+                                );
                                 m_bits[n_blocks] = static_cast<Block>(m_bits[0] << L_shift);
                         }
                         std::ranges::fill_n(
@@ -275,20 +267,12 @@ struct array
                                 std::ranges::shift_left(m_bits, static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const L_shift = bits_per_block - R_shift;
-                                for (auto&& [ lhs, rhs ] : std::views::zip(
-                                        m_bits,
-                                        m_bits | std::views::drop(n_blocks) | std::views::pairwise_transform(
-                                                [=](auto first, auto second) -> Block
-                                                {
-                                                        return
-                                                                static_cast<Block>(first  >> R_shift) |
-                                                                static_cast<Block>(second << L_shift)
-                                                        ;
-                                                }
-                                        )
-                                )) {
-                                        lhs = rhs;
-                                }
+                                std::ranges::copy(
+                                        m_bits | std::views::drop(n_blocks) | std::views::pairwise_transform([=](auto first, auto second) -> Block {
+                                                return static_cast<Block>(first >> R_shift) | static_cast<Block>(second << L_shift);
+                                        }),
+                                        m_bits.begin()
+                                );
                                 m_bits[last_block - n_blocks] = static_cast<Block>(m_bits[last_block] >> R_shift);
                         }
                         std::ranges::fill_n(

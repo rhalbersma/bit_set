@@ -113,16 +113,16 @@ public:
         [[nodiscard]] constexpr const_reverse_iterator crend()   const noexcept { return rend();   }
 
         // bitset operations
-                      constexpr bitset& operator&=(const bitset& rhs) noexcept { m_bits &= rhs.m_bits; return *this; }
-                      constexpr bitset& operator|=(const bitset& rhs) noexcept { m_bits |= rhs.m_bits; return *this; }
-                      constexpr bitset& operator^=(const bitset& rhs) noexcept { m_bits ^= rhs.m_bits; return *this; }
-                      constexpr bitset& operator-=(const bitset& rhs) noexcept { m_bits -= rhs.m_bits; return *this; }
+        constexpr bitset& operator&=(const bitset& rhs) noexcept { m_bits &= rhs.m_bits; return *this; }
+        constexpr bitset& operator|=(const bitset& rhs) noexcept { m_bits |= rhs.m_bits; return *this; }
+        constexpr bitset& operator^=(const bitset& rhs) noexcept { m_bits ^= rhs.m_bits; return *this; }
+        constexpr bitset& operator-=(const bitset& rhs) noexcept { m_bits -= rhs.m_bits; return *this; }
 
-                      constexpr bitset& operator<<=(std::size_t pos) noexcept { if (pos < N) { m_bits <<= pos; } else { m_bits.reset(); } return *this; }
-                      constexpr bitset& operator>>=(std::size_t pos) noexcept { if (pos < N) { m_bits >>= pos; } else { m_bits.reset(); } return *this; }
+        constexpr bitset& operator<<=(std::size_t pos) noexcept { if (pos < N) { m_bits <<= pos; } else { m_bits.reset(); } return *this; }
+        constexpr bitset& operator>>=(std::size_t pos) noexcept { if (pos < N) { m_bits >>= pos; } else { m_bits.reset(); } return *this; }
 
-        [[nodiscard]] constexpr bitset  operator<<(std::size_t pos) const noexcept { auto nrv = *this; nrv <<= pos; return nrv; }
-        [[nodiscard]] constexpr bitset  operator>>(std::size_t pos) const noexcept { auto nrv = *this; nrv >>= pos; return nrv; }
+        [[nodiscard]] constexpr bitset operator<<(std::size_t pos) const noexcept { auto nrv = *this; nrv <<= pos; return nrv; }
+        [[nodiscard]] constexpr bitset operator>>(std::size_t pos) const noexcept { auto nrv = *this; nrv >>= pos; return nrv; }
 
         constexpr bitset& set() noexcept
         {
@@ -253,16 +253,6 @@ private:
                         std::format(
                                 "{}:{}:{}: exception: ‘{}‘: argument ‘pos‘ is out of range [{} >= {}]",
                                 loc.file_name(), loc.line(), loc.column(), loc.function_name(), pos, N
-                        )
-                );
-        }
-
-        static constexpr auto overflow_error(std::string const& type, std::size_t size, std::source_location const& loc = std::source_location::current())
-        {
-                return std::overflow_error(
-                        std::format(
-                                "{}:{}:{}: exception: there are too many bits to be represented in a {} [{} >= {}]",
-                                loc.file_name(), loc.line(), loc.column(), loc.function_name(), type, *std::prev(end()), size
                         )
                 );
         }

@@ -34,6 +34,8 @@ set(cxx_compile_options_warnings
         -Wno-c++98-compat-pedantic
         -Wno-c++20-compat
         -Wno-c++20-compat-pedantic
+        -Wno-nrvo
+        -Wno-unsafe-buffer-usage
         -Wno-disabled-macro-expansion       # triggered by Boost.Test
         -Wno-global-constructors            # triggered by Boost.Test
         -Wno-used-but-marked-unused         # triggered by Boost.Test
