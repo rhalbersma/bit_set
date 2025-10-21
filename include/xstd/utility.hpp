@@ -12,7 +12,7 @@ namespace xstd {
 
 [[nodiscard]] constexpr std::size_t aligned_size(std::size_t size, std::size_t alignment) noexcept
 {
-        return ((size - 1 + alignment) / alignment) * alignment;
+        return ((size - 1uz + alignment) / alignment) * alignment;
 }
 
 }       // namespace xstd

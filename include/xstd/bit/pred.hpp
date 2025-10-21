@@ -9,7 +9,6 @@
 #include <concepts>     // unsigned_integral
 
 namespace xstd::bit {
-namespace block_adl {
 
 template<std::unsigned_integral Block>
 [[nodiscard]] constexpr bool intersects(Block lhs, Block rhs) noexcept
@@ -28,10 +27,6 @@ template<std::unsigned_integral Block>
 {
         return lhs != rhs;
 }
-
-}       // namespace block_adl
-
-using namespace block_adl;
 
 }       // namespace xstd::bit
 

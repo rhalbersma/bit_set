@@ -9,8 +9,8 @@
 #include <xstd/bit/intrin.hpp>  // countl_zero, countr_zero, popcount
 #include <xstd/bit/pred.hpp>    // intersects, is_subset_of, not_equal_to
 #include <xstd/utility.hpp>     // aligned_size
-#include <algorithm>            // lexicographical_compare_three_way, shift_left, shift_right
-                                // all_of, any_of, fill_n, find_if, fold_left, max
+#include <algorithm>            // lexicographical_compare_three_way (P2022R3) 
+                                // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                // array
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
@@ -236,7 +236,7 @@ struct array
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div_mod(n, bits_per_block);
                         if (L_shift == 0) {
-                                std::shift_right(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
+                                std::ranges::shift_right(m_bits, static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const R_shift = bits_per_block - L_shift;
                                 for (auto&& [ lhs, rhs ] : std::views::zip(
@@ -272,7 +272,7 @@ struct array
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div_mod(n, bits_per_block);
                         if (R_shift == 0) {
-                                std::shift_left(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
+                                std::ranges::shift_left(m_bits, static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const L_shift = bits_per_block - R_shift;
                                 for (auto&& [ lhs, rhs ] : std::views::zip(
@@ -550,14 +550,16 @@ struct array
         }
 
         [[nodiscard]] static constexpr auto div_mod(std::size_t numer, std::size_t denom) noexcept
+                -> std::pair<std::size_t, std::size_t>
         {
-                return std::pair{ numer / denom, numer % denom };
+                return { numer / denom, numer % denom };
         }
 
         [[nodiscard]] static constexpr auto index_offset(std::size_t n) noexcept
+                -> std::pair<std::size_t, std::size_t>
         {
                 if constexpr (num_blocks == 1) {
-                        return std::pair{ 0uz, n };
+                        return { 0uz, n };
                 } else {
                         return div_mod(n, bits_per_block);
                 }

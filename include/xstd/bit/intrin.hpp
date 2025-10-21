@@ -11,7 +11,6 @@
 #include <cstddef>      // size_t
 
 namespace xstd::bit {
-namespace block_adl {
 
 [[nodiscard]] constexpr std::size_t countl_zero(std::unsigned_integral auto block) noexcept
 {
@@ -27,10 +26,6 @@ namespace block_adl {
 {
         return static_cast<std::size_t>(std::popcount(block));
 }
-
-}       // namespace block_adl
-
-using namespace block_adl;
 
 }       // namespace xstd::bit
 
