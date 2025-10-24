@@ -9,7 +9,7 @@
 #include <xstd/bit/intrin.hpp>  // countl_zero, countr_zero, popcount
 #include <xstd/bit/pred.hpp>    // intersects, is_subset_of, not_equal_to
 #include <xstd/utility.hpp>     // aligned_size
-#include <algorithm>            // lexicographical_compare_three_way (P2022R3) 
+#include <algorithm>            // lexicographical_compare_three_way (ranges::lexicographical_compare when P2022R3 is accepted) 
                                 // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                // array
 #include <cassert>              // assert
@@ -18,9 +18,9 @@
 #include <cstddef>              // ptrdiff_t, size_t
 #include <functional>           // plus
 #include <limits>               // digits
-#include <ranges>               // begin, end, next, rbegin, rend, subrange
+#include <ranges>               // distance, prev (views::drop_last when P22014R2 is accepted)
                                 // drop, pairwise_transform, reverse, take, transform, zip
-#include <type_traits>          // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
+#include <type_traits>          // is_nothrow_swappable_v
 #include <utility>              // pair
 
 namespace xstd::bit {
@@ -73,8 +73,8 @@ struct array
                         return m_bits[0] != zero ? bit::countr_zero(m_bits[0]) : bit::countr_zero(m_bits[1]) + bits_per_block;
                 } else if constexpr (num_blocks >= 3) {
                         auto const front = std::ranges::find_if(m_bits, [](auto block) { return block != zero; });
-                        assert(front != std::ranges::end(m_bits));
-                        return bit::countr_zero(*front) + std::ranges::subrange(std::ranges::begin(m_bits), front).size() * bits_per_block;
+                        assert(front != m_bits.end());
+                        return bit::countr_zero(*front) + bits_per_block * distance(m_bits.begin(), front);
                 }
         }
 
@@ -87,8 +87,8 @@ struct array
                         return m_bits[1] != zero ? last_bit - bit::countl_zero(m_bits[1]) : left_bit - bit::countl_zero(m_bits[0]);
                 } else if constexpr (num_blocks >= 3) {
                         auto const back = std::ranges::find_if(m_bits | std::views::reverse, [](auto block) { return block != zero; });
-                        assert(back != std::ranges::rend(m_bits));
-                        return last_bit - std::ranges::subrange(std::ranges::rbegin(m_bits), back).size() * bits_per_block - bit::countl_zero(*back);
+                        assert(back != m_bits.rend());
+                        return last_bit - bit::countl_zero(*back) - bits_per_block * distance(m_bits.rbegin(), back);
                 }
         }
 
@@ -105,11 +105,8 @@ struct array
                                 return bit::countr_zero(m_bits[1]) + bits_per_block;
                         }
                 } else if constexpr (num_blocks >= 3) {
-                        if (
-                                auto const first = std::ranges::find_if(m_bits, [](auto block) { return block != zero; });
-                                first != std::ranges::end(m_bits)
-                        ) {
-                                return bit::countr_zero(*first) + std::ranges::subrange(std::ranges::begin(m_bits), first).size() * bits_per_block;
+                        if (auto const first = std::ranges::find_if(m_bits, [](auto block) { return block != zero; }); first != m_bits.end()) {
+                                return bit::countr_zero(*first) + bits_per_block * distance(m_bits.begin(), first);
                         }
                 }
                 return N;
@@ -128,23 +125,20 @@ struct array
                 }
                 if constexpr (num_blocks == 1) {
                         if (auto const block = static_cast<Block>(m_bits[0] >> n); block != zero) {
-                                return bit::countr_zero(block) + n;
+                                return n + bit::countr_zero(block);
                         }
                 } else if constexpr (num_blocks >= 2) {
                         auto [ index, offset ] = index_offset(n);
                         if (offset != 0) {
                                 if (auto const block = static_cast<Block>(m_bits[index] >> offset); block != zero) {
-                                        return bit::countr_zero(block) + n;
+                                        return n + bit::countr_zero(block);
                                 }
                                 ++index;
                                 n += bits_per_block - offset;
                         }
                         auto const rg = m_bits | std::views::drop(index);
-                        if (
-                                auto const next = std::ranges::find_if(rg, [](auto block) { return block != zero; });
-                                next != std::ranges::end(rg)
-                        ) {
-                                return bit::countr_zero(*next) + std::ranges::subrange(std::ranges::begin(rg), next).size() * bits_per_block + n;
+                        if (auto const next = std::ranges::find_if(rg, [](auto block) { return block != zero; }); next != rg.end()) {
+                                return n + bit::countr_zero(*next) + bits_per_block * distance(rg.begin(), next);
                         }
                 }
                 return N;
@@ -167,8 +161,8 @@ struct array
                         }
                         auto const rg = m_bits | std::views::reverse | std::views::drop(last_block - index);
                         auto const prev = std::ranges::find_if(rg, [](auto block) { return block != zero; });
-                        assert(prev != std::ranges::end(rg));
-                        return n - std::ranges::subrange(std::ranges::begin(rg), prev).size() * bits_per_block - bit::countl_zero(*prev);
+                        assert(prev != rg.end());
+                        return n - bit::countl_zero(*prev) - bits_per_block * distance(rg.begin(), prev);
                 }
         }
 
@@ -247,11 +241,7 @@ struct array
                                 );
                                 m_bits[n_blocks] = static_cast<Block>(m_bits[0] << L_shift);
                         }
-                        std::ranges::fill_n(
-                                std::ranges::next(m_bits.rbegin(), static_cast<std::ptrdiff_t>(num_blocks - n_blocks)),
-                                static_cast<std::ptrdiff_t>(n_blocks),
-                                zero
-                        );
+                        std::ranges::fill_n(std::ranges::prev(m_bits.rend(), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);
                 }
                 erase_unused();
         }
@@ -275,11 +265,7 @@ struct array
                                 );
                                 m_bits[last_block - n_blocks] = static_cast<Block>(m_bits[last_block] >> R_shift);
                         }
-                        std::ranges::fill_n(
-                                std::ranges::next(m_bits.begin(), static_cast<std::ptrdiff_t>(num_blocks - n_blocks)),
-                                static_cast<std::ptrdiff_t>(n_blocks),
-                                zero
-                        );
+                        std::ranges::fill_n(std::ranges::prev(m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);
                 }
         }
         
@@ -451,9 +437,9 @@ struct array
                         ;
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::all_of(
-                                std::views::zip(this->m_bits, other.m_bits), [](auto&& _) { auto&& [ lhs, rhs] = _; 
-                                return bit::is_subset_of(lhs, rhs);                                                      
-                        });
+                                std::views::zip(this->m_bits, other.m_bits), 
+                                [](auto&& _) { auto&& [ lhs, rhs] = _;  return bit::is_subset_of(lhs, rhs); }
+                        );
                 }
         }
 
@@ -488,9 +474,9 @@ struct array
                                 }
                         }
                         return (i == num_blocks) ? false : std::ranges::all_of(
-                                std::views::zip(this->m_bits, other.m_bits) | std::views::drop(i), [](auto&& _) { auto&& [ lhs, rhs ] = _;
-                                return bit::is_subset_of(lhs, rhs); 
-                        });
+                                std::views::zip(this->m_bits, other.m_bits) | std::views::drop(i), 
+                                [](auto&& _) { auto&& [ lhs, rhs ] = _; return bit::is_subset_of(lhs, rhs); }
+                        );
                 }
         }
 
@@ -507,12 +493,13 @@ struct array
                         ;
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::any_of(
-                                std::views::zip(this->m_bits, other.m_bits), [](auto&& _) { auto&& [ lhs, rhs ] = _;
-                                return bit::intersects(lhs, rhs); 
-                        });
+                                std::views::zip(this->m_bits, other.m_bits), 
+                                [](auto&& _) { auto&& [ lhs, rhs ] = _; return bit::intersects(lhs, rhs); }
+                        );
                 }
         }
 
+private:
         static constexpr auto num_unused_bits = num_bits - N;
         static constexpr auto has_unused_bits = num_bits > N;
         static constexpr auto last_block      = num_blocks - 1;
@@ -562,6 +549,12 @@ struct array
                         m_bits[last_block] &= used_bits;
                         assert(not bit::intersects(m_bits[last_block], unused_bits));
                 }
+        }
+
+        template<std::random_access_iterator I, std::sized_sentinel_for<I> S>
+        [[nodiscard]] static constexpr auto distance(I first, S last) noexcept
+        {
+                return static_cast<std::size_t>(std::ranges::distance(first, last));
         }
 };
 

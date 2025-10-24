@@ -19,7 +19,7 @@ template<std::unsigned_integral Block>
 template<std::unsigned_integral Block>
 [[nodiscard]] constexpr bool is_subset_of(Block lhs, Block rhs) noexcept
 {
-        return not (lhs & ~rhs);
+        return not (lhs & static_cast<Block>(~rhs));
 }  
 
 template<std::unsigned_integral Block>
