@@ -5,10 +5,9 @@
 
 #include <opt/set/sieve.hpp>            // filter_twins, sift_primes
 #include <xstd/bit_set.hpp>             // bit_set
-#include <boost/container/flat_set.hpp> // flat_set
+#include <flat_set>                     // flat_set
 #include <set>                          // set
 #include <benchmark/benchmark.h>        // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN
-#include <boost/preprocessor.hpp>       // BOOST_PP_COMMA
 
 constexpr auto N = 1'000'000uz;
 
@@ -34,16 +33,16 @@ static void bm_filter_twins(benchmark::State& state) {
         }
 }
 
-BENCHMARK_TEMPLATE1(bm_sift_primes0, boost::container::flat_set<std::size_t>);
+BENCHMARK_TEMPLATE1(bm_sift_primes0, std::flat_set<std::size_t>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0, std::set<std::size_t>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0, xstd::bit_set<N>);
 
-BENCHMARK_TEMPLATE1(bm_sift_primes1, boost::container::flat_set<std::size_t>);
+BENCHMARK_TEMPLATE1(bm_sift_primes1, std::flat_set<std::size_t>);
 BENCHMARK_TEMPLATE1(bm_sift_primes1, std::set<std::size_t>);
 BENCHMARK_TEMPLATE1(bm_sift_primes1, xstd::bit_set<N>);
 
 BENCHMARK_TEMPLATE1(bm_filter_twins, std::set<std::size_t>);
 BENCHMARK_TEMPLATE1(bm_filter_twins, xstd::bit_set<N>);
-BENCHMARK_TEMPLATE1(bm_filter_twins, boost::container::flat_set<std::size_t>);
+BENCHMARK_TEMPLATE1(bm_filter_twins, std::flat_set<std::size_t>);
 
 BENCHMARK_MAIN();

@@ -28,7 +28,7 @@ The C++ Standard Library and Boost provide the following optimized data structur
 |                          | fixed-size        | variable-size |
 | :--------------------    | :---------        | :------------ |
 | **sequence of `bool`**   | `std::bitset<N>`  | `std::vector<bool, Allocator>` <br> `boost::dynamic_bitset<Block, Allocator>` |
-| **ordered set of `int`** | `std::bitset<N>`  | `boost::dynamic_bitset<Block, Allocator>` (dense) <br> `boost::container::flat_set<int, Compare, Allocator>` (sparse) |
+| **ordered set of `int`** | `std::bitset<N>`  | `boost::dynamic_bitset<Block, Allocator>` (dense) <br> `std:flat_set<int, Compare, Allocator>` (sparse) |
 
 Notes:
 
@@ -109,14 +109,14 @@ auto filter_twins(C const& primes)
 }
 ```
 
-The calling code for these algorithms is listed below. Here, the pretty-printing as a `set` using `{}` delimiters is triggered by the nested `key_type`. Note that `xstd::bit_set<N>` acts as a **drop-in replacement** for `std::set<int>` (or `boost::container::flat_set<int>`).
+The calling code for these algorithms is listed below. Here, the pretty-printing as a `set` using `{}` delimiters is triggered by the nested `key_type`. Note that `xstd::bit_set<N>` acts as a **drop-in replacement** for `std::set<int>` (or `std::flat_set<int>`).
 
 [![Try it online](https://img.shields.io/badge/try%20it-online-brightgreen.svg)](https://godbolt.org/z/7bfjz15bP)
 ```cpp
 int main()
 {
     constexpr auto N = 100;
-    using C = xstd::bit_set<N>; /* or std::set<int> or boost::container::flat_set<int> */
+    using C = xstd::bit_set<N>; /* or std::set<int> or std::flat_set<int> */
 
     auto primes = sift_primes<C>(N);
     assert(fmt::format("{}", primes) == "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");

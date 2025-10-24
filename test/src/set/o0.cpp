@@ -3,17 +3,17 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <ext/boost/container/flat_set.hpp>     // flat_set
-#include <set/composable.hpp>                   // includes, set_difference, set_intersection, set_symmetric_difference, set_union
-#include <set/exhaustive.hpp>                   // empty_set_pair
-#include <set/primitives.hpp>                   // constructor mem_swap,fn_swap, op_equal, op_not_equal_to,
-                                                // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal,
-#include <xstd/bit_set.hpp>                     // bit_set
-#include <boost/mp11/list.hpp>                  // mp_list
-#include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <cstddef>                              // size_t
-#include <cstdint>                              // uint8_t, uint16_t, uint32_t, uint64_t
-#include <set>                                  // set
+#include <set/composable.hpp>           // includes, set_difference, set_intersection, set_symmetric_difference, set_union
+#include <set/exhaustive.hpp>           // empty_set_pair
+#include <set/primitives.hpp>           // constructor mem_swap,fn_swap, op_equal, op_not_equal_to,
+                                        // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal,
+#include <xstd/bit_set.hpp>             // bit_set
+#include <boost/mp11/list.hpp>          // mp_list
+#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <cstddef>                      // size_t
+#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <flat_set>                     // flat_set
+#include <set>                          // set
 
 BOOST_AUTO_TEST_SUITE(Constant)
 
@@ -21,7 +21,7 @@ using namespace xstd;
 
 using Types = boost::mp11::mp_list
 <       std::set<std::size_t>
-,       boost::container::flat_set<std::size_t>
+,       std::flat_set<std::size_t>
 ,       bit_set<  0, uint8_t>
 ,       bit_set<  1, uint8_t>
 ,       bit_set<  7, uint8_t>

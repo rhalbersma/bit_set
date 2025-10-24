@@ -3,18 +3,18 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <ext/boost/container/flat_set.hpp>     // flat_set
-#include <set/exhaustive.hpp>                   // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets,
-                                                // all_valid, empty_set, full_set
-#include <set/primitives.hpp>                   // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
-                                                // mem_empty, mem_size, mem_max_size, mem_insert, mem_erase, mem_clear,
-                                                // op_equal, op_compare_three_way, fn_iterator, fn_size, fn_ssize, fn_empty
-#include <xstd/bit_set.hpp>                     // bit_set
-#include <boost/mp11/list.hpp>                  // mp_list
-#include <boost/test/unit_test.hpp>             // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <cstddef>                              // size_t
-#include <cstdint>                              // uint8_t, uint16_t, uint32_t, uint64_t
-#include <set>                                  // set
+#include <set/exhaustive.hpp>           // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets,
+                                        // all_valid, empty_set, full_set
+#include <set/primitives.hpp>           // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
+                                        // mem_empty, mem_size, mem_max_size, mem_insert, mem_erase, mem_clear,
+                                        // op_equal, op_compare_three_way, fn_iterator, fn_size, fn_ssize, fn_empty
+#include <xstd/bit_set.hpp>             // bit_set
+#include <boost/mp11/list.hpp>          // mp_list
+#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <cstddef>                      // size_t
+#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <flat_set>                     // flat_set
+#include <set>                          // set
 
 BOOST_AUTO_TEST_SUITE(Linear)
 
@@ -22,7 +22,7 @@ using namespace xstd;
 
 using Types = boost::mp11::mp_list
 <       std::set<std::size_t>
-,       boost::container::flat_set<std::size_t>
+,       std::flat_set<std::size_t>
 ,       bit_set< 0, uint8_t>
 ,       bit_set< 1, uint8_t>
 ,       bit_set< 8, uint8_t>
@@ -42,16 +42,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
 {
         all_singleton_arrays<T>([](auto const& a1) {
                 constructor<T>()(a1.begin(), a1.end());
-                // boost::container::flat_set<std::size_t> does not have from_range constructor
-                if constexpr (not std::same_as<T, boost::container::flat_set<std::size_t>>) {
-                        constructor<T>()(std::from_range, a1);
-                }
+                constructor<T>()(std::from_range, a1);
         });
         all_singleton_ilists<T>([](auto ilist1) {
-                // boost::container::flat_set<std::size_t> does not have from_range constructor
-                if constexpr (not std::same_as<T, boost::container::flat_set<std::size_t>>) {
-                        constructor<T>()(std::from_range, ilist1);
-                }
+                constructor<T>()(std::from_range, ilist1);
                 constructor<T>()(ilist1);
         });
 
@@ -135,8 +129,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
                 });
         });
 
-        // boost::container::flat_set<std::size_t>::erase invalidates iterators
-        if constexpr (not std::same_as<T, boost::container::flat_set<std::size_t>>) {
+        // std:flat_set<std::size_t>::erase invalidates iterators
+        if constexpr (not std::same_as<T, std::flat_set<std::size_t>>) {
                 full_set<T>([](auto& isN) {
                         for (auto first = isN.begin(), last = isN.end(); first != last; /* expression inside loop */) {
                                 mem_erase()(isN, first++);

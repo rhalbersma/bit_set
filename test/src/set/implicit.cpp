@@ -4,7 +4,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bit_set.hpp>             // bit_set
-#include <boost/container/flat_set.hpp> // flat_set
 #include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_CHECK_EQUAL_COLLECTIONS
 #include <algorithm>                    // copy
@@ -12,6 +11,7 @@
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <iterator>                     // inserter
+#include <flat_set>                     // flat_set
 #include <set>                          // set
 
 BOOST_AUTO_TEST_SUITE(Implicit)
@@ -20,7 +20,7 @@ using namespace xstd;
 
 using Types = boost::mp11::mp_list
 <       std::set<std::size_t>
-,       boost::container::flat_set<std::size_t>
+,       std::flat_set<std::size_t>
 ,       bit_set< 32, uint16_t>
 ,       bit_set< 33, uint16_t>
 ,       bit_set< 48, uint16_t>
