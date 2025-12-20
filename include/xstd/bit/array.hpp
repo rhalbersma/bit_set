@@ -174,8 +174,8 @@ struct array
                         this->m_bits[0] &= other.m_bits[0];
                         this->m_bits[1] &= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto&& [ lhs, rhs ] : std::views::zip(this->m_bits, other.m_bits)) {
-                                lhs &= rhs;
+                        for (auto i = 0uz; i < num_blocks; ++i) {
+                                this->m_bits[i] &= other.m_bits[i];
                         }
                 }
         }
@@ -188,8 +188,8 @@ struct array
                         this->m_bits[0] |= other.m_bits[0];
                         this->m_bits[1] |= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto&& [ lhs, rhs ] : std::views::zip(this->m_bits, other.m_bits)) {
-                                lhs |= rhs;
+                        for (auto i = 0uz; i < num_blocks; ++i) {
+                                this->m_bits[i] |= other.m_bits[i];
                         }
                 }
         }
@@ -202,8 +202,8 @@ struct array
                         this->m_bits[0] ^= other.m_bits[0];
                         this->m_bits[1] ^= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto&& [ lhs, rhs ] : std::views::zip(this->m_bits, other.m_bits)) {
-                                lhs ^= rhs;
+                        for (auto i = 0uz; i < num_blocks; ++i) {
+                                this->m_bits[i] ^= other.m_bits[i];
                         }
                 }
         }
@@ -216,8 +216,8 @@ struct array
                         this->m_bits[0] &= static_cast<Block>(~other.m_bits[0]);
                         this->m_bits[1] &= static_cast<Block>(~other.m_bits[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto&& [ lhs, rhs ] : std::views::zip(this->m_bits, other.m_bits)) {
-                                lhs &= static_cast<Block>(~rhs);
+                        for (auto i = 0uz; i < num_blocks; ++i) {
+                                this->m_bits[i] &= static_cast<Block>(~other.m_bits[i]);
                         }
                 }
         }
@@ -296,8 +296,8 @@ struct array
                         m_bits[0] = static_cast<Block>(~m_bits[0]);
                         m_bits[1] = static_cast<Block>(~m_bits[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto& block : m_bits) {
-                                block = static_cast<Block>(~block);
+                        for (auto i = 0uz; i < num_blocks; ++i) {
+                                m_bits[i] = static_cast<Block>(~m_bits[i]);
                         }
                 }
                 erase_unused();
@@ -437,9 +437,9 @@ struct array
                         ;
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::all_of(
-                                std::views::zip(this->m_bits, other.m_bits), 
-                                [](auto&& _) { auto&& [ lhs, rhs] = _;  return bit::is_subset_of(lhs, rhs); }
-                        );
+                                std::views::zip(this->m_bits, other.m_bits), [](auto&& _) { auto&& [ lhs, rhs] = _;  
+                                return bit::is_subset_of(lhs, rhs); 
+                        });
                 }
         }
 
@@ -465,18 +465,19 @@ struct array
                         }                        
                 } else if constexpr (num_blocks >= 3) {
                         auto i = 0uz;
-                        for (/* init-statement before loop */; i < num_blocks; ++i) {
+                        while(i < num_blocks) {
                                 if (not bit::is_subset_of(this->m_bits[i], other.m_bits[i])) {
                                         return false;
                                 }
                                 if (    bit::not_equal_to(this->m_bits[i], other.m_bits[i])) {
                                         break;
                                 }
+                                ++i;
                         }
                         return (i == num_blocks) ? false : std::ranges::all_of(
-                                std::views::zip(this->m_bits, other.m_bits) | std::views::drop(i), 
-                                [](auto&& _) { auto&& [ lhs, rhs ] = _; return bit::is_subset_of(lhs, rhs); }
-                        );
+                                std::views::zip(this->m_bits, other.m_bits) | std::views::drop(i), [](auto&& _) { auto&& [ lhs, rhs ] = _; 
+                                return bit::is_subset_of(lhs, rhs); 
+                        });
                 }
         }
 
@@ -493,9 +494,9 @@ struct array
                         ;
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::any_of(
-                                std::views::zip(this->m_bits, other.m_bits), 
-                                [](auto&& _) { auto&& [ lhs, rhs ] = _; return bit::intersects(lhs, rhs); }
-                        );
+                                std::views::zip(this->m_bits, other.m_bits), [](auto&& _) { auto&& [ lhs, rhs ] = _; 
+                                return bit::intersects(lhs, rhs); 
+                        });
                 }
         }
 
