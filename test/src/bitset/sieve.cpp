@@ -7,7 +7,7 @@
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
 #include <ext/std/ranges.hpp>           // as_set
-#include <xstd/bitset.hpp>              // bitset
+#include <ext/xstd/bitset.hpp>          // bitset
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE

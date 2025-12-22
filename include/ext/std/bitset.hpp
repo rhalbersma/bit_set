@@ -6,29 +6,24 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/proxy.hpp>       // begin, end
-#include <algorithm>            // lexicographical_compare_three_way
-#include <bitset>               // bitset
-#include <cassert>              // assert
-#include <compare>              // strong_ordering
-#include <cstddef>              // size_t
-#include <iterator>             // make_reverse_iterator
-#include <ranges>               // begin, end, find_if, rbegin, rend
-                                // iota, reverse
+#include <xstd/proxy/forward.hpp>       // begin, end
+#include <algorithm>                    // lexicographical_compare_three_way
+#include <bitset>                       // bitset
+#include <cassert>                      // assert
+#include <compare>                      // strong_ordering
+#include <cstddef>                      // size_t
+#include <ranges>                       // begin, end
 
 namespace std {
 
 template<std::size_t N>
 [[nodiscard]] constexpr std::size_t find_first(const bitset<N>& c) noexcept
+        requires (N == 0) or (requires { c._Find_first(); })
 {
         if constexpr (N == 0) {
                 return N;
-        } else if constexpr (requires { c._Find_first(); }) {
-                return c._Find_first();
         } else {
-                return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
-                        return c[i];
-                });
+                return c._Find_first();
         }
 }
 
@@ -40,37 +35,17 @@ template<std::size_t N>
 
 template<std::size_t N>
 [[nodiscard]] constexpr std::size_t find_next(const bitset<N>& c, std::size_t n) noexcept
+        requires requires { c._Find_next(n); }
 {
-        if constexpr (requires { c._Find_next(n); }) {
-                return c._Find_next(n);
-        } else {
-                return *std::ranges::find_if(std::views::iota(n + 1, N), [&](auto i) {
-                        return c[i];
-                });
-        }
+        return c._Find_next(n);
 }
 
-template<std::size_t N>
-[[nodiscard]] std::size_t find_prev(const bitset<N>& c, std::size_t n) noexcept
-{
-        assert(c.any());
-        return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
-                return c[i];
-        });
-}
-
-template<std::size_t N> [[nodiscard]] constexpr auto begin  (      bitset<N>& c) noexcept { return xstd::proxy::bidirectional::begin(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto begin  (const bitset<N>& c) noexcept { return xstd::proxy::bidirectional::begin(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto end    (      bitset<N>& c) noexcept { return xstd::proxy::bidirectional::end(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto end    (const bitset<N>& c) noexcept { return xstd::proxy::bidirectional::end(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto cbegin (const bitset<N>& c) noexcept { return std::ranges::begin(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto cend   (const bitset<N>& c) noexcept { return std::ranges::end(c);   }
-template<std::size_t N> [[nodiscard]] constexpr auto rbegin (      bitset<N>& c) noexcept { return std::make_reverse_iterator(std::ranges::end(c)); }
-template<std::size_t N> [[nodiscard]] constexpr auto rbegin (const bitset<N>& c) noexcept { return std::make_reverse_iterator(std::ranges::end(c)); }
-template<std::size_t N> [[nodiscard]] constexpr auto rend   (      bitset<N>& c) noexcept { return std::make_reverse_iterator(std::ranges::begin(c)); }
-template<std::size_t N> [[nodiscard]] constexpr auto rend   (const bitset<N>& c) noexcept { return std::make_reverse_iterator(std::ranges::begin(c)); }
-template<std::size_t N> [[nodiscard]] constexpr auto crbegin(const bitset<N>& c) noexcept { return std::ranges::rbegin(c); }
-template<std::size_t N> [[nodiscard]] constexpr auto crend  (const bitset<N>& c) noexcept { return std::ranges::rend(c);   }
+template<std::size_t N> [[nodiscard]] constexpr auto begin (      bitset<N>& c) noexcept { return xstd::proxy::forward::begin(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto begin (const bitset<N>& c) noexcept { return xstd::proxy::forward::begin(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto end   (      bitset<N>& c) noexcept { return xstd::proxy::forward::end(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto end   (const bitset<N>& c) noexcept { return xstd::proxy::forward::end(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto cbegin(const bitset<N>& c) noexcept { return std::ranges::begin(c); }
+template<std::size_t N> [[nodiscard]] constexpr auto cend  (const bitset<N>& c) noexcept { return std::ranges::end  (c); }
 
 template<std::size_t N>
 [[nodiscard]] auto operator<=>(const bitset<N>& x, const bitset<N>& y) noexcept

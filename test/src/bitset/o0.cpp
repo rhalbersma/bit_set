@@ -5,7 +5,7 @@
 
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
-#include <xstd/bitset.hpp>              // bitset
+#include <ext/xstd/bitset.hpp>          // bitset
 #include <bitset/exhaustive.hpp>        // empty_set_pair
 #include <bitset/primitives.hpp>        // constructor,
                                         // mem_bit_and_assign, mem_bit_or_assign, mem_bit_xor_assign, mem_bit_minus_assign,
@@ -18,52 +18,52 @@
 BOOST_AUTO_TEST_SUITE(Constant)
 
 using Types = boost::mp11::mp_list
-<       std::bitset<  0>
-,       std::bitset<  1>
-,       std::bitset< 31>
-,       std::bitset< 32>
-,       std::bitset< 33>
-,       std::bitset< 63>
-,       std::bitset< 64>
-,       std::bitset< 65>
-,       boost::dynamic_bitset<>
-,       xstd::bitset<  0, uint8_t>
-,       xstd::bitset<  1, uint8_t>
-,       xstd::bitset<  7, uint8_t>
-,       xstd::bitset<  8, uint8_t>
-,       xstd::bitset<  9, uint8_t>
-,       xstd::bitset< 15, uint8_t>
-,       xstd::bitset< 16, uint8_t>
-,       xstd::bitset< 17, uint8_t>
-,       xstd::bitset< 24, uint8_t>
-,       xstd::bitset<  0, uint16_t>
-,       xstd::bitset<  1, uint16_t>
-,       xstd::bitset< 15, uint16_t>
-,       xstd::bitset< 16, uint16_t>
-,       xstd::bitset< 17, uint16_t>
-,       xstd::bitset< 31, uint16_t>
-,       xstd::bitset< 32, uint16_t>
-,       xstd::bitset< 33, uint16_t>
-,       xstd::bitset< 48, uint16_t>
-,       xstd::bitset<  0, uint32_t>
-,       xstd::bitset<  1, uint32_t>
-,       xstd::bitset< 31, uint32_t>
-,       xstd::bitset< 32, uint32_t>
-,       xstd::bitset< 33, uint32_t>
-,       xstd::bitset< 63, uint32_t>
-,       xstd::bitset< 64, uint32_t>
-,       xstd::bitset< 65, uint32_t>
-,       xstd::bitset<  0, uint64_t>
-,       xstd::bitset<  1, uint64_t>
-,       xstd::bitset< 63, uint64_t>
-,       xstd::bitset< 64, uint64_t>
-,       xstd::bitset< 65, uint64_t>
+<       boost::dynamic_bitset<>
+,         std::bitset<  0>
+,         std::bitset<  1>
+,         std::bitset< 31>
+,         std::bitset< 32>
+,         std::bitset< 33>
+,         std::bitset< 63>
+,         std::bitset< 64>
+,         std::bitset< 65>
+,        xstd::bitset<  0, uint8_t>
+,        xstd::bitset<  1, uint8_t>
+,        xstd::bitset<  7, uint8_t>
+,        xstd::bitset<  8, uint8_t>
+,        xstd::bitset<  9, uint8_t>
+,        xstd::bitset< 15, uint8_t>
+,        xstd::bitset< 16, uint8_t>
+,        xstd::bitset< 17, uint8_t>
+,        xstd::bitset< 24, uint8_t>
+,        xstd::bitset<  0, uint16_t>
+,        xstd::bitset<  1, uint16_t>
+,        xstd::bitset< 15, uint16_t>
+,        xstd::bitset< 16, uint16_t>
+,        xstd::bitset< 17, uint16_t>
+,        xstd::bitset< 31, uint16_t>
+,        xstd::bitset< 32, uint16_t>
+,        xstd::bitset< 33, uint16_t>
+,        xstd::bitset< 48, uint16_t>
+,        xstd::bitset<  0, uint32_t>
+,        xstd::bitset<  1, uint32_t>
+,        xstd::bitset< 31, uint32_t>
+,        xstd::bitset< 32, uint32_t>
+,        xstd::bitset< 33, uint32_t>
+,        xstd::bitset< 63, uint32_t>
+,        xstd::bitset< 64, uint32_t>
+,        xstd::bitset< 65, uint32_t>
+,        xstd::bitset<  0, uint64_t>
+,        xstd::bitset<  1, uint64_t>
+,        xstd::bitset< 63, uint64_t>
+,        xstd::bitset< 64, uint64_t>
+,        xstd::bitset< 65, uint64_t>
 #if defined(__GNUG__)
-,       xstd::bitset<  0, __uint128_t>
-,       xstd::bitset<  1, __uint128_t>
-,       xstd::bitset<127, __uint128_t>
-,       xstd::bitset<128, __uint128_t>
-,       xstd::bitset<129, __uint128_t>
+,        xstd::bitset<  0, __uint128_t>
+,        xstd::bitset<  1, __uint128_t>
+,        xstd::bitset<127, __uint128_t>
+,        xstd::bitset<128, __uint128_t>
+,        xstd::bitset<129, __uint128_t>
 #endif
 >;
 

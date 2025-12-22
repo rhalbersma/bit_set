@@ -18,22 +18,22 @@
 BOOST_AUTO_TEST_SUITE(Linear)
 
 using Types = boost::mp11::mp_list
-<       std::bitset<  0>
-,       std::bitset<  1>
-,       std::bitset< 64>
-,       boost::dynamic_bitset<>
-,       xstd::bitset< 0, uint8_t>
-,       xstd::bitset< 1, uint8_t>
-,       xstd::bitset< 8, uint8_t>
-,       xstd::bitset< 9, uint8_t>
-,       xstd::bitset<16, uint8_t>
-,       xstd::bitset<17, uint8_t>
-,       xstd::bitset<24, uint8_t>
-,       xstd::bitset<24, uint16_t>
-,       xstd::bitset<24, uint32_t>
-,       xstd::bitset<24, uint64_t>
+<       boost::dynamic_bitset<>
+,         std::bitset<  0>
+,         std::bitset<  1>
+,         std::bitset< 64>
+,        xstd::bitset< 0, uint8_t>
+,        xstd::bitset< 1, uint8_t>
+,        xstd::bitset< 8, uint8_t>
+,        xstd::bitset< 9, uint8_t>
+,        xstd::bitset<16, uint8_t>
+,        xstd::bitset<17, uint8_t>
+,        xstd::bitset<24, uint8_t>
+,        xstd::bitset<24, uint16_t>
+,        xstd::bitset<24, uint32_t>
+,        xstd::bitset<24, uint64_t>
 #if defined(__GNUG__)
-,       xstd::bitset<24, __uint128_t>
+,        xstd::bitset<24, __uint128_t>
 #endif
 >;
 

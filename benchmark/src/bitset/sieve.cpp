@@ -7,6 +7,7 @@
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
 #include <ext/std/ranges.hpp>           // as_set
+#include <ext/xstd/bitset.hpp>          // bitset
 #include <xstd/bitset.hpp>              // bitset
 #include <xstd/bit_set.hpp>             // bit_set
 #include <benchmark/benchmark.h>        // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN

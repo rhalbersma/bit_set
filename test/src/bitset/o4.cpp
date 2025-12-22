@@ -5,7 +5,7 @@
 
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
-#include <xstd/bitset.hpp>              // bitset
+#include <ext/xstd/bitset.hpp>          // bitset
 #include <bitset/exhaustive.hpp>        // all_doubleton_set_pairs
 #include <bitset/primitives.hpp>        // mem_compare_three_way, mem_is_subset_of, mem_is_proper_subset_of
 #include <boost/mp11/list.hpp>          // mp_list
@@ -17,18 +17,18 @@ BOOST_AUTO_TEST_SUITE(Quartic)
 using namespace xstd;
 
 using Types = boost::mp11::mp_list
-<       std::bitset< 0>
-,       std::bitset<17>
-,       boost::dynamic_bitset<>
-,       xstd::bitset< 0, uint8_t>
-,       xstd::bitset< 8, uint8_t>
-,       xstd::bitset< 9, uint8_t>
-,       xstd::bitset<17, uint8_t>
-,       xstd::bitset<17, uint16_t>
-,       xstd::bitset<17, uint32_t>
-,       xstd::bitset<17, uint64_t>
+<       boost::dynamic_bitset<>
+,         std::bitset< 0>
+,         std::bitset<17>
+,        xstd::bitset< 0, uint8_t>
+,        xstd::bitset< 8, uint8_t>
+,        xstd::bitset< 9, uint8_t>
+,        xstd::bitset<17, uint8_t>
+,        xstd::bitset<17, uint16_t>
+,        xstd::bitset<17, uint32_t>
+,        xstd::bitset<17, uint64_t>
 #if defined(__GNUG__)
-,       xstd::bitset<17, __uint128_t>
+,        xstd::bitset<17, __uint128_t>
 #endif
 >;
 
