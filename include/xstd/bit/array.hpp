@@ -174,7 +174,7 @@ struct array
                         this->m_bits[0] &= other.m_bits[0];
                         this->m_bits[1] &= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views:iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0uz, num_blocks)) {
                                 this->m_bits[i] &= other.m_bits[i];
                         }
                 }
@@ -188,7 +188,7 @@ struct array
                         this->m_bits[0] |= other.m_bits[0];
                         this->m_bits[1] |= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views:iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0uz, num_blocks)) {
                                 this->m_bits[i] |= other.m_bits[i];
                         }
                 }
@@ -202,7 +202,7 @@ struct array
                         this->m_bits[0] ^= other.m_bits[0];
                         this->m_bits[1] ^= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views:iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0uz, num_blocks)) {
                                 this->m_bits[i] ^= other.m_bits[i];
                         }
                 }
@@ -216,7 +216,7 @@ struct array
                         this->m_bits[0] &= static_cast<Block>(~other.m_bits[0]);
                         this->m_bits[1] &= static_cast<Block>(~other.m_bits[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views:iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0uz, num_blocks)) {
                                 this->m_bits[i] &= static_cast<Block>(~other.m_bits[i]);
                         }
                 }
@@ -296,7 +296,7 @@ struct array
                         m_bits[0] = static_cast<Block>(~m_bits[0]);
                         m_bits[1] = static_cast<Block>(~m_bits[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views:iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0uz, num_blocks)) {
                                 m_bits[i] = static_cast<Block>(~m_bits[i]);
                         }
                 }
