@@ -20,6 +20,7 @@
 #include <source_location>      // source_location
 #include <string_view>          // basic_string_view
 #include <stdexcept>            // invalid_argument, out_of_range, overflow_error
+#include <utility>              // hash
 
 namespace xstd {
 
@@ -108,22 +109,9 @@ public:
         constexpr bitset& reset() noexcept { m_bits.reset(); return *this; }
         constexpr bitset& flip () noexcept { m_bits.flip (); return *this; }
 
-        constexpr bitset& set(std::size_t pos, bool val = true)
-        {
-                if (pos < N) {
-                        if (val) {
-                                m_bits.set(pos);
-                        } else {
-                                m_bits.reset(pos);
-                        }
-                        return *this;
-                } else {
-                        throw out_of_range(pos);
-                }
-        }
-
-        constexpr bitset& reset(std::size_t pos) { if (pos < N) { m_bits.reset(pos); return *this; } else { throw out_of_range(pos); } }
-        constexpr bitset& flip (std::size_t pos) { if (pos < N) { m_bits.flip (pos); return *this; } else { throw out_of_range(pos); } }
+        constexpr bitset& set  (std::size_t pos, bool val = true) { if (pos < N) { if (val) m_bits.set  (pos); else m_bits.reset(pos); return *this; } else { throw out_of_range(pos); } }
+        constexpr bitset& reset(std::size_t pos)                  { if (pos < N) {          m_bits.reset(pos);                         return *this; } else { throw out_of_range(pos); } }
+        constexpr bitset& flip (std::size_t pos)                  { if (pos < N) {          m_bits.flip (pos);                         return *this; } else { throw out_of_range(pos); } }
 
         [[nodiscard]] constexpr bitset operator~() const noexcept { auto nrv = *this; nrv.flip(); return nrv; }
 
@@ -256,5 +244,12 @@ std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>&
 }
 
 }       // namespace xstd
+
+namespace std {
+        
+template<size_t N, unsigned_integral Block>
+struct hash<xstd::bitset<N, Block>>;     // TODO
+
+}       // namespace std
 
 #endif  // include guard
