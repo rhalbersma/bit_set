@@ -6,22 +6,23 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bit/intrin.hpp>  // countl_zero, countr_zero, popcount
-#include <xstd/bit/pred.hpp>    // intersects, is_subset_of, not_equal_to
-#include <xstd/utility.hpp>     // aligned_size
-#include <algorithm>            // lexicographical_compare_three_way (ranges::lexicographical_compare when P2022R3 is accepted) 
-                                // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
-#include <array>                // array
-#include <cassert>              // assert
-#include <compare>              // strong_ordering
-#include <concepts>             // unsigned_integral
-#include <cstddef>              // ptrdiff_t, size_t
-#include <functional>           // plus
-#include <limits>               // digits
-#include <ranges>               // distance, prev (views::drop_last when P22014R2 is accepted)
-                                // drop, iota, pairwise_transform, reverse, take, transform, zip
-#include <type_traits>          // is_nothrow_swappable_v
-#include <utility>              // pair
+#include <xstd/bit/intrin.hpp>                  // countl_zero, countr_zero, popcount
+#include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
+#include <xstd/utility.hpp>                     // aligned_size
+#include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
+#include <algorithm>                            // lexicographical_compare_three_way (ranges::lexicographical_compare when P2022R3 is accepted) 
+                                                // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <array>                                // array
+#include <cassert>                              // assert
+#include <compare>                              // strong_ordering
+#include <concepts>                             // unsigned_integral
+#include <cstddef>                              // ptrdiff_t, size_t
+#include <functional>                           // plus
+#include <limits>                               // digits
+#include <ranges>                               // distance, prev (views::drop_last when P22014R2 is accepted)
+                                                // drop, iota, pairwise_transform, reverse, take, transform, zip
+#include <type_traits>                          // is_nothrow_swappable_v
+#include <utility>                              // pair
 
 namespace xstd::bit {
 
@@ -63,6 +64,12 @@ struct array
                         );
                 }
         }        
+
+        template<class Provider, class Hash, class Flavor>
+        friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, array const* v) noexcept
+        {
+                boost::hash2::hash_append(h, f, v->m_bits);
+        }
 
         [[nodiscard]] constexpr std::size_t find_front() const noexcept
         {
@@ -315,7 +322,7 @@ struct array
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
                 block |= mask;
-                assert(test(n));
+                assert((*this)[n]);
         }
 
         [[nodiscard]] constexpr bool insert(std::size_t n) noexcept
@@ -324,7 +331,7 @@ struct array
                 auto&& [ block, mask ] = block_mask(n);
                 auto const inserted = not bit::intersects(block, mask);
                 block |= mask;
-                assert(test(n));
+                assert((*this)[n]);
                 return inserted;
         }
 
@@ -333,7 +340,7 @@ struct array
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
                 block &= static_cast<Block>(~mask);
-                assert(not test(n));
+                assert(not (*this)[n]);
         }
 
         [[nodiscard]] constexpr bool erase(std::size_t n) noexcept
@@ -342,7 +349,7 @@ struct array
                 auto&& [ block, mask ] = block_mask(n);
                 auto const erased = bit::intersects(block, mask);
                 block &= static_cast<Block>(~mask);
-                assert(not test(n));
+                assert(not (*this)[n]);
                 return erased;
         }
 
@@ -353,7 +360,7 @@ struct array
                 block ^= mask;
         }
 
-        [[nodiscard]] constexpr bool test(std::size_t n) const noexcept
+        [[nodiscard]] constexpr bool operator[](std::size_t n) const noexcept
         {
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
@@ -498,6 +505,12 @@ struct array
                                 return bit::intersects(lhs, rhs); 
                         });
                 }
+        }
+
+        template<class Hash, class Flavor>
+        constexpr void hash_append(Hash& h, Flavor const& f) noexcept
+        {
+                boost::hash2::hash_append(h, f, m_bits);
         }
 
 private:

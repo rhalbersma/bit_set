@@ -6,25 +6,47 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <string>               // basic_string, char_traits, string
-#include <iosfwd>               // basic_istream, basic_ostream
+// Bitsets                                                              [bitset]
+// Header <bitset> synopsis                                         [bitset.syn]
 
-#include <xstd/bit/array.hpp>   // array
-#include <concepts>             // unsigned_integral
-#include <cstddef>              // size_t
-#include <format>               // format
-#include <ios>                  // ios_base
-#include <locale>               // ctype, use_facet
-#include <memory>               // allocator
-#include <ranges>               // iota
-#include <source_location>      // source_location
-#include <string_view>          // basic_string_view
-#include <stdexcept>            // invalid_argument, out_of_range, overflow_error
-#include <utility>              // hash
+#include <string>       // basic_string, char_traits
+#include <iosfwd>       // basic_istream, basic_ostream
+
+#include <concepts>     // unsigned_integral
+#include <cstddef>      // size_t
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block = std::size_t>
+template<std::size_t N, std::unsigned_integral Block = std::size_t> class bitset;
+
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator|(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator^(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator-(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
+
+template<class charT, class traits, std::size_t N, std::unsigned_integral Block> std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>& is,       bitset<N, Block>& x);
+template<class charT, class traits, std::size_t N, std::unsigned_integral Block> std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>& os, const bitset<N, Block>& x);
+
+}       // namespace xstd
+
+#include <xstd/bit/array.hpp>           // array
+#include <boost/hash2/fnv1a.hpp>        // fnv1a_64
+#include <boost/hash2/hash_append.hpp>  // hash_append    
+#include <format>                       // format
+#include <ios>                          // ios_base
+#include <locale>                       // ctype, use_facet
+#include <memory>                       // allocator
+#include <ranges>                       // iota
+#include <source_location>              // source_location
+#include <string_view>                  // basic_string_view
+#include <stdexcept>                    // invalid_argument, out_of_range, overflow_error
+
+// Class template bitset                                       [template.bitset]
+// General                                             [template.bitset.general]
+
+namespace xstd {
+
+template<std::size_t N, std::unsigned_integral Block>
 class bitset
 {
         bit::array<N, Block> m_bits{};
@@ -34,12 +56,34 @@ class bitset
         [[nodiscard]] friend constexpr std::size_t find_next (const bitset& c, std::size_t n) noexcept { return c.m_bits.find_next(n); }
         [[nodiscard]] friend constexpr std::size_t find_prev (const bitset& c, std::size_t n) noexcept { return c.m_bits.find_prev(n); }
 
+        template<class Provider, class Hash, class Flavor>
+        friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bitset const* v) noexcept
+        {
+                boost::hash2::hash_append(h, f, v->m_bits);
+        }
+
 public:
         using block_type = Block;
 
-        class reference;        // TODO
+        class reference
+        {
+        public:
+                constexpr reference(const reference& x) noexcept = default;
+                constexpr ~reference() = default;
+                constexpr reference& operator=(bool x) noexcept;
+                constexpr reference& operator=(const reference& x) noexcept = default;
+                constexpr const reference& operator=(bool x) const noexcept;
+                constexpr explicit(false) operator bool() const noexcept;
+                constexpr bool operator~() const noexcept;
 
-        // constructors
+                friend constexpr void swap(reference x, reference y) noexcept { bool t = x; x = y; y = x; }
+                friend constexpr void swap(reference x,     bool& y) noexcept { bool t = x; x = y; y = x; }
+                friend constexpr void swap(    bool& x, reference y) noexcept { bool t = x; x = y; y = x; }
+
+                constexpr reference& flip() noexcept;
+        };
+
+        // Constructors                                            [bitset.cons]
         [[nodiscard]] constexpr bitset() noexcept = default;
 
         [[nodiscard]] constexpr explicit(false) bitset(unsigned long long val) noexcept = delete;       // TODO
@@ -93,7 +137,7 @@ public:
                 bitset(n == std::basic_string_view<charT>::npos ? std::basic_string_view<charT>(str) : std::basic_string_view<charT>(str, n), 0, n, zero, one)
         {}
 
-        // bitset operations
+        // Members                                              [bitset.members]
         constexpr bitset& operator&=(const bitset& rhs) noexcept { m_bits &= rhs.m_bits; return *this; }
         constexpr bitset& operator|=(const bitset& rhs) noexcept { m_bits |= rhs.m_bits; return *this; }
         constexpr bitset& operator^=(const bitset& rhs) noexcept { m_bits ^= rhs.m_bits; return *this; }
@@ -105,6 +149,8 @@ public:
         [[nodiscard]] constexpr bitset operator<<(std::size_t pos) const noexcept { auto nrv = *this; nrv <<= pos; return nrv; }
         [[nodiscard]] constexpr bitset operator>>(std::size_t pos) const noexcept { auto nrv = *this; nrv >>= pos; return nrv; }
 
+        [[nodiscard]] constexpr bitset operator~() const noexcept { auto nrv = *this; nrv.flip(); return nrv; }
+
         constexpr bitset& set  () noexcept { m_bits.set  (); return *this; }
         constexpr bitset& reset() noexcept { m_bits.reset(); return *this; }
         constexpr bitset& flip () noexcept { m_bits.flip (); return *this; }
@@ -113,15 +159,12 @@ public:
         constexpr bitset& reset(std::size_t pos)                  { if (pos < N) {          m_bits.reset(pos);                         return *this; } else { throw out_of_range(pos); } }
         constexpr bitset& flip (std::size_t pos)                  { if (pos < N) {          m_bits.flip (pos);                         return *this; } else { throw out_of_range(pos); } }
 
-        [[nodiscard]] constexpr bitset operator~() const noexcept { auto nrv = *this; nrv.flip(); return nrv; }
-
-        // element access
         [[nodiscard]] constexpr bool operator[](std::size_t pos) const noexcept
         {
-                return m_bits.test(pos);
+                return m_bits[pos];
         }
 
-        [[nodiscard]] constexpr auto operator[](std::size_t) = delete;          // TODO
+        [[nodiscard]] constexpr reference operator[](std::size_t pos) = delete; // TODO
 
         [[nodiscard]] constexpr unsigned long      to_ulong()  const = delete;  // TODO
         [[nodiscard]] constexpr unsigned long long to_ullong() const = delete;  // TODO
@@ -135,7 +178,7 @@ public:
         {
                 auto str = std::basic_string<charT, traits, Allocator>(N, zero);
                 for (auto i : std::views::iota(0uz, N)) {
-                        if (m_bits.test(N - 1 - i)) {
+                        if (m_bits[N - 1 - i]) {
                                 str[i] = one;
                         }
                 }
@@ -149,7 +192,7 @@ public:
         [[nodiscard]] constexpr bool operator== (const bitset& rhs) const noexcept                         = default;
         [[nodiscard]] constexpr auto operator<=>(const bitset& rhs) const noexcept -> std::strong_ordering = default;
 
-        [[nodiscard]] constexpr bool test(std::size_t pos) const { if (pos < N) { return m_bits.test(pos); } else { throw out_of_range(pos); } }
+        [[nodiscard]] constexpr bool test(std::size_t pos) const { if (pos < N) { return m_bits[pos]; } else { throw out_of_range(pos); } }
 
         [[nodiscard]] constexpr bool all () const noexcept { return m_bits.all (); }
         [[nodiscard]] constexpr bool any () const noexcept { return m_bits.any (); }
@@ -185,30 +228,34 @@ private:
         }
 };
 
-// bitset operators
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
-{
-        auto nrv = lhs; nrv &= rhs; return nrv;
-}
+}       // namespace xstd
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bitset<N, Block> operator|(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
-{
-        auto nrv = lhs; nrv |= rhs; return nrv;
-}
+namespace std {
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bitset<N, Block> operator^(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
-{
-        auto nrv = lhs; nrv ^= rhs; return nrv;
-}
+// bitset hash support                                             [bitset.hash]
+template<class T> 
+struct hash;
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bitset<N, Block> operator-(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept
+template<size_t N, unsigned_integral Block>
+struct hash<xstd::bitset<N, Block>>
 {
-        auto nrv = lhs; nrv -= rhs; return nrv;
-}
+        [[nodiscard]] constexpr std::size_t operator()(xstd::bitset<N, Block> const& v) const noexcept
+        {
+                boost::hash2::fnv1a_64 h;
+                boost::hash2::hash_append(h, {}, v);
+                return boost::hash2::get_integral_result<std::size_t>(h);
+        }
+};
+
+}       // namespace std
+
+namespace xstd {
+
+// bitset operators                                           [bitset.operators]
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv &= rhs; return nrv; }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator|(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv |= rhs; return nrv; }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator^(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv ^= rhs; return nrv; }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator-(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv -= rhs; return nrv; }
 
 template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
 std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>& is, bitset<N, Block>& x)
@@ -244,12 +291,5 @@ std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>&
 }
 
 }       // namespace xstd
-
-namespace std {
-        
-template<size_t N, unsigned_integral Block>
-struct hash<xstd::bitset<N, Block>>;     // TODO
-
-}       // namespace std
 
 #endif  // include guard
