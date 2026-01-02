@@ -9,7 +9,7 @@
 #include <cassert>      // assert
 #include <concepts>     // constructible_from, convertible_to
 #include <cstddef>      // ptrdiff_t, size_t
-#include <iterator>     // bidirectional_iterator_tag, iter_value_t
+#include <iterator>     // bidirectional_iterator_tag
 #include <type_traits>  // is_class_v, is_convertible_v, is_nothrow_constructible_v
 
 namespace xstd::proxy::bidirectional {
@@ -28,24 +28,21 @@ concept bit_range =
         }
 ;
 
-template<bit_range> class const_iterator;
-template<bit_range> class const_reference;
-
-template<bit_range Bits> [[nodiscard]] constexpr auto begin(Bits const& c) noexcept -> const_iterator<Bits>;
-template<bit_range Bits> [[nodiscard]] constexpr auto end  (Bits const& c) noexcept -> const_iterator<Bits>;
+template<bit_range> class iterator;
+template<bit_range> class reference;
 
 template<bit_range Bits>
-class const_iterator
+class iterator
 {
         Bits const* m_ptr{};
         std::size_t m_idx{};
 
         friend Bits;
-        friend class const_reference<Bits>;
-        friend constexpr auto begin <>(Bits const& c) noexcept -> const_iterator<Bits>;
-        friend constexpr auto end   <>(Bits const& c) noexcept -> const_iterator<Bits>;
+        friend class reference<Bits>;
+        friend constexpr auto begin <>(Bits const& c) noexcept -> iterator;
+        friend constexpr auto end   <>(Bits const& c) noexcept -> iterator;
 
-        [[nodiscard]] constexpr const_iterator(Bits const* ptr, std::size_t idx) noexcept
+        [[nodiscard]] constexpr iterator(Bits const* ptr, std::size_t idx) noexcept
         :
                 m_ptr(ptr),
                 m_idx(idx)
@@ -58,11 +55,11 @@ public:
         using value_type        = std::size_t;
         using difference_type   = std::ptrdiff_t;
         using pointer           = void;
-        using reference         = const_reference<Bits>;
+        using reference         = bidirectional::reference<Bits>;
 
-        [[nodiscard]] constexpr const_iterator() noexcept = default;
+        [[nodiscard]] constexpr iterator() noexcept = default;
 
-        [[nodiscard]] friend constexpr bool operator==(const_iterator lhs, const_iterator rhs) noexcept
+        [[nodiscard]] friend constexpr bool operator==(iterator lhs, iterator rhs) noexcept
         {
                 assert(lhs.m_ptr == rhs.m_ptr);
                 return lhs.m_idx == rhs.m_idx;
@@ -74,34 +71,34 @@ public:
                 return { *m_ptr, m_idx };
         }
 
-        constexpr const_iterator& operator++() noexcept { assert(m_ptr != nullptr); m_idx = find_next(*m_ptr, m_idx); return *this; }
-        constexpr const_iterator& operator--() noexcept { assert(m_ptr != nullptr); m_idx = find_prev(*m_ptr, m_idx); return *this; }
+        constexpr iterator& operator++() noexcept { assert(m_ptr != nullptr); m_idx = find_next(*m_ptr, m_idx); return *this; }
+        constexpr iterator& operator--() noexcept { assert(m_ptr != nullptr); m_idx = find_prev(*m_ptr, m_idx); return *this; }
 
-        constexpr const_iterator operator++(int) noexcept { auto nrv = *this; ++*this; return nrv; }
-        constexpr const_iterator operator--(int) noexcept { auto nrv = *this; --*this; return nrv; }
+        constexpr iterator operator++(int) noexcept { auto nrv = *this; ++*this; return nrv; }
+        constexpr iterator operator--(int) noexcept { auto nrv = *this; --*this; return nrv; }
 };
 
-template<bit_range Bits> [[nodiscard]] constexpr auto begin(Bits const& c) noexcept -> const_iterator<Bits> { return { &c, find_first(c) }; }
-template<bit_range Bits> [[nodiscard]] constexpr auto end  (Bits const& c) noexcept -> const_iterator<Bits> { return { &c, find_last (c) }; }
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> begin(Bits const& c) noexcept { return { &c, find_first(c) }; }
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> end  (Bits const& c) noexcept { return { &c, find_last (c) }; }
 
 template<bit_range Bits>
-class const_reference
+class reference
 {
         Bits const& m_ref;
         std::size_t m_idx;
 
         friend Bits;
-        friend class const_iterator<Bits>;
+        friend class iterator<Bits>;
 
-        [[nodiscard]] constexpr const_reference(Bits const& ref, std::size_t idx) noexcept
+        [[nodiscard]] constexpr reference(Bits const& ref, std::size_t idx) noexcept
         :
                 m_ref(ref),
                 m_idx(idx)
         {}
 
 public:
-        using iterator   = const_iterator<Bits>;
-        using value_type = std::iter_value_t<iterator>;
+        using value_type = std::size_t;
+        using iterator   = bidirectional::iterator<Bits>;
 
         [[nodiscard]] constexpr iterator operator&() const noexcept
         {
@@ -122,8 +119,8 @@ public:
 };
 
 template<bit_range Bits>
-[[nodiscard]] constexpr auto format_as(const_reference<Bits> ref) noexcept
-        -> const_reference<Bits>::value_type
+[[nodiscard]] constexpr auto format_as(reference<Bits> ref) noexcept
+        -> reference<Bits>::value_type
 {
         return ref;
 }

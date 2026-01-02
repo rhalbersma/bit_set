@@ -61,6 +61,10 @@ struct bit_array
 {
         bit::array<N, Block> m_bits;
 
+        [[nodiscard]] friend constexpr std::size_t find_first(const bit_array&)                  noexcept { return 0uz;         }
+        [[nodiscard]] friend constexpr std::size_t find_last (const bit_array&)                  noexcept { return N;           }
+        [[nodiscard]] friend constexpr std::size_t find_at   (const bit_array& c, std::size_t n) noexcept { return c.m_bits[n]; }
+
         // types
         using value_type             = bool;
         using block_type             = Block;
@@ -92,34 +96,15 @@ struct bit_array
         } 
 
         // iterators
-        [[nodiscard]] constexpr auto begin(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
-        {
-                return proxy::random_access::begin(self);
-        }
+        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return proxy::random_access::begin(self); }
+        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return proxy::random_access::end  (self); }
+        [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept { return std::make_reverse_iterator(self.end()  ); }
+        [[nodiscard]] constexpr auto rend  (this auto&& self) noexcept { return std::make_reverse_iterator(self.begin()); }
 
-        [[nodiscard]] constexpr auto end(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
-        {
-                return proxy::random_access::end(self);
-        }
-
-        [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reverse_iterator, reverse_iterator>
-        {
-                return std::make_reverse_iterator(self.end());
-        }
-
-        [[nodiscard]] constexpr auto rend(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reverse_iterator, reverse_iterator>
-        {
-                return std::make_reverse_iterator(self.begin());
-        }
-
-        [[nodiscard]] constexpr const_iterator         cbegin()  const noexcept { return begin();  }
-        [[nodiscard]] constexpr const_iterator         cend()    const noexcept { return end();    }
-        [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept { return rbegin(); }
-        [[nodiscard]] constexpr const_reverse_iterator crend()   const noexcept { return rend();   }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return begin();  }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return end();    }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return rbegin(); }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return rend();   }
 
         // capacity
         [[nodiscard]] constexpr bool         empty() const noexcept { return N == 0; }
@@ -127,34 +112,11 @@ struct bit_array
         [[nodiscard]] constexpr size_type max_size() const noexcept { return N;      }
 
         // element access
-        [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reference, reference>
-        {
-                assert(n < N);
-                return { *this, n };
-        }
-
-        [[nodiscard]] constexpr auto at(this auto&& self, size_type n)
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reference, reference>
-        {
-                return if (n < N) { 
-                        return { *this, n }; 
-                } else { 
-                        throw out_of_range(n); 
-                }
-        }
+        [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept { assert(n < N); return { self, n };                             }
+        [[nodiscard]] constexpr auto at        (this auto&& self, size_type n)          {    if (n < N)  return { self, n }; else throw out_of_range(n); }
         
-        [[nodiscard]] constexpr auto front(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reference, reference>
-        {
-                return { *this, 0uz };
-        }
-
-        [[nodiscard]] constexpr auto back(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reference, reference>
-        {
-                return { *this, N - 1 };
-        }
+        [[nodiscard]] constexpr auto front(this auto&& self) noexcept { return { self, 0uz   }; }
+        [[nodiscard]] constexpr auto back (this auto&& self) noexcept { return { self, N - 1 }; }
 
 private:
         static constexpr auto out_of_range(std::size_t n, std::source_location const& loc = std::source_location::current())

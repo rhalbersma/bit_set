@@ -86,11 +86,11 @@ public:
         using block_type             = Block;
         using pointer                = void;
         using const_pointer          = pointer;
-        using reference              = proxy::bidirectional::const_reference<bit_set>;
+        using reference              = proxy::bidirectional::reference<bit_set>;
         using const_reference        = reference;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = proxy::bidirectional::const_iterator<bit_set>;
+        using iterator               = proxy::bidirectional::iterator<bit_set>;
         using const_iterator         = iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
@@ -128,34 +128,15 @@ public:
         friend constexpr auto operator<=> <>(const bit_set&, const bit_set&) noexcept -> std::strong_ordering;
 
         // iterators
-        [[nodiscard]] constexpr auto begin(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
-        {
-                return proxy::bidirectional::begin(self);
-        }
+        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return proxy::bidirectional::begin(self); }
+        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return proxy::bidirectional::end  (self); }
+        [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept { return std::make_reverse_iterator(self.end()  ); }
+        [[nodiscard]] constexpr auto rend  (this auto&& self) noexcept { return std::make_reverse_iterator(self.begin()); }
 
-        [[nodiscard]] constexpr auto end(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
-        {
-                return proxy::bidirectional::end(self);
-        }
-
-        [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reverse_iterator, reverse_iterator>
-        {
-                return std::make_reverse_iterator(self.end());
-        }
-
-        [[nodiscard]] constexpr auto rend(this auto&& self) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reverse_iterator, reverse_iterator>
-        {
-                return std::make_reverse_iterator(self.begin());
-        }
-
-        [[nodiscard]] constexpr const_iterator         cbegin()  const noexcept { return begin();  }
-        [[nodiscard]] constexpr const_iterator         cend()    const noexcept { return end();    }
-        [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept { return rbegin(); }
-        [[nodiscard]] constexpr const_reverse_iterator crend()   const noexcept { return rend();   }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return begin();  }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return end();    }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return rbegin(); }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return rend();   }
 
         // capacity
         [[nodiscard]] constexpr bool empty() const noexcept { return m_bits.none(); }
@@ -165,8 +146,8 @@ public:
         [[nodiscard]] static constexpr size_type max_size()       noexcept { return decltype(m_bits)::size(); }
 
         // element access
-        [[nodiscard]] constexpr const_reference front() const noexcept { return { *this, m_bits.find_front() }; }
-        [[nodiscard]] constexpr const_reference back()  const noexcept { return { *this, m_bits.find_back()  }; }
+        [[nodiscard]] constexpr reference front() const noexcept { return { *this, m_bits.find_front() }; }
+        [[nodiscard]] constexpr reference back()  const noexcept { return { *this, m_bits.find_back()  }; }
 
         // 23.4.6.4, modifiers
         template<class... Args>
@@ -282,8 +263,7 @@ public:
         [[nodiscard]] constexpr value_compare value_comp() const noexcept { return value_compare(); }
 
         // set operations
-        [[nodiscard]] constexpr auto find(this auto&& self, const key_type& x) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
+        [[nodiscard]] constexpr iterator find(this auto&& self, const key_type& x) noexcept
         {
                 if (self.contains(x)) {
                         return { &self, x };
@@ -302,24 +282,17 @@ public:
                 return m_bits[x];
         }
 
-        [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
+        [[nodiscard]] constexpr iterator lower_bound(this auto&& self, const key_type& x) noexcept
         {
                 return { &self, (x ? find_next(self, x - 1) : find_first(self)) };                
         }
 
-        [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept
-                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
+        [[nodiscard]] constexpr iterator upper_bound(this auto&& self, const key_type& x) noexcept
         {
                 return { &self, find_next(self, x) };                
         }
 
-        [[nodiscard]] constexpr auto equal_range(this auto&& self, const key_type& x) noexcept
-                -> std::conditional_t<
-                        std::is_const_v<std::remove_reference_t<decltype(self)>>,
-                        std::pair<const_iterator, const_iterator>,
-                        std::pair<iterator, iterator>
-                >
+        [[nodiscard]] constexpr std::pair<iterator, iterator> equal_range(this auto&& self, const key_type& x) noexcept
         {
                 return { self.lower_bound(x), self.upper_bound(x) };
         }
@@ -329,14 +302,12 @@ public:
         [[nodiscard]] constexpr bool intersects         (const bit_set& other) const noexcept { return this->m_bits.intersects         (other.m_bits); }
 
 private:
-        constexpr auto do_insert(value_type x) noexcept
-                -> std::pair<iterator, bool>
+        constexpr std::pair<iterator, bool> do_insert(value_type x) noexcept
         {
                 return { { this, x }, m_bits.insert(x) };
         }
 
-        constexpr auto do_insert(const_iterator, value_type x) noexcept
-                -> iterator
+        constexpr iterator do_insert(const_iterator, value_type x) noexcept
         {
                 m_bits.set(x);
                 return { this, x };

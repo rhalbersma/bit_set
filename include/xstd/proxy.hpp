@@ -7,7 +7,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/proxy/bidirectional.hpp>
-#include <xstd/proxy/forward.hpp>
 #include <xstd/proxy/random_access.hpp>
 
 #endif  // include guard
