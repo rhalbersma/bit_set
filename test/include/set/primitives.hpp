@@ -5,21 +5,19 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/test/unit_test.hpp>                     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <boost/container/flat_set.hpp>                 // flat_set
-#include <boost/move/detail/reverse_iterator.hpp>       // reverse_iterator
-#include <xstd/bit_set.hpp>
-#include <algorithm>                                    // equal_range, lexicographical_compare_three_way
-#include <compare>                                      // strong_ordering
-#include <concepts>                                     // convertible_to, default_initializable, equality_comparable, integral, same_as, unsigned_integral
-#include <cstddef>                                      // ptrdiff_t
-#include <initializer_list>                             // initializer_list
-#include <iterator>                                     // distance, empty, iter_difference_t, iter_value_t, next, prev, reverse_ierator, size, ssize
-#include <limits>                                       // max
-#include <memory>                                       // addressof
-#include <ranges>                                       // count, equal, find, lexicographical_compare, lower_bound, , subrange, upper_bound
-#include <type_traits>                                  // add_const_t, common_type, make_signed_t, remove_reference_t
-#include <utility>                                      // declval, pair
+#include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
+#include <xstd/bit_set.hpp>             // bit_set
+#include <algorithm>                    // equal_range, lexicographical_compare_three_way
+#include <compare>                      // strong_ordering
+#include <concepts>                     // convertible_to, default_initializable, equality_comparable, integral, same_as, unsigned_integral
+#include <cstddef>                      // ptrdiff_t
+#include <initializer_list>             // initializer_list
+#include <iterator>                     // distance, empty, iter_difference_t, iter_value_t, next, prev, reverse_ierator, size, ssize
+#include <limits>                       // max
+#include <memory>                       // addressof
+#include <ranges>                       // count, equal, find, lexicographical_compare, lower_bound, , subrange, upper_bound
+#include <type_traits>                  // add_const_t, common_type, make_signed_t, remove_reference_t
+#include <utility>                      // declval, pair
 
 namespace xstd {
 

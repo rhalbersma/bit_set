@@ -13,13 +13,14 @@
 
 #include <xstd/utility.hpp>     // aligned_size
 #include <concepts>             // unsigned_integral
-#include <limits>               // digits
 #include <cstddef>              // size_t
+#include <limits>               // digits
 
 namespace xstd {
 
 // 23.4.6, class template set
-template<std::size_t N, std::unsigned_integral Block = std::size_t> class bit_set;
+template<std::size_t N, std::unsigned_integral Block = std::size_t> 
+class bit_set;
 
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept;
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto operator<=>(const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept -> std::strong_ordering;

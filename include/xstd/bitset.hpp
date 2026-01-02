@@ -187,15 +187,15 @@ public:
 
         // observers
         [[nodiscard]] constexpr std::size_t count() const noexcept { return m_bits.count(); }
-        [[nodiscard]] constexpr std::size_t size () const noexcept { return m_bits.size (); }
+        [[nodiscard]] constexpr std::size_t size()  const noexcept { return m_bits.size();  }
 
         [[nodiscard]] constexpr bool operator== (const bitset& rhs) const noexcept                         = default;
         [[nodiscard]] constexpr auto operator<=>(const bitset& rhs) const noexcept -> std::strong_ordering = default;
 
         [[nodiscard]] constexpr bool test(std::size_t pos) const { if (pos < N) { return m_bits[pos]; } else { throw out_of_range(pos); } }
 
-        [[nodiscard]] constexpr bool all () const noexcept { return m_bits.all (); }
-        [[nodiscard]] constexpr bool any () const noexcept { return m_bits.any (); }
+        [[nodiscard]] constexpr bool all()  const noexcept { return m_bits.all();  }
+        [[nodiscard]] constexpr bool any()  const noexcept { return m_bits.any();  }
         [[nodiscard]] constexpr bool none() const noexcept { return m_bits.none(); }
 
         [[nodiscard]] constexpr bool is_subset_of       (const bitset& rhs) const noexcept { return m_bits.is_subset_of       (rhs.m_bits); }

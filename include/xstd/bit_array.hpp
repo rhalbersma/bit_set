@@ -6,99 +6,102 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bit/array.hpp>   // array
-#include <xstd/proxy.hpp>       // const_iterator, const_reference
-#include <xstd/utility.hpp>     // aligned_size
-#include <cassert>              // assert
+// Header <array> synopsis                                           [array.syn]
+
 #include <compare>              // strong_ordering
-#include <concepts>             // constructible_from, unsigned_integral
-#include <cstddef>              // ptrdiff_t, size_t
-#include <functional>           // less
 #include <initializer_list>     // initializer_list
-#include <iterator>             // make_reverse_iterator, reverse_iterator, 
-                                // input_iterator, sentinel_for
+
+#include <xstd/utility.hpp>     // aligned_size
+#include <concepts>             // unsigned_integral
+#include <cstddef>              // size_t
 #include <limits>               // digits
-#include <ranges>               // begin, empty, end, from_range_t, next, rbegin, rend
-                                // input_range
-#include <type_traits>          // conditional_t
-#include <utility>              // forward, move, pair
 
 namespace xstd {
 
-// class template bit_array
-template<std::size_t N, std::unsigned_integral Block>
-class bit_array;
+// 23.3.3, class template bit_array
+template<std::size_t N, std::unsigned_integral Block> struct bit_array;
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept;
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept;
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept -> std::strong_ordering;
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept -> std::strong_ordering;
+// 23.3.4, specialized algorithms
+template<std::size_t N, std::unsigned_integral Block>               constexpr void swap       (      bit_array<N, Block>& x,       bit_array<N, Block>& y) noexcept(noexcept(x.swap(y)));
+
+namespace aligned {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
-using bit_array_aligned = bit_array<aligned_size(N, std::numeric_limits<Block>::digits), Block>;
+using bit_array = xstd::bit_array<xstd::aligned_size(N, std::numeric_limits<Block>::digits), Block>;
+
+}       // namespace aligned
+}       // namespace xstd
+
+#include <xstd/bit/array.hpp>   // array
+#include <xstd/proxy.hpp>       // begin, end, iterator, reference
+#include <xstd/utility.hpp>     // aligned_size
+#include <cassert>              // assert
+#include <compare>              // strong_ordering
+#include <concepts>             // unsigned_integral
+#include <cstddef>              // ptrdiff_t, size_t
+#include <format>               // format
+#include <initializer_list>     // initializer_list
+#include <iterator>             // make_reverse_iterator, reverse_iterator, 
+#include <limits>               // digits
+#include <source_location>      // source_location
+#include <stdexcept>            // out_of_range
+#include <type_traits>          // conditional_t
+#include <utility>              // pair
+
+// Class template array                                                  [array]
+// Overview                                                     [array.overview]
+
+namespace xstd {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 struct bit_array
 {
         bit::array<N, Block> m_bits;
 
+        // types
         using value_type             = bool;
         using block_type             = Block;
         using pointer                = void;
         using const_pointer          = pointer;
-        using reference              = proxy::bidirectional::const_reference<bit_array>;
-        using const_reference        = reference;
+        using reference              = proxy::random_access::reference<bit_array, false>;
+        using const_reference        = proxy::random_access::reference<bit_array, true >;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = proxy::bidirectional::const_iterator<bit_array>;
-        using const_iterator         = iterator;
+        using iterator               = proxy::random_access::iterator<bit_array, false>;
+        using const_iterator         = proxy::random_access::iterator<bit_array, true >;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-        // construct/copy/destroy
-        [[nodiscard]] constexpr bit_array() noexcept = default;
+        // no explicit construct/copy/destroy for aggregate type
 
-        template<std::input_iterator I, std::sentinel_for<I> S>
-        [[nodiscard]] constexpr bit_array(I first, S last) noexcept
-                requires std::constructible_from<value_type, decltype(*first)>
+        constexpr void fill(const value_type& u) noexcept
         {
-                insert(first, last);
+                if (u) {
+                        m_bits.set();
+                } else {
+                        m_bits.reset();
+                }
         }
 
-        template<std::ranges::input_range R>
-        [[nodiscard]] constexpr bit_array(std::from_range_t, R&& rg) noexcept
-                requires std::constructible_from<value_type, decltype(*std::ranges::begin(rg))>
+        constexpr void swap(bit_array& other) noexcept(noexcept(this->m_bits.swap(other.m_bits)))
         {
-                insert(std::ranges::begin(rg), std::ranges::end(rg));
-        }
-
-        [[nodiscard]] constexpr bit_array(std::initializer_list<value_type> il) noexcept
-        {
-                insert(il.begin(), il.end());
-        }
-
-        constexpr bit_array& operator=(std::initializer_list<value_type> il) noexcept
-        {
-                m_bits.reset();
-                insert(il.begin(), il.end());
-                return *this;
-        }
-
-        friend constexpr bool operator==  <>(const bit_array&, const bit_array&) noexcept;
-        friend constexpr auto operator<=> <>(const bit_array&, const bit_array&) noexcept -> std::strong_ordering;
+                this->m_bits.swap(other.m_bits);
+        } 
 
         // iterators
         [[nodiscard]] constexpr auto begin(this auto&& self) noexcept
                 -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
         {
-                return bidirectional::begin(self);
+                return proxy::random_access::begin(self);
         }
 
         [[nodiscard]] constexpr auto end(this auto&& self) noexcept
                 -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_iterator, iterator>
         {
-                return bidirectional::end(self);
+                return proxy::random_access::end(self);
         }
 
         [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept
@@ -119,37 +122,50 @@ struct bit_array
         [[nodiscard]] constexpr const_reverse_iterator crend()   const noexcept { return rend();   }
 
         // capacity
-        [[nodiscard]] constexpr bool empty() const noexcept { return m_bits.none(); }
-        [[nodiscard]] constexpr bool full()  const noexcept { return m_bits.all();  }
-
-        [[nodiscard]]        constexpr size_type size()     const noexcept { return m_bits.count();           }
-        [[nodiscard]] static constexpr size_type max_size()       noexcept { return decltype(m_bits)::size(); }
+        [[nodiscard]] constexpr bool         empty() const noexcept { return N == 0; }
+        [[nodiscard]] constexpr size_type     size() const noexcept { return N;      }
+        [[nodiscard]] constexpr size_type max_size() const noexcept { return N;      }
 
         // element access
-        [[nodiscard]] constexpr const_reference front() const noexcept { return { *this, m_bits.find_front() }; }
-        [[nodiscard]] constexpr const_reference back()  const noexcept { return { *this, m_bits.find_back()  }; }
-
-        constexpr void fill(bool const& u) noexcept
+        [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept
+                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reference, reference>
         {
-                if (u) {
-                        m_bits.set();
-                } else {
-                        m_bits.reset();
+                assert(n < N);
+                return { *this, n };
+        }
+
+        [[nodiscard]] constexpr auto at(this auto&& self, size_type n)
+                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reference, reference>
+        {
+                return if (n < N) { 
+                        return { *this, n }; 
+                } else { 
+                        throw out_of_range(n); 
                 }
         }
-
-        constexpr void swap(bit_array& other) noexcept(noexcept(this->m_bits.swap(other.m_bits)))
+        
+        [[nodiscard]] constexpr auto front(this auto&& self) noexcept
+                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reference, reference>
         {
-                this->m_bits.swap(other.m_bits);
+                return { *this, 0uz };
         }
 
-        constexpr bit_array& operator&=(const bit_array& other) noexcept { this->m_bits &= other.m_bits; return *this; }
-        constexpr bit_array& operator|=(const bit_array& other) noexcept { this->m_bits |= other.m_bits; return *this; }
-        constexpr bit_array& operator^=(const bit_array& other) noexcept { this->m_bits ^= other.m_bits; return *this; }
-        constexpr bit_array& operator-=(const bit_array& other) noexcept { this->m_bits -= other.m_bits; return *this; }
+        [[nodiscard]] constexpr auto back(this auto&& self) noexcept
+                -> std::conditional_t<std::is_const_v<std::remove_reference_t<decltype(self)>>, const_reference, reference>
+        {
+                return { *this, N - 1 };
+        }
 
-        constexpr bit_array& operator<<=(std::size_t n) noexcept { m_bits <<= n; return *this; }
-        constexpr bit_array& operator>>=(std::size_t n) noexcept { m_bits >>= n; return *this; }        
+private:
+        static constexpr auto out_of_range(std::size_t n, std::source_location const& loc = std::source_location::current())
+        {
+                return std::out_of_range(
+                        std::format(
+                                "{}:{}:{}: exception: ‘{}‘: argument ‘n‘ is out of range [{} >= {}]",
+                                loc.file_name(), loc.line(), loc.column(), loc.function_name(), n, N
+                        )
+                );
+        }        
 };
 
 template<std::size_t N, std::unsigned_integral Block>
@@ -184,48 +200,6 @@ template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr au
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rend   (const bit_array<N, Block>& c) noexcept { return c.rend(); }
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto crbegin(const bit_array<N, Block>& c) noexcept { return xstd::rbegin(c); }
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto crend  (const bit_array<N, Block>& c) noexcept { return xstd::rend(c);   }
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_array<N, Block> operator~(const bit_array<N, Block>& lhs) noexcept
-{
-        auto nrv = lhs; nrv.complement(); return nrv;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_array<N, Block> operator&(const bit_array<N, Block>& lhs, const bit_array<N, Block>& rhs) noexcept
-{
-        auto nrv = lhs; nrv &= rhs; return nrv;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_array<N, Block> operator|(const bit_array<N, Block>& lhs, const bit_array<N, Block>& rhs) noexcept
-{
-        auto nrv = lhs; nrv |= rhs; return nrv;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_array<N, Block> operator^(const bit_array<N, Block>& lhs, const bit_array<N, Block>& rhs) noexcept
-{
-        auto nrv = lhs; nrv ^= rhs; return nrv;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_array<N, Block> operator-(const bit_array<N, Block>& lhs, const bit_array<N, Block>& rhs) noexcept
-{
-        auto nrv = lhs; nrv -= rhs; return nrv;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_array<N, Block> operator<<(const bit_array<N, Block>& lhs, std::size_t n) noexcept
-{
-        auto nrv = lhs; nrv <<= n; return nrv;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bit_array<N, Block> operator>>(const bit_array<N, Block>& lhs, std::size_t n) noexcept
-{
-        auto nrv = lhs; nrv >>= n; return nrv;
-}
 
 }       // namespace xstd
 
