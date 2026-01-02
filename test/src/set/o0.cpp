@@ -67,23 +67,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
         [[maybe_unused]] auto _ = nested_types<T>();
         constructor<T>()();
 
-        empty_set_pair<T>(mem_swap());
-        empty_set_pair<T>(fn_swap());
+        on0::empty_set_pair<T>(mem_swap());
+        on0::empty_set_pair<T>(fn_swap());
 
-        empty_set_pair<T>(op_equal_to());
-        empty_set_pair<T>(op_not_equal_to());
+        on0::empty_set_pair<T>(op_equal_to());
+        on0::empty_set_pair<T>(op_not_equal_to());
 
-        empty_set_pair<T>(op_compare_three_way());
-        empty_set_pair<T>(op_less());
-        empty_set_pair<T>(op_greater());
-        empty_set_pair<T>(op_less_equal());
-        empty_set_pair<T>(op_greater_equal());
+        on0::empty_set_pair<T>(op_compare_three_way());
+        on0::empty_set_pair<T>(op_less());
+        on0::empty_set_pair<T>(op_greater());
+        on0::empty_set_pair<T>(op_less_equal());
+        on0::empty_set_pair<T>(op_greater_equal());
 
-        empty_set_pair<T>(composable::includes());
-        empty_set_pair<T>(composable::set_union());
-        empty_set_pair<T>(composable::set_intersection());
-        empty_set_pair<T>(composable::set_difference());
-        empty_set_pair<T>(composable::set_symmetric_difference());
+        on0::empty_set_pair<T>(composable::includes());
+        on0::empty_set_pair<T>(composable::set_union());
+        on0::empty_set_pair<T>(composable::set_intersection());
+        on0::empty_set_pair<T>(composable::set_difference());
+        on0::empty_set_pair<T>(composable::set_symmetric_difference());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

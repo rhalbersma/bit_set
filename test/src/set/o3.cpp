@@ -34,7 +34,7 @@ using Types = boost::mp11::mp_list
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, Types)
 {
-        all_singleton_set_triples<T>(op_less());
+        on3::all_singleton_set_triples<T>(op_less());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

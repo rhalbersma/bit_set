@@ -76,27 +76,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Constructors, T, Types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
 {
-        empty_set_pair<T>(mem_bit_and_assign());
-        empty_set_pair<T>(mem_bit_or_assign());
-        empty_set_pair<T>(mem_bit_xor_assign());
-        empty_set_pair<T>(mem_bit_minus_assign());
+        on0::empty_set_pair<T>(mem_bit_and_assign());
+        on0::empty_set_pair<T>(mem_bit_or_assign());
+        on0::empty_set_pair<T>(mem_bit_xor_assign());
+        on0::empty_set_pair<T>(mem_bit_minus_assign());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
 {
-        empty_set_pair<T>(mem_equal_to());
-        empty_set_pair<T>(mem_compare_three_way());
-        empty_set_pair<T>(mem_is_subset_of());
-        empty_set_pair<T>(mem_is_proper_subset_of());
-        empty_set_pair<T>(mem_intersects());
+        on0::empty_set_pair<T>(mem_equal_to());
+        on0::empty_set_pair<T>(mem_compare_three_way());
+        on0::empty_set_pair<T>(mem_is_subset_of());
+        on0::empty_set_pair<T>(mem_is_proper_subset_of());
+        on0::empty_set_pair<T>(mem_intersects());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
 {
-        empty_set_pair<T>(op_bit_and());
-        empty_set_pair<T>(op_bit_or());
-        empty_set_pair<T>(op_bit_xor());
-        empty_set_pair<T>(op_bit_minus());
+        on0::empty_set_pair<T>(op_bit_and());
+        on0::empty_set_pair<T>(op_bit_or());
+        on0::empty_set_pair<T>(op_bit_xor());
+        on0::empty_set_pair<T>(op_bit_minus());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

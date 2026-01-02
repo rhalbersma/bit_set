@@ -40,123 +40,123 @@ using Types = boost::mp11::mp_list
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
 {
-        all_singleton_arrays<T>([](auto const& a1) {
+        on1::all_singleton_arrays<T>([](auto const& a1) {
                 constructor<T>()(a1.begin(), a1.end());
                 constructor<T>()(std::from_range, a1);
         });
-        all_singleton_ilists<T>([](auto ilist1) {
+        on1::all_singleton_ilists<T>([](auto ilist1) {
                 constructor<T>()(std::from_range, ilist1);
                 constructor<T>()(ilist1);
         });
 
-        all_cardinality_sets<T>(mem_const_reference());
-        all_singleton_sets<T>(mem_const_reference());
+        on1::all_cardinality_sets<T>(mem_const_reference());
+        on1::all_singleton_sets<T>(mem_const_reference());
 
-        all_cardinality_sets<T>([](auto& is) {
+        on1::all_cardinality_sets<T>([](auto& is) {
                 mem_const_iterator()(is);
         });
-        all_cardinality_sets<T>([](auto const& is) {
+        on1::all_cardinality_sets<T>([](auto const& is) {
                 mem_const_iterator()(is);
         });
-        all_singleton_sets<T>([](auto& is1) {
+        on1::all_singleton_sets<T>([](auto& is1) {
                 mem_const_iterator()(is1);
         });
-        all_singleton_sets<T>([](auto const& is1) {
+        on1::all_singleton_sets<T>([](auto const& is1) {
                 mem_const_iterator()(is1);
         });
 
-        all_cardinality_sets<T>(mem_front());
-        all_singleton_sets<T>(mem_front());
+        on1::all_cardinality_sets<T>(mem_front());
+        on1::all_singleton_sets<T>(mem_front());
 
-        all_cardinality_sets<T>(mem_back());
-        all_singleton_sets<T>(mem_back());
+        on1::all_cardinality_sets<T>(mem_back());
+        on1::all_singleton_sets<T>(mem_back());
 
-        all_cardinality_sets<T>(mem_empty());
-        all_cardinality_sets<T>(mem_size());
-        all_cardinality_sets<T>(mem_max_size());
+        on1::all_cardinality_sets<T>(mem_empty());
+        on1::all_cardinality_sets<T>(mem_size());
+        on1::all_cardinality_sets<T>(mem_max_size());
 
-        all_valid<T>([](auto const& t) {
-                empty_set<T>([=](auto& is0) {
+        on1::all_valid<T>([](auto const& t) {
+                on0::empty_set<T>([=](auto& is0) {
                         mem_emplace()(is0, t);
                 });
-                full_set<T>([=](auto& isN) {
+                on0::full_set<T>([=](auto& isN) {
                         mem_emplace()(isN, t);
                 });
-                empty_set<T>([=](auto& is0) {
+                on0::empty_set<T>([=](auto& is0) {
                         mem_insert()(is0, t);
                 });
-                full_set<T>([=](auto& isN) {
+                on0::full_set<T>([=](auto& isN) {
                         mem_insert()(isN, t);
                 });
         });
-        all_valid<T>([](auto const& t) {
-                empty_set<T>([=](auto& is0) {
+        on1::all_valid<T>([](auto const& t) {
+                on0::empty_set<T>([=](auto& is0) {
                         mem_emplace_hint()(is0, is0.end(), t);
                 });
-                full_set<T>([=](auto& isN) {
+                on0::full_set<T>([=](auto& isN) {
                         mem_emplace_hint()(isN, isN.end(), t);
                 });
-                empty_set<T>([=](auto& is0) {
+                on0::empty_set<T>([=](auto& is0) {
                         mem_insert()(is0, is0.end(), t);
                 });
-                full_set<T>([=](auto& isN) {
+                on0::full_set<T>([=](auto& isN) {
                         mem_emplace_hint()(isN, isN.end(), t);
                 });
         });
-        all_singleton_arrays<T>([](auto const& a1) {
-                empty_set<T>([&](auto& is0) {
+        on1::all_singleton_arrays<T>([](auto const& a1) {
+                on0::empty_set<T>([&](auto& is0) {
                         mem_insert()(is0, a1.begin(), a1.end());
                 });
-                full_set<T>([&](auto& isN) {
+                on0::full_set<T>([&](auto& isN) {
                         mem_insert()(isN, a1.begin(), a1.end());
                 });
         });
-        all_singleton_ilists<T>([](auto ilist1) {
-                empty_set<T>([&](auto& is0) {
+        on1::all_singleton_ilists<T>([](auto ilist1) {
+                on0::empty_set<T>([&](auto& is0) {
                         mem_insert()(is0, ilist1);
                 });
-                full_set<T>([&](auto& isN) {
+                on0::full_set<T>([&](auto& isN) {
                         mem_insert()(isN, ilist1);
                 });
         });
 
-        all_valid<T>([](auto const& k) {
-                empty_set<T>([&](auto& is0) {
+        on1::all_valid<T>([](auto const& k) {
+                on0::empty_set<T>([&](auto& is0) {
                         mem_erase()(is0, k);
                 });
-                full_set<T>([&](auto& isN) {
+                on0::full_set<T>([&](auto& isN) {
                         mem_erase()(isN, k);
                 });
         });
 
         // std:flat_set<std::size_t>::erase invalidates iterators
         if constexpr (not std::same_as<T, std::flat_set<std::size_t>>) {
-                full_set<T>([](auto& isN) {
+                on0::full_set<T>([](auto& isN) {
                         for (auto first = isN.begin(), last = isN.end(); first != last; /* expression inside loop */) {
                                 mem_erase()(isN, first++);
                         }
                 });
-                full_set<T>([](auto& isN) {
+                on0::full_set<T>([](auto& isN) {
                         mem_erase()(isN, isN.begin(), isN.end());
                 });
         }
 
-        all_cardinality_sets<T>(mem_clear());
-        all_singleton_sets<T>(mem_clear());
+        on1::all_cardinality_sets<T>(mem_clear());
+        on1::all_singleton_sets<T>(mem_clear());
 
-        all_cardinality_sets<T>(op_compare_three_way());
-        all_singleton_sets<T>(op_compare_three_way());
+        on1::all_cardinality_sets<T>(op_compare_three_way());
+        on1::all_singleton_sets<T>(op_compare_three_way());
 
-        all_cardinality_sets<T>([](auto& is) {
+        on1::all_cardinality_sets<T>([](auto& is) {
                 fn_iterator()(is);
         });
-        all_cardinality_sets<T>([](auto const& is) {
+        on1::all_cardinality_sets<T>([](auto const& is) {
                 fn_iterator()(is);
         });
 
-        all_cardinality_sets<T>(fn_size());
-        all_cardinality_sets<T>(fn_ssize());
-        all_cardinality_sets<T>(fn_empty());
+        on1::all_cardinality_sets<T>(fn_size());
+        on1::all_cardinality_sets<T>(fn_ssize());
+        on1::all_cardinality_sets<T>(fn_empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

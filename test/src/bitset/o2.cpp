@@ -37,29 +37,29 @@ using namespace xstd;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
 {
-        all_singleton_set_pairs<T>(mem_bit_and_assign());
-        all_singleton_set_pairs<T>(mem_bit_or_assign());
-        all_singleton_set_pairs<T>(mem_bit_xor_assign());
-        all_singleton_set_pairs<T>(mem_bit_minus_assign());
+        on2::all_singleton_set_pairs<T>(mem_bit_and_assign());
+        on2::all_singleton_set_pairs<T>(mem_bit_or_assign());
+        on2::all_singleton_set_pairs<T>(mem_bit_xor_assign());
+        on2::all_singleton_set_pairs<T>(mem_bit_minus_assign());
 
-        any_value<T>([](auto pos) {
-                all_singleton_sets<T>([&](auto& bs1) {
+        on1::any_value<T>([](auto pos) {
+                on1::all_singleton_sets<T>([&](auto& bs1) {
                         mem_shift_left_assign()(bs1, pos);
                 });
         });
-        any_value<T>([](auto pos) {
-                all_singleton_sets<T>([&](auto& bs1) {
+        on1::any_value<T>([](auto pos) {
+                on1::all_singleton_sets<T>([&](auto& bs1) {
                         mem_shift_right_assign()(bs1, pos);
                 });
         });
 
-        any_value<T>([](auto pos) {
-                all_singleton_sets<T>([&](auto const& bs1) {
+        on1::any_value<T>([](auto pos) {
+                on1::all_singleton_sets<T>([&](auto const& bs1) {
                         mem_shift_left()(bs1, pos);
                 });
         });
-        any_value<T>([](auto pos) {
-                all_singleton_sets<T>([&](auto const& bs1) {
+        on1::any_value<T>([](auto pos) {
+                on1::all_singleton_sets<T>([&](auto const& bs1) {
                         mem_shift_right()(bs1, pos);
                 });
         });
@@ -67,19 +67,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
 {
-        all_singleton_set_pairs<T>(mem_equal_to());
-        all_singleton_set_pairs<T>(mem_compare_three_way());
-        all_singleton_set_pairs<T>(mem_is_subset_of());
-        all_singleton_set_pairs<T>(mem_is_proper_subset_of());
-        all_singleton_set_pairs<T>(mem_intersects());
+        on2::all_singleton_set_pairs<T>(mem_equal_to());
+        on2::all_singleton_set_pairs<T>(mem_compare_three_way());
+        on2::all_singleton_set_pairs<T>(mem_is_subset_of());
+        on2::all_singleton_set_pairs<T>(mem_is_proper_subset_of());
+        on2::all_singleton_set_pairs<T>(mem_intersects());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
 {
-        all_singleton_set_pairs<T>(op_bit_and());
-        all_singleton_set_pairs<T>(op_bit_or());
-        all_singleton_set_pairs<T>(op_bit_xor());
-        all_singleton_set_pairs<T>(op_bit_minus());
+        on2::all_singleton_set_pairs<T>(op_bit_and());
+        on2::all_singleton_set_pairs<T>(op_bit_or());
+        on2::all_singleton_set_pairs<T>(op_bit_xor());
+        on2::all_singleton_set_pairs<T>(op_bit_minus());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

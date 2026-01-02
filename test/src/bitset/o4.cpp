@@ -34,9 +34,9 @@ using Types = boost::mp11::mp_list
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
 {
-        all_doubleton_set_pairs<T>(mem_compare_three_way());
-        all_doubleton_set_pairs<T>(mem_is_subset_of());
-        all_doubleton_set_pairs<T>(mem_is_proper_subset_of());
+        on4::all_doubleton_set_pairs<T>(mem_compare_three_way());
+        on4::all_doubleton_set_pairs<T>(mem_is_subset_of());
+        on4::all_doubleton_set_pairs<T>(mem_is_proper_subset_of());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

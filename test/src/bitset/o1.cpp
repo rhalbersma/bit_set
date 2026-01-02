@@ -41,38 +41,39 @@ using namespace xstd;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
 {
-        all_cardinality_sets<T>(mem_set());
-        all_singleton_sets<T>(mem_set());
-        any_value<T>([](auto pos) {
-                empty_set<T>([&](auto& bs0) {
+        on1::all_cardinality_sets<T>(mem_set());
+        on1::all_cardinality_sets<T>(mem_set());
+        on1::all_singleton_sets<T>(mem_set());
+        on1::any_value<T>([](auto pos) {
+                on0::empty_set<T>([&](auto& bs0) {
                         mem_set()(bs0, pos);
                 });
-                empty_set<T>([&](auto& bs0) {
+                on0::empty_set<T>([&](auto& bs0) {
                         mem_set()(bs0, pos, true);
                 });
-                full_set<T>([&](auto& bsN) {
+                on0::full_set<T>([&](auto& bsN) {
                         mem_set()(bsN, pos, false);
                 });
         });
 
-        all_cardinality_sets<T>(mem_reset());
-        all_singleton_sets<T>(mem_reset());
-        any_value<T>([](auto pos) {
-                full_set<T>([&](auto& bsN) {
+        on1::all_cardinality_sets<T>(mem_reset());
+        on1::all_singleton_sets<T>(mem_reset());
+        on1::any_value<T>([](auto pos) {
+                on0::full_set<T>([&](auto& bsN) {
                         mem_reset()(bsN, pos);
                 });
         });
 
-        all_cardinality_sets<T>(mem_bit_not());
-        all_singleton_sets<T>(mem_bit_not());
+        on1::all_cardinality_sets<T>(mem_bit_not());
+        on1::all_singleton_sets<T>(mem_bit_not());
 
-        all_cardinality_sets<T>(mem_flip());
-        all_singleton_sets<T>(mem_flip());
-        any_value<T>([](auto pos) {
-                empty_set<T>([&](auto& bs0) {
+        on1::all_cardinality_sets<T>(mem_flip());
+        on1::all_singleton_sets<T>(mem_flip());
+        on1::any_value<T>([](auto pos) {
+                on0::empty_set<T>([&](auto& bs0) {
                         mem_flip()(bs0, pos);
                 });
-                full_set<T>([&](auto& bsN) {
+                on0::full_set<T>([&](auto& bsN) {
                         mem_flip()(bsN, pos);
                 });
        });
@@ -80,8 +81,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(ElementAccess, T, Types)
 {
-        all_valid<T>([](auto pos) {
-                empty_set<T>([&](auto const& bs0) {
+        on1::all_valid<T>([](auto pos) {
+                on0::empty_set<T>([&](auto const& bs0) {
                         mem_at()(bs0, pos);
                 });
                 // empty_set<T>([&](auto& bs0) {
@@ -93,7 +94,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ElementAccess, T, Types)
                 // empty_set<T>([&](auto& bs0) {
                 //         mem_at()(bs0, pos, true);
                 // });
-                full_set<T>([&](auto const& bsN) {
+                on0::full_set<T>([&](auto const& bsN) {
                         mem_at()(bsN, pos);
                 });
                 // full_set<T>([&](auto& bsN) {
@@ -110,29 +111,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ElementAccess, T, Types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
 {
-        all_cardinality_sets<T>(mem_count());
+        on1::all_cardinality_sets<T>(mem_count());
 
-        all_cardinality_sets<T>(mem_size());
-        all_singleton_sets<T>(mem_size());
+        on1::all_cardinality_sets<T>(mem_size());
+        on1::all_singleton_sets<T>(mem_size());
 
-        any_value<T>([](auto pos) {
-                empty_set<T>([&](auto const& bs0) {
+        on1::any_value<T>([](auto pos) {
+                on0::empty_set<T>([&](auto const& bs0) {
                         mem_test()(bs0, pos);
                 });
-                full_set<T>([&](auto const& bsN) {
+                on0::full_set<T>([&](auto const& bsN) {
                         mem_test()(bsN, pos);
                 });
         });
 
-        all_cardinality_sets<T>(mem_all());
-        all_cardinality_sets<T>(mem_any());
-        all_cardinality_sets<T>(mem_none());
+        on1::all_cardinality_sets<T>(mem_all());
+        on1::all_cardinality_sets<T>(mem_any());
+        on1::all_cardinality_sets<T>(mem_none());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
 {
-        all_cardinality_sets<T>(op_iostream());
-        all_singleton_sets<T>(op_iostream());
+        on1::all_cardinality_sets<T>(op_iostream());
+        on1::all_singleton_sets<T>(op_iostream());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

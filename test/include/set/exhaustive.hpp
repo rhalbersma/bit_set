@@ -35,7 +35,7 @@ inline constexpr auto limit_v = []() {
         }
 }();
 
-// NOTE: these tests are O(1)
+namespace on0 {
 
 template<class X>
 auto empty_set(auto fun)
@@ -59,7 +59,9 @@ auto empty_set_pair(auto fun)
         fun(a, b);
 }
 
-// NOTE: these tests are O(N)
+}       // namespace on0
+
+namespace on1 {
 
 template<class X, std::size_t N = limit_v<X, L1>>
 auto all_valid(auto fun)
@@ -105,7 +107,9 @@ auto all_singleton_sets(auto fun)
         }
 }
 
-// NOTE: these tests are O(N^2)
+}       // namespace on1
+
+namespace on2 {
 
 template<class X, std::size_t N = limit_v<X, L2>>
 auto all_doubleton_arrays(auto fun)
@@ -153,7 +157,9 @@ auto all_singleton_set_pairs(auto fun)
         }
 }
 
-// NOTE: this test is O(N^3)
+}       // namespace on2
+
+namespace on3 {
 
 template<class X, std::size_t N = limit_v<X, L3>>
 auto all_singleton_set_triples(auto fun)
@@ -170,7 +176,9 @@ auto all_singleton_set_triples(auto fun)
         }
 }
 
-// NOTE: this test is O(N^4)
+}       // namespace on3
+
+namespace on4 {
 
 template<class X, std::size_t N = limit_v<X, L4>>
 auto all_doubleton_set_pairs(auto fun)
@@ -189,5 +197,7 @@ auto all_doubleton_set_pairs(auto fun)
                 }
         }
 }
+
+}       // namespace on4
 
 }       // namespace xstd

@@ -10,9 +10,9 @@
 #include <concepts.hpp>                 // dynamic
 #include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <concepts>                     // regular
+#include <concepts>                     // regular, totally_ordered
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
-#include <type_traits>                  // is_trivially
+#include <type_traits>                  // is_nothrow_xxx, is_trivially_xxx
 
 BOOST_AUTO_TEST_SUITE(TypeTraits)
 
@@ -54,15 +54,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
         static_assert(std::regular<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Trivial, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TotallyOrdered, T, Types)
+{
+        static_assert(std::totally_ordered<T>);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsNoThrow, T, Types)
 {
         if constexpr (not dynamic<T>) {
-                static_assert(std::is_trivially_destructible_v<T>);
+                static_assert(std::is_nothrow_destructible_v<T>);
                 static_assert(std::is_nothrow_default_constructible_v<T>);
-                static_assert(std::is_trivially_copy_constructible_v<T>);
-                static_assert(std::is_trivially_copy_assignable_v<T>);
-                static_assert(std::is_trivially_move_constructible_v<T>);
-                static_assert(std::is_trivially_move_assignable_v<T>);
+                static_assert(std::is_nothrow_copy_constructible_v<T>);
+                static_assert(std::is_nothrow_copy_assignable_v<T>);
+                static_assert(std::is_nothrow_move_constructible_v<T>);
+                static_assert(std::is_nothrow_move_assignable_v<T>);
+        }
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsTrivial, T, Types)
+{
+        if constexpr (not dynamic<T>) {
+                static_assert(    std::is_trivially_destructible_v<T>);
+                static_assert(not std::is_trivially_default_constructible_v<T>);
+                static_assert(    std::is_trivially_copy_constructible_v<T>);
+                static_assert(    std::is_trivially_copy_assignable_v<T>);
+                static_assert(    std::is_trivially_move_constructible_v<T>);
+                static_assert(    std::is_trivially_move_assignable_v<T>);
         }
 }
 

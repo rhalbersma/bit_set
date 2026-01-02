@@ -23,8 +23,7 @@ concept bit_range =
         } and
         requires(Bits const& c, std::size_t n)
         {
-                { find_next(c, n) } -> std::convertible_to<std::size_t>;
-                { find_prev(c, n) } -> std::convertible_to<std::size_t>;
+                { c[n] } -> std::convertible_to<bool>;
         }
 ;
 

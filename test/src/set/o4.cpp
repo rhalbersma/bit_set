@@ -35,12 +35,12 @@ using Types = boost::mp11::mp_list
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWay, T, Types)
 {
-        all_doubleton_set_pairs<T>(op_compare_three_way());
+        on4::all_doubleton_set_pairs<T>(op_compare_three_way());
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Includes, T, Types)
 {
-        all_doubleton_set_pairs<T>(composable::includes());
+        on4::all_doubleton_set_pairs<T>(composable::includes());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

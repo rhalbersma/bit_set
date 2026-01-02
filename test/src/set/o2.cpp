@@ -43,118 +43,118 @@ using Types = boost::mp11::mp_list
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
 {
-        all_doubleton_arrays<T>([](auto const& a2) {
+        on2::all_doubleton_arrays<T>([](auto const& a2) {
                 constructor<T>()(a2.begin(), a2.end());
                 constructor<T>()(std::from_range, a2);
         });
-        all_doubleton_ilists<T>([](auto ilist2) {
+        on2::all_doubleton_ilists<T>([](auto ilist2) {
                 constructor<T>()(std::from_range, ilist2);
                 constructor<T>()(ilist2);
         });
 
-        all_singleton_sets<T>([](auto& is1) {
-                all_singleton_ilists<T>([&](auto ilist1) {
+        on1::all_singleton_sets<T>([](auto& is1) {
+                on1::all_singleton_ilists<T>([&](auto ilist1) {
                         op_assign()(is1, ilist1);
                 });
         });
 
-        all_doubleton_arrays<T>([](auto const& a2) {
-                empty_set<T>([&](auto& is0) {
+        on2::all_doubleton_arrays<T>([](auto const& a2) {
+                on0::empty_set<T>([&](auto& is0) {
                         mem_insert()(is0, a2.begin(), a2.end());
                 });
-                full_set<T>([&](auto& isN) {
+                on0::full_set<T>([&](auto& isN) {
                         mem_insert()(isN, a2.begin(), a2.end());
                 });
         });
-        all_doubleton_ilists<T>([](auto ilist2) {
-                empty_set<T>([=](auto& is0) {
+        on2::all_doubleton_ilists<T>([](auto ilist2) {
+                on0::empty_set<T>([=](auto& is0) {
                         mem_insert()(is0, ilist2);
                 });
-                full_set<T>([=](auto& isN) {
+                on0::full_set<T>([=](auto& isN) {
                         mem_insert()(isN, ilist2);
                 });
         });
 
         // std::flat_set<std::size_t>::erase invalidates iterators
         if constexpr (not std::same_as<T, std::flat_set<std::size_t>>) {
-                all_doubleton_sets<T>([](auto& is2) {
+                on2::all_doubleton_sets<T>([](auto& is2) {
                         mem_erase()(is2, is2.begin(), is2.end());
                 });
         }
 
-        all_singleton_set_pairs<T>(op_equal_to());
-        all_singleton_set_pairs<T>(mem_swap());
-        all_singleton_set_pairs<T>(fn_swap());
+        on2::all_singleton_set_pairs<T>(op_equal_to());
+        on2::all_singleton_set_pairs<T>(mem_swap());
+        on2::all_singleton_set_pairs<T>(fn_swap());
 
-        all_valid<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& is1) {
+        on1::all_valid<T>([](auto const& x) {
+                on1::all_singleton_sets<T>([&](auto& is1) {
                         mem_find()(is1, x);
                 });
-                all_singleton_sets<T>([&](auto const& is1) {
+                on1::all_singleton_sets<T>([&](auto const& is1) {
                         mem_find()(is1, x);
                 });
         });
 
-        all_valid<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto const& is1) {
+        on1::all_valid<T>([](auto const& x) {
+                on1::all_singleton_sets<T>([&](auto const& is1) {
                         mem_count()(is1, x);
                 });
         });
 
-        all_valid<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto const& is1) {
+        on1::all_valid<T>([](auto const& x) {
+                on1::all_singleton_sets<T>([&](auto const& is1) {
                         mem_contains()(is1, x);
                 });
         });
 
-        all_valid<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& is1) {
+        on1::all_valid<T>([](auto const& x) {
+                on1::all_singleton_sets<T>([&](auto& is1) {
                         mem_lower_bound()(is1, x);
                 });
-                all_singleton_sets<T>([&](auto const& is1) {
+                on1::all_singleton_sets<T>([&](auto const& is1) {
                         mem_lower_bound()(is1, x);
                 });
         });
 
-        all_valid<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& is1) {
+        on1::all_valid<T>([](auto const& x) {
+                on1::all_singleton_sets<T>([&](auto& is1) {
                         mem_upper_bound()(is1, x);
                 });
-                all_singleton_sets<T>([&](auto const& is1) {
+                on1::all_singleton_sets<T>([&](auto const& is1) {
                         mem_upper_bound()(is1, x);
                 });
         });
 
-        all_valid<T>([](auto const& x) {
-                all_singleton_sets<T>([&](auto& is1) {
+        on1::all_valid<T>([](auto const& x) {
+                on1::all_singleton_sets<T>([&](auto& is1) {
                         mem_equal_range()(is1, x);
                 });
-                all_singleton_sets<T>([&](auto const& is1) {
+                on1::all_singleton_sets<T>([&](auto const& is1) {
                         mem_equal_range()(is1, x);
                 });
         });
 
-        all_singleton_set_pairs<T>(op_not_equal_to());
+        on2::all_singleton_set_pairs<T>(op_not_equal_to());
 
-        all_singleton_set_pairs<T>(op_compare_three_way());
-        all_singleton_set_pairs<T>(op_less());
-        all_singleton_set_pairs<T>(op_greater());
-        all_singleton_set_pairs<T>(op_less_equal());
-        all_singleton_set_pairs<T>(op_greater_equal());
+        on2::all_singleton_set_pairs<T>(op_compare_three_way());
+        on2::all_singleton_set_pairs<T>(op_less());
+        on2::all_singleton_set_pairs<T>(op_greater());
+        on2::all_singleton_set_pairs<T>(op_less_equal());
+        on2::all_singleton_set_pairs<T>(op_greater_equal());
 
-        all_singleton_set_pairs<T>(composable::includes());
-        all_singleton_set_pairs<T>(composable::set_union());
-        all_singleton_set_pairs<T>(composable::set_intersection());
-        all_singleton_set_pairs<T>(composable::set_difference());
-        all_singleton_set_pairs<T>(composable::set_symmetric_difference());
+        on2::all_singleton_set_pairs<T>(composable::includes());
+        on2::all_singleton_set_pairs<T>(composable::set_union());
+        on2::all_singleton_set_pairs<T>(composable::set_intersection());
+        on2::all_singleton_set_pairs<T>(composable::set_difference());
+        on2::all_singleton_set_pairs<T>(composable::set_symmetric_difference());
 
-        all_valid<T>([](auto pos) {
-                all_singleton_sets<T>([&](auto const& bs1) {
+        on1::all_valid<T>([](auto pos) {
+                on1::all_singleton_sets<T>([&](auto const& bs1) {
                         composable::increment_modulo()(bs1, static_cast<std::size_t>(pos));
                 });
         });
-        all_valid<T>([](auto pos) {
-                all_singleton_sets<T>([&](auto const& bs1) {
+        on1::all_valid<T>([](auto pos) {
+                on1::all_singleton_sets<T>([&](auto const& bs1) {
                         composable::decrement_modulo()(bs1, static_cast<std::size_t>(pos));
                 });
         });
