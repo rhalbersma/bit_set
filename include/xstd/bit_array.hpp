@@ -130,38 +130,9 @@ private:
         }        
 };
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bool operator==(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept
-{
-        return x.m_bits == y.m_bits;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept
-        -> std::strong_ordering
-{
-        return x.m_bits <=> y.m_bits;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-constexpr void swap(bit_array<N, Block>& x, bit_array<N, Block>& y) noexcept(noexcept(x.swap(y)))
-{
-        x.swap(y);
-}
-
-// range access
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto begin  (      bit_array<N, Block>& c) noexcept { return c.begin(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto begin  (const bit_array<N, Block>& c) noexcept { return c.begin(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto end    (      bit_array<N, Block>& c) noexcept { return c.end(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto end    (const bit_array<N, Block>& c) noexcept { return c.end(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto cbegin (const bit_array<N, Block>& c) noexcept { return xstd::begin(c); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto cend   (const bit_array<N, Block>& c) noexcept { return xstd::end(c);   }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rbegin (      bit_array<N, Block>& c) noexcept { return c.rbegin(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rbegin (const bit_array<N, Block>& c) noexcept { return c.rbegin(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rend   (      bit_array<N, Block>& c) noexcept { return c.rend(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rend   (const bit_array<N, Block>& c) noexcept { return c.rend(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto crbegin(const bit_array<N, Block>& c) noexcept { return xstd::rbegin(c); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto crend  (const bit_array<N, Block>& c) noexcept { return xstd::rend(c);   }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept                         { return x.m_bits ==  y.m_bits; }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept -> std::strong_ordering { return x.m_bits <=> y.m_bits; }
+template<std::size_t N, std::unsigned_integral Block>               constexpr void swap       (      bit_array<N, Block>& x,       bit_array<N, Block>& y) noexcept(noexcept(x.swap(y)))    { x.swap(y);                    }
 
 }       // namespace xstd
 

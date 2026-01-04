@@ -142,7 +142,7 @@ public:
         [[nodiscard]] constexpr bool empty() const noexcept { return m_bits.none(); }
         [[nodiscard]] constexpr bool full()  const noexcept { return m_bits.all();  }
 
-        [[nodiscard]]        constexpr size_type size()     const noexcept { return m_bits.count();           }
+        [[nodiscard]]        constexpr size_type     size() const noexcept { return m_bits.count();           }
         [[nodiscard]] static constexpr size_type max_size()       noexcept { return decltype(m_bits)::size(); }
 
         // element access
@@ -164,25 +164,10 @@ public:
                 return do_insert(position, value_type(std::forward<Args>(args)...));
         }
 
-        constexpr std::pair<iterator, bool> insert(const value_type& x) noexcept
-        {
-                return do_insert(x);
-        }
-
-        constexpr std::pair<iterator, bool> insert(value_type&& x) noexcept
-        {
-                return do_insert(std::move(x));
-        }
-
-        constexpr iterator insert(const_iterator position, const value_type& x) noexcept
-        {
-                return do_insert(position, x);
-        }
-
-        constexpr iterator insert(const_iterator position, value_type&& x) noexcept
-        {
-                return do_insert(position, std::move(x));
-        }
+        constexpr auto insert(                         const value_type&  x) noexcept -> std::pair<iterator, bool> { return do_insert(          x);            }
+        constexpr auto insert(                               value_type&& x) noexcept -> std::pair<iterator, bool> { return do_insert(          std::move(x)); }
+        constexpr auto insert(const_iterator position, const value_type&  x) noexcept ->           iterator        { return do_insert(position, x);            }
+        constexpr auto insert(const_iterator position,       value_type&& x) noexcept ->           iterator        { return do_insert(position, std::move(x)); }
 
         template<std::input_iterator I, std::sentinel_for<I> S>
         constexpr void insert(I first, S last) noexcept
@@ -263,77 +248,28 @@ public:
         [[nodiscard]] constexpr value_compare value_comp() const noexcept { return value_compare(); }
 
         // set operations
-        [[nodiscard]] constexpr iterator find(this auto&& self, const key_type& x) noexcept
-        {
-                if (self.contains(x)) {
-                        return { &self, x };
-                } else {
-                        return self.end();
-                }
-        }
+        [[nodiscard]] constexpr bool contains(const key_type& x) const noexcept              { return m_bits[x]; }
+        [[nodiscard]] constexpr auto count   (const key_type& x) const noexcept -> size_type { return m_bits[x]; }
 
-        [[nodiscard]] constexpr size_type count(const key_type& x) const noexcept
-        {
-                return m_bits[x];
-        }
-
-        [[nodiscard]] constexpr bool contains(const key_type& x) const noexcept
-        {
-                return m_bits[x];
-        }
-
-        [[nodiscard]] constexpr iterator lower_bound(this auto&& self, const key_type& x) noexcept
-        {
-                return { &self, (x ? find_next(self, x - 1) : find_first(self)) };                
-        }
-
-        [[nodiscard]] constexpr iterator upper_bound(this auto&& self, const key_type& x) noexcept
-        {
-                return { &self, find_next(self, x) };                
-        }
-
-        [[nodiscard]] constexpr std::pair<iterator, iterator> equal_range(this auto&& self, const key_type& x) noexcept
-        {
-                return { self.lower_bound(x), self.upper_bound(x) };
-        }
+        [[nodiscard]] constexpr auto find       (this auto&& self, const key_type& x) noexcept -> iterator                      { if (self.contains(x)) return { &self, x }; else return self.end(); }
+        [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, (x ? find_next(self, x - 1) : find_first(self)) }; }
+        [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, find_next(self, x) };                              }
+        [[nodiscard]] constexpr auto equal_range(this auto&& self, const key_type& x) noexcept -> std::pair<iterator, iterator> { return { self.lower_bound(x), self.upper_bound(x) };               }
 
         [[nodiscard]] constexpr bool is_subset_of       (const bit_set& other) const noexcept { return this->m_bits.is_subset_of       (other.m_bits); }
         [[nodiscard]] constexpr bool is_proper_subset_of(const bit_set& other) const noexcept { return this->m_bits.is_proper_subset_of(other.m_bits); }
         [[nodiscard]] constexpr bool intersects         (const bit_set& other) const noexcept { return this->m_bits.intersects         (other.m_bits); }
 
 private:
-        constexpr std::pair<iterator, bool> do_insert(value_type x) noexcept
-        {
-                return { { this, x }, m_bits.insert(x) };
-        }
-
-        constexpr iterator do_insert(const_iterator, value_type x) noexcept
-        {
-                m_bits.set(x);
-                return { this, x };
-        }
+        constexpr auto do_insert(                value_type x) noexcept -> std::pair<iterator, bool> {                return { { this, x }, m_bits.insert(x) }; }
+        constexpr auto do_insert(const_iterator, value_type x) noexcept ->           iterator        { m_bits.set(x); return   { this, x };                     }
 };
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr bool operator==(const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept
-{
-        return x.m_bits == y.m_bits;
-}
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept                         { return x.m_bits ==  y.m_bits; }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto operator<=>(const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept -> std::strong_ordering { return x.m_bits <=> y.m_bits; }
+template<std::size_t N, std::unsigned_integral Block>               constexpr void swap       (      bit_set<N, Block>& x,       bit_set<N, Block>& y) noexcept(noexcept(x.swap(y)))    { x.swap(y);                    }
 
-template<std::size_t N, std::unsigned_integral Block>
-[[nodiscard]] constexpr auto operator<=>(const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept
-        -> std::strong_ordering
-{
-        return x.m_bits <=> y.m_bits;
-}
-
-template<std::size_t N, std::unsigned_integral Block>
-constexpr void swap(bit_set<N, Block>& x, bit_set<N, Block>& y) noexcept(noexcept(x.swap(y)))
-{
-        x.swap(y);
-}
-
-// 23.4.6.3 Erasure                                                    [set.erasure]
+// 23.4.6.3 Erasure                                                [set.erasure]
 template<std::size_t N, std::unsigned_integral Block, class Predicate>
 constexpr typename bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred)
 {
@@ -347,20 +283,6 @@ constexpr typename bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, P
         }
         return original_size - c.size();
 }
-
-// range access
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto begin  (      bit_set<N, Block>& c) noexcept { return c.begin(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto begin  (const bit_set<N, Block>& c) noexcept { return c.begin(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto end    (      bit_set<N, Block>& c) noexcept { return c.end(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto end    (const bit_set<N, Block>& c) noexcept { return c.end(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto cbegin (const bit_set<N, Block>& c) noexcept { return xstd::begin(c); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto cend   (const bit_set<N, Block>& c) noexcept { return xstd::end(c);   }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rbegin (      bit_set<N, Block>& c) noexcept { return c.rbegin(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rbegin (const bit_set<N, Block>& c) noexcept { return c.rbegin(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rend   (      bit_set<N, Block>& c) noexcept { return c.rend(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rend   (const bit_set<N, Block>& c) noexcept { return c.rend(); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto crbegin(const bit_set<N, Block>& c) noexcept { return xstd::rbegin(c); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto crend  (const bit_set<N, Block>& c) noexcept { return xstd::rend(c);   }
 
 // bitwise operators
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bit_set<N, Block> operator~(const bit_set<N, Block>& lhs) noexcept { auto nrv = lhs; nrv.complement(); return nrv; }

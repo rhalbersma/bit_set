@@ -629,26 +629,26 @@ struct fn_iterator
 {
         auto operator()(auto& c) const noexcept
         {
-                BOOST_CHECK( begin(c) == c.begin());                            // [iterator.range]/2
-                BOOST_CHECK(   end(c) == c.end());                              // [iterator.range]/3
+                BOOST_CHECK(std::begin(c)   == c.begin());                      // [iterator.range]/2
+                BOOST_CHECK(std::end(c)     == c.end());                        // [iterator.range]/3
 
-                BOOST_CHECK(rbegin(c) == c.rbegin());                           // [iterator.range]/8
-                BOOST_CHECK(  rend(c) == c.rend());                             // [iterator.range]/9
+                BOOST_CHECK(std::rbegin(c)  == c.rbegin());                     // [iterator.range]/8
+                BOOST_CHECK(std::rend(c)    == c.rend());                       // [iterator.range]/9
         }
 
         auto operator()(auto const& c) const noexcept
         {
-                BOOST_CHECK(  begin(c) == c.begin());                           // [iterator.range]/2
-                BOOST_CHECK(    end(c) == c.end());                             // [iterator.range]/3
+                BOOST_CHECK(std::begin(c)   == c.begin());                      // [iterator.range]/2
+                BOOST_CHECK(std::end(c)     == c.end());                        // [iterator.range]/3
 
-                BOOST_CHECK( cbegin(c) == begin(c));                            // [iterator.range]/6
-                BOOST_CHECK(   cend(c) == end(c));                              // [iterator.range]/7
+                BOOST_CHECK(std::cbegin(c)  == std::begin(c));                  // [iterator.range]/6
+                BOOST_CHECK(std::cend(c)    == std::end(c));                    // [iterator.range]/7
 
-                BOOST_CHECK( rbegin(c) == c.rbegin());                          // [iterator.range]/8
-                BOOST_CHECK(   rend(c) == c.rend());                            // [iterator.range]/9
+                BOOST_CHECK(std::rbegin(c)  == c.rbegin());                     // [iterator.range]/8
+                BOOST_CHECK(std::rend(c)    == c.rend());                       // [iterator.range]/9
 
-                BOOST_CHECK(crbegin(c) == rbegin(c));                           // [iterator.range]/14
-                BOOST_CHECK(  crend(c) == rend(c));                             // [iterator.range]/15
+                BOOST_CHECK(std::crbegin(c) == std::rbegin(c));                 // [iterator.range]/14
+                BOOST_CHECK(std::crend(c)   == std::rend(c));                   // [iterator.range]/15
         }
 };
 

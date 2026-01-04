@@ -67,15 +67,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BidirectionalIterator, T, Types)
         static_assert(std::bidirectional_iterator<I>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Reference, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(ConstReference, T, Types)
 {
-        using R = T::reference;
+        using R = T::const_reference;
         static_assert(    std::is_trivially_destructible_v<R>);
         static_assert(not std::is_default_constructible_v<R>);
         static_assert(    std::is_trivially_copy_constructible_v<R>);
-        static_assert(not std::is_copy_assignable_v<R> or std::is_reference_v<R>);
+        static_assert(not std::is_copy_assignable_v<R>);
         static_assert(    std::is_trivially_move_constructible_v<R>);
-        static_assert(not std::is_move_assignable_v<R> or std::is_reference_v<R>);
+        static_assert(not std::is_move_assignable_v<R>);
         static_assert(    std::equality_comparable<R>);
 }
 
