@@ -417,7 +417,7 @@ auto b = a
 
 ## Requirements
 
-This single-header library has no other dependencies than the C++ Standard Library and is continuously being tested with the following conforming [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) compilers:
+This library depends on the C++ Standard Library and [xstd](https://github.com/rhalbersma/xstd) (fetched automatically via CMake `FetchContent`, for `xstd::aligned_size`), and is continuously being tested with the following conforming [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) compilers:
 
 | Platform | Compiler   | Versions     | Build |
 | :------- | :-------   | :-------     | :---- |
