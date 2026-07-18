@@ -10,6 +10,14 @@ project(
     LANGUAGES CXX
 )
 
+include(FetchContent)
+FetchContent_Declare(
+    xstd
+    GIT_REPOSITORY https://github.com/rhalbersma/xstd.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(xstd)
+
 add_library(
     ${PROJECT_NAME} INTERFACE
 )
@@ -21,6 +29,11 @@ set(project_include_dir
 target_include_directories(
     ${PROJECT_NAME} INTERFACE
     ${project_include_dir}
+)
+
+target_link_libraries(
+    ${PROJECT_NAME} INTERFACE
+    xstd::xstd
 )
 
 target_compile_features(
