@@ -84,13 +84,13 @@ template<class X>
 auto sift_primes0(std::size_t n)
 {
         auto primes = generate_candidates<X>()(n);
-        for (auto p
+        for (std::size_t p
                 : primes
-                | std::views::take_while([&](auto x) { return x * x < n; })
+                | std::views::take_while([&](std::size_t x) { return x * x < n; })
         ) {
                 for (auto m
                         : std::views::iota(p * p, n)
-                        | std::views::stride(p)
+                        | std::views::stride(static_cast<std::ptrdiff_t>(p))
                 ) {
                         sift(primes, m);
                 }
@@ -102,8 +102,8 @@ template<class X>
 auto sift_primes1(std::size_t n)
 {
         auto primes = generate_candidates<X>()(n);
-        for (auto p : primes) {
-                if (auto m = p * p; m < n) {
+        for (std::size_t p : primes) {
+                if (std::size_t m = p * p; m < n) {
                         do {
                                 sift(primes, m);
                                 m += p;

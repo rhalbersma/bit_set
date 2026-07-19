@@ -237,7 +237,7 @@ struct array
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div_mod(n, bits_per_block);
                         if (L_shift == 0) {
-                                std::ranges::shift_right(m_bits, static_cast<std::ptrdiff_t>(n_blocks));
+                                std::shift_right(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const R_shift = bits_per_block - L_shift;
                                 std::ranges::copy(
@@ -261,7 +261,7 @@ struct array
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div_mod(n, bits_per_block);
                         if (R_shift == 0) {
-                                std::ranges::shift_left(m_bits, static_cast<std::ptrdiff_t>(n_blocks));
+                                std::shift_left(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const L_shift = bits_per_block - R_shift;
                                 std::ranges::copy(
