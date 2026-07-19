@@ -10,21 +10,77 @@
 #include <concepts>     // constructible_from, convertible_to
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag
+#include <ranges>       // view_base
 #include <type_traits>  // is_class_v, is_convertible_v, is_nothrow_constructible_v
 
 namespace xstd::proxy::bidirectional {
 
+// Bits customizes its iteration either by providing hidden friends
+// find_first/find_last/find_next/find_prev discoverable via ADL (the
+// default below, delegating to them - used by xstd's own types, e.g.
+// bit_set/bitset, whose associated namespace is xstd and can legitimately
+// hold them), or by giving find<Bits> an explicit specialization for a
+// foreign type that cannot provide those via ADL - e.g. std::bitset<N>,
+// whose only associated namespace is std, where a program may not add
+// declarations [namespace.std]; or boost::dynamic_bitset<>, whose own
+// member begin()/end() can shadow a same-named ADL free function. Calls to
+// find_first(c) and friends below are dependent (c's type is the template
+// parameter Bits), so non-ADL unqualified lookup for them is fixed at this
+// point of definition and can never see a later header's free functions -
+// only ADL, deferred to each point of instantiation, can. find<Bits>'s
+// specializations aren't subject to that: specialization matching considers
+// any specialization visible before the point of use, regardless of which
+// header declares it, so it works for foreign types where ADL cannot.
+//
+// Each member below is individually constrained on the underlying ADL call
+// actually being valid, rather than just declared with a fixed return type.
+// Without that, `find<Bits>::first(c)` would be a well-formed *expression*
+// for any Bits at all (the declaration alone doesn't depend on whether
+// find_first(c) in the body compiles - body instantiation is lazy and, on
+// failure, a hard error rather than SFINAE), which made bit_range<Bits> a
+// false positive for every Bits, including reference<Bits> itself: nothing
+// stopped reference<reference<Bits>> from being formed, recursively without
+// end. Constraining each member here makes it (and so bit_range) correctly
+// SFINAE away when Bits doesn't actually provide the customization.
 template<class Bits>
-concept bit_range = 
+struct find
+{
+        [[nodiscard]] static constexpr std::size_t first(Bits const& c) noexcept
+                requires requires { { find_first(c) } -> std::convertible_to<std::size_t>; }
+        {
+                return find_first(c);
+        }
+
+        [[nodiscard]] static constexpr std::size_t last(Bits const& c) noexcept
+                requires requires { { find_last(c) } -> std::convertible_to<std::size_t>; }
+        {
+                return find_last(c);
+        }
+
+        [[nodiscard]] static constexpr std::size_t next(Bits const& c, std::size_t n) noexcept
+                requires requires { { find_next(c, n) } -> std::convertible_to<std::size_t>; }
+        {
+                return find_next(c, n);
+        }
+
+        [[nodiscard]] static constexpr std::size_t prev(Bits const& c, std::size_t n) noexcept
+                requires requires { { find_prev(c, n) } -> std::convertible_to<std::size_t>; }
+        {
+                return find_prev(c, n);
+        }
+};
+
+template<class Bits>
+concept bit_range =
         requires(Bits const& c)
         {
-                { find_first(c) } -> std::convertible_to<std::size_t>;
-                { find_last (c) } -> std::convertible_to<std::size_t>;
+                { find<Bits>::first(c) } -> std::convertible_to<std::size_t>;
+                { find<Bits>::last (c) } -> std::convertible_to<std::size_t>;
         } and
         requires(Bits const& c, std::size_t n)
         {
-                { find_next(c, n) } -> std::convertible_to<std::size_t>;
-                { find_prev(c, n) } -> std::convertible_to<std::size_t>;
+                { find<Bits>::next(c, n) } -> std::convertible_to<std::size_t>;
+                { find<Bits>::prev(c, n) } -> std::convertible_to<std::size_t>;
         }
 ;
 
@@ -71,15 +127,15 @@ public:
                 return { *m_ptr, m_idx };
         }
 
-        constexpr iterator& operator++() noexcept { assert(m_ptr != nullptr); m_idx = find_next(*m_ptr, m_idx); return *this; }
-        constexpr iterator& operator--() noexcept { assert(m_ptr != nullptr); m_idx = find_prev(*m_ptr, m_idx); return *this; }
+        constexpr iterator& operator++() noexcept { assert(m_ptr != nullptr); m_idx = find<Bits>::next(*m_ptr, m_idx); return *this; }
+        constexpr iterator& operator--() noexcept { assert(m_ptr != nullptr); m_idx = find<Bits>::prev(*m_ptr, m_idx); return *this; }
 
         constexpr iterator operator++(int) noexcept { auto nrv = *this; ++*this; return nrv; }
         constexpr iterator operator--(int) noexcept { auto nrv = *this; --*this; return nrv; }
 };
 
-template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> begin(Bits const& c) noexcept { return { &c, find_first(c) }; }
-template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> end  (Bits const& c) noexcept { return { &c, find_last (c) }; }
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> begin(Bits const& c) noexcept { return { &c, find<Bits>::first(c) }; }
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> end  (Bits const& c) noexcept { return { &c, find<Bits>::last (c) }; }
 
 template<bit_range Bits>
 class reference
@@ -124,6 +180,29 @@ template<bit_range Bits>
 {
         return ref;
 }
+
+// A non-owning adaptor with member begin()/end(), for Bits types whose own
+// member iteration (if any) does not yield this bit_range's set-of-size_t
+// semantics - e.g. boost::dynamic_bitset<>, whose own member begin()/end()
+// (added upstream after this ADL customization was written) shadow the
+// find_first/find_next-based free functions above in ordinary range-for and
+// std::ranges algorithms alike, since a range's own members are always
+// preferred over ADL. Wrapping in view<Bits> sidesteps that: the adaptor
+// itself has no competing members, so its begin()/end() are what get used.
+template<bit_range Bits>
+class view : public std::ranges::view_base
+{
+        Bits const* m_ptr;
+
+public:
+        [[nodiscard]] constexpr explicit view(Bits const& c) noexcept : m_ptr(&c) {}
+
+        [[nodiscard]] constexpr auto begin() const noexcept { return bidirectional::begin(*m_ptr); }
+        [[nodiscard]] constexpr auto end()   const noexcept { return bidirectional::end  (*m_ptr); }
+};
+
+template<bit_range Bits>
+view(Bits const&) -> view<Bits>;
 
 }       // namespace xstd::proxy::bidirectional
 

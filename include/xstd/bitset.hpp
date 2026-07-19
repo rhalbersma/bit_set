@@ -76,9 +76,9 @@ public:
                 constexpr explicit(false) operator bool() const noexcept;
                 constexpr bool operator~() const noexcept;
 
-                friend constexpr void swap(reference x, reference y) noexcept { bool t = x; x = y; y = x; }
-                friend constexpr void swap(reference x,     bool& y) noexcept { bool t = x; x = y; y = x; }
-                friend constexpr void swap(    bool& x, reference y) noexcept { bool t = x; x = y; y = x; }
+                friend constexpr void swap(reference x, reference y) noexcept { bool t = x; x = y; y = t; }
+                friend constexpr void swap(reference x,     bool& y) noexcept { bool t = x; x = y; y = t; }
+                friend constexpr void swap(    bool& x, reference y) noexcept { bool t = x; x = y; y = t; }
 
                 constexpr reference& flip() noexcept;
         };

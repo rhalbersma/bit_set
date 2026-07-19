@@ -9,6 +9,7 @@ find_package(
     unit_test_framework
 )
 find_package(fmt REQUIRED)
+find_package(range-v3 CONFIG REQUIRED)
 
 set(cxx_compile_definitions
     BOOST_ALL_NO_LIB
@@ -92,16 +93,12 @@ foreach(t ${targets})
         Boost::headers
         Boost::unit_test_framework
         fmt::fmt
+        range-v3::range-v3
     )
 
     target_include_directories(
         ${target_id} PRIVATE
         ${current_include_dir}
-    )
-
-    target_include_directories(
-        ${target_id} SYSTEM PRIVATE
-        ${PROJECT_SOURCE_DIR}/../third_party/range-v3/include
     )
 
     target_compile_definitions(

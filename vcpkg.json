@@ -1,0 +1,25 @@
+{
+  "name": "bit-set",
+  "version-string": "0.1.0",
+  "description": "A fixed-size ordered set of integers, reimagining std::bitset",
+  "homepage": "https://github.com/rhalbersma/bit_set",
+  "license": "BSL-1.0",
+  "dependencies": [
+    "boost-hash2"
+  ],
+  "default-features": [
+    "test"
+  ],
+  "features": {
+    "test": {
+      "description": "Build the unit tests and benchmarks",
+      "dependencies": [
+        "boost-test",
+        "boost-dynamic-bitset",
+        "fmt",
+        "benchmark",
+        "range-v3"
+      ]
+    }
+  }
+}
