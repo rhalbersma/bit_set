@@ -189,12 +189,19 @@ template<bit_range Bits>
 // std::ranges algorithms alike, since a range's own members are always
 // preferred over ADL. Wrapping in view<Bits> sidesteps that: the adaptor
 // itself has no competing members, so its begin()/end() are what get used.
+//
+// key_type mirrors bit_set/bitset's own nested key_type: fmt's range
+// formatter (fmt/ranges.h) detects "format like a set" purely by checking
+// for a nested key_type, so a view<Bits> already formats with {} delimiters
+// without needing a separate as_set adaptor.
 template<bit_range Bits>
 class view : public std::ranges::view_base
 {
         Bits const* m_ptr;
 
 public:
+        using key_type = std::size_t;
+
         [[nodiscard]] constexpr explicit view(Bits const& c) noexcept : m_ptr(&c) {}
 
         [[nodiscard]] constexpr auto begin() const noexcept { return bidirectional::begin(*m_ptr); }
