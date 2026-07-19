@@ -32,6 +32,13 @@ if(NOT xstd_FOUND)
     FetchContent_MakeAvailable(xstd)
 endif()
 
+# xstd/bit/array.hpp and xstd/bitset.hpp hash_append their state through
+# Boost.Hash2 (boost/hash2/{fnv1a,hash_append}.hpp), so it is a real,
+# public dependency of this library's headers, not just of the tests -
+# declared explicitly here rather than relying on it being pulled in
+# incidentally by whatever links Boost::headers.
+find_package(boost_hash2 CONFIG REQUIRED)
+
 add_library(
     ${PROJECT_NAME} INTERFACE
 )
@@ -59,6 +66,7 @@ target_sources(
 target_link_libraries(
     ${PROJECT_NAME} INTERFACE
     xstd::xstd
+    Boost::hash2
 )
 
 target_compile_features(
