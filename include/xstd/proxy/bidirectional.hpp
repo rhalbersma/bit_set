@@ -9,7 +9,7 @@
 #include <cassert>      // assert
 #include <concepts>     // constructible_from, convertible_to
 #include <cstddef>      // ptrdiff_t, size_t
-#include <iterator>     // bidirectional_iterator_tag
+#include <iterator>     // bidirectional_iterator_tag, make_reverse_iterator
 #include <ranges>       // view_base
 #include <type_traits>  // is_class_v, is_convertible_v, is_nothrow_constructible_v
 
@@ -204,8 +204,20 @@ public:
 
         [[nodiscard]] constexpr explicit view(Bits const& c) noexcept : m_ptr(&c) {}
 
+        // begin()/cbegin() (and end()/cend()) coincide: this proxy iteration
+        // is inherently read-only (reference<Bits> only converts to
+        // std::size_t, there is no assignment-through-iterator here), same
+        // as bit_set/bitset's own cbegin()/cend() are plain aliases for
+        // begin()/end() rather than a distinct const-iteration path.
         [[nodiscard]] constexpr auto begin() const noexcept { return bidirectional::begin(*m_ptr); }
         [[nodiscard]] constexpr auto end()   const noexcept { return bidirectional::end  (*m_ptr); }
+        [[nodiscard]] constexpr auto rbegin() const noexcept { return std::make_reverse_iterator(end());   }
+        [[nodiscard]] constexpr auto rend()   const noexcept { return std::make_reverse_iterator(begin()); }
+
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return begin();  }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return end();    }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return rbegin(); }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return rend();   }
 };
 
 template<bit_range Bits>
