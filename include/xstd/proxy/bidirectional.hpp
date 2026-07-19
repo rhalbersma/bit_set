@@ -15,17 +15,42 @@
 
 namespace xstd::proxy::bidirectional {
 
+// Bits customizes its iteration either by providing hidden friends
+// find_first/find_last/find_next/find_prev discoverable via ADL (the
+// default below, delegating to them - used by xstd's own types, e.g.
+// bit_set/bitset, whose associated namespace is xstd and can legitimately
+// hold them), or by giving find<Bits> an explicit specialization for a
+// foreign type that cannot provide those via ADL - e.g. std::bitset<N>,
+// whose only associated namespace is std, where a program may not add
+// declarations [namespace.std]; or boost::dynamic_bitset<>, whose own
+// member begin()/end() can shadow a same-named ADL free function. Calls to
+// find_first(c) and friends below are dependent (c's type is the template
+// parameter Bits), so non-ADL unqualified lookup for them is fixed at this
+// point of definition and can never see a later header's free functions -
+// only ADL, deferred to each point of instantiation, can. find<Bits>'s
+// specializations aren't subject to that: specialization matching considers
+// any specialization visible before the point of use, regardless of which
+// header declares it, so it works for foreign types where ADL cannot.
 template<class Bits>
-concept bit_range = 
+struct find
+{
+        [[nodiscard]] static constexpr std::size_t first(Bits const& c) noexcept { return find_first(c); }
+        [[nodiscard]] static constexpr std::size_t last (Bits const& c) noexcept { return find_last (c); }
+        [[nodiscard]] static constexpr std::size_t next (Bits const& c, std::size_t n) noexcept { return find_next(c, n); }
+        [[nodiscard]] static constexpr std::size_t prev (Bits const& c, std::size_t n) noexcept { return find_prev(c, n); }
+};
+
+template<class Bits>
+concept bit_range =
         requires(Bits const& c)
         {
-                { find_first(c) } -> std::convertible_to<std::size_t>;
-                { find_last (c) } -> std::convertible_to<std::size_t>;
+                { find<Bits>::first(c) } -> std::convertible_to<std::size_t>;
+                { find<Bits>::last (c) } -> std::convertible_to<std::size_t>;
         } and
         requires(Bits const& c, std::size_t n)
         {
-                { find_next(c, n) } -> std::convertible_to<std::size_t>;
-                { find_prev(c, n) } -> std::convertible_to<std::size_t>;
+                { find<Bits>::next(c, n) } -> std::convertible_to<std::size_t>;
+                { find<Bits>::prev(c, n) } -> std::convertible_to<std::size_t>;
         }
 ;
 
@@ -72,15 +97,15 @@ public:
                 return { *m_ptr, m_idx };
         }
 
-        constexpr iterator& operator++() noexcept { assert(m_ptr != nullptr); m_idx = find_next(*m_ptr, m_idx); return *this; }
-        constexpr iterator& operator--() noexcept { assert(m_ptr != nullptr); m_idx = find_prev(*m_ptr, m_idx); return *this; }
+        constexpr iterator& operator++() noexcept { assert(m_ptr != nullptr); m_idx = find<Bits>::next(*m_ptr, m_idx); return *this; }
+        constexpr iterator& operator--() noexcept { assert(m_ptr != nullptr); m_idx = find<Bits>::prev(*m_ptr, m_idx); return *this; }
 
         constexpr iterator operator++(int) noexcept { auto nrv = *this; ++*this; return nrv; }
         constexpr iterator operator--(int) noexcept { auto nrv = *this; --*this; return nrv; }
 };
 
-template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> begin(Bits const& c) noexcept { return { &c, find_first(c) }; }
-template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> end  (Bits const& c) noexcept { return { &c, find_last (c) }; }
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> begin(Bits const& c) noexcept { return { &c, find<Bits>::first(c) }; }
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> end  (Bits const& c) noexcept { return { &c, find<Bits>::last (c) }; }
 
 template<bit_range Bits>
 class reference
