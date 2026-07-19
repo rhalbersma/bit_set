@@ -31,13 +31,43 @@ namespace xstd::proxy::bidirectional {
 // specializations aren't subject to that: specialization matching considers
 // any specialization visible before the point of use, regardless of which
 // header declares it, so it works for foreign types where ADL cannot.
+//
+// Each member below is individually constrained on the underlying ADL call
+// actually being valid, rather than just declared with a fixed return type.
+// Without that, `find<Bits>::first(c)` would be a well-formed *expression*
+// for any Bits at all (the declaration alone doesn't depend on whether
+// find_first(c) in the body compiles - body instantiation is lazy and, on
+// failure, a hard error rather than SFINAE), which made bit_range<Bits> a
+// false positive for every Bits, including reference<Bits> itself: nothing
+// stopped reference<reference<Bits>> from being formed, recursively without
+// end. Constraining each member here makes it (and so bit_range) correctly
+// SFINAE away when Bits doesn't actually provide the customization.
 template<class Bits>
 struct find
 {
-        [[nodiscard]] static constexpr std::size_t first(Bits const& c) noexcept { return find_first(c); }
-        [[nodiscard]] static constexpr std::size_t last (Bits const& c) noexcept { return find_last (c); }
-        [[nodiscard]] static constexpr std::size_t next (Bits const& c, std::size_t n) noexcept { return find_next(c, n); }
-        [[nodiscard]] static constexpr std::size_t prev (Bits const& c, std::size_t n) noexcept { return find_prev(c, n); }
+        [[nodiscard]] static constexpr std::size_t first(Bits const& c) noexcept
+                requires requires { { find_first(c) } -> std::convertible_to<std::size_t>; }
+        {
+                return find_first(c);
+        }
+
+        [[nodiscard]] static constexpr std::size_t last(Bits const& c) noexcept
+                requires requires { { find_last(c) } -> std::convertible_to<std::size_t>; }
+        {
+                return find_last(c);
+        }
+
+        [[nodiscard]] static constexpr std::size_t next(Bits const& c, std::size_t n) noexcept
+                requires requires { { find_next(c, n) } -> std::convertible_to<std::size_t>; }
+        {
+                return find_next(c, n);
+        }
+
+        [[nodiscard]] static constexpr std::size_t prev(Bits const& c, std::size_t n) noexcept
+                requires requires { { find_prev(c, n) } -> std::convertible_to<std::size_t>; }
+        {
+                return find_prev(c, n);
+        }
 };
 
 template<class Bits>
