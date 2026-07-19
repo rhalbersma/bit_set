@@ -6,6 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <concepts.hpp>                 // dynamic
+#include <xstd/proxy/bidirectional.hpp> // view
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <cstddef>                      // ptrdiff_t, size_t
 #include <iterator>                     // distance, inserter
@@ -291,17 +292,19 @@ struct mem_equal_to
                                 return self[i] == rhs[i];
                         })
                 );                                                              // [bitset.members]/45
-#if defined(_MSC_VER)               
+                auto const lhs_view = proxy::bidirectional::view(self);
+                auto const rhs_view = proxy::bidirectional::view(rhs);
+#if defined(_MSC_VER)
                 BOOST_CHECK_EQUAL(
-                        self == rhs, 
+                        self == rhs,
                         std::ranges::equal(
-                                std::ranges::begin(self), std::ranges::end(self), 
-                                std::ranges::begin(rhs),  std::ranges::end(rhs)
+                                lhs_view.begin(), lhs_view.end(),
+                                rhs_view.begin(), rhs_view.end()
                         )
                 );
 #else
                 // range version not working with Visual C++
-                BOOST_CHECK_EQUAL(self == rhs, std::ranges::equal(self, rhs));
+                BOOST_CHECK_EQUAL(self == rhs, std::ranges::equal(lhs_view, rhs_view));
 #endif
         }
 };
@@ -330,11 +333,13 @@ struct mem_compare_three_way
                                 std::ranges::rbegin(self_str), std::ranges::rend(self_str)
                         )
                 );
+                auto const lhs_view = proxy::bidirectional::view(self);
+                auto const rhs_view = proxy::bidirectional::view(rhs);
                 BOOST_CHECK(
                         (self <=> rhs) ==
                         std::lexicographical_compare_three_way(
-                                std::ranges::begin(self), std::ranges::end(self),
-                                std::ranges::begin(rhs),  std::ranges::end(rhs)
+                                lhs_view.begin(), lhs_view.end(),
+                                rhs_view.begin(), rhs_view.end()
                         )
                 );
         }

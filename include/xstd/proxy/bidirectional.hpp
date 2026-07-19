@@ -10,6 +10,7 @@
 #include <concepts>     // constructible_from, convertible_to
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag
+#include <ranges>       // view_base
 #include <type_traits>  // is_class_v, is_convertible_v, is_nothrow_constructible_v
 
 namespace xstd::proxy::bidirectional {
@@ -124,6 +125,29 @@ template<bit_range Bits>
 {
         return ref;
 }
+
+// A non-owning adaptor with member begin()/end(), for Bits types whose own
+// member iteration (if any) does not yield this bit_range's set-of-size_t
+// semantics - e.g. boost::dynamic_bitset<>, whose own member begin()/end()
+// (added upstream after this ADL customization was written) shadow the
+// find_first/find_next-based free functions above in ordinary range-for and
+// std::ranges algorithms alike, since a range's own members are always
+// preferred over ADL. Wrapping in view<Bits> sidesteps that: the adaptor
+// itself has no competing members, so its begin()/end() are what get used.
+template<bit_range Bits>
+class view : public std::ranges::view_base
+{
+        Bits const* m_ptr;
+
+public:
+        [[nodiscard]] constexpr explicit view(Bits const& c) noexcept : m_ptr(&c) {}
+
+        [[nodiscard]] constexpr auto begin() const noexcept { return bidirectional::begin(*m_ptr); }
+        [[nodiscard]] constexpr auto end()   const noexcept { return bidirectional::end  (*m_ptr); }
+};
+
+template<bit_range Bits>
+view(Bits const&) -> view<Bits>;
 
 }       // namespace xstd::proxy::bidirectional
 
