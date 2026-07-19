@@ -187,10 +187,10 @@ int main()
     using C = xstd::bit_set<N>; /* or std::bitset<N> or boost::dynamic_bitset<> */
 
     auto const primes = sift_primes<C>(N);
-    assert(fmt::format("{}", primes | xstd::views::as_set) == "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");
+    assert(fmt::format("{}", primes) == "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}");
 
     auto const twins = filter_twins(primes);
-    assert(fmt::format("{}", twins  | xstd::views::as_set) == "{3, 5, 11, 17, 29, 41, 59, 71}");
+    assert(fmt::format("{}", twins) == "{3, 5, 11, 17, 29, 41, 59, 71}");
 }
 ```
 
@@ -202,7 +202,7 @@ which has as output:
 
 ### Sequence of bits
 
-How would the Sieve of Eratosthenes code look when using a sequence of bits? The essential difference (apart from differently named member functions) is the lack of iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. We combine these functions into a `ranges::view_interface` to provide a `set_view` with a `key_type` and forward iterators `begin` and `end`. The links in the table below provide the full code examples for `std::bitset<N>` and `boost::dynamic_bitset<>`.
+How would the Sieve of Eratosthenes code look when using a sequence of bits? The essential difference (apart from differently named member functions) is the lack of iterators. The GCC Standard Library `libstdc++` provides member functions `_Find_first` and `_Find_next` for `std::bitset<N>` as **non-standard extensions**. For `boost::dynamic_bitset<>`, similarly named member functions `find_first` and `find_next` exist. We combine these functions into an `xstd::proxy::bidirectional::view`, a lightweight adaptor providing bidirectional iterators `begin`/`end` (and `cbegin`/`cend`/`rbegin`/`rend`/`crbegin`/`crend`) plus a nested `key_type`, so it formats like a set out of the box. The links in the table below provide the full code examples for `std::bitset<N>` and `boost::dynamic_bitset<>`.
 
 | Library                   | Try it online |
 | :------                   | :------------ |

@@ -193,7 +193,7 @@ template<bit_range Bits>
 // key_type mirrors bit_set/bitset's own nested key_type: fmt's range
 // formatter (fmt/ranges.h) detects "format like a set" purely by checking
 // for a nested key_type, so a view<Bits> already formats with {} delimiters
-// without needing a separate as_set adaptor.
+// on its own.
 template<bit_range Bits>
 class view : public std::ranges::view_base
 {
