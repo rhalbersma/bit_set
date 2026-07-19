@@ -9,6 +9,7 @@
 #include <ext/std/ranges.hpp>           // as_set
 #include <ext/xstd/bitset.hpp>          // bitset
 #include <xstd/bit_set.hpp>             // bit_set
+#include <xstd/proxy/bidirectional.hpp> // view
 #include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
 #include <fmt/format.h>                 // format
@@ -29,19 +30,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
 {
         auto const primes0 = xstd::sift_primes0<T>(N);
         BOOST_CHECK_EQUAL(
-                fmt::format("{}", primes0 | xstd::views::as_set),
+                fmt::format("{}", xstd::proxy::bidirectional::view(primes0) | xstd::views::as_set),
                 "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}")
         ;
 
         auto const primes1 = xstd::sift_primes1<T>(N);
         BOOST_CHECK_EQUAL(
-                fmt::format("{}", primes1 | xstd::views::as_set),
+                fmt::format("{}", xstd::proxy::bidirectional::view(primes1) | xstd::views::as_set),
                 "{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}")
         ;
 
         auto const twins = xstd::filter_twins(primes1);
         BOOST_CHECK_EQUAL(
-                fmt::format("{}", twins | xstd::views::as_set),
+                fmt::format("{}", xstd::proxy::bidirectional::view(twins) | xstd::views::as_set),
                 "{3, 5, 7, 11, 13, 17, 19, 29, 31, 41, 43, 59, 61, 71, 73}"
         );
 }
