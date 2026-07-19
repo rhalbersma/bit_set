@@ -66,14 +66,24 @@ struct find<std::bitset<N>>
 
 }       // namespace xstd::proxy::bidirectional
 
-// TODO: everything below is still declared in namespace std, which has the
-// exact same [namespace.std] problem the find<std::bitset<N>> specialization
-// above solves - natural infix syntax (x <=> y, x - y) is only found via ADL
-// or membership in std::bitset<N>'s own namespace (std), and there is no
-// legal way to provide it from outside namespace std. Left as-is (updated
-// only to stop depending on the removed std::begin/std::end overloads)
-// pending a decision on whether to keep this as documented, deliberate UB,
-// drop it, or convert call sites to explicit non-operator syntax.
+// is_subset_of, is_proper_subset_of and intersects used to live here too,
+// with the same [namespace.std] problem find<std::bitset<N>> above solves.
+// They no longer need to: xstd::proxy::bidirectional::view provides all
+// three directly (preferring a Bits type's own member when it has one,
+// falling back to computing them from iteration otherwise), so
+// `view(x).is_subset_of(view(y))` etc. work for std::bitset<N> without
+// adding anything to namespace std at all.
+//
+// operator<=>, operator-=, and operator- remain here: natural infix syntax
+// for them is only reachable via ADL or membership in std::bitset<N>'s own
+// namespace (std), and there is no legal way to provide that from outside
+// namespace std. operator<=> specifically is NOT moved to view (unlike ==)
+// because, unlike ==, its correctness is bound up in the still-open question
+// of what bit_set/bitset's own <=> actually guarantees relative to
+// std::set<int>'s ordering (see the discussion around bit::array::
+// operator<=>) - this implementation computes std::set<int>-equivalent
+// lexicographic-of-elements ordering directly via view's iterators, which
+// is unaffected by that question either way.
 namespace std {
 
 template<std::size_t N>
@@ -98,36 +108,6 @@ template<std::size_t N>
 bitset<N> operator-(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
-}
-
-template<std::size_t N>
-bool is_subset_of(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
-{
-        if constexpr (N == 0) {
-                return true;
-        } else {
-                return (lhs & ~rhs).none();
-        }
-}
-
-template<std::size_t N>
-bool is_proper_subset_of(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
-{
-        if constexpr (N == 0) {
-                return false;
-        } else {
-                return is_subset_of(lhs, rhs) and lhs != rhs;
-        }
-}
-
-template<std::size_t N>
-bool intersects(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
-{
-        if constexpr (N == 0) {
-                return false;
-        } else {
-                return (lhs & rhs).any();
-        }
 }
 
 }       // namespace std

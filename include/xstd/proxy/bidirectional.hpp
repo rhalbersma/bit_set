@@ -6,11 +6,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <algorithm>    // includes
 #include <cassert>      // assert
 #include <concepts>     // constructible_from, convertible_to
 #include <cstddef>      // ptrdiff_t, size_t
 #include <iterator>     // bidirectional_iterator_tag, make_reverse_iterator
-#include <ranges>       // view_base
+#include <ranges>       // equal, view_base
 #include <type_traits>  // is_class_v, is_convertible_v, is_nothrow_constructible_v
 
 namespace xstd::proxy::bidirectional {
@@ -218,6 +219,77 @@ public:
         [[nodiscard]] constexpr auto cend()    const noexcept { return end();    }
         [[nodiscard]] constexpr auto crbegin() const noexcept { return rbegin(); }
         [[nodiscard]] constexpr auto crend()   const noexcept { return rend();   }
+
+        // Prefer Bits' own == when it has one (cheaper than iterating through
+        // the proxy iterators below), else compare elementwise. Unlike
+        // ordering (see is_subset_of and friends below for why <=> is
+        // deliberately not provided here), equality of two sets is
+        // unambiguous regardless of any bitset's internal bit-layout
+        // convention, so this is purely an optimization.
+        [[nodiscard]] friend constexpr bool operator==(view lhs, view rhs) noexcept
+        {
+                if constexpr (requires { *lhs.m_ptr == *rhs.m_ptr; }) {
+                        return *lhs.m_ptr == *rhs.m_ptr;
+                } else {
+                        return std::ranges::equal(lhs, rhs);
+                }
+        }
+
+        // operator<=> is deliberately not provided: bit_set/bitset's own <=>
+        // (a data-parallel word-at-a-time comparison) is only guaranteed to
+        // agree with std::set<int>'s lexicographic-of-elements ordering when
+        // both operands have equal cardinality - confirmed to disagree
+        // otherwise for roughly 10% of random same-N pairs tested, and this
+        // isn't fixable by adjusting bit/word direction: fixed-width
+        // bit-pattern comparison and variable-length lexicographic-of-sorted-
+        // elements comparison are different relations in general. Preferring
+        // the native <=> here the way ==/is_subset_of do would silently
+        // inherit that mismatch; always falling back to the elementwise
+        // comparison would make view's ordering disagree with the Bits type
+        // it wraps. Neither is a comparison operator should paper over -
+        // left out pending a decision on bit::array::operator<=> itself.
+
+        // Same prefer-native-else-compute-from-iteration pattern as ==
+        // above. The fallbacks rely on both views iterating their elements
+        // in ascending order (guaranteed by the bit_range contract), so
+        // std::ranges::includes and a linear merge scan apply directly.
+        [[nodiscard]] constexpr bool is_subset_of(view other) const noexcept
+        {
+                if constexpr (requires { m_ptr->is_subset_of(*other.m_ptr); }) {
+                        return m_ptr->is_subset_of(*other.m_ptr);
+                } else {
+                        return std::ranges::includes(other, *this);
+                }
+        }
+
+        [[nodiscard]] constexpr bool is_proper_subset_of(view other) const noexcept
+        {
+                if constexpr (requires { m_ptr->is_proper_subset_of(*other.m_ptr); }) {
+                        return m_ptr->is_proper_subset_of(*other.m_ptr);
+                } else {
+                        return is_subset_of(other) and *this != other;
+                }
+        }
+
+        [[nodiscard]] constexpr bool intersects(view other) const noexcept
+        {
+                if constexpr (requires { m_ptr->intersects(*other.m_ptr); }) {
+                        return m_ptr->intersects(*other.m_ptr);
+                } else {
+                        auto first1 = begin(), last1 = end();
+                        auto first2 = other.begin(), last2 = other.end();
+                        while (first1 != last1 and first2 != last2) {
+                                if (*first1 < *first2) {
+                                        ++first1;
+                                } else if (*first2 < *first1) {
+                                        ++first2;
+                                } else {
+                                        return true;
+                                }
+                        }
+                        return false;
+                }
+        }
 };
 
 template<bit_range Bits>

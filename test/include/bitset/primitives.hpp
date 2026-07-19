@@ -389,7 +389,7 @@ struct mem_is_subset_of
                 if constexpr (requires { lhs.is_subset_of(rhs); }) {
                         return lhs.is_subset_of(rhs);
                 } else {
-                        return is_subset_of(lhs, rhs);
+                        return proxy::bidirectional::view(lhs).is_subset_of(proxy::bidirectional::view(rhs));
                 }
         }
 
@@ -408,7 +408,7 @@ struct mem_is_proper_subset_of
                 if constexpr (requires { lhs.is_proper_subset_of(rhs); }) {
                         return lhs.is_proper_subset_of(rhs);
                 } else {
-                        return is_proper_subset_of(lhs, rhs);
+                        return proxy::bidirectional::view(lhs).is_proper_subset_of(proxy::bidirectional::view(rhs));
                 }
         }
 
@@ -427,7 +427,7 @@ struct mem_intersects
                 if constexpr (requires { lhs.intersects(rhs); }) {
                         return lhs.intersects(rhs);
                 } else {
-                        return intersects(lhs, rhs);
+                        return proxy::bidirectional::view(lhs).intersects(proxy::bidirectional::view(rhs));
                 }
         }
 
