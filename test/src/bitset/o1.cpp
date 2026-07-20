@@ -9,7 +9,7 @@
 #include <bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set
 #include <bitset/primitives.hpp>        // mem_set, mem_reset, mem_bit_not, mem_flip,
                                         // mem_at,
-                                        // mem_count, mem_size, mem_test, mem_all, mem_any, mem_none,
+                                        // mem_count, mem_size, mem_test, mem_all, mem_any, mem_none, mem_compare_three_way,
                                         // op_iostream
 #include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
@@ -128,6 +128,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
         on1::all_cardinality_sets<T>(mem_all());
         on1::all_cardinality_sets<T>(mem_any());
         on1::all_cardinality_sets<T>(mem_none());
+
+        // empty/full set vs. every singleton, at matching N (so a
+        // boost::dynamic_bitset<> operand pair is same-length - the only
+        // thing under test here is the cardinality mismatch, not a length
+        // mismatch too).
+        on1::all_singleton_sets<T>([](auto const& bs1) {
+                on0::empty_set<T, limit_v<T, L1>>([&](auto const& bs0) {
+                        mem_compare_three_way()(bs0, bs1);
+                });
+                on0::full_set<T, limit_v<T, L1>>([&](auto const& bsN) {
+                        mem_compare_three_way()(bsN, bs1);
+                });
+        });
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)

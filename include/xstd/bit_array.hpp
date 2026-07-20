@@ -113,11 +113,22 @@ struct bit_array
         [[nodiscard]] constexpr size_type max_size() const noexcept { return N;      }
 
         // element access
-        [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept { assert(n < N); return { self, n };                             }
-        [[nodiscard]] constexpr auto at        (this auto&& self, size_type n)          {    if (n < N)  return { self, n }; else throw out_of_range(n); }
-        
-        [[nodiscard]] constexpr auto front(this auto&& self) noexcept { return { self, 0uz   }; }
-        [[nodiscard]] constexpr auto back (this auto&& self) noexcept { return { self, N - 1 }; }
+        //
+        // A plain auto return type can't deduce from a braced-init-list
+        // return statement (that's only valid to initialize a named
+        // variable, e.g. auto x = {1, 2}, not to deduce a function's return
+        // type) - both GCC and Clang reject it. An explicit trailing return
+        // type sidesteps that entirely; it's just reference or
+        // const_reference depending on self's constness, same as the
+        // (unconstrained) auto was trying to express.
+        template<class Self>
+        using result_t = std::conditional_t<std::is_const_v<std::remove_reference_t<Self>>, const_reference, reference>;
+
+        [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept -> result_t<decltype(self)> { assert(n < N); return { self, n };                             }
+        [[nodiscard]] constexpr auto at        (this auto&& self, size_type n)          -> result_t<decltype(self)> {    if (n < N)  return { self, n }; else throw out_of_range(n); }
+
+        [[nodiscard]] constexpr auto front(this auto&& self) noexcept -> result_t<decltype(self)> { return { self, 0uz   }; }
+        [[nodiscard]] constexpr auto back (this auto&& self) noexcept -> result_t<decltype(self)> { return { self, N - 1 }; }
 
 private:
         static constexpr auto out_of_range(std::size_t n, std::source_location const& loc = std::source_location::current())

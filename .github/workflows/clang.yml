@@ -37,6 +37,21 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh ${{ matrix.version }}
 
+      # apt.llvm.org's Clang packages link against the system libstdc++
+      # like every other apt-installed compiler on the runner (see the
+      # "Install dependencies" comment below) - they don't bundle their
+      # own C++ standard library. ubuntu-24.04's default system GCC is 13,
+      # whose libstdc++ predates <flat_set> (added in GCC 15's libstdc++,
+      # same C++23-stdlib floor gcc.yml already tests against). Installing
+      # g++-15 makes its libstdc++ headers available too - Clang auto-
+      # detects and uses the highest-versioned GCC installation it finds,
+      # so no extra --gcc-toolchain flag is needed once this is present.
+      - name: Install GCC 15 (for its libstdc++, not as the compiler)
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y g++-15
+
       # Export the two env vars vcpkg's "x-gha" binary source needs to talk
       # to the GitHub Actions cache service, so built packages are reused
       # across runs instead of recompiled from scratch every time.

@@ -34,12 +34,13 @@ template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
 #include <algorithm>                    // lexicographical_compare_three_way
+#include <cassert>                      // assert
 #include <compare>                      // strong_ordering
 #include <format>                       // format
 #include <ios>                          // ios_base
 #include <locale>                       // ctype, use_facet
 #include <memory>                       // allocator
-#include <ranges>                       // iota
+#include <ranges>                       // find_if, iota, reverse
 #include <source_location>              // source_location
 #include <string_view>                  // basic_string_view
 #include <stdexcept>                    // invalid_argument, out_of_range, overflow_error
@@ -62,8 +63,6 @@ class bitset
         // (fixed-length sequence of bools) - xstd::bitset itself takes no
         // side on which one is "the" ordering.
         bit::array<N, Block> m_bits{};
-
-        friend struct xstd::proxy::bidirectional::find<bitset>;
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bitset const* v) noexcept
@@ -244,15 +243,50 @@ private:
 // mechanism ext/std/bitset.hpp uses for the real std::bitset<N>, just
 // without that header's [namespace.std] motivation: here it's purely a
 // deliberate choice to keep xstd::bitset itself opinion-free about ordering.
+//
+// This scans through xstd::bitset's own public operator[], the same way
+// ext/std/bitset.hpp's find<std::bitset<N>> has to (it has no choice - it
+// can't reach std::bitset's internals at all) - not through m_bits
+// directly, even though this header could grant itself friend access to
+// bit::array's already-O(1) find_first/find_last/find_next/find_prev.
+// xstd::bitset is meant to be nothing more than std::bitset reimplemented
+// in terms of bit::array: it shouldn't get a privileged, faster find<> that
+// std::bitset itself has no way of also getting.
 namespace xstd::proxy::bidirectional {
 
 template<std::size_t N, std::unsigned_integral Block>
 struct find<xstd::bitset<N, Block>>
 {
-        [[nodiscard]] static constexpr std::size_t first(xstd::bitset<N, Block> const& c) noexcept { return c.m_bits.find_first(); }
-        [[nodiscard]] static constexpr std::size_t last (xstd::bitset<N, Block> const& c) noexcept { return c.m_bits.find_last (); }
-        [[nodiscard]] static constexpr std::size_t next (xstd::bitset<N, Block> const& c, std::size_t n) noexcept { return c.m_bits.find_next(n); }
-        [[nodiscard]] static constexpr std::size_t prev (xstd::bitset<N, Block> const& c, std::size_t n) noexcept { return c.m_bits.find_prev(n); }
+        [[nodiscard]] static constexpr std::size_t first(xstd::bitset<N, Block> const& c) noexcept
+        {
+                if constexpr (N == 0) {
+                        return N;
+                } else {
+                        return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
+                                return c[i];
+                        });
+                }
+        }
+
+        [[nodiscard]] static constexpr std::size_t last(xstd::bitset<N, Block> const&) noexcept
+        {
+                return N;
+        }
+
+        [[nodiscard]] static constexpr std::size_t next(xstd::bitset<N, Block> const& c, std::size_t n) noexcept
+        {
+                return *std::ranges::find_if(std::views::iota(n + 1, N), [&](auto i) {
+                        return c[i];
+                });
+        }
+
+        [[nodiscard]] static std::size_t prev(xstd::bitset<N, Block> const& c, std::size_t n) noexcept
+        {
+                assert(c.any());
+                return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
+                        return c[i];
+                });
+        }
 };
 
 // xstd::bitset has no <=> of its own either (by the same design choice), so

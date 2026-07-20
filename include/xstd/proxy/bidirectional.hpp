@@ -90,6 +90,15 @@ template<bit_range> class iterator;
 template<bit_range> class reference;
 template<bit_range> struct compare;
 
+// Forward-declared so the dependent friend template-id declarations inside
+// iterator below (begin<>, end<>) have a template to refer to: [temp.friend]
+// requires that form to name an already-visible template, not one declared
+// later in the same header. GCC tolerates the forward reference; Clang
+// rejects it ("no candidate function template was found for dependent
+// friend function template specialization") per the stricter reading.
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> begin(Bits const& c) noexcept;
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits> end  (Bits const& c) noexcept;
+
 template<bit_range Bits>
 class iterator
 {

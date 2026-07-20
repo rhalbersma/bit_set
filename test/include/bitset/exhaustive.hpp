@@ -130,9 +130,33 @@ auto all_singleton_set_triples(auto fun)
         }
 }
 
+template<class X, auto N = limit_v<X, L3>>
+auto all_triplet_sets(auto fun)
+{
+        for (auto k : std::views::iota(2uz, std::ranges::max(N, 2uz))) {
+                for (auto j : std::views::iota(1uz, k)) {
+                        for (auto i : std::views::iota(0uz, j)) {
+                                auto a = make_bitset<X>(N); a.set(i); a.set(j); a.set(k); assert(a.count() == 3);
+                                fun(a);
+                        }
+                }
+        }
+}
+
 }       // namespace on3
 
 namespace on4 {
+
+template<class X, auto N = limit_v<X, L4>>
+auto all_doubleton_sets(auto fun)
+{
+        for (auto j : std::views::iota(1uz, std::ranges::max(N, 1uz))) {
+                for (auto i : std::views::iota(0uz, j)) {
+                        auto a = make_bitset<X>(N); a.set(i); a.set(j); assert(a.count() == 2);
+                        fun(a);
+                }
+        }
+}
 
 template<class X, auto N = limit_v<X, L4>>
 auto all_doubleton_set_pairs(auto fun)

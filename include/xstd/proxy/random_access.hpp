@@ -67,6 +67,15 @@ template<bit_range, bool> class iterator;
 template<bit_range, bool> class reference;
 template<bit_range> struct compare;
 
+// Forward-declared so the dependent friend template-id declarations inside
+// iterator below (begin<>, end<>) have a template to refer to - see
+// xstd::proxy::bidirectional's identical forward declarations for why this
+// is required by Clang (and tolerated, but not required, by GCC).
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits, false> begin(      Bits& c) noexcept;
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits, true > begin(const Bits& c) noexcept;
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits, false> end  (      Bits& c) noexcept;
+template<bit_range Bits> [[nodiscard]] constexpr iterator<Bits, true > end  (const Bits& c) noexcept;
+
 template<bit_range Bits, bool IsConst>
 class iterator
 {
