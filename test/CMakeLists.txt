@@ -44,6 +44,7 @@ set(cxx_compile_options_warnings
         -Wno-global-constructors            # triggered by Boost.Test
         -Wno-used-but-marked-unused         # triggered by Boost.Test
         -Wno-c2y-extensions                 # triggered by Boost.Test's use of __COUNTER__
+        -Wno-ctad-maybe-unsupported         # std::reverse_iterator(it) uses the standard's own deduction guide
         -Wno-zero-as-null-pointer-constant  # triggered by <=> comparisons against 0
     >
     $<$<CXX_COMPILER_ID:GNU>:
