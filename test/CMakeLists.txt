@@ -71,6 +71,7 @@ set(cxx_compile_options_warnings
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:Release>>:
         -Wno-array-bounds                   # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
         -Wno-stringop-overflow              # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
+        -Wno-maybe-uninitialized            # false positive on bit::array's std::array member (WinLibs gcc 15.3.0, Release mode)
     >
 )
 
