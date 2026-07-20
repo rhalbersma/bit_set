@@ -200,6 +200,15 @@ template<bit_range Bits>
 template<bit_range Bits>
 class view : public std::ranges::view_base
 {
+        // A pointer, not Bits const&: std::ranges::view requires std::movable,
+        // which requires assignable_from<T&, T> - a reference data member
+        // makes copy/move assignment implicitly deleted (references can't be
+        // rebound), which would make view fail std::movable and so the view
+        // concept entirely, breaking composability with std::views::
+        // take_while and other range adaptors. A pointer member keeps the
+        // defaulted copy/move assignment operator working, while the
+        // constructor below still takes Bits const& so construction reads
+        // like any other reference-taking adaptor.
         Bits const* m_ptr;
 
 public:
