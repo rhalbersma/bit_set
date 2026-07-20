@@ -7,8 +7,9 @@
 
 #include <concepts>     // integral
 #include <cstddef>      // size_t
+#include <iterator>     // next
 #include <ranges>       // to
-                        // adjacent, elements, filter, iota, stride, take_while
+                        // iota, stride, take_while (stride only when __cpp_lib_ranges_stride)
 
 namespace xstd {
 
@@ -27,6 +28,11 @@ struct generate_candidates
         }
 };
 
+// See ext/bitset's opt/bitset/sieve.hpp for why this is guarded on
+// __cpp_lib_ranges_stride rather than given a portable fallback: it exists
+// specifically to benchmark the adaptor-based style against sift_primes1's
+// hand-rolled equivalent below.
+#if defined(__cpp_lib_ranges_stride)
 template<class X>
 auto sift_primes0(std::size_t n)
 {
@@ -44,6 +50,7 @@ auto sift_primes0(std::size_t n)
         }
         return primes;
 }
+#endif
 
 template<class X>
 auto sift_primes1(std::size_t n)
@@ -62,15 +69,32 @@ auto sift_primes1(std::size_t n)
         return primes;
 }
 
+// Not std::views::adjacent<3> (still missing in libc++ as of Xcode 26.5) -
+// unlike sift_primes0/sift_primes1 above, there's no existing hand-rolled
+// variant of this to fall back to, so this is a genuine portable rewrite
+// rather than a guard: a plain three-iterator walk over consecutive
+// (prev, self, next) triples, keeping self whenever it's part of a twin
+// prime pair - the same windowing views::adjacent<3> | views::filter |
+// views::elements<1> expressed, just without the adaptor.
 template<class X>
 auto filter_twins(X const& primes)
 {
-        return primes
-                | std::views::adjacent<3>
-                | std::views::filter([](auto&& x) { auto&& [ prev, self, next ] = x; return self - 2 == prev or self + 2 == next; })
-                | std::views::elements<1>
-                | std::ranges::to<X>()
-        ;
+        X result;
+        auto first = primes.begin();
+        auto last  = primes.end();
+        if (first != last) {
+                auto prev = first;
+                if (auto self = std::next(prev); self != last) {
+                        for (auto next = std::next(self); next != last; ++next) {
+                                if (*self - 2 == *prev or *self + 2 == *next) {
+                                        result.insert(*self);
+                                }
+                                prev = self;
+                                self = next;
+                        }
+                }
+        }
+        return result;
 }
 
 }       // namespace xstd
