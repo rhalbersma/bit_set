@@ -1,0 +1,179 @@
+#          Copyright Rein Halbersma 2014-2025.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: MSVC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # No VS 2022 leg: benchmark/src/set/sieve.cpp uses std::flat_set, which
+    # VS 2022's MSVC STL doesn't implement yet. VS 2026's MSVC STL does, so
+    # that's the floor tested here.
+    name: MSVC ${{ matrix.vs }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - vs: 2026
+            os: windows-2025
+            generator: "Visual Studio 18 2026"
+            toolset: "host=x64"
+            preview_channel: false
+          - vs: 2026-Preview
+            os: windows-2025
+            generator: "Visual Studio 18 2026"
+            preview_channel: true
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      # The preview toolset's payload (~10 min of the ~15-20 min this leg
+      # otherwise takes) is re-downloaded from Microsoft's CDN on every run,
+      # because --nocache (below) tells the VS Installer to skip its local
+      # package-download cache entirely. That cache is keyed by package
+      # version, so it's safe to keep around across jobs as long as we know
+      # when to invalidate it: fetch just the channel manifest's ETag (a few
+      # KB, not the multi-hundred-MB payload) and use it as the cache key.
+      # Unchanged manifest -> cache hit -> setup.exe below finds the payload
+      # already on disk and mostly just registers it; changed manifest ->
+      # cache miss -> one full download, cached for the next run.
+      - name: Resolve preview channel manifest version
+        if: matrix.preview_channel
+        id: preview-channel
+        shell: pwsh
+        run: |
+          $resp = Invoke-WebRequest -Uri 'https://aka.ms/vs/18/pre/channel' -Method Head -UseBasicParsing
+          $version = $resp.Headers['ETag']
+          if (-not $version) { $version = $resp.Headers['Last-Modified'] }
+          Write-Host "Channel manifest version: $version"
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Cache VS Installer package downloads
+        if: matrix.preview_channel
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: C:\ProgramData\Microsoft\VisualStudio\Packages
+          key: vs-preview-packages-${{ runner.os }}-${{ steps.preview-channel.outputs.version }}
+          restore-keys: |
+            vs-preview-packages-${{ runner.os }}-
+
+      # This leg is required like any other: the windows-2025 runner image
+      # ships VS 2026 Stable preinstalled, and the Preview MSVC toolset is
+      # an optional component on the Stable channel, so it can be added to
+      # the existing instance with the VS Installer's own "modify" command.
+      # Two hard-won gotchas live here:
+      #   1. setup.exe is a GUI-subsystem executable: PowerShell's call
+      #      operator (&) does NOT wait for it, silently leaving a stale
+      #      $LASTEXITCODE and letting the job kill the install as an orphan
+      #      process at teardown. Start-Process -Wait is required (GitHub's
+      #      own runner-images build scripts do the same, treating exit
+      #      codes 0 and 3010 as success).
+      #   2. CMake's "-T version=" only accepts numeric toolset versions,
+      #      not "Preview", so the installed preview version is discovered
+      #      afterwards and passed to Configure via $GITHUB_ENV.
+      - name: Install MSVC Preview toolset
+        if: matrix.preview_channel
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $instance = & $vswhere -products * -format json | ConvertFrom-Json | Select-Object -First 1
+          if (-not $instance) {
+            Write-Host "No VS instance found by vswhere to add the Preview toolset to"
+            exit 1
+          }
+          $installPath = $instance.installationPath
+
+          $setup = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\setup.exe"
+          $proc = Start-Process -FilePath $setup -Wait -PassThru -ArgumentList (
+            'modify', '--quiet', '--norestart',
+            '--installPath', "`"$installPath`"",
+            '--add', 'Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64'
+          )
+          # 3010 = success, reboot required
+          $ok = $proc.ExitCode -eq 0 -or $proc.ExitCode -eq 3010
+
+          $verify = & $vswhere -products * -requires Microsoft.VisualStudio.Component.VC.Preview.Tools.x86.x64 -format json | ConvertFrom-Json
+          if (-not $ok -or -not $verify) {
+            Write-Host "Preview toolset not present after setup.exe modify (exit code $($proc.ExitCode))."
+            Write-Host "Toolsets present under VC\Tools\MSVC:"
+            Get-ChildItem "$installPath\VC\Tools\MSVC" -Directory -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.Name)" }
+            $log = Get-ChildItem "$env:TEMP\dd_*.log" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($log) {
+              Write-Host "--- $($log.FullName) (last 150 lines) ---"
+              Get-Content $log.FullName -Tail 150 | ForEach-Object { Write-Host $_ }
+            } else {
+              Write-Host "No dd_*.log found under $env:TEMP"
+            }
+            exit 1
+          }
+
+          # CMake can't be told "version=Preview"; find the preview
+          # toolset's actual version number (the highest one installed).
+          $default = (Get-Content "$installPath\VC\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt").Trim()
+          $newest = Get-ChildItem "$installPath\VC\Tools\MSVC" -Directory |
+            Sort-Object { [version]$_.Name } -Descending |
+            Select-Object -First 1 -ExpandProperty Name
+          Write-Host "Default toolset: $default; newest (preview) toolset: $newest"
+          echo "VC_PREVIEW_TOOLSET=$newest" >> $env:GITHUB_ENV
+
+      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
+      # to the GitHub Actions cache service, so built packages are reused
+      # across runs instead of recompiled from scratch every time.
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      # MSVC guarantees binary compatibility across toolset versions since
+      # VS 2015, so vcpkg's Boost (built with the default/stable toolset)
+      # links fine against code compiled with the preview toolset too - no
+      # need to rebuild Boost itself from source for the preview leg.
+      - name: Install dependencies
+        shell: pwsh
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+        run: vcpkg install --triplet x64-windows
+
+      - name: Configure
+        if: "!matrix.preview_channel"
+        shell: pwsh
+        run: >
+          cmake -S . -B build
+          -G "${{ matrix.generator }}" -A x64
+          -T ${{ matrix.toolset }}
+          "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Configure (preview toolset)
+        if: matrix.preview_channel
+        shell: pwsh
+        run: >
+          cmake -S . -B build
+          -G "${{ matrix.generator }}" -A x64
+          -T "version=$env:VC_PREVIEW_TOOLSET,host=x64"
+          "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build --config Release -v
+
+      - name: Test
+        shell: pwsh
+        run: ctest --test-dir build -C Release --output-on-failure
