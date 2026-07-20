@@ -10,8 +10,7 @@
 #include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
 #include <xstd/utility.hpp>                     // aligned_size
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
-#include <algorithm>                            // lexicographical_compare_three_way (ranges::lexicographical_compare when P2022R3 is accepted) 
-                                                // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <algorithm>                            // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                // array
 #include <cassert>                              // assert
 #include <compare>                              // strong_ordering
@@ -44,26 +43,43 @@ struct array
                 }
         }
               
+        // std::set<int>-equivalent ordering: find the first block where x and
+        // y differ, then within it, lsb = position of the smallest element
+        // they disagree on. Below lsb both blocks agree (by definition of
+        // lsb), so as sorted-element sequences x and y share an identical
+        // prefix up to here; whichever side lacks lsb (ohs) decides the
+        // outcome by whether it still has any element above lsb waiting -
+        // either later in this same block, or in any of its later blocks
+        // entirely (blocks after the first differing one represent strictly
+        // larger elements than anything in it): if it does, that side's next
+        // element is bigger than lsb, so the side that has lsb is smaller;
+        // if it doesn't, ohs's sequence has ended and, as the shorter/prefix
+        // sequence, ohs is smaller instead.
         [[nodiscard]] friend constexpr auto operator<=>(array const& x [[maybe_unused]], array const& y [[maybe_unused]]) noexcept
                 -> std::strong_ordering
         {
                 if constexpr (N == 0) {
                         return std::strong_ordering::equal;
                 } else {
-                        return std::lexicographical_compare_three_way(
-                                x.m_bits.begin(), x.m_bits.end(), 
-                                y.m_bits.begin(), y.m_bits.end(),
-                                [](auto lhs, auto rhs) {
-                                        if (auto const ssd = static_cast<Block>(lhs ^ rhs); ssd == zero) {
-                                                return std::strong_ordering::equal;
-                                        } else {
-                                                auto const lsb = static_cast<Block>(unit << bit::countr_zero(ssd)); 
-                                                return bit::intersects(lhs, lsb) ? std::strong_ordering::less : std::strong_ordering::greater;
-                                        }
+                        for (auto k = 0uz; k < num_blocks; ++k) {
+                                auto const lhs = x.m_bits[k];
+                                auto const rhs = y.m_bits[k];
+                                if (auto const ssd = static_cast<Block>(lhs ^ rhs); ssd != zero) {
+                                        auto const lsb            = bit::countr_zero(ssd);
+                                        auto const mask_lsb       = static_cast<Block>(unit << lsb);
+                                        auto const mask_lsb_above = static_cast<Block>(static_cast<Block>(ones << lsb) << 1);
+                                        auto const lhs_has_lsb    = bit::intersects(lhs, mask_lsb);
+                                        auto const& ohs_bits      = lhs_has_lsb ? y.m_bits : x.m_bits;
+                                        auto const ohs_has_lsb_above =
+                                                bit::intersects(ohs_bits[k], mask_lsb_above) or
+                                                std::ranges::any_of(ohs_bits | std::views::drop(k + 1), [](auto block) { return block != zero; })
+                                        ;
+                                        return (lhs_has_lsb == ohs_has_lsb_above) ? std::strong_ordering::less : std::strong_ordering::greater;
                                 }
-                        );
+                        }
+                        return std::strong_ordering::equal;
                 }
-        }        
+        }
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, array const* v) noexcept
