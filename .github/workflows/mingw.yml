@@ -1,0 +1,189 @@
+#          Copyright Rein Halbersma 2014-2025.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: MinGW
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: MinGW ${{ matrix.label }}
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: "15"
+            tag_prefix: "15."
+            snapshot: false
+          - label: "16"
+            tag_prefix: "16."
+            snapshot: false
+          - label: 17-SVN
+            tag_prefix: ""
+            snapshot: true
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      # WinLibs (https://winlibs.com) publishes standalone, versioned
+      # GCC + MinGW-w64 + UCRT builds as dated GitHub releases rather than a
+      # rolling package feed, so pinning a stable major version - or finding
+      # whatever snapshot build happens to exist - means querying the
+      # releases API instead of hardcoding a release tag that goes stale the
+      # moment a new -rN respin ships. Mirrors the same approach in xstd's
+      # own mingw.yml.
+      - name: Resolve WinLibs release
+        id: winlibs
+        shell: bash
+        run: |
+          releases=$(curl -fsSL -H "Authorization: Bearer ${{ github.token }}" \
+            "https://api.github.com/repos/brechtsanders/winlibs_mingw/releases?per_page=100")
+
+          if [ "${{ matrix.snapshot }}" = "true" ]; then
+            tag=$(echo "$releases" | grep '"tag_name"' | cut -d'"' -f4 | grep -i snapshot | head -1)
+          else
+            tag=$(echo "$releases" | grep '"tag_name"' | cut -d'"' -f4 | grep -E "^${{ matrix.tag_prefix }}" | grep -i ucrt | head -1)
+          fi
+
+          if [ -z "$tag" ]; then
+            echo "No matching WinLibs release found for '${{ matrix.label }}'" >&2
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            # A missing snapshot is expected from time to time (WinLibs only
+            # publishes one between stable release branches); a missing
+            # pinned stable major is a real problem and must fail the job.
+            [ "${{ matrix.snapshot }}" = "true" ] && exit 0 || exit 1
+          fi
+
+          asset=$(echo "$releases" | python3 -c "
+          import json, sys
+          releases = json.load(sys.stdin)
+          for r in releases:
+              if r['tag_name'] != '$tag':
+                  continue
+              for a in r['assets']:
+                  n = a['name']
+                  if n.startswith('winlibs-x86_64-posix-seh-gcc-') and 'mingw-w64ucrt-' in n and n.endswith('.7z'):
+                      print(a['browser_download_url'])
+                      sys.exit(0)
+          ")
+
+          if [ -z "$asset" ]; then
+            echo "No matching win64 UCRT asset found in release '$tag'" >&2
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            [ "${{ matrix.snapshot }}" = "true" ] && exit 0 || exit 1
+          fi
+
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "url=$asset" >> "$GITHUB_OUTPUT"
+
+      - name: Cache WinLibs toolchain
+        if: steps.winlibs.outputs.found == 'true'
+        id: cache-winlibs
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: C:\winlibs
+          key: winlibs-${{ steps.winlibs.outputs.tag }}
+
+      # Extracted into an isolated directory rather than straight to C:/:
+      # the windows-2022 runner already ships its own C:\mingw64 (Git for
+      # Windows' bundled toolchain), and 7-Zip's interactive overwrite
+      # prompt for the colliding files hangs indefinitely with no TTY to
+      # answer it, failing the step with "Break signaled" (exit 255).
+      - name: Install WinLibs toolchain
+        if: steps.winlibs.outputs.found == 'true' && steps.cache-winlibs.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -fsSL "${{ steps.winlibs.outputs.url }}" -o winlibs.7z
+          7z x winlibs.7z -oC:/winlibs_extract
+          mv C:/winlibs_extract/mingw64 C:/winlibs
+          rm -rf C:/winlibs_extract
+
+      # -Encoding utf8 writes a UTF-8 BOM, which corrupts $GITHUB_PATH's
+      # parsing on Windows (the runner ends up not prepending the entry to
+      # PATH at all) - every test executable then fails at startup with
+      # 0xc0000135 (STATUS_DLL_NOT_FOUND) since WinLibs' own runtime DLLs
+      # (libstdc++-6.dll, libgcc_s_seh-1.dll, libwinpthread-1.dll) are never
+      # found. utf8NoBOM avoids this.
+      - name: Add WinLibs to PATH
+        if: steps.winlibs.outputs.found == 'true'
+        run: echo "C:\winlibs\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8NoBOM -Append
+
+      - name: Report toolchain version
+        if: steps.winlibs.outputs.found == 'true'
+        run: g++ --version
+
+      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
+      # to the GitHub Actions cache service, so built packages are reused
+      # across runs instead of recompiled from scratch every time.
+      - name: Export GitHub Actions cache environment variables
+        if: steps.winlibs.outputs.found == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      # vcpkg's x64-mingw-dynamic community triplet builds against whatever
+      # gcc/g++ resolve to on PATH - which is now the pinned WinLibs
+      # toolchain added above - so Boost.Test ends up with the same
+      # libstdc++ ABI as the code it links against. No prebuilt Boost exists
+      # for an arbitrary pinned MinGW version, so this is a from-source
+      # build.
+      - name: Install dependencies
+        if: steps.winlibs.outputs.found == 'true'
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+        run: vcpkg install --triplet x64-mingw-dynamic
+
+      # Ninja rather than "MinGW Makefiles": the latter needs
+      # mingw32-make.exe specifically, which WinLibs' archive doesn't
+      # bundle (CMAKE_MAKE_PROGRAM ends up unset). Ninja itself isn't
+      # preinstalled on windows-2022 either (dropped from the image in
+      # 20230918.1.0), hence the explicit choco install below.
+      - name: Install Ninja
+        if: steps.winlibs.outputs.found == 'true'
+        run: choco install ninja -y
+
+      # CMAKE_BUILD_TYPE must be set explicitly: Ninja is a single-config
+      # generator, and vcpkg's toolchain file defaults an unset build type
+      # to Debug. That silently links the debug Boost.Test import library,
+      # whose DLL lives under vcpkg_installed/.../debug/bin - but the
+      # vcpkg-generated "z-applocal" post-build step that copies runtime
+      # DLLs next to each test executable always points at the release
+      # bin/ dir, never debug/bin/, so the DLL never gets deployed and every
+      # Boost-linked executable fails at startup with 0xc0000135
+      # (STATUS_DLL_NOT_FOUND) - even though header-only executables, which
+      # don't need Boost, run fine.
+      - name: Configure
+        if: steps.winlibs.outputs.found == 'true'
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_C_COMPILER=gcc
+          -DCMAKE_CXX_COMPILER=g++
+          "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic
+
+      - name: Build
+        if: steps.winlibs.outputs.found == 'true'
+        run: cmake --build build -v
+
+      - name: Test
+        if: steps.winlibs.outputs.found == 'true'
+        run: ctest --test-dir build --output-on-failure

@@ -8,6 +8,15 @@ find_package(Boost CONFIG REQUIRED)
 find_package(benchmark REQUIRED)
 find_package(fmt REQUIRED)
 
+# clang-cl reports CXX_COMPILER_ID Clang but only understands its MSVC-style
+# driver flags, not GNU-style ones like -pedantic-errors (see test/
+# CMakeLists.txt's identical check).
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(bit_set_is_clang_cl ON)
+else()
+    set(bit_set_is_clang_cl OFF)
+endif()
+
 set(cxx_compile_definitions
     BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
     BOOST_ALL_NO_LIB
@@ -25,11 +34,16 @@ set(cxx_compile_options_warnings
     >
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -Werror
+    >
+    $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>,$<NOT:$<BOOL:${bit_set_is_clang_cl}>>>:
         -pedantic-errors
     >
     $<$<CXX_COMPILER_ID:Clang>:
         -Weverything
         -Wno-unknown-warning-option         # forward compatibility for new Clang warnings
+        -Wno-lifetime-safety-intra-tu-suggestions             # Clang trunk (23-SVN); suggests [[clang::lifetimebound]] across xstd::proxy::bidirectional and xstd::bitset - not yet acted on
+        -Wno-lifetime-safety-intra-tu-constructor-suggestions # ditto, for constructors
+        -Wno-lifetime-safety-invalidation                     # ditto; false positive on a.clear() in test/include/set/primitives.hpp treating the container itself as invalidated
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
         -Wno-c++20-compat

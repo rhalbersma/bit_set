@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
 
         // empty/full set vs. every doubleton, at matching N - see o1.cpp's
         // identical singleton case for why N is pinned explicitly.
-        on4::all_doubleton_sets<T>([](auto const& bs2) {
+        on2::all_doubleton_sets<T, limit_v<T, L4>>([](auto const& bs2) {
                 on0::empty_set<T, limit_v<T, L4>>([&](auto const& bs0) {
                         mem_compare_three_way()(bs0, bs2);
                 });
