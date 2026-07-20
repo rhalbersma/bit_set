@@ -223,11 +223,9 @@ public:
         [[nodiscard]] constexpr auto crend()   const noexcept { return rend();   }
 
         // Prefer Bits' own == when it has one (cheaper than iterating through
-        // the proxy iterators below), else compare elementwise. Unlike
-        // ordering (see is_subset_of and friends below for why <=> is
-        // deliberately not provided here), equality of two sets is
-        // unambiguous regardless of any bitset's internal bit-layout
-        // convention, so this is purely an optimization.
+        // the proxy iterators below), else compare elementwise. Equality of
+        // two sets is unambiguous regardless of any bitset's internal
+        // bit-layout convention, so this is purely an optimization.
         [[nodiscard]] friend constexpr bool operator==(view lhs, view rhs) noexcept
         {
                 if constexpr (requires { *lhs.m_ptr == *rhs.m_ptr; }) {
@@ -237,16 +235,12 @@ public:
                 }
         }
 
-        // Unlike == and the predicates above, this deliberately never prefers
-        // Bits' own <=> even when it has one: a data-parallel word-at-a-time
-        // <=> is only guaranteed to agree with std::set<int>'s
-        // lexicographic-of-elements ordering when both operands have equal
-        // cardinality in general (bit_set/bitset's own <=> is a case that
-        // does get this right for every cardinality - see compare<Bits> -
-        // but nothing here can assume that of an arbitrary Bits). Always
-        // going through compare<Bits>::lexicographical_three_way keeps this
-        // correct for every Bits, at the cost of the word-parallel fast path
-        // a trusted native <=> could offer.
+        // Ordering is not as unambiguous as == - see compare<Bits> below for
+        // why the default trusts Bits' own <=> and why some Bits need to
+        // opt out of that default via a compare<Bits> specialization. This
+        // never duplicates that decision here: it always goes through
+        // compare<Bits>, so specializing the trait is enough to change how
+        // any view<Bits> orders too.
         [[nodiscard]] friend constexpr std::strong_ordering operator<=>(view lhs, view rhs) noexcept
         {
                 return compare<Bits>::lexicographical_three_way(*lhs.m_ptr, *rhs.m_ptr);
@@ -298,30 +292,28 @@ public:
 template<bit_range Bits>
 view(Bits const&) -> view<Bits>;
 
-// compare<Bits>::lexicographical_three_way always computes std::set<int>-
-// equivalent ordering by iterating both Bits' elements via view - it never
-// looks at Bits' own <=> (if it has one) at all. That's deliberate, not an
-// oversight: a foreign Bits (std::bitset<N>, boost::dynamic_bitset<>) is
-// free to add its own <=> in the future with whatever semantics its own
-// standard mandates (e.g. sequence-of-bool, matching std::bitset's own
-// element/index order rather than std::set<int>'s), and there is no way to
-// know from here whether such a <=> would agree with the ordering this
-// library promises. Always computing from iteration side-steps that
-// question entirely, at the cost of the word-parallel fast path a trusted
-// native <=> could offer - xstd's own bit_set/bitset can specialize this
-// trait later once (if) their own <=> is confirmed to compute the same
-// ordering, without changing anything at the call sites below.
+// compare<Bits>::lexicographical_three_way defaults to trusting Bits' own
+// <=>: xstd's own bit_set/bitset (bit::array's operator<=>) is meant to
+// already compute std::set<int>-equivalent ordering, word-parallel, for
+// every cardinality - so the default here is just to call it directly
+// rather than pay for iterating through view.
+//
+// This default is NOT safe for an arbitrary foreign Bits, only for types
+// this library controls (or otherwise trusts) the <=> of. A foreign type
+// (std::bitset<N>, boost::dynamic_bitset<>) may not have its own <=> at
+// all, or may add one later with different semantics (e.g. sequence-of-
+// bool, matching its own element/index order rather than std::set<int>'s) -
+// there is no way to know from here whether such a <=> would agree with the
+// ordering this library promises. Such types must opt in to the safe,
+// iteration-based fallback by specializing compare<Bits> themselves (see
+// ext/std/bitset.hpp, ext/boost/dynamic_bitset.hpp) rather than relying on
+// this default.
 template<bit_range Bits>
 struct compare
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(Bits const& x, Bits const& y) noexcept
         {
-                auto const xv = view(x);
-                auto const yv = view(y);
-                return std::lexicographical_compare_three_way(
-                        xv.begin(), xv.end(),
-                        yv.begin(), yv.end()
-                );
+                return x <=> y;
         }
 };
 

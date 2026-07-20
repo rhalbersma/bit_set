@@ -64,39 +64,44 @@ struct find<std::bitset<N>>
         }
 };
 
+// std::bitset<N> has no <=> of its own, so xstd::proxy::bidirectional::
+// compare<Bits>'s default (trust Bits' own <=>) doesn't apply - it must opt
+// in to the safe, iteration-based ordering explicitly. This is what
+// view<std::bitset<N>>::operator<=> uses; there is no infix x <=> y for
+// std::bitset<N> itself (see the comment below on why that isn't added).
+template<std::size_t N>
+struct compare<std::bitset<N>>
+{
+        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(std::bitset<N> const& x, std::bitset<N> const& y) noexcept
+        {
+                auto const xv = view(x);
+                auto const yv = view(y);
+                return std::lexicographical_compare_three_way(
+                        xv.begin(), xv.end(),
+                        yv.begin(), yv.end()
+                );
+        }
+};
+
 }       // namespace xstd::proxy::bidirectional
 
-// is_subset_of, is_proper_subset_of and intersects used to live here too,
-// with the same [namespace.std] problem find<std::bitset<N>> above solves.
-// They no longer need to: xstd::proxy::bidirectional::view provides all
-// three directly (preferring a Bits type's own member when it has one,
-// falling back to computing them from iteration otherwise), so
-// `view(x).is_subset_of(view(y))` etc. work for std::bitset<N> without
-// adding anything to namespace std at all.
+// is_subset_of, is_proper_subset_of, intersects, and now <=> used to live
+// here too, with the same [namespace.std] problem find<std::bitset<N>>
+// above solves. None of them need to any more: xstd::proxy::bidirectional::
+// view provides all four directly (preferring a Bits type's own member/<=>
+// when it has one, falling back to computing them from iteration otherwise
+// - see compare<std::bitset<N>> above for <=> specifically), so
+// `view(x).is_subset_of(view(y))`, `view(x) <=> view(y)`, etc. work for
+// std::bitset<N> without adding anything to namespace std at all. There is
+// deliberately no infix x <=> y for std::bitset<N> itself: unlike ==,
+// ordering isn't unambiguous enough to be worth resurrecting a [namespace.
+// std] exception for - use view(x) <=> view(y).
 //
-// operator<=>, operator-=, and operator- remain here: natural infix syntax
-// for them is only reachable via ADL or membership in std::bitset<N>'s own
-// namespace (std), and there is no legal way to provide that from outside
-// namespace std. operator<=> specifically is NOT moved to view (unlike ==)
-// because, unlike ==, its correctness is bound up in the still-open question
-// of what bit_set/bitset's own <=> actually guarantees relative to
-// std::set<int>'s ordering (see the discussion around bit::array::
-// operator<=>) - this implementation computes std::set<int>-equivalent
-// lexicographic-of-elements ordering directly via view's iterators, which
-// is unaffected by that question either way.
+// operator-=, and operator- remain here: natural infix syntax for them is
+// only reachable via ADL or membership in std::bitset<N>'s own namespace
+// (std), and there is no legal way to provide that from outside namespace
+// std.
 namespace std {
-
-template<std::size_t N>
-[[nodiscard]] auto operator<=>(const bitset<N>& x, const bitset<N>& y) noexcept
-        -> std::strong_ordering
-{
-        auto const xv = xstd::proxy::bidirectional::view(x);
-        auto const yv = xstd::proxy::bidirectional::view(y);
-        return std::lexicographical_compare_three_way(
-                xv.begin(), xv.end(),
-                yv.begin(), yv.end()
-        );
-}
 
 template<std::size_t N>
 bitset<N>& operator-=(bitset<N>& lhs, const bitset<N>& rhs) noexcept

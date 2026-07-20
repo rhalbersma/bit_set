@@ -55,20 +55,29 @@ struct find<boost::dynamic_bitset<Block, Allocator>>
         }
 };
 
-}       // namespace xstd::proxy::bidirectional
-
-namespace boost {
-
+// boost::dynamic_bitset<> may add its own <=> upstream at some point (as it
+// already did for begin()/end() - see find<> above), with no guarantee its
+// semantics would match std::set<int>'s ordering (the same concern as
+// std::bitset<N> - see compare<Bits>'s primary template). Opt in to the
+// safe, iteration-based ordering explicitly rather than risk inheriting
+// whatever a future native <=> decides to mean. This is what
+// view<boost::dynamic_bitset<...>>::operator<=> uses; unlike find<>, this
+// isn't reachable via infix x <=> y - boost::dynamic_bitset<> is a real
+// (non-std) namespace so an ADL operator<=> here would be legal, but
+// ordering isn't unambiguous enough to be worth adding one - use
+// view(x) <=> view(y).
 template<std::unsigned_integral Block, class Allocator>
-[[nodiscard]] auto operator<=>(dynamic_bitset<Block, Allocator> const& x, dynamic_bitset<Block, Allocator> const& y) noexcept
-        -> std::strong_ordering
+struct compare<boost::dynamic_bitset<Block, Allocator>>
 {
-        auto const xv = xstd::proxy::bidirectional::view(x);
-        auto const yv = xstd::proxy::bidirectional::view(y);
-        return std::lexicographical_compare_three_way(
-                xv.begin(), xv.end(),
-                yv.begin(), yv.end()
-        );
-}
+        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(boost::dynamic_bitset<Block, Allocator> const& x, boost::dynamic_bitset<Block, Allocator> const& y) noexcept
+        {
+                auto const xv = view(x);
+                auto const yv = view(y);
+                return std::lexicographical_compare_three_way(
+                        xv.begin(), xv.end(),
+                        yv.begin(), yv.end()
+                );
+        }
+};
 
-}       // namespace boost
+}       // namespace xstd::proxy::bidirectional
