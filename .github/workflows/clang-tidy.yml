@@ -1,0 +1,102 @@
+#          Copyright Rein Halbersma 2014-2025.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: Clang-Tidy
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  tidy:
+    name: clang-tidy 22
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Install Clang 22 and clang-tidy 22
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22
+          sudo apt-get install -y clang-tidy-22
+
+      # bit_set/bit/array.hpp uses std::ranges::shift_left/shift_right
+      # (P2440R1), which needs a recent libstdc++ regardless of what the
+      # runner image's default GCC ships. Clang doesn't bundle its own
+      # standard library for -stdlib=libstdc++; it auto-selects the newest
+      # GCC installation's headers/runtime it can find, so this is enough.
+      # Matches clang.yml's own fix for the same underlying problem.
+      - name: Install a <ranges>-capable libstdc++
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y g++-15
+
+      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
+      # to the GitHub Actions cache service, so built packages are reused
+      # across runs instead of recompiled from scratch every time.
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      # Only needed so that the test tree (and with it the compile database
+      # entries below) configures; clang-tidy itself never links Boost.
+      - name: Install dependencies
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+        run: vcpkg install --triplet x64-linux
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCMAKE_C_COMPILER=clang-22
+          -DCMAKE_CXX_COMPILER=clang++-22
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+
+      # Analyze the public headers through the generated header
+      # self-sufficiency translation units. The Boost.Test sources are left
+      # out on purpose: the test macros drown the signal in noise. The
+      # check selection and per-check suppressions live in .clang-tidy,
+      # which sets WarningsAsErrors so any finding fails this job. Note
+      # run-clang-tidy is never invoked with -fix: this job only reports
+      # findings, it never modifies source.
+      - name: Run clang-tidy over the public headers
+        run: |
+          run-clang-tidy-22 -quiet -p build \
+            "$GITHUB_WORKSPACE/build/test/header_self_sufficiency/.*" \
+            2>&1 | tee clang-tidy-report.txt
+
+      - name: Publish clang-tidy summary
+        if: always()
+        run: |
+          {
+            echo '### clang-tidy findings'
+            echo '```'
+            grep -E ': (error|warning):' clang-tidy-report.txt || echo 'No findings.'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload clang-tidy report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: clang-tidy-report
+          path: clang-tidy-report.txt

@@ -90,6 +90,51 @@ set(cxx_compile_options_mbig_obj
     >
 )
 
+# Each public header is compiled as its own translation unit (linked against
+# the same warning flags as the unit tests), proving it is self-sufficient.
+# This is what the Clang-Tidy workflow analyzes - the Boost.Test sources
+# below are left out of that analysis on purpose: the test macros drown the
+# signal in noise.
+set(public_header_dir ${PROJECT_SOURCE_DIR}/include)
+file(
+    GLOB_RECURSE public_headers
+    CONFIGURE_DEPENDS
+    RELATIVE ${public_header_dir}
+    ${public_header_dir}/xstd/*.hpp
+)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/header_self_sufficiency)
+
+foreach(h ${public_headers})
+    string(REPLACE "/" "." header_test_id ${h})
+    string(REGEX REPLACE "[.]hpp$" "" header_test_id ${header_test_id})
+    set(header_test_source ${CMAKE_CURRENT_BINARY_DIR}/header_self_sufficiency/${header_test_id}.cpp)
+    file(
+        WRITE ${header_test_source}
+        "#include <${h}>\nint main() {}\n"
+    )
+
+    add_executable(header.${header_test_id} ${header_test_source})
+
+    target_link_libraries(
+        header.${header_test_id} PRIVATE
+        ${CMAKE_PROJECT_NAME}
+    )
+
+    target_compile_definitions(
+        header.${header_test_id} PRIVATE
+        ${cxx_compile_definitions}
+    )
+
+    target_compile_options(
+        header.${header_test_id} PRIVATE
+        ${cxx_compile_options_warnings}
+        ${cxx_compile_options_optimization}
+        ${cxx_compile_options_mbig_obj}
+    )
+
+    add_test(NAME header.${header_test_id} COMMAND header.${header_test_id})
+endforeach()
+
 set(current_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(current_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
 file(GLOB_RECURSE targets RELATIVE ${current_src_dir} *.cpp)
