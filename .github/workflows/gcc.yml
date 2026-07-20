@@ -62,7 +62,7 @@ jobs:
         run: |
           wget -q https://kayari.org/gcc-latest/gcc-latest.deb -O gcc-latest.deb
           sudo dpkg -i gcc-latest.deb || sudo apt-get install -f -y
-          sudo ln -sf /opt/gcc-latest/bin/gcc gcc-${{ matrix.version }} /usr/bin/gcc-${{ matrix.version }}
+          sudo ln -sf /opt/gcc-latest/bin/gcc /usr/bin/gcc-${{ matrix.version }}
           sudo ln -sf /opt/gcc-latest/bin/g++ /usr/bin/g++-${{ matrix.version }}
           printf '%s\n' \
             '# Multiarch support' \
