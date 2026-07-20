@@ -312,16 +312,6 @@ struct mem_equal_to
 struct mem_compare_three_way
 {
         template<class X>
-        [[nodiscard]] static auto fn_to_string(const X& self) noexcept
-        {
-                if constexpr (requires { self.to_string(); }) {
-                        return self.to_string();
-                } else {
-                        std::string str; to_string(self, str); return str;
-                }
-        }
-
-        template<class X>
         [[nodiscard]] static auto fn_compare_three_way(const X& lhs, const X& rhs) noexcept
         {
                 if constexpr (requires { lhs <=> rhs; }) {
@@ -331,18 +321,22 @@ struct mem_compare_three_way
                 }
         }
 
+        // A prior version of this also checked fn_compare_three_way(self, rhs)
+        // against a to_string()-based reversed-string comparison with self and
+        // rhs swapped. That construction computes the array-of-bool relation
+        // (bit 0 compared first), not the std::set<int>-style relation
+        // fn_compare_three_way actually implements - it only ever agreed by
+        // coincidence, because every caller until now only ever compared
+        // equal-cardinality operands, where the two relations happen to
+        // coincide (see xstd::proxy::bidirectional::compare's comments). It
+        // fails for genuinely mixed-cardinality pairs (e.g. empty vs.
+        // singleton), which isn't a bug in the type being tested - the
+        // construction itself doesn't generalize. The view-based check below
+        // is the general, always-valid one: it re-derives the same order
+        // from each type's own ascending iteration, for any cardinality.
         template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
         {
-                auto const self_str = fn_to_string(self);
-                auto const  rhs_str = fn_to_string(rhs);
-                BOOST_CHECK(
-                        fn_compare_three_way(self, rhs) ==
-                        std::lexicographical_compare_three_way(
-                                std::ranges::rbegin(rhs_str),  std::ranges::rend(rhs_str),
-                                std::ranges::rbegin(self_str), std::ranges::rend(self_str)
-                        )
-                );
                 auto const lhs_view = proxy::bidirectional::view(self);
                 auto const rhs_view = proxy::bidirectional::view(rhs);
                 BOOST_CHECK(

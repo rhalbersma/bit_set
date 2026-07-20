@@ -6,7 +6,7 @@
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
 #include <ext/xstd/bitset.hpp>          // bitset
-#include <bitset/exhaustive.hpp>        // all_singleton_sets, all_singleton_set_pairs, any_value
+#include <bitset/exhaustive.hpp>        // all_singleton_sets, all_singleton_set_pairs, all_doubleton_sets, any_value, empty_set, full_set
 #include <bitset/primitives.hpp>        // mem_bit_and_assign, mem_bit_or_assign, mem_bit_xor_assign, mem_bit_minus_assign,
                                         // mem_shift_left_assign, mem_shift_right_assign, mem_shift_left, mem_shift_right,
                                         // mem_equal_to, mem_compare_three_way, mem_is_subset_of, mem_is_proper_subset_of, mem_intersects,
@@ -72,6 +72,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
         on2::all_singleton_set_pairs<T>(mem_is_subset_of());
         on2::all_singleton_set_pairs<T>(mem_is_proper_subset_of());
         on2::all_singleton_set_pairs<T>(mem_intersects());
+
+        // empty/full set vs. every doubleton, at matching N - see o1.cpp's
+        // identical singleton case for why N is pinned explicitly.
+        on4::all_doubleton_sets<T>([](auto const& bs2) {
+                on0::empty_set<T, limit_v<T, L4>>([&](auto const& bs0) {
+                        mem_compare_three_way()(bs0, bs2);
+                });
+                on0::full_set<T, limit_v<T, L4>>([&](auto const& bsN) {
+                        mem_compare_three_way()(bsN, bs2);
+                });
+        });
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
