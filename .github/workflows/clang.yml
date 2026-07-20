@@ -37,6 +37,17 @@ jobs:
             stdlib: libstdc++
             triplet: x64-linux
             cxxflags: ""
+          # apt.llvm.org's "23" package tracks LLVM's in-development next
+          # major, same as the libc++ leg below, but paired with libstdc++
+          # instead - this is the regular required leg (same as 21/22),
+          # just one version further ahead, so a trunk-Clang/libstdc++
+          # regression shows up here independently of the libc++ gaps the
+          # leg below is tracking.
+          - label: "23-SVN"
+            version: 23
+            stdlib: libstdc++
+            triplet: x64-linux
+            cxxflags: ""
           # Tracks libc++ trunk deliberately: bit_set currently uses several
           # C++23 range adaptors (views::cartesian_product, views::adjacent,
           # views::pairwise_transform, views::stride) libc++ hasn't
