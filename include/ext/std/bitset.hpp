@@ -7,6 +7,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/proxy/bidirectional.hpp> // find, view
+#include <xstd/proxy/random_access.hpp> // find, view
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <bitset>                       // bitset
 #include <cassert>                      // assert
@@ -84,6 +85,43 @@ struct compare<std::bitset<N>>
 };
 
 }       // namespace xstd::proxy::bidirectional
+
+// Same [namespace.std] situation as bidirectional::find above, for the
+// array-of-bool interpretation instead of the set-of-indices one:
+// std::bitset<N> already has operator[] for every index (unlike find_first/
+// find_next, which need real bit-scanning), so this specialization is
+// trivial - the whole point is just making it reachable without adding
+// declarations to namespace std.
+namespace xstd::proxy::random_access {
+
+template<std::size_t N>
+struct find<std::bitset<N>>
+{
+        [[nodiscard]] static constexpr std::size_t first(const std::bitset<N>&) noexcept { return 0uz; }
+        [[nodiscard]] static constexpr std::size_t last (const std::bitset<N>&) noexcept { return N;   }
+        [[nodiscard]] static constexpr bool         at  (const std::bitset<N>& c, std::size_t n) noexcept { return c[n]; }
+};
+
+// std::bitset<N> has no <=> at all (real std::bitset has only ==), so
+// compare<Bits>'s default (trust Bits' own <=>) can't apply here either -
+// same opt-in as bidirectional::compare<std::bitset<N>> above, just
+// producing the fixed-length sequence-of-bool order (index 0 first)
+// instead of the set-of-indices one.
+template<std::size_t N>
+struct compare<std::bitset<N>>
+{
+        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(std::bitset<N> const& x, std::bitset<N> const& y) noexcept
+        {
+                auto const xv = view(x);
+                auto const yv = view(y);
+                return std::lexicographical_compare_three_way(
+                        xv.begin(), xv.end(),
+                        yv.begin(), yv.end()
+                );
+        }
+};
+
+}       // namespace xstd::proxy::random_access
 
 // is_subset_of, is_proper_subset_of, intersects, and now <=> used to live
 // here too, with the same [namespace.std] problem find<std::bitset<N>>

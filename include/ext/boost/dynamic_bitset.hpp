@@ -6,6 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/proxy/bidirectional.hpp> // find, view
+#include <xstd/proxy/random_access.hpp> // find, view
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <cassert>                      // assert
@@ -81,3 +82,39 @@ struct compare<boost::dynamic_bitset<Block, Allocator>>
 };
 
 }       // namespace xstd::proxy::bidirectional
+
+// Same reasoning as bidirectional::find above, for the array-of-bool
+// interpretation: boost::dynamic_bitset<> already has operator[] for every
+// index, so this specialization is trivial - it exists purely so a future
+// upstream begin()/end()/at() addition can't shadow it, same as find<>
+// above.
+namespace xstd::proxy::random_access {
+
+template<std::unsigned_integral Block, class Allocator>
+struct find<boost::dynamic_bitset<Block, Allocator>>
+{
+        [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const&) noexcept { return 0uz; }
+        [[nodiscard]] static constexpr std::size_t last (boost::dynamic_bitset<Block, Allocator> const& c) noexcept { return c.size(); }
+        [[nodiscard]] static constexpr bool         at  (boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept { return c[n]; }
+};
+
+// boost::dynamic_bitset<> has classic operator</<=/>/>= but no operator<=>
+// at all (so compare<Bits>'s default x <=> y wouldn't even compile, let
+// alone be guaranteed to mean the same thing as this namespace's fixed-
+// length sequence-of-bool order) - opt in explicitly, same as
+// bidirectional::compare<boost::dynamic_bitset<...>> above.
+template<std::unsigned_integral Block, class Allocator>
+struct compare<boost::dynamic_bitset<Block, Allocator>>
+{
+        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(boost::dynamic_bitset<Block, Allocator> const& x, boost::dynamic_bitset<Block, Allocator> const& y) noexcept
+        {
+                auto const xv = view(x);
+                auto const yv = view(y);
+                return std::lexicographical_compare_three_way(
+                        xv.begin(), xv.end(),
+                        yv.begin(), yv.end()
+                );
+        }
+};
+
+}       // namespace xstd::proxy::random_access
