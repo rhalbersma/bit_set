@@ -41,7 +41,8 @@ using bit_set = xstd::bit_set<xstd::aligned_size(N, std::numeric_limits<Block>::
 #include <xstd/bit/array.hpp>           // array
 #include <xstd/proxy.hpp>               // const_iterator, const_reference
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
-#include <boost/hash2/hash_append.hpp>  // hash_append    
+#include <boost/hash2/hash_append.hpp>  // hash_append
+#include <algorithm>                    // lexicographical_compare_three_way
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
 #include <concepts>                     // constructible_from, unsigned_integral
@@ -265,8 +266,18 @@ private:
         constexpr auto do_insert(const_iterator, value_type x) noexcept ->           iterator        { m_bits.set(x); return   { this, x };                     }
 };
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept                         { return x.m_bits ==  y.m_bits; }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto operator<=>(const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept -> std::strong_ordering { return x.m_bits <=> y.m_bits; }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
+
+// bit::array is a pure storage vehicle with no <=> of its own (see its
+// comments) - bit_set's own ordering is std::set<int>-equivalent: the
+// lexicographic order of its own ascending sequence of set-bit indices,
+// exactly what std::set<int> would compute for the same elements.
+template<std::size_t N, std::unsigned_integral Block>
+[[nodiscard]] constexpr auto operator<=>(const bit_set<N, Block>& x, const bit_set<N, Block>& y) noexcept
+        -> std::strong_ordering
+{
+        return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
+}
 template<std::size_t N, std::unsigned_integral Block>               constexpr void swap       (      bit_set<N, Block>& x,       bit_set<N, Block>& y) noexcept(noexcept(x.swap(y)))    { x.swap(y);                    }
 
 // 23.4.6.3 Erasure                                                [set.erasure]

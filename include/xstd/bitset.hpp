@@ -30,8 +30,11 @@ template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
 }       // namespace xstd
 
 #include <xstd/bit/array.hpp>           // array
+#include <xstd/proxy/bidirectional.hpp> // find
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
-#include <boost/hash2/hash_append.hpp>  // hash_append    
+#include <boost/hash2/hash_append.hpp>  // hash_append
+#include <algorithm>                    // lexicographical_compare_three_way
+#include <compare>                      // strong_ordering
 #include <format>                       // format
 #include <ios>                          // ios_base
 #include <locale>                       // ctype, use_facet
@@ -49,12 +52,18 @@ namespace xstd {
 template<std::size_t N, std::unsigned_integral Block>
 class bitset
 {
+        // No iteration, no <=> here, by design: xstd::bitset mirrors
+        // std::bitset's own contract, which has neither (std::bitset has no
+        // begin()/end() and no operator<, only ==). Ordering/iteration for
+        // an xstd::bitset, like for std::bitset itself (see ext/std/
+        // bitset.hpp), is only available by explicitly choosing an
+        // interpretation via xstd::proxy::bidirectional::view (set of the
+        // indices that are set) or xstd::proxy::random_access::view
+        // (fixed-length sequence of bools) - xstd::bitset itself takes no
+        // side on which one is "the" ordering.
         bit::array<N, Block> m_bits{};
 
-        [[nodiscard]] friend constexpr std::size_t find_first(const bitset& c)                noexcept { return c.m_bits.find_first(); }
-        [[nodiscard]] friend constexpr std::size_t find_last (const bitset& c)                noexcept { return c.m_bits.find_last (); }
-        [[nodiscard]] friend constexpr std::size_t find_next (const bitset& c, std::size_t n) noexcept { return c.m_bits.find_next(n); }
-        [[nodiscard]] friend constexpr std::size_t find_prev (const bitset& c, std::size_t n) noexcept { return c.m_bits.find_prev(n); }
+        friend struct xstd::proxy::bidirectional::find<bitset>;
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bitset const* v) noexcept
@@ -189,8 +198,7 @@ public:
         [[nodiscard]] constexpr std::size_t count() const noexcept { return m_bits.count(); }
         [[nodiscard]] constexpr std::size_t size()  const noexcept { return m_bits.size();  }
 
-        [[nodiscard]] constexpr bool operator== (const bitset& rhs) const noexcept                         = default;
-        [[nodiscard]] constexpr auto operator<=>(const bitset& rhs) const noexcept -> std::strong_ordering = default;
+        [[nodiscard]] constexpr bool operator==(const bitset& rhs) const noexcept = default;
 
         [[nodiscard]] constexpr bool test(std::size_t pos) const { if (pos < N) { return m_bits[pos]; } else { throw out_of_range(pos); } }
 
@@ -229,6 +237,43 @@ private:
 };
 
 }       // namespace xstd
+
+// xstd::bitset provides no find_first/find_last/find_next/find_prev of its
+// own (see the comment on m_bits above) - specializing find<> here is what
+// lets xstd::proxy::bidirectional::view(x) still work for it, the same
+// mechanism ext/std/bitset.hpp uses for the real std::bitset<N>, just
+// without that header's [namespace.std] motivation: here it's purely a
+// deliberate choice to keep xstd::bitset itself opinion-free about ordering.
+namespace xstd::proxy::bidirectional {
+
+template<std::size_t N, std::unsigned_integral Block>
+struct find<xstd::bitset<N, Block>>
+{
+        [[nodiscard]] static constexpr std::size_t first(xstd::bitset<N, Block> const& c) noexcept { return c.m_bits.find_first(); }
+        [[nodiscard]] static constexpr std::size_t last (xstd::bitset<N, Block> const& c) noexcept { return c.m_bits.find_last (); }
+        [[nodiscard]] static constexpr std::size_t next (xstd::bitset<N, Block> const& c, std::size_t n) noexcept { return c.m_bits.find_next(n); }
+        [[nodiscard]] static constexpr std::size_t prev (xstd::bitset<N, Block> const& c, std::size_t n) noexcept { return c.m_bits.find_prev(n); }
+};
+
+// xstd::bitset has no <=> of its own either (by the same design choice), so
+// compare<Bits>'s default (trust Bits' own <=>) doesn't apply - opt in to
+// the safe, iteration-based ordering explicitly, same as std::bitset<N> and
+// boost::dynamic_bitset<> do in their own headers.
+template<std::size_t N, std::unsigned_integral Block>
+struct compare<xstd::bitset<N, Block>>
+{
+        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(xstd::bitset<N, Block> const& x, xstd::bitset<N, Block> const& y) noexcept
+        {
+                auto const xv = view(x);
+                auto const yv = view(y);
+                return std::lexicographical_compare_three_way(
+                        xv.begin(), xv.end(),
+                        yv.begin(), yv.end()
+                );
+        }
+};
+
+}       // namespace xstd::proxy::bidirectional
 
 namespace std {
 
