@@ -111,6 +111,17 @@ auto all_singleton_set_pairs(auto fun)
         }
 }
 
+template<class X, auto N = limit_v<X, L2>>
+auto all_doubleton_sets(auto fun)
+{
+        for (auto j : std::views::iota(1uz, std::ranges::max(N, 1uz))) {
+                for (auto i : std::views::iota(0uz, j)) {
+                        auto a = make_bitset<X>(N); a.set(i); a.set(j); assert(a.count() == 2);
+                        fun(a);
+                }
+        }
+}
+
 }       // namespace on2
 
 namespace on3 {
@@ -146,17 +157,6 @@ auto all_triplet_sets(auto fun)
 }       // namespace on3
 
 namespace on4 {
-
-template<class X, auto N = limit_v<X, L4>>
-auto all_doubleton_sets(auto fun)
-{
-        for (auto j : std::views::iota(1uz, std::ranges::max(N, 1uz))) {
-                for (auto i : std::views::iota(0uz, j)) {
-                        auto a = make_bitset<X>(N); a.set(i); a.set(j); assert(a.count() == 2);
-                        fun(a);
-                }
-        }
-}
 
 template<class X, auto N = limit_v<X, L4>>
 auto all_doubleton_set_pairs(auto fun)

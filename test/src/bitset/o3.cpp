@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
         });
 
         // every singleton vs. every doubleton, at matching N.
-        on4::all_doubleton_sets<T, limit_v<T, L3>>([](auto const& bs2) {
+        on2::all_doubleton_sets<T, limit_v<T, L3>>([](auto const& bs2) {
                 on1::all_singleton_sets<T, limit_v<T, L3>>([&](auto const& bs1) {
                         mem_compare_three_way()(bs1, bs2);
                 });
