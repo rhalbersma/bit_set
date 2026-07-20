@@ -298,16 +298,19 @@ view(Bits const&) -> view<Bits>;
 // every cardinality - so the default here is just to call it directly
 // rather than pay for iterating through view.
 //
-// This default is NOT safe for an arbitrary foreign Bits, only for types
-// this library controls (or otherwise trusts) the <=> of. A foreign type
-// (std::bitset<N>, boost::dynamic_bitset<>) may not have its own <=> at
-// all, or may add one later with different semantics (e.g. sequence-of-
-// bool, matching its own element/index order rather than std::set<int>'s) -
-// there is no way to know from here whether such a <=> would agree with the
-// ordering this library promises. Such types must opt in to the safe,
-// iteration-based fallback by specializing compare<Bits> themselves (see
-// ext/std/bitset.hpp, ext/boost/dynamic_bitset.hpp) rather than relying on
-// this default.
+// This mirrors find<>'s reason for existing, aimed at the opposite failure
+// mode: find<> exists because boost::dynamic_bitset<> silently started
+// shadowing this library's ADL begin()/end() the moment it grew its own
+// same-named members (a foreign type's own thing quietly taking over).
+// compare<> guards against a foreign type's own <=> quietly taking over
+// with the WRONG semantics later - std::bitset<N> has none today, and
+// boost::dynamic_bitset<> could add one upstream, but neither is under any
+// obligation to make it std::set<int>-equivalent (it could just as well be
+// sequence-of-bool, matching the type's own element/index order instead).
+// Trusting Bits' <=> by default is only safe for types this library
+// controls; std::bitset<N> and boost::dynamic_bitset<> instead opt in to
+// the safe, iteration-based fallback via explicit compare<Bits>
+// specializations (see ext/std/bitset.hpp, ext/boost/dynamic_bitset.hpp).
 template<bit_range Bits>
 struct compare
 {
