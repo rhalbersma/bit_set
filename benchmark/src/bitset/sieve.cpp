@@ -11,7 +11,7 @@
 #include <xstd/bit_set.hpp>             // bit_set
 #include <benchmark/benchmark.h>        // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN
 
-constexpr auto N = 1'000'000uz;
+constexpr auto N = 10'000uz;
 
 template<class T>
 static void bm_sift_primes0(benchmark::State& state) {

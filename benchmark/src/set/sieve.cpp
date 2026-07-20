@@ -12,7 +12,7 @@
 #include <flat_set>                     // flat_set
 #endif
 
-constexpr auto N = 1'000'000uz;
+constexpr auto N = 10'000uz;
 
 template<class X>
 static void bm_sift_primes0(benchmark::State& state) {

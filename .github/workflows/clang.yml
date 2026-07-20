@@ -125,6 +125,7 @@ jobs:
       - name: Configure
         run: >
           cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_C_COMPILER=clang-${{ matrix.version }}
           -DCMAKE_CXX_COMPILER=clang++-${{ matrix.version }}
           "-DCMAKE_CXX_FLAGS=${{ matrix.cxxflags }}"

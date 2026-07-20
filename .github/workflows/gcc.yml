@@ -113,6 +113,7 @@ jobs:
         if: "!matrix.trunk"
         run: >
           cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_C_COMPILER=gcc-${{ matrix.version }}
           -DCMAKE_CXX_COMPILER=g++-${{ matrix.version }}
           -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
@@ -121,6 +122,7 @@ jobs:
         if: matrix.trunk
         run: >
           cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_C_COMPILER=gcc-${{ matrix.version }}
           -DCMAKE_CXX_COMPILER=g++-${{ matrix.version }}
           -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake

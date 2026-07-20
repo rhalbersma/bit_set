@@ -21,15 +21,21 @@ on:
 
 jobs:
   build:
-    # No VS 2022 leg: benchmark/src/set/sieve.cpp uses std::flat_set, which
-    # VS 2022's MSVC STL doesn't implement yet. VS 2026's MSVC STL does, so
-    # that's the floor tested here.
+    # VS 2022 is included for reference only, to see exactly where it fails:
+    # benchmark/src/set/sieve.cpp uses std::flat_set, which VS 2022's MSVC
+    # STL doesn't implement yet. VS 2026's MSVC STL does, so that's the
+    # actual floor supported here.
     name: MSVC ${{ matrix.vs }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
+          - vs: 2022
+            os: windows-2022
+            generator: "Visual Studio 17 2022"
+            toolset: "host=x64"
+            preview_channel: false
           - vs: 2026
             os: windows-2025
             generator: "Visual Studio 18 2026"
