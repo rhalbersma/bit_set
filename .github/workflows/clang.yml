@@ -21,12 +21,39 @@ on:
 
 jobs:
   build:
-    name: Clang ${{ matrix.version }}
+    name: Clang ${{ matrix.label }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
-        version: [ 21, 22 ]
+        include:
+          - label: "21"
+            version: 21
+            stdlib: libstdc++
+            triplet: x64-linux
+            cxxflags: ""
+          - label: "22"
+            version: 22
+            stdlib: libstdc++
+            triplet: x64-linux
+            cxxflags: ""
+          # Tracks libc++ trunk deliberately: bit_set currently uses several
+          # C++23 range adaptors (views::cartesian_product, views::adjacent,
+          # views::pairwise_transform, views::stride) libc++ hasn't
+          # implemented yet, unlike libstdc++ - too many to work around with
+          # portable rewrites the way the AppleClang legs' fixes did for a
+          # couple of them. This leg is intentionally NOT a required status
+          # check (configured in the repo's branch protection settings, not
+          # expressible here) - it's expected to stay red until upstream
+          # catches up, and exists so this goes green (and starts actually
+          # blocking regressions) the moment it does, rather than that
+          # being missed. apt.llvm.org's "23" package tracks LLVM's
+          # in-development next major, so this moves as trunk moves.
+          - label: 23-SVN libc++
+            version: 23
+            stdlib: libc++
+            triplet: x64-linux-libcxx
+            cxxflags: "-stdlib=libc++"
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
@@ -37,6 +64,10 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh ${{ matrix.version }}
 
+      - name: Install libc++ ${{ matrix.version }}
+        if: matrix.stdlib == 'libc++'
+        run: sudo apt-get install -y libc++-${{ matrix.version }}-dev libc++abi-${{ matrix.version }}-dev
+
       # apt.llvm.org's Clang packages link against the system libstdc++
       # like every other apt-installed compiler on the runner (see the
       # "Install dependencies" comment below) - they don't bundle their
@@ -46,7 +77,9 @@ jobs:
       # g++-15 makes its libstdc++ headers available too - Clang auto-
       # detects and uses the highest-versioned GCC installation it finds,
       # so no extra --gcc-toolchain flag is needed once this is present.
+      # Not needed for the libc++ leg, which doesn't touch libstdc++ at all.
       - name: Install GCC 15 (for its libstdc++, not as the compiler)
+        if: matrix.stdlib == 'libstdc++'
         run: |
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt-get update
@@ -67,18 +100,26 @@ jobs:
       # boost-dynamic-bitset, fmt, benchmark and range-v3. apt.llvm.org's
       # Clang packages link against the system libstdc++ like every other
       # apt-installed compiler on the runner, so there's no ABI mismatch
-      # with vcpkg's prebuilt packages.
+      # with vcpkg's prebuilt packages. The libc++ leg instead selects the
+      # overlay triplet, which rebuilds these against libc++ (a libstdc++
+      # Boost.Test would not link).
       - name: Install dependencies
         env:
           VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-        run: vcpkg install --triplet x64-linux
+        run: >
+          vcpkg install
+          --triplet ${{ matrix.triplet }}
+          --overlay-triplets "$GITHUB_WORKSPACE/.github/vcpkg/triplets"
 
       - name: Configure
         run: >
           cmake -S . -B build
           -DCMAKE_C_COMPILER=clang-${{ matrix.version }}
           -DCMAKE_CXX_COMPILER=clang++-${{ matrix.version }}
+          "-DCMAKE_CXX_FLAGS=${{ matrix.cxxflags }}"
           -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }}
+          -DVCPKG_OVERLAY_TRIPLETS=$GITHUB_WORKSPACE/.github/vcpkg/triplets
 
       - name: Build
         run: cmake --build build -v
