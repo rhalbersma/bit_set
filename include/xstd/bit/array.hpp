@@ -224,7 +224,7 @@ struct array
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        m_bits[0] <<= n;
+                        m_bits[0] = static_cast<Block>(m_bits[0] << n);
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div_mod(n, bits_per_block);
                         if (L_shift == 0) {
@@ -248,7 +248,7 @@ struct array
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        m_bits[0] >>= n;
+                        m_bits[0] = static_cast<Block>(m_bits[0] >> n);
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div_mod(n, bits_per_block);
                         if (R_shift == 0) {
