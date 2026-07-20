@@ -6,7 +6,6 @@
 #include <opt/bitset/sieve.hpp>         // filter_twins, sift_primes
 #include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <ext/std/bitset.hpp>           // bitset
-#include <ext/std/ranges.hpp>           // as_set
 #include <ext/xstd/bitset.hpp>          // bitset
 #include <xstd/bitset.hpp>              // bitset
 #include <xstd/bit_set.hpp>             // bit_set

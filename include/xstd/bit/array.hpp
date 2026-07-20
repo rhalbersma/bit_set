@@ -10,11 +10,9 @@
 #include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
 #include <xstd/utility.hpp>                     // aligned_size
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
-#include <algorithm>                            // lexicographical_compare_three_way (ranges::lexicographical_compare when P2022R3 is accepted) 
-                                                // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <algorithm>                            // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                // array
 #include <cassert>                              // assert
-#include <compare>                              // strong_ordering
 #include <concepts>                             // unsigned_integral
 #include <cstddef>                              // ptrdiff_t, size_t
 #include <functional>                           // plus
@@ -44,26 +42,19 @@ struct array
                 }
         }
               
-        [[nodiscard]] friend constexpr auto operator<=>(array const& x [[maybe_unused]], array const& y [[maybe_unused]]) noexcept
-                -> std::strong_ordering
-        {
-                if constexpr (N == 0) {
-                        return std::strong_ordering::equal;
-                } else {
-                        return std::lexicographical_compare_three_way(
-                                x.m_bits.begin(), x.m_bits.end(), 
-                                y.m_bits.begin(), y.m_bits.end(),
-                                [](auto lhs, auto rhs) {
-                                        if (auto const ssd = static_cast<Block>(lhs ^ rhs); ssd == zero) {
-                                                return std::strong_ordering::equal;
-                                        } else {
-                                                auto const lsb = static_cast<Block>(unit << bit::countr_zero(ssd)); 
-                                                return bit::intersects(lhs, lsb) ? std::strong_ordering::less : std::strong_ordering::greater;
-                                        }
-                                }
-                        );
-                }
-        }        
+        // No operator<=> here: array is a pure storage vehicle for a fixed
+        // number of bits, with no opinion on how those bits should be
+        // interpreted as a sequence to order - as a set of the indices that
+        // are set (bit_set/bitset's contract, matching std::set<int>'s
+        // ordering), or as a fixed-length sequence of bools (bit_array's
+        // contract, matching e.g. std::array<bool, N>'s ordering). Those are
+        // different relations in general (proven this doesn't just come down
+        // to bit/word direction - see the xstd::proxy::bidirectional::
+        // compare<Bits> comments), so array can't offer one without silently
+        // picking a side; == is unaffected because equality of the
+        // underlying bits is the same relation under either interpretation.
+        // bit_set, bitset, and bit_array each provide their own <=> in terms
+        // of their own iteration instead.
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, array const* v) noexcept

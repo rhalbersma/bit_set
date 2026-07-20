@@ -7,6 +7,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/proxy/bidirectional.hpp> // find, view
+#include <xstd/proxy/random_access.hpp> // find, view
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <bitset>                       // bitset
 #include <cassert>                      // assert
@@ -64,29 +65,81 @@ struct find<std::bitset<N>>
         }
 };
 
+// std::bitset<N> has no <=> of its own, so xstd::proxy::bidirectional::
+// compare<Bits>'s default (trust Bits' own <=>) doesn't apply - it must opt
+// in to the safe, iteration-based ordering explicitly. This is what
+// view<std::bitset<N>>::operator<=> uses; there is no infix x <=> y for
+// std::bitset<N> itself (see the comment below on why that isn't added).
+template<std::size_t N>
+struct compare<std::bitset<N>>
+{
+        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(std::bitset<N> const& x, std::bitset<N> const& y) noexcept
+        {
+                auto const xv = view(x);
+                auto const yv = view(y);
+                return std::lexicographical_compare_three_way(
+                        xv.begin(), xv.end(),
+                        yv.begin(), yv.end()
+                );
+        }
+};
+
 }       // namespace xstd::proxy::bidirectional
 
-// TODO: everything below is still declared in namespace std, which has the
-// exact same [namespace.std] problem the find<std::bitset<N>> specialization
-// above solves - natural infix syntax (x <=> y, x - y) is only found via ADL
-// or membership in std::bitset<N>'s own namespace (std), and there is no
-// legal way to provide it from outside namespace std. Left as-is (updated
-// only to stop depending on the removed std::begin/std::end overloads)
-// pending a decision on whether to keep this as documented, deliberate UB,
-// drop it, or convert call sites to explicit non-operator syntax.
-namespace std {
+// Same [namespace.std] situation as bidirectional::find above, for the
+// array-of-bool interpretation instead of the set-of-indices one:
+// std::bitset<N> already has operator[] for every index (unlike find_first/
+// find_next, which need real bit-scanning), so this specialization is
+// trivial - the whole point is just making it reachable without adding
+// declarations to namespace std.
+namespace xstd::proxy::random_access {
 
 template<std::size_t N>
-[[nodiscard]] auto operator<=>(const bitset<N>& x, const bitset<N>& y) noexcept
-        -> std::strong_ordering
+struct find<std::bitset<N>>
 {
-        auto const xv = xstd::proxy::bidirectional::view(x);
-        auto const yv = xstd::proxy::bidirectional::view(y);
-        return std::lexicographical_compare_three_way(
-                xv.begin(), xv.end(),
-                yv.begin(), yv.end()
-        );
-}
+        [[nodiscard]] static constexpr std::size_t first(const std::bitset<N>&) noexcept { return 0uz; }
+        [[nodiscard]] static constexpr std::size_t last (const std::bitset<N>&) noexcept { return N;   }
+        [[nodiscard]] static constexpr bool         at  (const std::bitset<N>& c, std::size_t n) noexcept { return c[n]; }
+};
+
+// std::bitset<N> has no <=> at all (real std::bitset has only ==), so
+// compare<Bits>'s default (trust Bits' own <=>) can't apply here either -
+// same opt-in as bidirectional::compare<std::bitset<N>> above, just
+// producing the fixed-length sequence-of-bool order (index 0 first)
+// instead of the set-of-indices one.
+template<std::size_t N>
+struct compare<std::bitset<N>>
+{
+        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(std::bitset<N> const& x, std::bitset<N> const& y) noexcept
+        {
+                auto const xv = view(x);
+                auto const yv = view(y);
+                return std::lexicographical_compare_three_way(
+                        xv.begin(), xv.end(),
+                        yv.begin(), yv.end()
+                );
+        }
+};
+
+}       // namespace xstd::proxy::random_access
+
+// is_subset_of, is_proper_subset_of, intersects, and now <=> used to live
+// here too, with the same [namespace.std] problem find<std::bitset<N>>
+// above solves. None of them need to any more: xstd::proxy::bidirectional::
+// view provides all four directly (preferring a Bits type's own member/<=>
+// when it has one, falling back to computing them from iteration otherwise
+// - see compare<std::bitset<N>> above for <=> specifically), so
+// `view(x).is_subset_of(view(y))`, `view(x) <=> view(y)`, etc. work for
+// std::bitset<N> without adding anything to namespace std at all. There is
+// deliberately no infix x <=> y for std::bitset<N> itself: unlike ==,
+// ordering isn't unambiguous enough to be worth resurrecting a [namespace.
+// std] exception for - use view(x) <=> view(y).
+//
+// operator-=, and operator- remain here: natural infix syntax for them is
+// only reachable via ADL or membership in std::bitset<N>'s own namespace
+// (std), and there is no legal way to provide that from outside namespace
+// std.
+namespace std {
 
 template<std::size_t N>
 bitset<N>& operator-=(bitset<N>& lhs, const bitset<N>& rhs) noexcept
@@ -98,36 +151,6 @@ template<std::size_t N>
 bitset<N> operator-(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
-}
-
-template<std::size_t N>
-bool is_subset_of(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
-{
-        if constexpr (N == 0) {
-                return true;
-        } else {
-                return (lhs & ~rhs).none();
-        }
-}
-
-template<std::size_t N>
-bool is_proper_subset_of(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
-{
-        if constexpr (N == 0) {
-                return false;
-        } else {
-                return is_subset_of(lhs, rhs) and lhs != rhs;
-        }
-}
-
-template<std::size_t N>
-bool intersects(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
-{
-        if constexpr (N == 0) {
-                return false;
-        } else {
-                return (lhs & rhs).any();
-        }
 }
 
 }       // namespace std

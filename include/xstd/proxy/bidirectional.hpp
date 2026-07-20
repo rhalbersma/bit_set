@@ -6,11 +6,13 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <algorithm>    // includes, lexicographical_compare_three_way
 #include <cassert>      // assert
+#include <compare>      // strong_ordering
 #include <concepts>     // constructible_from, convertible_to
 #include <cstddef>      // ptrdiff_t, size_t
-#include <iterator>     // bidirectional_iterator_tag
-#include <ranges>       // view_base
+#include <iterator>     // bidirectional_iterator_tag, make_reverse_iterator
+#include <ranges>       // equal, view_base
 #include <type_traits>  // is_class_v, is_convertible_v, is_nothrow_constructible_v
 
 namespace xstd::proxy::bidirectional {
@@ -86,6 +88,7 @@ concept bit_range =
 
 template<bit_range> class iterator;
 template<bit_range> class reference;
+template<bit_range> struct compare;
 
 template<bit_range Bits>
 class iterator
@@ -189,20 +192,142 @@ template<bit_range Bits>
 // std::ranges algorithms alike, since a range's own members are always
 // preferred over ADL. Wrapping in view<Bits> sidesteps that: the adaptor
 // itself has no competing members, so its begin()/end() are what get used.
+//
+// key_type mirrors bit_set/bitset's own nested key_type: fmt's range
+// formatter (fmt/ranges.h) detects "format like a set" purely by checking
+// for a nested key_type, so a view<Bits> already formats with {} delimiters
+// on its own.
 template<bit_range Bits>
 class view : public std::ranges::view_base
 {
+        // A pointer, not Bits const&: std::ranges::view requires std::movable,
+        // which requires assignable_from<T&, T> - a reference data member
+        // makes copy/move assignment implicitly deleted (references can't be
+        // rebound), which would make view fail std::movable and so the view
+        // concept entirely, breaking composability with std::views::
+        // take_while and other range adaptors. A pointer member keeps the
+        // defaulted copy/move assignment operator working, while the
+        // constructor below still takes Bits const& so construction reads
+        // like any other reference-taking adaptor.
         Bits const* m_ptr;
 
 public:
+        using key_type = std::size_t;
+
         [[nodiscard]] constexpr explicit view(Bits const& c) noexcept : m_ptr(&c) {}
 
+        // begin()/cbegin() (and end()/cend()) coincide: this proxy iteration
+        // is inherently read-only (reference<Bits> only converts to
+        // std::size_t, there is no assignment-through-iterator here), same
+        // as bit_set/bitset's own cbegin()/cend() are plain aliases for
+        // begin()/end() rather than a distinct const-iteration path.
         [[nodiscard]] constexpr auto begin() const noexcept { return bidirectional::begin(*m_ptr); }
         [[nodiscard]] constexpr auto end()   const noexcept { return bidirectional::end  (*m_ptr); }
+        [[nodiscard]] constexpr auto rbegin() const noexcept { return std::make_reverse_iterator(end());   }
+        [[nodiscard]] constexpr auto rend()   const noexcept { return std::make_reverse_iterator(begin()); }
+
+        [[nodiscard]] constexpr auto cbegin()  const noexcept { return begin();  }
+        [[nodiscard]] constexpr auto cend()    const noexcept { return end();    }
+        [[nodiscard]] constexpr auto crbegin() const noexcept { return rbegin(); }
+        [[nodiscard]] constexpr auto crend()   const noexcept { return rend();   }
+
+        // Prefer Bits' own == when it has one (cheaper than iterating through
+        // the proxy iterators below), else compare elementwise. Equality of
+        // two sets is unambiguous regardless of any bitset's internal
+        // bit-layout convention, so this is purely an optimization.
+        [[nodiscard]] friend constexpr bool operator==(view lhs, view rhs) noexcept
+        {
+                if constexpr (requires { *lhs.m_ptr == *rhs.m_ptr; }) {
+                        return *lhs.m_ptr == *rhs.m_ptr;
+                } else {
+                        return std::ranges::equal(lhs, rhs);
+                }
+        }
+
+        // Ordering is not as unambiguous as == - see compare<Bits> below for
+        // why the default trusts Bits' own <=> and why some Bits need to
+        // opt out of that default via a compare<Bits> specialization. This
+        // never duplicates that decision here: it always goes through
+        // compare<Bits>, so specializing the trait is enough to change how
+        // any view<Bits> orders too.
+        [[nodiscard]] friend constexpr std::strong_ordering operator<=>(view lhs, view rhs) noexcept
+        {
+                return compare<Bits>::lexicographical_three_way(*lhs.m_ptr, *rhs.m_ptr);
+        }
+
+        // Same prefer-native-else-compute-from-iteration pattern as ==
+        // above. The fallbacks rely on both views iterating their elements
+        // in ascending order (guaranteed by the bit_range contract), so
+        // std::ranges::includes and a linear merge scan apply directly.
+        [[nodiscard]] constexpr bool is_subset_of(view other) const noexcept
+        {
+                if constexpr (requires { m_ptr->is_subset_of(*other.m_ptr); }) {
+                        return m_ptr->is_subset_of(*other.m_ptr);
+                } else {
+                        return std::ranges::includes(other, *this);
+                }
+        }
+
+        [[nodiscard]] constexpr bool is_proper_subset_of(view other) const noexcept
+        {
+                if constexpr (requires { m_ptr->is_proper_subset_of(*other.m_ptr); }) {
+                        return m_ptr->is_proper_subset_of(*other.m_ptr);
+                } else {
+                        return is_subset_of(other) and *this != other;
+                }
+        }
+
+        [[nodiscard]] constexpr bool intersects(view other) const noexcept
+        {
+                if constexpr (requires { m_ptr->intersects(*other.m_ptr); }) {
+                        return m_ptr->intersects(*other.m_ptr);
+                } else {
+                        auto first1 = begin(), last1 = end();
+                        auto first2 = other.begin(), last2 = other.end();
+                        while (first1 != last1 and first2 != last2) {
+                                if (*first1 < *first2) {
+                                        ++first1;
+                                } else if (*first2 < *first1) {
+                                        ++first2;
+                                } else {
+                                        return true;
+                                }
+                        }
+                        return false;
+                }
+        }
 };
 
 template<bit_range Bits>
 view(Bits const&) -> view<Bits>;
+
+// compare<Bits>::lexicographical_three_way defaults to trusting Bits' own
+// <=>: xstd's own bit_set/bitset (bit::array's operator<=>) is meant to
+// already compute std::set<int>-equivalent ordering, word-parallel, for
+// every cardinality - so the default here is just to call it directly
+// rather than pay for iterating through view.
+//
+// This mirrors find<>'s reason for existing, aimed at the opposite failure
+// mode: find<> exists because boost::dynamic_bitset<> silently started
+// shadowing this library's ADL begin()/end() the moment it grew its own
+// same-named members (a foreign type's own thing quietly taking over).
+// compare<> guards against a foreign type's own <=> quietly taking over
+// with the WRONG semantics later - std::bitset<N> has none today, and
+// boost::dynamic_bitset<> could add one upstream, but neither is under any
+// obligation to make it std::set<int>-equivalent (it could just as well be
+// sequence-of-bool, matching the type's own element/index order instead).
+// Trusting Bits' <=> by default is only safe for types this library
+// controls; std::bitset<N> and boost::dynamic_bitset<> instead opt in to
+// the safe, iteration-based fallback via explicit compare<Bits>
+// specializations (see ext/std/bitset.hpp, ext/boost/dynamic_bitset.hpp).
+template<bit_range Bits>
+struct compare
+{
+        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(Bits const& x, Bits const& y) noexcept
+        {
+                return x <=> y;
+        }
+};
 
 }       // namespace xstd::proxy::bidirectional
 

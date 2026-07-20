@@ -56,7 +56,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(TotallyOrdered, T, Types)
 {
-        static_assert(std::totally_ordered<T>);
+        if constexpr (std::totally_ordered<T>) {
+                static_assert(std::totally_ordered<T>);
+        } else {
+                // std::bitset<N> and boost::dynamic_bitset<> have no infix
+                // ordering of their own (see ext/std/bitset.hpp, ext/boost/
+                // dynamic_bitset.hpp - only xstd::proxy::bidirectional::view
+                // provides it for them, via compare<T>).
+                static_assert(std::totally_ordered<xstd::proxy::bidirectional::view<T>>);
+        }
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsNoThrow, T, Types)

@@ -322,12 +322,22 @@ struct mem_compare_three_way
         }
 
         template<class X>
+        [[nodiscard]] static auto fn_compare_three_way(const X& lhs, const X& rhs) noexcept
+        {
+                if constexpr (requires { lhs <=> rhs; }) {
+                        return lhs <=> rhs;
+                } else {
+                        return proxy::bidirectional::view(lhs) <=> proxy::bidirectional::view(rhs);
+                }
+        }
+
+        template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
         {
                 auto const self_str = fn_to_string(self);
                 auto const  rhs_str = fn_to_string(rhs);
                 BOOST_CHECK(
-                        (self <=> rhs) ==
+                        fn_compare_three_way(self, rhs) ==
                         std::lexicographical_compare_three_way(
                                 std::ranges::rbegin(rhs_str),  std::ranges::rend(rhs_str),
                                 std::ranges::rbegin(self_str), std::ranges::rend(self_str)
@@ -336,7 +346,7 @@ struct mem_compare_three_way
                 auto const lhs_view = proxy::bidirectional::view(self);
                 auto const rhs_view = proxy::bidirectional::view(rhs);
                 BOOST_CHECK(
-                        (self <=> rhs) ==
+                        fn_compare_three_way(self, rhs) ==
                         std::lexicographical_compare_three_way(
                                 lhs_view.begin(), lhs_view.end(),
                                 rhs_view.begin(), rhs_view.end()
@@ -389,7 +399,7 @@ struct mem_is_subset_of
                 if constexpr (requires { lhs.is_subset_of(rhs); }) {
                         return lhs.is_subset_of(rhs);
                 } else {
-                        return is_subset_of(lhs, rhs);
+                        return proxy::bidirectional::view(lhs).is_subset_of(proxy::bidirectional::view(rhs));
                 }
         }
 
@@ -408,7 +418,7 @@ struct mem_is_proper_subset_of
                 if constexpr (requires { lhs.is_proper_subset_of(rhs); }) {
                         return lhs.is_proper_subset_of(rhs);
                 } else {
-                        return is_proper_subset_of(lhs, rhs);
+                        return proxy::bidirectional::view(lhs).is_proper_subset_of(proxy::bidirectional::view(rhs));
                 }
         }
 
@@ -427,7 +437,7 @@ struct mem_intersects
                 if constexpr (requires { lhs.intersects(rhs); }) {
                         return lhs.intersects(rhs);
                 } else {
-                        return intersects(lhs, rhs);
+                        return proxy::bidirectional::view(lhs).intersects(proxy::bidirectional::view(rhs));
                 }
         }
 
