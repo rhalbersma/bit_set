@@ -13,12 +13,14 @@
 
 constexpr auto N = 1'000'000uz;
 
+#if defined(__cpp_lib_ranges_stride)
 template<class T>
 static void bm_sift_primes0(benchmark::State& state) {
         for (auto _ : state) {
                 benchmark::DoNotOptimize(xstd::sift_primes0<T>(N));
         }
 }
+#endif
 
 template<class T>
 static void bm_sift_primes1(benchmark::State& state) {
@@ -35,10 +37,12 @@ static void bm_filter_twins(benchmark::State& state) {
         }
 }
 
+#if defined(__cpp_lib_ranges_stride)
 BENCHMARK_TEMPLATE1(bm_sift_primes0, boost::dynamic_bitset<>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0,   std::bitset<N>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0,  xstd::bitset<N>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0,  xstd::bit_set<N>);
+#endif
 
 BENCHMARK_TEMPLATE1(bm_sift_primes1, boost::dynamic_bitset<>);
 BENCHMARK_TEMPLATE1(bm_sift_primes1,   std::bitset<N>);

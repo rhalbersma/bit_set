@@ -10,7 +10,7 @@
 #include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
 #include <xstd/utility.hpp>                     // aligned_size
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
-#include <algorithm>                            // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <algorithm>                            // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                // array
 #include <cassert>                              // assert
 #include <concepts>                             // unsigned_integral
@@ -18,7 +18,7 @@
 #include <functional>                           // plus
 #include <limits>                               // digits
 #include <ranges>                               // distance, prev (views::drop_last when P22014R2 is accepted)
-                                                // drop, iota, pairwise_transform, reverse, take, transform, zip
+                                                // drop, iota, reverse, take, transform, zip
 #include <type_traits>                          // is_nothrow_swappable_v
 #include <utility>                              // pair
 
@@ -230,13 +230,19 @@ struct array
                         if (L_shift == 0) {
                                 std::shift_right(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
+                                // Not std::views::pairwise_transform (still
+                                // unavailable in libc++ as of Xcode 26.5) -
+                                // same reasoning as the std::shift_right/
+                                // shift_left fallback just above: a plain
+                                // index loop instead of a not-yet-portable
+                                // range adaptor. High-to-low so each m_bits[k]
+                                // write only ever reads indices <= k that
+                                // this same loop hasn't overwritten yet.
                                 auto const R_shift = bits_per_block - L_shift;
-                                std::ranges::copy(
-                                        m_bits | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform([=](auto first, auto second) -> Block {
-                                                return static_cast<Block>(first << L_shift) | static_cast<Block>(second >> R_shift);
-                                        }),
-                                        m_bits.rbegin()
-                                );
+                                for (auto k = num_blocks - 1; k > n_blocks; --k) {
+                                        auto const j = k - n_blocks;
+                                        m_bits[k] = static_cast<Block>(m_bits[j] << L_shift) | static_cast<Block>(m_bits[j - 1] >> R_shift);
+                                }
                                 m_bits[n_blocks] = static_cast<Block>(m_bits[0] << L_shift);
                         }
                         std::ranges::fill_n(std::ranges::prev(m_bits.rend(), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);
@@ -254,13 +260,16 @@ struct array
                         if (R_shift == 0) {
                                 std::shift_left(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
+                                // See operator<<= above for why this is a
+                                // plain index loop instead of std::views::
+                                // pairwise_transform. Low-to-high so each
+                                // m_bits[idx] write only ever reads indices
+                                // >= idx that this same loop hasn't
+                                // overwritten yet.
                                 auto const L_shift = bits_per_block - R_shift;
-                                std::ranges::copy(
-                                        m_bits | std::views::drop(n_blocks) | std::views::pairwise_transform([=](auto first, auto second) -> Block {
-                                                return static_cast<Block>(first >> R_shift) | static_cast<Block>(second << L_shift);
-                                        }),
-                                        m_bits.begin()
-                                );
+                                for (auto idx = 0uz; idx < num_blocks - n_blocks - 1; ++idx) {
+                                        m_bits[idx] = static_cast<Block>(m_bits[n_blocks + idx] >> R_shift) | static_cast<Block>(m_bits[n_blocks + idx + 1] << L_shift);
+                                }
                                 m_bits[last_block - n_blocks] = static_cast<Block>(m_bits[last_block] >> R_shift);
                         }
                         std::ranges::fill_n(std::ranges::prev(m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);

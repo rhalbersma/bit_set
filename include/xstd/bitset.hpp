@@ -37,6 +37,7 @@ template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
 #include <format>                       // format
+#include <functional>                   // hash
 #include <ios>                          // ios_base
 #include <locale>                       // ctype, use_facet
 #include <memory>                       // allocator
@@ -312,9 +313,18 @@ struct compare<xstd::bitset<N, Block>>
 namespace std {
 
 // bitset hash support                                             [bitset.hash]
-template<class T> 
-struct hash;
-
+//
+// No "template<class T> struct hash;" forward declaration here: std::hash's
+// primary template is already declared by <functional> (below), and
+// redeclaring it ourselves is the same [namespace.std] problem this
+// codebase has spent a lot of effort avoiding elsewhere (find_first et al.
+// in ext/std/bitset.hpp) - it just happened to go unnoticed here, since
+// libstdc++'s declaration of the primary template is compatible enough with
+// a redeclaration to not conflict, while libc++'s isn't (confirmed: this
+// redeclaration makes "hash" ambiguous under AppleClang's libc++). A full/
+// partial specialization of std::hash for a user type is explicitly
+// sanctioned by the standard either way - only the primary template's own
+// declaration is off-limits to add ourselves.
 template<size_t N, unsigned_integral Block>
 struct hash<xstd::bitset<N, Block>>
 {

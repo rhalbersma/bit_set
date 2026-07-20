@@ -11,6 +11,14 @@ find_package(
 find_package(fmt REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 
+# clang-cl reports CXX_COMPILER_ID Clang but only understands its MSVC-style
+# driver flags, not GNU-style ones like -pedantic-errors.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    set(bit_set_is_clang_cl ON)
+else()
+    set(bit_set_is_clang_cl OFF)
+endif()
+
 set(cxx_compile_definitions
     BOOST_ALL_NO_LIB
     BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
@@ -29,6 +37,8 @@ set(cxx_compile_options_warnings
     >
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -Werror
+    >
+    $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>,$<NOT:$<BOOL:${bit_set_is_clang_cl}>>>:
         -pedantic-errors
     >
     $<$<CXX_COMPILER_ID:Clang>:

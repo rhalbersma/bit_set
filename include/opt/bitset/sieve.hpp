@@ -81,6 +81,14 @@ struct generate_candidates
         }
 };
 
+// views::stride (P2442R1) isn't in libc++ yet (confirmed missing as of
+// Xcode 26.5, still WIP upstream) - guarded on its feature-test macro
+// rather than given a portable fallback, since sift_primes0 exists
+// specifically to benchmark the adaptor-based style against sift_primes1's
+// hand-rolled equivalent below; a fallback loop here would just be
+// sift_primes1 again; wouldn't benchmark anything the other doesn't
+// already cover.
+#if defined(__cpp_lib_ranges_stride)
 template<class X>
 auto sift_primes0(std::size_t n)
 {
@@ -98,6 +106,7 @@ auto sift_primes0(std::size_t n)
         }
         return primes;
 }
+#endif
 
 template<class X>
 auto sift_primes1(std::size_t n)
