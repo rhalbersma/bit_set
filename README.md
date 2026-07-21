@@ -10,6 +10,7 @@
 [![Clang-CL](https://github.com/rhalbersma/bit_set/actions/workflows/clang-cl.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/clang-cl.yml)
 [![MSVC](https://github.com/rhalbersma/bit_set/actions/workflows/msvc.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/msvc.yml)
 [![Coverage](https://codecov.io/gh/rhalbersma/bit_set/branch/main/graph/badge.svg)](https://codecov.io/gh/rhalbersma/bit_set)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/rhalbersma/bit_set/badge)](https://securityscorecards.dev/viewer/?uri=github.com/rhalbersma/bit_set)
 
 `xstd::bit_set<N>` is a modern and opinionated reimagining of `std::bitset<N>`, keeping what time has proven to be effective, and throwing out what is not. `xstd::bit_set` is a **fixed-size ordered set of integers** that is compact and fast. It does less work than `std::bitset` (e.g. no bounds-checking and no throwing of `out_of_range` exceptions) yet offers more (e.g. fulll `constexpr`-ness and bidirectional iterators over individual 1-bits). This enables **fixed-size bit-twiddling with set-like syntax** (identical to `std::set<int>`), typically leading to cleaner, more expressive code that seamlessly interacts with the rest of the Standard Library.
 

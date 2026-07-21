@@ -1,0 +1,186 @@
+#          Copyright Rein Halbersma 2014-2025.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: Consumption
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: GCC 15 consume
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Install GCC 15
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y g++-15
+
+      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
+      # to the GitHub Actions cache service, so built packages are reused
+      # across runs instead of recompiled from scratch every time.
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      # Unlike xstd/tabula, bit_set has a real dependency: boost_hash2 is a
+      # find_package(... REQUIRED) of the library itself (not just its
+      # tests), so even a -DBUILD_TESTING=OFF configure needs it findable.
+      - name: Install dependencies
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+        run: vcpkg install --triplet x64-linux
+
+      # bit_set's own find_package(xstd ... QUIET) falls back to
+      # FetchContent when xstd isn't already installed - fine for
+      # add_subdirectory/FetchContent consumers below, since nothing is
+      # installed on those paths. But install(EXPORT) requires every
+      # dependency of an exported target to itself come from find_package
+      # (a FetchContent build-tree target can't be exported), so the
+      # "Consume installed package" test below needs a real, installed
+      # xstd for bit_set's own --install step to produce a valid package.
+      - name: Install xstd
+        run: |
+          git clone --depth 1 https://github.com/rhalbersma/xstd.git xstd-src
+          cmake -S xstd-src -B xstd-build \
+            -DCMAKE_C_COMPILER=gcc-15 \
+            -DCMAKE_CXX_COMPILER=g++-15 \
+            -DBUILD_TESTING=OFF
+          cmake --install xstd-build --prefix "$GITHUB_WORKSPACE/xstd-prefix"
+
+      # bit_set's own build+test on GCC 15 is already covered by gcc.yml's
+      # "15" leg; this workflow only exists to verify the three consumption
+      # models documented in the README (find_package, add_subdirectory,
+      # FetchContent), so -DBUILD_TESTING=OFF skips bit_set's own tests
+      # here and avoids needing Boost.Test/fmt/range-v3/Google Benchmark at
+      # all. bit_set is a pure INTERFACE library, so there is nothing to
+      # actually build - only configure and install.
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCMAKE_C_COMPILER=gcc-15
+          -DCMAKE_CXX_COMPILER=g++-15
+          -DBUILD_TESTING=OFF
+          -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/xstd-prefix"
+          -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+
+      - name: Install
+        run: cmake --install build --prefix "$GITHUB_WORKSPACE/bit_set-prefix"
+
+      - name: Consume installed package
+        run: |
+          mkdir consumer
+          cd consumer
+          cat > CMakeLists.txt << 'CMAKE'
+          cmake_minimum_required(VERSION 3.28)
+          project(consumer LANGUAGES CXX)
+          find_package(bit_set 0.1.0 CONFIG REQUIRED)
+          add_executable(main main.cpp)
+          target_link_libraries(main PRIVATE bit_set::bit_set)
+          CMAKE
+          cat > main.cpp << 'CPP'
+          #include <xstd/bit_set.hpp>
+
+          int main()
+          {
+                  constexpr auto N = 100;
+                  auto s = xstd::bit_set<N>();
+                  s.insert(1);
+                  s.insert(2);
+                  s.insert(3);
+                  return s.size() == 3 ? 0 : 1;
+          }
+          CPP
+          cmake -S . -B build \
+            -DCMAKE_CXX_COMPILER=g++-15 \
+            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/bit_set-prefix;$GITHUB_WORKSPACE/xstd-prefix" \
+            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+          cmake --build build -v
+          ./build/main
+
+
+      - name: Consume with add_subdirectory
+        run: |
+          mkdir consumer-add-subdirectory
+          cd consumer-add-subdirectory
+          cat > CMakeLists.txt << 'CMAKE'
+          cmake_minimum_required(VERSION 3.28)
+          project(consumer_add_subdirectory LANGUAGES CXX)
+          # no BUILD_TESTING workaround: bit_set only builds its tests (and
+          # requires Boost.Test/fmt/range-v3/Google Benchmark) when it is
+          # the top-level project, which this consumer configure would fail
+          # on if that gating regressed
+          add_subdirectory("$ENV{GITHUB_WORKSPACE}" bit_set-build)
+          add_executable(main main.cpp)
+          target_link_libraries(main PRIVATE bit_set::bit_set)
+          CMAKE
+          cat > main.cpp << 'CPP'
+          #include <xstd/bit_set.hpp>
+
+          int main()
+          {
+                  constexpr auto N = 100;
+                  auto s = xstd::bit_set<N>();
+                  s.insert(1);
+                  s.insert(2);
+                  s.insert(3);
+                  return s.size() == 3 ? 0 : 1;
+          }
+          CPP
+          cmake -S . -B build \
+            -DCMAKE_CXX_COMPILER=g++-15 \
+            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+          cmake --build build -v
+          ./build/main
+
+      - name: Consume with FetchContent
+        run: |
+          mkdir consumer-fetch-content
+          cd consumer-fetch-content
+          cat > CMakeLists.txt << 'CMAKE'
+          cmake_minimum_required(VERSION 3.28)
+          project(consumer_fetch_content LANGUAGES CXX)
+          include(FetchContent)
+          FetchContent_Declare(bit_set SOURCE_DIR "$ENV{GITHUB_WORKSPACE}")
+          FetchContent_MakeAvailable(bit_set)
+          add_executable(main main.cpp)
+          target_link_libraries(main PRIVATE bit_set::bit_set)
+          CMAKE
+          cat > main.cpp << 'CPP'
+          #include <xstd/bit_set.hpp>
+
+          int main()
+          {
+                  constexpr auto N = 100;
+                  auto s = xstd::bit_set<N>();
+                  s.insert(1);
+                  s.insert(2);
+                  s.insert(3);
+                  return s.size() == 3 ? 0 : 1;
+          }
+          CPP
+          cmake -S . -B build \
+            -DCMAKE_CXX_COMPILER=g++-15 \
+            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+          cmake --build build -v
+          ./build/main
