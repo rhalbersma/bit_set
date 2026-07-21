@@ -1,0 +1,154 @@
+#          Copyright Rein Halbersma 2014-2025.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: Coverage
+
+permissions:
+  contents: read
+  id-token: write   # tokenless Codecov upload via GitHub OIDC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  coverage:
+    name: GCC 15 gcovr
+    runs-on: ubuntu-24.04
+    # bit_set's existing tests don't yet target the 100% gate below
+    # (inherited as-is from xstd/tabula). Allow-failure until test coverage
+    # is deliberately built up to match; the gcovr summary and Codecov
+    # upload below still run and report real numbers either way.
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: Install GCC 15 and gcovr
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+          sudo apt-get install -y g++-15 python3-pip
+          python3 -m pip install --user gcovr
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
+      # to the GitHub Actions cache service, so built packages are reused
+      # across runs instead of recompiled from scratch every time.
+      - name: Export GitHub Actions cache environment variables
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      # vcpkg.json's "test" feature (on by default) pulls in everything the
+      # unit tests and benchmarks need.
+      - name: Install dependencies
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+        run: vcpkg install --triplet x64-linux
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_C_COMPILER=gcc-15
+          -DCMAKE_CXX_COMPILER=g++-15
+          -DCMAKE_CXX_FLAGS="--coverage -O0 -g"
+          -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+          -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+
+      - name: Build
+        run: cmake --build build -v
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      # The library is small enough that full line coverage of include/ is a
+      # realistic bar; --fail-under-line turns any regression into a red job.
+      # assert(...) lines are excluded: they're contract checks that only
+      # fire on inputs the library documents as UB (e.g. out-of-range
+      # insert/erase/shift), so their failure path is intentionally
+      # unreachable in a correct, fully-tested program - chasing 100%
+      # including those would mean exercising undefined behavior on purpose.
+      # "= default;" lines are excluded too: gcov doesn't attribute a hit
+      # counter to compiler-synthesized special member function bodies, so
+      # a defaulted comparison reads as uncovered no matter how often it's
+      # actually exercised.
+      # --exclude-throw-branches drops the branch gcc/gcov synthesizes at
+      # every call that could propagate an exception (std::format,
+      # std::ostringstream, any STL container - virtually all of this
+      # library's formatter/operator<< code): one side of that edge only
+      # fires on e.g. bad_alloc, so it isn't a code path a test can
+      # meaningfully hit. Without it, that noise made up roughly half of all
+      # reported branches; --exclude-unreachable-branches is its usual
+      # companion, stripping branches gcov attaches to lines with no real
+      # branching source (e.g. a closing brace).
+      # --exclude-lines-by-pattern only drops a matching line from the line
+      # metric; gcov's function/branch records for that line are separate
+      # and untouched by it, so the memberwise comparison a defaulted
+      # operator== synthesizes still shows up as an uncovered branch unless
+      # --exclude-branches-by-pattern is given too - with its own, anchored
+      # match (a leading .* is required; unlike --exclude-lines-by-pattern,
+      # this one won't match mid-line).
+      - name: Generate coverage report
+        run: >
+          gcovr --root .
+          --gcov-executable gcov-15
+          --exclude 'test/.*'
+          --exclude 'benchmark/.*'
+          --exclude 'build/.*'
+          --exclude-lines-by-pattern '^\s*assert\('
+          --exclude-lines-by-pattern '=\s*default;'
+          --exclude-branches-by-pattern '^\s*assert\('
+          --exclude-branches-by-pattern '^\s*.*=\s*default;'
+          --exclude-throw-branches
+          --exclude-unreachable-branches
+          --print-summary
+          --fail-under-line 100
+          --fail-under-branch 100
+          --txt coverage.txt
+          --xml-pretty --xml coverage.xml
+
+      - name: Publish coverage summary
+        if: always()
+        run: |
+          {
+            echo '### Line coverage (gcovr, include/ only)'
+            echo '```'
+            cat coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Without these, the Codecov CLI's own "gcov" plugin reruns raw gcov
+      # over every .gcno file it finds in build/ and blends that report in
+      # alongside coverage.xml - a second, unfiltered pass that knows
+      # nothing about the exclusions above, so excluded lines (assert(...),
+      # "= default;") count as uncovered again and drag the reported
+      # percentage below the gcovr-computed one.
+      - name: Upload to Codecov
+        if: always()
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        with:
+          files: coverage.xml
+          plugins: noop
+          disable_search: true
+          use_oidc: true
+          fail_ci_if_error: false
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: coverage-xml
+          path: coverage.xml

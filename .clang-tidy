@@ -1,0 +1,21 @@
+# Static analysis for the public headers, run by the Clang-Tidy workflow
+# over the generated header self-sufficiency translation units (the
+# Boost.Test sources are excluded: test macros drown the signal in noise).
+Checks: >
+  bugprone-*,
+  clang-analyzer-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -misc-include-cleaner,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-use-trailing-return-type,
+  -readability-avoid-nested-conditional-operator,
+  -readability-identifier-length,
+  -readability-named-parameter,
+  -readability-simplify-boolean-expr
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'include/xstd/.*'
+FormatStyle: none
