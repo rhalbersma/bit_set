@@ -224,7 +224,17 @@ struct array
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        m_bits[0] = static_cast<Block>(m_bits[0] << n);
+                        // GCC's -Wconversion flags this compound shift-assign
+                        // at -O0 (its value-range propagation, which proves
+                        // the shift never truncates, only runs at -O1+).
+                        #if defined(__GNUC__)
+                        #pragma GCC diagnostic push
+                        #pragma GCC diagnostic ignored "-Wconversion"
+                        #endif
+                        m_bits[0] <<= n;
+                        #if defined(__GNUC__)
+                        #pragma GCC diagnostic pop
+                        #endif
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div_mod(n, bits_per_block);
                         if (L_shift == 0) {
@@ -248,7 +258,15 @@ struct array
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        m_bits[0] = static_cast<Block>(m_bits[0] >> n);
+                        // See operator<<= above for why this is guarded.
+                        #if defined(__GNUC__)
+                        #pragma GCC diagnostic push
+                        #pragma GCC diagnostic ignored "-Wconversion"
+                        #endif
+                        m_bits[0] >>= n;
+                        #if defined(__GNUC__)
+                        #pragma GCC diagnostic pop
+                        #endif
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div_mod(n, bits_per_block);
                         if (R_shift == 0) {
