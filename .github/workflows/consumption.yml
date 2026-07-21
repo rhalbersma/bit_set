@@ -113,8 +113,7 @@ jobs:
           CPP
           cmake -S . -B build \
             -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/bit_set-prefix;$GITHUB_WORKSPACE/xstd-prefix" \
-            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/bit_set-prefix;$GITHUB_WORKSPACE/xstd-prefix;$GITHUB_WORKSPACE/vcpkg_installed/x64-linux"
           cmake --build build -v
           ./build/main
 
@@ -149,7 +148,7 @@ jobs:
           CPP
           cmake -S . -B build \
             -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/vcpkg_installed/x64-linux"
           cmake --build build -v
           ./build/main
 
@@ -181,6 +180,6 @@ jobs:
           CPP
           cmake -S . -B build \
             -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/vcpkg_installed/x64-linux"
           cmake --build build -v
           ./build/main
