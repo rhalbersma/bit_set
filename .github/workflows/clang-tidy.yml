@@ -78,8 +78,14 @@ jobs:
       # which sets WarningsAsErrors so any finding fails this job. Note
       # run-clang-tidy is never invoked with -fix: this job only reports
       # findings, it never modifies source.
+      #
+      # set -o pipefail is required here: without it, this step's exit code
+      # is tee's (always 0), not run-clang-tidy's, silently turning every
+      # finding into a no-op - GitHub's default `bash -e {0}` does not set
+      # pipefail on its own.
       - name: Run clang-tidy over the public headers
         run: |
+          set -o pipefail
           run-clang-tidy-22 -quiet -p build \
             "$GITHUB_WORKSPACE/build/test/header_self_sufficiency/.*" \
             2>&1 | tee clang-tidy-report.txt
