@@ -11,7 +11,7 @@
 #include <compare>              // strong_ordering
 #include <initializer_list>     // initializer_list
 
-#include <xstd/utility.hpp>     // aligned_size
+#include <xstd/memory.hpp>      // aligned_size
 #include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <limits>               // digits
@@ -37,7 +37,7 @@ using bit_array = xstd::bit_array<xstd::aligned_size(N, std::numeric_limits<Bloc
 
 #include <xstd/bit/array.hpp>   // array
 #include <xstd/proxy.hpp>       // begin, end, iterator, reference
-#include <xstd/utility.hpp>     // aligned_size
+#include <xstd/memory.hpp>      // aligned_size
 #include <algorithm>            // lexicographical_compare_three_way
 #include <cassert>              // assert
 #include <compare>              // strong_ordering

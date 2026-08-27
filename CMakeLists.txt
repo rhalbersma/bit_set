@@ -27,7 +27,12 @@ if(NOT xstd_FOUND)
     FetchContent_Declare(
         xstd
         GIT_REPOSITORY https://github.com/rhalbersma/xstd.git
-        GIT_TAG main
+        # Pinned, not main. This is the only first-party dependency here and it
+        # moved under us: aligned_size left <xstd/utility.hpp> for
+        # <xstd/memory.hpp>, and every compiling job went red with no commit in
+        # this repository. Bump this deliberately, fixing whatever the bump
+        # renames, rather than discovering it from CI.
+        GIT_TAG 7f7cbdd6e4174107ea062484f31c81fbfe220f7a
     )
     FetchContent_MakeAvailable(xstd)
 endif()

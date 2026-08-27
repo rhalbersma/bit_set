@@ -61,7 +61,12 @@ jobs:
       # xstd for bit_set's own --install step to produce a valid package.
       - name: Install xstd
         run: |
-          git clone --depth 1 https://github.com/rhalbersma/xstd.git xstd-src
+          # The same revision CMakeLists.txt pins. This clone is the one that
+          # matters in CI: it installs xstd, so bit_set's find_package finds it
+          # and the pinned FetchContent fallback never runs. Left on main, this
+          # step alone would keep the dependency floating.
+          git clone --no-checkout https://github.com/rhalbersma/xstd.git xstd-src
+          git -C xstd-src checkout --detach 7f7cbdd6e4174107ea062484f31c81fbfe220f7a
           cmake -S xstd-src -B xstd-build \
             -DCMAKE_C_COMPILER=gcc-15 \
             -DCMAKE_CXX_COMPILER=g++-15 \

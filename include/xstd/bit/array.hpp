@@ -8,7 +8,7 @@
 
 #include <xstd/bit/intrin.hpp>                  // countl_zero, countr_zero, popcount
 #include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
-#include <xstd/utility.hpp>                     // aligned_size
+#include <xstd/memory.hpp>                      // aligned_size
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
 #include <algorithm>                            // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                // array
