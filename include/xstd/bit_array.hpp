@@ -30,7 +30,7 @@ template<std::size_t N, std::unsigned_integral Block>               constexpr vo
 namespace aligned {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
-using bit_array = xstd::bit_array<xstd::aligned_size(N, std::numeric_limits<Block>::digits), Block>;
+using bit_array = xstd::bit_array<xstd::aligned_size(std::numeric_limits<Block>::digits, N), Block>;
 
 }       // namespace aligned
 }       // namespace xstd

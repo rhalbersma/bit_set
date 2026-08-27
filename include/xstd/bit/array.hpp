@@ -28,7 +28,7 @@ template<std::size_t N, std::unsigned_integral Block>
 struct array
 {
         static constexpr auto bits_per_block = static_cast<std::size_t>(std::numeric_limits<Block>::digits);
-        static constexpr auto num_bits       = aligned_size(N, bits_per_block);
+        static constexpr auto num_bits       = aligned_size(bits_per_block, N);
         static constexpr auto num_blocks     = std::ranges::max(num_bits / bits_per_block, 1uz);
 
         std::array<Block, num_blocks> m_bits;

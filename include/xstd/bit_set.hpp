@@ -33,7 +33,7 @@ constexpr typename bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, P
 namespace aligned {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
-using bit_set = xstd::bit_set<xstd::aligned_size(N, std::numeric_limits<Block>::digits), Block>;
+using bit_set = xstd::bit_set<xstd::aligned_size(std::numeric_limits<Block>::digits, N), Block>;
 
 }       // namespace aligned
 }       // namespace xstd
