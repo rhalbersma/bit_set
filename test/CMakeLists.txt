@@ -137,7 +137,13 @@ endforeach()
 
 set(current_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(current_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
-file(GLOB_RECURSE targets RELATIVE ${current_src_dir} *.cpp)
+# The pattern is anchored to current_src_dir. RELATIVE only controls how
+# the results are reported, not where the search runs: an unanchored
+# *.cpp resolves against CMAKE_CURRENT_SOURCE_DIR, i.e. test/ rather than
+# test/src/, and so swept up every .cpp anywhere under test/ -- including
+# test/consumer/main.cpp, which then compiled with BOOST_TEST_MAIN and
+# collided with the main Boost.Test generates.
+file(GLOB_RECURSE targets RELATIVE ${current_src_dir} ${current_src_dir}/*.cpp)
 
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME target_source_dir)
 foreach(t ${targets})
