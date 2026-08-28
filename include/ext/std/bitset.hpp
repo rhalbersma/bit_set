@@ -141,6 +141,8 @@ struct compare<std::bitset<N>>
 // std.
 namespace std {
 
+// NOLINTBEGIN(bugprone-std-namespace-modification)
+
 template<std::size_t N>
 bitset<N>& operator-=(bitset<N>& lhs, const bitset<N>& rhs) noexcept
 {
@@ -152,6 +154,8 @@ bitset<N> operator-(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
+
+// NOLINTEND(bugprone-std-namespace-modification)
 
 }       // namespace std
 
