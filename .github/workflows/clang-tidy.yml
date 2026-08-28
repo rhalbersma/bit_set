@@ -30,15 +30,26 @@ jobs:
       # header is a primary input either way, and .clang-tidy sets
       # WarningsAsErrors, so any finding fails the job.
       self_sufficiency_regex: ${{ github.workspace }}/build/test/header_self_sufficiency/.*
-      # ext/boost/dynamic_bitset.hpp adapts a library that is not on the
-      # include path of the per-header pass: that pass compiles each header
-      # standalone with -I<header_dir> alone, not from the compile database,
-      # so <boost/dynamic_bitset.hpp> is not found and clang-tidy reports a
-      # clang-diagnostic-error rather than a finding. Both candidate install
-      # directories are named because the vcpkg-install action installs to the
-      # workspace root while vcpkg's CMake toolchain defaults to the build
-      # tree; the workflow adds -isystem only for directories that exist, so
-      # naming both is how this stays right either way.
+      # The per-header pass compiles each header standalone with
+      # -I<header_dir> alone, not from the compile database, so anything a
+      # header includes from outside this repository is not found and
+      # clang-tidy reports a clang-diagnostic-error rather than a finding.
+      # Two libraries are needed:
+      #
+      #   xstd, which bit/array.hpp and others include directly, and which
+      #   CMakeLists.txt fetches with FetchContent when it is not already
+      #   installed. FetchContent puts it at ${CMAKE_BINARY_DIR}/_deps/<name>-src,
+      #   the same shape xstd's own stub names for the libraries its ext/
+      #   headers adapt.
+      #
+      #   Boost, for ext/boost/dynamic_bitset.hpp and the hash2 headers, which
+      #   vcpkg installs. Both candidate directories are named because the
+      #   vcpkg-install action installs to the workspace root while vcpkg's
+      #   CMake toolchain defaults to the build tree.
+      #
+      # The workflow adds -isystem only for a directory that exists, so naming
+      # a candidate that turns out not to be used costs nothing.
       adapted_dirs: >-
+        build/_deps/xstd-src/include
         vcpkg_installed/x64-linux/include
         build/vcpkg_installed/x64-linux/include
