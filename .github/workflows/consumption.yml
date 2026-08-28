@@ -21,12 +21,15 @@ on:
 
 jobs:
   # The fifteenth stub, and the last to arrive. The shared workflow could not
-  # express this library until cpp-ci v0.4.0: it configured with no toolchain
-  # file and its own install prefix, which suits a library whose only
-  # dependencies belong to its tests. Both inputs below are what this one
-  # needs beyond that, and both default to off for the callers that don't.
+  # express this library at all before cpp-ci v0.4.0, which added the two
+  # inputs below, nor correctly before v0.4.1: v0.4.0 handed the consumers
+  # vcpkg's toolchain file, which puts a project with no vcpkg.json of its
+  # own into classic mode, looking in a global installed/ tree the manifest
+  # install never wrote to. This repository is what found that, on the first
+  # run of the stub. Both inputs default to off for the callers that need
+  # neither.
   consumption:
-    uses: rhalbersma/cpp-ci/.github/workflows/consumption.yml@d4dea1401d4e1ffc2e2b3d7b063cdc33c419d587 # v0.4.0
+    uses: rhalbersma/cpp-ci/.github/workflows/consumption.yml@d42a31ce27a752910b7b76cc6e3368735c8a1115 # v0.4.1
     with:
       # CMakeLists.txt does an unconditional
       # find_package(boost_hash2 CONFIG REQUIRED), so even the
