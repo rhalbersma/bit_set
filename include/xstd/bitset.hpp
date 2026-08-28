@@ -316,6 +316,8 @@ struct compare<xstd::bitset<N, Block>>
 
 namespace std {
 
+// NOLINTBEGIN(bugprone-std-namespace-modification)
+
 // bitset hash support                                             [bitset.hash]
 //
 // No "template<class T> struct hash;" forward declaration here: std::hash's
@@ -339,6 +341,8 @@ struct hash<xstd::bitset<N, Block>>
                 return boost::hash2::get_integral_result<std::size_t>(h);
         }
 };
+
+// NOLINTEND(bugprone-std-namespace-modification)
 
 }       // namespace std
 
