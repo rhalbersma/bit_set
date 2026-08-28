@@ -38,6 +38,10 @@ using bit_set = xstd::bit_set<xstd::aligned_size(std::numeric_limits<Block>::dig
 }       // namespace aligned
 }       // namespace xstd
 
+// The synopsis above and the implementation below each list the headers that
+// section needs, mirroring the layout of the standard itself. The overlap
+// between the two lists is deliberate: neither is complete without it.
+// NOLINTBEGIN(readability-duplicate-include): deliberate, see above
 #include <xstd/bit/array.hpp>           // array
 #include <xstd/proxy.hpp>               // const_iterator, const_reference
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
@@ -56,6 +60,7 @@ using bit_set = xstd::bit_set<xstd::aligned_size(std::numeric_limits<Block>::dig
                                         // input_range
 #include <type_traits>                  // conditional_t
 #include <utility>                      // forward, move, pair
+// NOLINTEND(readability-duplicate-include)
 
 // Class template set                                                      [set]
 // Overview                                                       [set.overview]

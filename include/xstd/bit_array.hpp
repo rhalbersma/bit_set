@@ -35,6 +35,10 @@ using bit_array = xstd::bit_array<xstd::aligned_size(std::numeric_limits<Block>:
 }       // namespace aligned
 }       // namespace xstd
 
+// The synopsis above and the implementation below each list the headers that
+// section needs, mirroring the layout of the standard itself. The overlap
+// between the two lists is deliberate: neither is complete without it.
+// NOLINTBEGIN(readability-duplicate-include): deliberate, see above
 #include <xstd/bit/array.hpp>   // array
 #include <xstd/proxy.hpp>       // begin, end, iterator, reference
 #include <xstd/memory.hpp>      // aligned_size
@@ -51,6 +55,7 @@ using bit_array = xstd::bit_array<xstd::aligned_size(std::numeric_limits<Block>:
 #include <stdexcept>            // out_of_range
 #include <type_traits>          // conditional_t
 #include <utility>              // pair
+// NOLINTEND(readability-duplicate-include)
 
 // Class template array                                                  [array]
 // Overview                                                     [array.overview]
