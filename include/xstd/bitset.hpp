@@ -100,8 +100,8 @@ public:
         template<class charT, class traits, class Allocator>
         [[nodiscard]] constexpr explicit bitset(
                 const std::basic_string<charT, traits, Allocator>& str,
-                typename std::basic_string<charT, traits, Allocator>::size_type pos = 0,
-                typename std::basic_string<charT, traits, Allocator>::size_type n = std::basic_string<charT, traits, Allocator>::npos,
+                std::basic_string<charT, traits, Allocator>::size_type pos = 0,
+                std::basic_string<charT, traits, Allocator>::size_type n = std::basic_string<charT, traits, Allocator>::npos,
                 charT zero = charT('0'),
                 charT one  = charT('1')
         )
@@ -112,8 +112,8 @@ public:
         template<class charT, class traits>
         [[nodiscard]] constexpr explicit bitset(
                 std::basic_string_view<charT, traits> str,
-                typename std::basic_string_view<charT, traits>::size_type pos = 0,
-                typename std::basic_string_view<charT, traits>::size_type n = std::basic_string_view<charT, traits>::npos,
+                std::basic_string_view<charT, traits>::size_type pos = 0,
+                std::basic_string_view<charT, traits>::size_type n = std::basic_string_view<charT, traits>::npos,
                 charT zero = charT('0'),
                 charT one  = charT('1')
         ) 
@@ -138,7 +138,7 @@ public:
         template<class charT>
         [[nodiscard]] constexpr explicit bitset(
                 const charT* str,
-                typename std::basic_string_view<charT>::size_type n = std::basic_string_view<charT>::npos,
+                std::basic_string_view<charT>::size_type n = std::basic_string_view<charT>::npos,
                 charT zero = charT('0'),
                 charT one  = charT('1')
         )

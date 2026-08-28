@@ -28,7 +28,7 @@ template<std::size_t N, std::unsigned_integral Block>               constexpr vo
 
 // 23.4.6.3, erasure for set
 template<std::size_t N, std::unsigned_integral Block, class Predicate>
-constexpr typename bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred);
+constexpr bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred);
 
 namespace aligned {
 
@@ -287,7 +287,7 @@ template<std::size_t N, std::unsigned_integral Block>               constexpr vo
 
 // 23.4.6.3 Erasure                                                [set.erasure]
 template<std::size_t N, std::unsigned_integral Block, class Predicate>
-constexpr typename bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred)
+constexpr bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred)
 {
         auto original_size = c.size();
         for (auto i = c.begin(), last = c.end(); i != last;) {
