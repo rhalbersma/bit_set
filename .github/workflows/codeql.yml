@@ -7,6 +7,7 @@ name: CodeQL
 
 permissions:
   contents: read
+  security-events: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,60 +23,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  analyze:
-    name: Analyze (C++)
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      security-events: write
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
-        with:
-          languages: c-cpp
-          queries: security-extended
-
-      # bit_set/bit/array.hpp uses std::ranges::shift_left/shift_right
-      # (P2440R1), which the runner image's default GCC 13 does not yet
-      # implement in libstdc++. Matches gcc.yml/sanitizers.yml's own fix for
-      # the same underlying problem.
-      - name: Install a <ranges>-capable GCC
-        run: |
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
-          sudo apt-get install -y g++-15
-
-      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
-      # to the GitHub Actions cache service, so built packages are reused
-      # across runs instead of recompiled from scratch every time.
-      - name: Export GitHub Actions cache environment variables
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
-      # vcpkg.json's "test" feature (on by default) pulls in everything the
-      # unit tests and benchmarks need.
-      - name: Install dependencies
-        env:
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-        run: vcpkg install --triplet x64-linux
-
-      - name: Configure
-        run: >
-          cmake -S . -B build
-          -DCMAKE_C_COMPILER=gcc-15
-          -DCMAKE_CXX_COMPILER=g++-15
-          -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
-
-      - name: Build
-        run: cmake --build build -v
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
-        with:
-          category: "/language:c-cpp"
+  # No inputs: c-cpp with security-extended is what the local job ran and
+  # what the shared workflow defaults to.
+  codeql:
+    uses: rhalbersma/cpp-ci/.github/workflows/codeql.yml@761f20d7d737d4e0c5a942eb2f1becf8e8edea75 # v0.3.1

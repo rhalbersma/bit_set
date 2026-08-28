@@ -1,0 +1,29 @@
+#          Copyright Rein Halbersma 2014-2025.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: Actionlint
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # New here: this repository had no workflow linting of its own. With almost
+  # every workflow reduced to a "uses" stub there is much less left to get
+  # wrong, but that cuts both ways - a typo in an input name or a broken pin
+  # is now most of what a stub can contain. No inputs: the defaults lint
+  # .github/workflows with shellcheck on.
+  actionlint:
+    uses: rhalbersma/cpp-ci/.github/workflows/actionlint.yml@761f20d7d737d4e0c5a942eb2f1becf8e8edea75 # v0.3.1

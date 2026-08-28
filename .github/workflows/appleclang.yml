@@ -20,57 +20,16 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    # There's no open-source trunk/nightly AppleClang the way GCC/Clang
-    # have (Apple doesn't publish dev snapshots the way LLVM does), so this
-    # just tests the two stable Xcode generations, one per macOS runner
-    # image.
-    name: AppleClang ${{ matrix.label }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - label: Xcode 16.4
-            os: macos-15
-          - label: Xcode 26.5
-            os: macos-26
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Report toolchain version
-        run: |
-          xcodebuild -version
-          clang++ --version
-
-      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
-      # to the GitHub Actions cache service, so built packages are reused
-      # across runs instead of recompiled from scratch every time.
-      - name: Export GitHub Actions cache environment variables
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
-      # GitHub-hosted macOS runners are arm64 since macos-14; vcpkg's
-      # arm64-osx triplet builds against the runner's default Xcode, so its
-      # libc++ ABI always matches the compiler under test.
-      - name: Install dependencies
-        env:
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-        run: vcpkg install --triplet arm64-osx
-
-      - name: Configure
-        run: >
-          cmake -S . -B build
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
-          -DVCPKG_TARGET_TRIPLET=arm64-osx
-
-      - name: Build
-        run: cmake --build build -v
-
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
+  # Two rungs, not three: Apple publishes no Clang trunk, and the shared
+  # workflow drops the development rung with a notice rather than failing.
+  #
+  # Expected red on both, and documented as such in the README: AppleClang
+  # ships libc++, which is missing the same C++23 range adaptors that keep
+  # clang-libc++.yml red. Neither leg is a required status check, so the
+  # failures stay visible without blocking a merge.
+  #
+  # This file keeps its name rather than following cpp-ci's apple-clang.yml:
+  # the badge URL in the README is the workflow's path, so renaming it would
+  # break the badge and every link to a past run.
+  apple_clang:
+    uses: rhalbersma/cpp-ci/.github/workflows/apple-clang.yml@761f20d7d737d4e0c5a942eb2f1becf8e8edea75 # v0.3.1

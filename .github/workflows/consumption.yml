@@ -19,6 +19,17 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+# Deliberately still a local workflow, not a cpp-ci stub like the other
+# fourteen in this directory. cpp-ci's shared consumption.yml configures the
+# library with -DBUILD_TESTING=OFF and no toolchain file, and points
+# CMAKE_PREFIX_PATH at its own install prefix - which is enough for xstd and
+# tabula, and not enough here: this library's CMakeLists.txt does an
+# unconditional find_package(boost_hash2 CONFIG REQUIRED), so even a
+# tests-off configure needs vcpkg, and install(EXPORT) needs a real installed
+# xstd rather than the FetchContent fallback. Adding vcpkg and prefix-path
+# inputs to the shared workflow is a cpp-ci change; this file becomes the
+# fifteenth stub once that ships and this repository repins.
+
 jobs:
   build:
     name: GCC 15 consume

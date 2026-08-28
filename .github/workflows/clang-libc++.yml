@@ -1,0 +1,33 @@
+#          Copyright Rein Halbersma 2014-2025.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: Clang libc++
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # The full ladder, deliberately, and expected red on all of it: this
+  # library uses several C++23 range adaptors libc++ has not implemented
+  # (views::cartesian_product, views::adjacent, views::pairwise_transform,
+  # views::stride) - too many to work around with portable rewrites. None of
+  # these legs is a required status check (branch protection, not expressible
+  # here), so the failures stay visible without blocking a merge, and they go
+  # green by themselves the moment libc++ catches up rather than that being
+  # missed. The old single "23-SVN libc++" leg is what this replaces; running
+  # the whole ladder is what makes "which rung fixed it" answerable.
+  clang_libcxx:
+    uses: rhalbersma/cpp-ci/.github/workflows/clang-libc++.yml@761f20d7d737d4e0c5a942eb2f1becf8e8edea75 # v0.3.1

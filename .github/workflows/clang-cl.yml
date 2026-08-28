@@ -20,58 +20,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    # clang-cl: Clang's MSVC-compatible driver, using the MSVC STL and linker
-    # rather than libc++. Exercises Clang's diagnostics (this repo builds
-    # with -Weverything -Werror under Clang) against the same code MSVC
-    # builds. No VS 2022 leg: clang-cl uses the MSVC STL regardless of
-    # front-end compiler, and VS 2022's MSVC STL doesn't have <flat_set>
-    # yet (benchmark/src/set/sieve.cpp depends on it) - same reason
-    # msvc.yml only tests VS 2026.
-    name: Clang-CL VS ${{ matrix.vs }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - vs: 2026
-            os: windows-2025
-            generator: "Visual Studio 18 2026"
-            toolset: "ClangCL,host=x64"
-            arch: x64
-            triplet: x64-windows
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
-      # to the GitHub Actions cache service, so built packages are reused
-      # across runs instead of recompiled from scratch every time.
-      - name: Export GitHub Actions cache environment variables
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
-      - name: Install dependencies
-        shell: pwsh
-        env:
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-        run: vcpkg install --triplet ${{ matrix.triplet }}
-
-      - name: Configure
-        shell: pwsh
-        run: >
-          cmake -S . -B build
-          -G "${{ matrix.generator }}" -A ${{ matrix.arch }}
-          -T ${{ matrix.toolset }}
-          "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
-
-      - name: Build
-        shell: pwsh
-        run: cmake --build build --config Release -v
-
-      - name: Test
-        shell: pwsh
-        run: ctest --test-dir build -C Release --output-on-failure
+  # The same Visual Studio ladder as msvc.yml, with clang-cl in front of the
+  # MSVC STL instead of cl. Its own cache prefix, since the two callers build
+  # the dependencies with different compilers.
+  #
+  # Two rungs, not three. clang-cl uses the MSVC STL whatever the front end,
+  # so VS 2022 fails here for the same missing <flat_set> as on msvc.yml -
+  # but unlike msvc.yml this workflow never carried that leg, and the README
+  # says so with a dash in the Clang-CL Older stable column. One reference
+  # leg for that gap is enough; a second adds a runner and no information.
+  # 2026-Preview is a gain: the local workflow tested VS 2026 alone.
+  clang_cl:
+    uses: rhalbersma/cpp-ci/.github/workflows/visual-studio.yml@761f20d7d737d4e0c5a942eb2f1becf8e8edea75 # v0.3.1
+    with:
+      tiers: qualification,development
+      toolset: ClangCL,host=x64
+      preview_toolset_prefix: "ClangCL,"
+      cache_prefix: clang-cl
