@@ -1,4 +1,5 @@
-#pragma once
+#ifndef EXT_BOOST_DYNAMIC_BITSET_HPP
+#define EXT_BOOST_DYNAMIC_BITSET_HPP
 
 //          Copyright Rein Halbersma 2014-2025.
 // Distributed under the Boost Software License, Version 1.0.
@@ -118,3 +119,5 @@ struct compare<boost::dynamic_bitset<Block, Allocator>>
 };
 
 }       // namespace xstd::proxy::random_access
+
+#endif  // include guard
