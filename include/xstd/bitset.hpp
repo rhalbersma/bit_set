@@ -123,7 +123,7 @@ public:
                 }
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
-                for (auto i : std::views::iota(0uz, M)) {
+                for (auto i : std::views::iota(0UZ, M)) {
                         auto const ch = str[pos + M - 1 - i];
                         if (traits::eq(ch, zero)) {
                                 continue;
@@ -186,7 +186,7 @@ public:
         [[nodiscard]] constexpr std::basic_string<charT, traits, Allocator> to_string(charT zero = charT('0'), charT one = charT('1')) const
         {
                 auto str = std::basic_string<charT, traits, Allocator>(N, zero);
-                for (auto i : std::views::iota(0uz, N)) {
+                for (auto i : std::views::iota(0UZ, N)) {
                         if (m_bits[N - 1 - i]) {
                                 str[i] = one;
                         }
@@ -263,7 +263,7 @@ struct find<xstd::bitset<N, Block>>
                 if constexpr (N == 0) {
                         return N;
                 } else {
-                        return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
+                        return *std::ranges::find_if(std::views::iota(0UZ, N), [&](auto i) {
                                 return c[i];
                         });
                 }
@@ -284,7 +284,7 @@ struct find<xstd::bitset<N, Block>>
         [[nodiscard]] static std::size_t prev(xstd::bitset<N, Block> const& c, std::size_t n) noexcept
         {
                 assert(c.any());
-                return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
+                return *std::ranges::find_if(std::views::iota(0UZ, n) | std::views::reverse, [&](auto i) {
                         return c[i];
                 });
         }
@@ -352,7 +352,7 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
         auto str = std::basic_string<charT, traits>(N, is.widen('0'));
         auto state = std::ios_base::goodbit;
         charT ch;
-        auto i = 0uz;
+        auto i = 0UZ;
         while (i < N and not is.eof() and (traits::eq_int_type(is.peek(), is.widen('0')) or traits::eq_int_type(is.peek(), is.widen('1')))) {
                 is >> ch;
                 if (traits::eq(ch, is.widen('1'))) {

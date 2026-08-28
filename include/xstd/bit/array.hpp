@@ -29,7 +29,7 @@ struct array
 {
         static constexpr auto bits_per_block = static_cast<std::size_t>(std::numeric_limits<Block>::digits);
         static constexpr auto num_bits       = aligned_size(bits_per_block, N);
-        static constexpr auto num_blocks     = std::ranges::max(num_bits / bits_per_block, 1uz);
+        static constexpr auto num_blocks     = std::ranges::max(num_bits / bits_per_block, 1UZ);
 
         std::array<Block, num_blocks> m_bits;
 
@@ -172,7 +172,7 @@ struct array
                         this->m_bits[0] &= other.m_bits[0];
                         this->m_bits[1] &= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views::iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0UZ, num_blocks)) {
                                 this->m_bits[i] &= other.m_bits[i];
                         }
                 }
@@ -186,7 +186,7 @@ struct array
                         this->m_bits[0] |= other.m_bits[0];
                         this->m_bits[1] |= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views::iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0UZ, num_blocks)) {
                                 this->m_bits[i] |= other.m_bits[i];
                         }
                 }
@@ -200,7 +200,7 @@ struct array
                         this->m_bits[0] ^= other.m_bits[0];
                         this->m_bits[1] ^= other.m_bits[1];
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views::iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0UZ, num_blocks)) {
                                 this->m_bits[i] ^= other.m_bits[i];
                         }
                 }
@@ -214,7 +214,7 @@ struct array
                         this->m_bits[0] &= static_cast<Block>(~other.m_bits[0]);
                         this->m_bits[1] &= static_cast<Block>(~other.m_bits[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views::iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0UZ, num_blocks)) {
                                 this->m_bits[i] &= static_cast<Block>(~other.m_bits[i]);
                         }
                 }
@@ -305,7 +305,7 @@ struct array
                         m_bits[0] = static_cast<Block>(~m_bits[0]);
                         m_bits[1] = static_cast<Block>(~m_bits[1]);
                 } else if constexpr (num_blocks >= 3) {
-                        for (auto i : std::views::iota(0uz, num_blocks)) {
+                        for (auto i : std::views::iota(0UZ, num_blocks)) {
                                 m_bits[i] = static_cast<Block>(~m_bits[i]);
                         }
                 }
@@ -372,7 +372,7 @@ struct array
         [[nodiscard]] constexpr std::size_t count() const noexcept
         {
                 if constexpr (N == 0) {
-                        return 0uz;
+                        return 0UZ;
                 } else if constexpr (num_blocks == 1) {
                         return bit::popcount(m_bits[0]);
                 } else if constexpr (num_blocks == 2) {
@@ -380,7 +380,7 @@ struct array
                 } else if constexpr (num_blocks >= 3) {
                         return std::ranges::fold_left(
                                 m_bits | std::views::transform([](auto block) { return bit::popcount(block); }), 
-                                0uz, std::plus<>()
+                                0UZ, std::plus<>()
                         );
                 }
         }
@@ -473,7 +473,7 @@ struct array
                                 ;
                         }                        
                 } else if constexpr (num_blocks >= 3) {
-                        auto i = 0uz;
+                        auto i = 0UZ;
                         while(i < num_blocks) {
                                 if (not bit::is_subset_of(this->m_bits[i], other.m_bits[i])) {
                                         return false;
@@ -546,7 +546,7 @@ private:
                 -> std::pair<std::size_t, std::size_t>
         {
                 if constexpr (num_blocks == 1) {
-                        return { 0uz, n };
+                        return { 0UZ, n };
                 } else {
                         return div_mod(n, bits_per_block);
                 }
