@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OPT_SET_SIEVE_HPP
+#define OPT_SET_SIEVE_HPP
 
 //          Copyright Rein Halbersma 2014-2025.
 // Distributed under the Boost Software License, Version 1.0.
@@ -74,3 +75,5 @@ auto filter_twins(X const& primes)
 }
 
 }       // namespace xstd
+
+#endif  // include guard
