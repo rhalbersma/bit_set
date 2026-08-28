@@ -99,7 +99,8 @@ struct array
                 } else if constexpr (num_blocks == 2) {
                         if (m_bits[0] != zero) {
                                 return bit::countr_zero(m_bits[0]);
-                        } else if (m_bits[1] != zero) {
+                        }
+                        if (m_bits[1] != zero) {
                                 return bit::countr_zero(m_bits[1]) + bits_per_block;
                         }
                 } else if constexpr (num_blocks >= 3) {
@@ -464,14 +465,14 @@ struct array
                 } else if constexpr (num_blocks == 2) {                         
                         if (not bit::is_subset_of(this->m_bits[0], other.m_bits[0])) {
                                 return false;
-                        } else if (bit::not_equal_to(this->m_bits[0], other.m_bits[0])) {
+                        }
+                        if (bit::not_equal_to(this->m_bits[0], other.m_bits[0])) {
                                 return bit::is_subset_of(this->m_bits[1], other.m_bits[1]);
-                        } else { 
-                                return
-                                        bit::is_subset_of(this->m_bits[1], other.m_bits[1]) and
-                                        bit::not_equal_to(this->m_bits[1], other.m_bits[1])
-                                ;
-                        }                        
+                        }
+                        return
+                                bit::is_subset_of(this->m_bits[1], other.m_bits[1]) and
+                                bit::not_equal_to(this->m_bits[1], other.m_bits[1])
+                        ;
                 } else if constexpr (num_blocks >= 3) {
                         auto i = 0UZ;
                         while(i < num_blocks) {
