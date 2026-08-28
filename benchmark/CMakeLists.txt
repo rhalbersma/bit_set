@@ -78,8 +78,20 @@ set(cxx_compile_options_optimization
     >
 )
 
+get_property(bit_set_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+# Deliberately not applied to Debug, as an experiment - see the pull request.
+# Every MinGW Debug leg segfaults in the same five tests on all three rungs,
+# deterministically, while every MinGW Release leg passes; Debug is also the
+# first configuration this repository has ever built on MinGW, and the only
+# thing it adds to this translation unit is -g. Big COFF objects combined
+# with DWARF have a history of bad relocations in binutils, which surfaces as
+# a runtime crash rather than a link error. Dropping the flag in Debug tests
+# that: if those legs go green the interaction is the cause and this is the
+# fix; if they fail to assemble or link instead, the flag is load-bearing
+# there and the answer is -g1 or split DWARF rather than removal.
 set(cxx_compile_options_mbig_obj
-    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>,$<NOT:$<CONFIG:Debug>>>:
 	    -Wa,-mbig-obj
     >
 )
@@ -117,5 +129,27 @@ foreach(t ${targets})
         ${cxx_compile_options_mbig_obj}
     )
 
-    add_test(${target_id} ${target_id})
+    # Release only. A benchmark measures the library rather than verifying
+    # it, and an unoptimised measurement is meaningless anyway - which is why
+    # #32 moved every leg to Release in the first place. Registering it in
+    # Debug costs 25 minutes per Windows leg to learn nothing: the MSVC STL's
+    # _ITERATOR_DEBUG_LEVEL=2 makes the sieve's repeated flat_set erase about
+    # 60x slower, and benchmark.set.sieve then trips ctest's 1500s per-test
+    # timeout.
+    #
+    # Two spellings, because neither works on both generator kinds:
+    #
+    # - Multi-config (the Visual Studio generator) leaves CMAKE_BUILD_TYPE
+    #   empty, so an if() on it would register these in every configuration,
+    #   Debug included. CONFIGURATIONS is the only thing that discriminates.
+    # - Single-config (Ninja, Makefiles) does set CMAKE_BUILD_TYPE, but
+    #   CONFIGURATIONS is matched by ctest against the -C it was given, and
+    #   the GCC, Clang and MinGW legs invoke a bare "ctest --test-dir build"
+    #   with no -C. There it matches nothing, and the benchmarks would
+    #   silently stop running anywhere at all rather than in Debug only.
+    if(bit_set_is_multi_config)
+        add_test(NAME ${target_id} CONFIGURATIONS Release COMMAND ${target_id})
+    elseif(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_test(NAME ${target_id} COMMAND ${target_id})
+    endif()
 endforeach()

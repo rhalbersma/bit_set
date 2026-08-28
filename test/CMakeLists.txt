@@ -84,8 +84,18 @@ set(cxx_compile_options_optimization
     >
 )
 
+# Deliberately not applied to Debug, as an experiment - see the pull request.
+# Every MinGW Debug leg segfaults in the same five tests on all three rungs,
+# deterministically, while every MinGW Release leg passes; Debug is also the
+# first configuration this repository has ever built on MinGW, and the only
+# thing it adds to this translation unit is -g. Big COFF objects combined
+# with DWARF have a history of bad relocations in binutils, which surfaces as
+# a runtime crash rather than a link error. Dropping the flag in Debug tests
+# that: if those legs go green the interaction is the cause and this is the
+# fix; if they fail to assemble or link instead, the flag is load-bearing
+# there and the answer is -g1 or split DWARF rather than removal.
 set(cxx_compile_options_mbig_obj
-    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>,$<NOT:$<CONFIG:Debug>>>:
 	    -Wa,-mbig-obj
     >
 )
