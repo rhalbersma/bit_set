@@ -72,7 +72,7 @@ struct array
                 } else if constexpr (num_blocks >= 3) {
                         auto const front = std::ranges::find_if(m_bits, [](auto block) { return block != zero; });
                         assert(front != m_bits.end());
-                        return bit::countr_zero(*front) + bits_per_block * distance(m_bits.begin(), front);
+                        return bit::countr_zero(*front) + (bits_per_block * distance(m_bits.begin(), front));
                 }
         }
 
@@ -86,7 +86,7 @@ struct array
                 } else if constexpr (num_blocks >= 3) {
                         auto const back = std::ranges::find_if(m_bits | std::views::reverse, [](auto block) { return block != zero; });
                         assert(back != m_bits.rend());
-                        return last_bit - bit::countl_zero(*back) - bits_per_block * distance(m_bits.rbegin(), back);
+                        return last_bit - bit::countl_zero(*back) - (bits_per_block * distance(m_bits.rbegin(), back));
                 }
         }
 
@@ -104,7 +104,7 @@ struct array
                         }
                 } else if constexpr (num_blocks >= 3) {
                         if (auto const first = std::ranges::find_if(m_bits, [](auto block) { return block != zero; }); first != m_bits.end()) {
-                                return bit::countr_zero(*first) + bits_per_block * distance(m_bits.begin(), first);
+                                return bit::countr_zero(*first) + (bits_per_block * distance(m_bits.begin(), first));
                         }
                 }
                 return N;
@@ -136,7 +136,7 @@ struct array
                         }
                         auto const rg = m_bits | std::views::drop(index);
                         if (auto const next = std::ranges::find_if(rg, [](auto block) { return block != zero; }); next != rg.end()) {
-                                return n + bit::countr_zero(*next) + bits_per_block * distance(rg.begin(), next);
+                                return n + bit::countr_zero(*next) + (bits_per_block * distance(rg.begin(), next));
                         }
                 }
                 return N;
@@ -160,7 +160,7 @@ struct array
                         auto const rg = m_bits | std::views::reverse | std::views::drop(last_block - index);
                         auto const prev = std::ranges::find_if(rg, [](auto block) { return block != zero; });
                         assert(prev != rg.end());
-                        return n - bit::countl_zero(*prev) - bits_per_block * distance(rg.begin(), prev);
+                        return n - bit::countl_zero(*prev) - (bits_per_block * distance(rg.begin(), prev));
                 }
         }
 
