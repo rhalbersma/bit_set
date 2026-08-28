@@ -291,8 +291,10 @@ public:
                 if constexpr (requires { m_ptr->intersects(*other.m_ptr); }) {
                         return m_ptr->intersects(*other.m_ptr);
                 } else {
-                        auto first1 = begin(), last1 = end();
-                        auto first2 = other.begin(), last2 = other.end();
+                        auto first1 = begin();
+                        auto last1  = end();
+                        auto first2 = other.begin();
+                        auto last2  = other.end();
                         while (first1 != last1 and first2 != last2) {
                                 if (*first1 < *first2) {
                                         ++first1;
