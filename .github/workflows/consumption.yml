@@ -29,7 +29,7 @@ jobs:
   # run of the stub. Both inputs default to off for the callers that need
   # neither.
   consumption:
-    uses: rhalbersma/cpp-ci/.github/workflows/consumption.yml@d42a31ce27a752910b7b76cc6e3368735c8a1115 # v0.4.1
+    uses: rhalbersma/cpp-ci/.github/workflows/consumption.yml@76c73148793d7700b98b703f437e80d1eb0b1295 # v0.5.0
     with:
       # CMakeLists.txt does an unconditional
       # find_package(boost_hash2 CONFIG REQUIRED), so even the

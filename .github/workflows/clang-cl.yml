@@ -31,7 +31,7 @@ jobs:
   # leg for that gap is enough; a second adds a runner and no information.
   # 2026-Preview is a gain: the local workflow tested VS 2026 alone.
   clang_cl:
-    uses: rhalbersma/cpp-ci/.github/workflows/visual-studio.yml@d42a31ce27a752910b7b76cc6e3368735c8a1115 # v0.4.1
+    uses: rhalbersma/cpp-ci/.github/workflows/visual-studio.yml@76c73148793d7700b98b703f437e80d1eb0b1295 # v0.5.0
     with:
       tiers: qualification,development
       toolset: ClangCL,host=x64
