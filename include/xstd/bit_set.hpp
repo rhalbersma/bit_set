@@ -257,7 +257,7 @@ public:
         [[nodiscard]] constexpr bool contains(const key_type& x) const noexcept              { return m_bits[x]; }
         [[nodiscard]] constexpr auto count   (const key_type& x) const noexcept -> size_type { return m_bits[x]; }
 
-        [[nodiscard]] constexpr auto find       (this auto&& self, const key_type& x) noexcept -> iterator                      { if (self.contains(x)) return { &self, x }; else return self.end(); }
+        [[nodiscard]] constexpr auto find       (this auto&& self, const key_type& x) noexcept -> iterator                      { if (self.contains(x)) { return { &self, x }; } else { return self.end(); } }
         [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, (x ? find_next(self, x - 1) : find_first(self)) }; }
         [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, find_next(self, x) };                              }
         [[nodiscard]] constexpr auto equal_range(this auto&& self, const key_type& x) noexcept -> std::pair<iterator, iterator> { return { self.lower_bound(x), self.upper_bound(x) };               }

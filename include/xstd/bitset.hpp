@@ -164,7 +164,7 @@ public:
         constexpr bitset& reset() noexcept { m_bits.reset(); return *this; }
         constexpr bitset& flip () noexcept { m_bits.flip (); return *this; }
 
-        constexpr bitset& set  (std::size_t pos, bool val = true) { if (pos < N) { if (val) m_bits.set  (pos); else m_bits.reset(pos); return *this; } else { throw out_of_range(pos); } }
+        constexpr bitset& set  (std::size_t pos, bool val = true) { if (pos < N) { if (val) { m_bits.set  (pos); } else { m_bits.reset(pos); } return *this; } else { throw out_of_range(pos); } }
         constexpr bitset& reset(std::size_t pos)                  { if (pos < N) {          m_bits.reset(pos);                         return *this; } else { throw out_of_range(pos); } }
         constexpr bitset& flip (std::size_t pos)                  { if (pos < N) {          m_bits.flip (pos);                         return *this; } else { throw out_of_range(pos); } }
 
