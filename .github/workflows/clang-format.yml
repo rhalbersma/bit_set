@@ -1,0 +1,35 @@
+#          Copyright Rein Halbersma 2014-2025.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: Clang-Format
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Deliberately dispatch-only, unlike every other stub here and unlike xstd's
+# copy of this workflow: this repository has no .clang-format yet, so
+# clang-format would fall back to its built-in LLVM style and report almost
+# every file in the tree. Adding the config is a decision about how this code
+# is written rather than about how it is tested, and reformatting the tree is
+# a source change that has no business riding along with a CI migration. A
+# follow-up adds .clang-format together with the reformat it implies, and
+# gives this workflow the push and pull_request triggers the others have.
+# Until then it is here, pinned and runnable by hand, and adds no check.
+on:
+  workflow_dispatch:
+
+jobs:
+  # Its own tier, deliberately left at stable: a formatter release reformats
+  # the code base, which is not something a compiler bump should decide.
+  clang_format:
+    uses: rhalbersma/cpp-ci/.github/workflows/clang-format.yml@d42a31ce27a752910b7b76cc6e3368735c8a1115 # v0.4.1
+    with:
+      # benchmark/ too: the shared default is "include test", but this
+      # repository also carries a benchmark tree of hand-written sources.
+      paths: include test benchmark
