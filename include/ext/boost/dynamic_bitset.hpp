@@ -50,7 +50,7 @@ struct find<boost::dynamic_bitset<Block, Allocator>>
         [[nodiscard]] static constexpr std::size_t prev(boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept
         {
                 assert(c.any());
-                return *std::ranges::find_if(std::views::iota(0uz, std::ranges::min(n, c.size())) | std::views::reverse, [&](auto i) {
+                return *std::ranges::find_if(std::views::iota(0UZ, std::ranges::min(n, c.size())) | std::views::reverse, [&](auto i) {
                         return c[i];
                 });
         }
@@ -93,7 +93,7 @@ namespace xstd::proxy::random_access {
 template<std::unsigned_integral Block, class Allocator>
 struct find<boost::dynamic_bitset<Block, Allocator>>
 {
-        [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const&) noexcept { return 0uz; }
+        [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const&) noexcept { return 0UZ; }
         [[nodiscard]] static constexpr std::size_t last (boost::dynamic_bitset<Block, Allocator> const& c) noexcept { return c.size(); }
         [[nodiscard]] static constexpr bool         at  (boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept { return c[n]; }
 };

@@ -81,8 +81,11 @@ public:
                 constexpr ~reference() = default;
                 constexpr reference& operator=(bool x) noexcept;
                 constexpr reference& operator=(const reference& x) noexcept = default;
-                constexpr const reference& operator=(bool x) const noexcept;
-                constexpr explicit(false) operator bool() const noexcept;
+                // A proxy reference assigns through a const proxy: the proxy is const,
+                // the bit it refers to is not. This is the shape the standard gives
+                // vector<bool>::reference, so the conventional signature is wrong here.
+                constexpr const reference& operator=(bool x) const noexcept;  // NOLINT(misc-unconventional-assign-operator)
+                constexpr explicit(false) operator bool() const noexcept;  // NOLINT(misc-explicit-constructor)
                 constexpr bool operator~() const noexcept;
 
                 friend constexpr void swap(reference x, reference y) noexcept { bool t = x; x = y; y = t; }
@@ -100,8 +103,8 @@ public:
         template<class charT, class traits, class Allocator>
         [[nodiscard]] constexpr explicit bitset(
                 const std::basic_string<charT, traits, Allocator>& str,
-                typename std::basic_string<charT, traits, Allocator>::size_type pos = 0,
-                typename std::basic_string<charT, traits, Allocator>::size_type n = std::basic_string<charT, traits, Allocator>::npos,
+                std::basic_string<charT, traits, Allocator>::size_type pos = 0,
+                std::basic_string<charT, traits, Allocator>::size_type n = std::basic_string<charT, traits, Allocator>::npos,
                 charT zero = charT('0'),
                 charT one  = charT('1')
         )
@@ -112,8 +115,8 @@ public:
         template<class charT, class traits>
         [[nodiscard]] constexpr explicit bitset(
                 std::basic_string_view<charT, traits> str,
-                typename std::basic_string_view<charT, traits>::size_type pos = 0,
-                typename std::basic_string_view<charT, traits>::size_type n = std::basic_string_view<charT, traits>::npos,
+                std::basic_string_view<charT, traits>::size_type pos = 0,
+                std::basic_string_view<charT, traits>::size_type n = std::basic_string_view<charT, traits>::npos,
                 charT zero = charT('0'),
                 charT one  = charT('1')
         ) 
@@ -123,11 +126,12 @@ public:
                 }
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
-                for (auto i : std::views::iota(0uz, M)) {
+                for (auto i : std::views::iota(0UZ, M)) {
                         auto const ch = str[pos + M - 1 - i];
                         if (traits::eq(ch, zero)) {
                                 continue;
-                        } else if (traits::eq(ch, one)) {
+                        }
+                        if (traits::eq(ch, one)) {
                                 m_bits.set(i);
                         } else {
                                 throw invalid_argument(ch, zero, one);
@@ -138,7 +142,7 @@ public:
         template<class charT>
         [[nodiscard]] constexpr explicit bitset(
                 const charT* str,
-                typename std::basic_string_view<charT>::size_type n = std::basic_string_view<charT>::npos,
+                std::basic_string_view<charT>::size_type n = std::basic_string_view<charT>::npos,
                 charT zero = charT('0'),
                 charT one  = charT('1')
         )
@@ -164,9 +168,9 @@ public:
         constexpr bitset& reset() noexcept { m_bits.reset(); return *this; }
         constexpr bitset& flip () noexcept { m_bits.flip (); return *this; }
 
-        constexpr bitset& set  (std::size_t pos, bool val = true) { if (pos < N) { if (val) m_bits.set  (pos); else m_bits.reset(pos); return *this; } else { throw out_of_range(pos); } }
-        constexpr bitset& reset(std::size_t pos)                  { if (pos < N) {          m_bits.reset(pos);                         return *this; } else { throw out_of_range(pos); } }
-        constexpr bitset& flip (std::size_t pos)                  { if (pos < N) {          m_bits.flip (pos);                         return *this; } else { throw out_of_range(pos); } }
+        constexpr bitset& set  (std::size_t pos, bool val = true) { if (pos < N) { if (val) { m_bits.set  (pos); } else { m_bits.reset(pos); } return *this; } throw out_of_range(pos); }
+        constexpr bitset& reset(std::size_t pos)                  { if (pos < N) {          m_bits.reset(pos);                         return *this; } throw out_of_range(pos); }
+        constexpr bitset& flip (std::size_t pos)                  { if (pos < N) {          m_bits.flip (pos);                         return *this; } throw out_of_range(pos); }
 
         [[nodiscard]] constexpr bool operator[](std::size_t pos) const noexcept
         {
@@ -186,7 +190,7 @@ public:
         [[nodiscard]] constexpr std::basic_string<charT, traits, Allocator> to_string(charT zero = charT('0'), charT one = charT('1')) const
         {
                 auto str = std::basic_string<charT, traits, Allocator>(N, zero);
-                for (auto i : std::views::iota(0uz, N)) {
+                for (auto i : std::views::iota(0UZ, N)) {
                         if (m_bits[N - 1 - i]) {
                                 str[i] = one;
                         }
@@ -200,7 +204,7 @@ public:
 
         [[nodiscard]] constexpr bool operator==(const bitset& rhs) const noexcept = default;
 
-        [[nodiscard]] constexpr bool test(std::size_t pos) const { if (pos < N) { return m_bits[pos]; } else { throw out_of_range(pos); } }
+        [[nodiscard]] constexpr bool test(std::size_t pos) const { if (pos < N) { return m_bits[pos]; } throw out_of_range(pos); }
 
         [[nodiscard]] constexpr bool all()  const noexcept { return m_bits.all();  }
         [[nodiscard]] constexpr bool any()  const noexcept { return m_bits.any();  }
@@ -263,7 +267,7 @@ struct find<xstd::bitset<N, Block>>
                 if constexpr (N == 0) {
                         return N;
                 } else {
-                        return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
+                        return *std::ranges::find_if(std::views::iota(0UZ, N), [&](auto i) {
                                 return c[i];
                         });
                 }
@@ -284,7 +288,7 @@ struct find<xstd::bitset<N, Block>>
         [[nodiscard]] static std::size_t prev(xstd::bitset<N, Block> const& c, std::size_t n) noexcept
         {
                 assert(c.any());
-                return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
+                return *std::ranges::find_if(std::views::iota(0UZ, n) | std::views::reverse, [&](auto i) {
                         return c[i];
                 });
         }
@@ -312,6 +316,8 @@ struct compare<xstd::bitset<N, Block>>
 
 namespace std {
 
+// NOLINTBEGIN(bugprone-std-namespace-modification)
+
 // bitset hash support                                             [bitset.hash]
 //
 // No "template<class T> struct hash;" forward declaration here: std::hash's
@@ -336,6 +342,8 @@ struct hash<xstd::bitset<N, Block>>
         }
 };
 
+// NOLINTEND(bugprone-std-namespace-modification)
+
 }       // namespace std
 
 namespace xstd {
@@ -352,7 +360,7 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
         auto str = std::basic_string<charT, traits>(N, is.widen('0'));
         auto state = std::ios_base::goodbit;
         charT ch;
-        auto i = 0uz;
+        auto i = 0UZ;
         while (i < N and not is.eof() and (traits::eq_int_type(is.peek(), is.widen('0')) or traits::eq_int_type(is.peek(), is.widen('1')))) {
                 is >> ch;
                 if (traits::eq(ch, is.widen('1'))) {

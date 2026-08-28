@@ -23,7 +23,7 @@ struct generate_candidates
 {
         auto operator()(std::size_t n) const
         {
-                return std::views::iota(2uz, n) | std::ranges::to<X>();
+                return std::views::iota(2UZ, n) | std::ranges::to<X>();
         }
 };
 

@@ -67,7 +67,7 @@ struct bit_array
 {
         bit::array<N, Block> m_bits;
 
-        [[nodiscard]] friend constexpr std::size_t find_first(const bit_array&)                  noexcept { return 0uz;         }
+        [[nodiscard]] friend constexpr std::size_t find_first(const bit_array&)                  noexcept { return 0UZ;         }
         [[nodiscard]] friend constexpr std::size_t find_last (const bit_array&)                  noexcept { return N;           }
         [[nodiscard]] friend constexpr std::size_t find_at   (const bit_array& c, std::size_t n) noexcept { return c.m_bits[n]; }
 
@@ -130,9 +130,9 @@ struct bit_array
         using result_t = std::conditional_t<std::is_const_v<std::remove_reference_t<Self>>, const_reference, reference>;
 
         [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept -> result_t<decltype(self)> { assert(n < N); return { self, n };                             }
-        [[nodiscard]] constexpr auto at        (this auto&& self, size_type n)          -> result_t<decltype(self)> {    if (n < N)  return { self, n }; else throw out_of_range(n); }
+        [[nodiscard]] constexpr auto at        (this auto&& self, size_type n)          -> result_t<decltype(self)> {    if (n < N) { return { self, n }; } throw out_of_range(n); }
 
-        [[nodiscard]] constexpr auto front(this auto&& self) noexcept -> result_t<decltype(self)> { return { self, 0uz   }; }
+        [[nodiscard]] constexpr auto front(this auto&& self) noexcept -> result_t<decltype(self)> { return { self, 0UZ   }; }
         [[nodiscard]] constexpr auto back (this auto&& self) noexcept -> result_t<decltype(self)> { return { self, N - 1 }; }
 
 private:

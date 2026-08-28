@@ -34,7 +34,7 @@ struct find<std::bitset<N>>
                 } else if constexpr (requires { c._Find_first(); }) {
                         return c._Find_first();
                 } else {
-                        return *std::ranges::find_if(std::views::iota(0uz, N), [&](auto i) {
+                        return *std::ranges::find_if(std::views::iota(0UZ, N), [&](auto i) {
                                 return c[i];
                         });
                 }
@@ -59,7 +59,7 @@ struct find<std::bitset<N>>
         [[nodiscard]] static std::size_t prev(const std::bitset<N>& c, std::size_t n) noexcept
         {
                 assert(c.any());
-                return *std::ranges::find_if(std::views::iota(0uz, n) | std::views::reverse, [&](auto i) {
+                return *std::ranges::find_if(std::views::iota(0UZ, n) | std::views::reverse, [&](auto i) {
                         return c[i];
                 });
         }
@@ -97,7 +97,7 @@ namespace xstd::proxy::random_access {
 template<std::size_t N>
 struct find<std::bitset<N>>
 {
-        [[nodiscard]] static constexpr std::size_t first(const std::bitset<N>&) noexcept { return 0uz; }
+        [[nodiscard]] static constexpr std::size_t first(const std::bitset<N>&) noexcept { return 0UZ; }
         [[nodiscard]] static constexpr std::size_t last (const std::bitset<N>&) noexcept { return N;   }
         [[nodiscard]] static constexpr bool         at  (const std::bitset<N>& c, std::size_t n) noexcept { return c[n]; }
 };
@@ -141,6 +141,8 @@ struct compare<std::bitset<N>>
 // std.
 namespace std {
 
+// NOLINTBEGIN(bugprone-std-namespace-modification)
+
 template<std::size_t N>
 bitset<N>& operator-=(bitset<N>& lhs, const bitset<N>& rhs) noexcept
 {
@@ -152,6 +154,8 @@ bitset<N> operator-(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }
+
+// NOLINTEND(bugprone-std-namespace-modification)
 
 }       // namespace std
 

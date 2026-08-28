@@ -28,7 +28,7 @@ template<std::size_t N, std::unsigned_integral Block>               constexpr vo
 
 // 23.4.6.3, erasure for set
 template<std::size_t N, std::unsigned_integral Block, class Predicate>
-constexpr typename bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred);
+constexpr bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred);
 
 namespace aligned {
 
@@ -250,14 +250,14 @@ public:
         constexpr bit_set& operator>>=(std::size_t n) noexcept { m_bits >>= n; return *this; }
 
         // observers
-        [[nodiscard]] constexpr   key_compare   key_comp() const noexcept { return   key_compare(); }
-        [[nodiscard]] constexpr value_compare value_comp() const noexcept { return value_compare(); }
+        [[nodiscard]] constexpr   key_compare   key_comp() const noexcept { return {}; }
+        [[nodiscard]] constexpr value_compare value_comp() const noexcept { return {}; }
 
         // set operations
         [[nodiscard]] constexpr bool contains(const key_type& x) const noexcept              { return m_bits[x]; }
         [[nodiscard]] constexpr auto count   (const key_type& x) const noexcept -> size_type { return m_bits[x]; }
 
-        [[nodiscard]] constexpr auto find       (this auto&& self, const key_type& x) noexcept -> iterator                      { if (self.contains(x)) return { &self, x }; else return self.end(); }
+        [[nodiscard]] constexpr auto find       (this auto&& self, const key_type& x) noexcept -> iterator                      { if (self.contains(x)) { return { &self, x }; } return self.end(); }
         [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, (x ? find_next(self, x - 1) : find_first(self)) }; }
         [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, find_next(self, x) };                              }
         [[nodiscard]] constexpr auto equal_range(this auto&& self, const key_type& x) noexcept -> std::pair<iterator, iterator> { return { self.lower_bound(x), self.upper_bound(x) };               }
@@ -287,7 +287,7 @@ template<std::size_t N, std::unsigned_integral Block>               constexpr vo
 
 // 23.4.6.3 Erasure                                                [set.erasure]
 template<std::size_t N, std::unsigned_integral Block, class Predicate>
-constexpr typename bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred)
+constexpr bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate pred)
 {
         auto original_size = c.size();
         for (auto i = c.begin(), last = c.end(); i != last;) {
