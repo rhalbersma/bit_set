@@ -81,7 +81,10 @@ public:
                 constexpr ~reference() = default;
                 constexpr reference& operator=(bool x) noexcept;
                 constexpr reference& operator=(const reference& x) noexcept = default;
-                constexpr const reference& operator=(bool x) const noexcept;
+                // A proxy reference assigns through a const proxy: the proxy is const,
+                // the bit it refers to is not. This is the shape the standard gives
+                // vector<bool>::reference, so the conventional signature is wrong here.
+                constexpr const reference& operator=(bool x) const noexcept;  // NOLINT(misc-unconventional-assign-operator)
                 constexpr explicit(false) operator bool() const noexcept;
                 constexpr bool operator~() const noexcept;
 
