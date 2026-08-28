@@ -250,8 +250,8 @@ public:
         constexpr bit_set& operator>>=(std::size_t n) noexcept { m_bits >>= n; return *this; }
 
         // observers
-        [[nodiscard]] constexpr   key_compare   key_comp() const noexcept { return   key_compare(); }
-        [[nodiscard]] constexpr value_compare value_comp() const noexcept { return value_compare(); }
+        [[nodiscard]] constexpr   key_compare   key_comp() const noexcept { return {}; }
+        [[nodiscard]] constexpr value_compare value_comp() const noexcept { return {}; }
 
         // set operations
         [[nodiscard]] constexpr bool contains(const key_type& x) const noexcept              { return m_bits[x]; }
