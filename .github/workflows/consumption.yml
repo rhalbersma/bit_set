@@ -19,183 +19,25 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-# Deliberately still a local workflow, not a cpp-ci stub like the other
-# fourteen in this directory. cpp-ci's shared consumption.yml configures the
-# library with -DBUILD_TESTING=OFF and no toolchain file, and points
-# CMAKE_PREFIX_PATH at its own install prefix - which is enough for xstd and
-# tabula, and not enough here: this library's CMakeLists.txt does an
-# unconditional find_package(boost_hash2 CONFIG REQUIRED), so even a
-# tests-off configure needs vcpkg, and install(EXPORT) needs a real installed
-# xstd rather than the FetchContent fallback. Adding vcpkg and prefix-path
-# inputs to the shared workflow is a cpp-ci change; this file becomes the
-# fifteenth stub once that ships and this repository repins.
-
 jobs:
-  build:
-    name: GCC 15 consume
-    runs-on: ubuntu-24.04
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Install GCC 15
-        run: |
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
-          sudo apt-get install -y g++-15
-
-      # Export the two env vars vcpkg's "x-gha" binary source needs to talk
-      # to the GitHub Actions cache service, so built packages are reused
-      # across runs instead of recompiled from scratch every time.
-      - name: Export GitHub Actions cache environment variables
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
-        with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-
-      # Unlike xstd/tabula, bit_set has a real dependency: boost_hash2 is a
-      # find_package(... REQUIRED) of the library itself (not just its
-      # tests), so even a -DBUILD_TESTING=OFF configure needs it findable.
-      - name: Install dependencies
-        env:
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
-        run: vcpkg install --triplet x64-linux
-
-      # bit_set's own find_package(xstd ... QUIET) falls back to
-      # FetchContent when xstd isn't already installed - fine for
-      # add_subdirectory/FetchContent consumers below, since nothing is
-      # installed on those paths. But install(EXPORT) requires every
-      # dependency of an exported target to itself come from find_package
-      # (a FetchContent build-tree target can't be exported), so the
-      # "Consume installed package" test below needs a real, installed
-      # xstd for bit_set's own --install step to produce a valid package.
-      - name: Install xstd
-        run: |
-          # The same revision CMakeLists.txt pins. This clone is the one that
-          # matters in CI: it installs xstd, so bit_set's find_package finds it
-          # and the pinned FetchContent fallback never runs. Left on main, this
-          # step alone would keep the dependency floating.
-          git clone --no-checkout https://github.com/rhalbersma/xstd.git xstd-src
-          git -C xstd-src checkout --detach 7f7cbdd6e4174107ea062484f31c81fbfe220f7a
-          cmake -S xstd-src -B xstd-build \
-            -DCMAKE_C_COMPILER=gcc-15 \
-            -DCMAKE_CXX_COMPILER=g++-15 \
-            -DBUILD_TESTING=OFF
-          cmake --install xstd-build --prefix "$GITHUB_WORKSPACE/xstd-prefix"
-
-      # bit_set's own build+test on GCC 15 is already covered by gcc.yml's
-      # "15" leg; this workflow only exists to verify the three consumption
-      # models documented in the README (find_package, add_subdirectory,
-      # FetchContent), so -DBUILD_TESTING=OFF skips bit_set's own tests
-      # here and avoids needing Boost.Test/fmt/range-v3/Google Benchmark at
-      # all. bit_set is a pure INTERFACE library, so there is nothing to
-      # actually build - only configure and install.
-      - name: Configure
-        run: >
-          cmake -S . -B build
-          -DCMAKE_C_COMPILER=gcc-15
-          -DCMAKE_CXX_COMPILER=g++-15
-          -DBUILD_TESTING=OFF
-          -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/xstd-prefix"
-          -DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
-
-      - name: Install
-        run: cmake --install build --prefix "$GITHUB_WORKSPACE/bit_set-prefix"
-
-      - name: Consume installed package
-        run: |
-          mkdir consumer
-          cd consumer
-          cat > CMakeLists.txt << 'CMAKE'
-          cmake_minimum_required(VERSION 3.28)
-          project(consumer LANGUAGES CXX)
-          find_package(bit_set 0.1.0 CONFIG REQUIRED)
-          add_executable(main main.cpp)
-          target_link_libraries(main PRIVATE bit_set::bit_set)
-          CMAKE
-          cat > main.cpp << 'CPP'
-          #include <xstd/bit_set.hpp>
-
-          int main()
-          {
-                  constexpr auto N = 100;
-                  auto s = xstd::bit_set<N>();
-                  s.insert(1);
-                  s.insert(2);
-                  s.insert(3);
-                  return s.size() == 3 ? 0 : 1;
-          }
-          CPP
-          cmake -S . -B build \
-            -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/bit_set-prefix;$GITHUB_WORKSPACE/xstd-prefix;$GITHUB_WORKSPACE/vcpkg_installed/x64-linux"
-          cmake --build build -v
-          ./build/main
-
-
-      - name: Consume with add_subdirectory
-        run: |
-          mkdir consumer-add-subdirectory
-          cd consumer-add-subdirectory
-          cat > CMakeLists.txt << 'CMAKE'
-          cmake_minimum_required(VERSION 3.28)
-          project(consumer_add_subdirectory LANGUAGES CXX)
-          # no BUILD_TESTING workaround: bit_set only builds its tests (and
-          # requires Boost.Test/fmt/range-v3/Google Benchmark) when it is
-          # the top-level project, which this consumer configure would fail
-          # on if that gating regressed
-          add_subdirectory("$ENV{GITHUB_WORKSPACE}" bit_set-build)
-          add_executable(main main.cpp)
-          target_link_libraries(main PRIVATE bit_set::bit_set)
-          CMAKE
-          cat > main.cpp << 'CPP'
-          #include <xstd/bit_set.hpp>
-
-          int main()
-          {
-                  constexpr auto N = 100;
-                  auto s = xstd::bit_set<N>();
-                  s.insert(1);
-                  s.insert(2);
-                  s.insert(3);
-                  return s.size() == 3 ? 0 : 1;
-          }
-          CPP
-          cmake -S . -B build \
-            -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/vcpkg_installed/x64-linux"
-          cmake --build build -v
-          ./build/main
-
-      - name: Consume with FetchContent
-        run: |
-          mkdir consumer-fetch-content
-          cd consumer-fetch-content
-          cat > CMakeLists.txt << 'CMAKE'
-          cmake_minimum_required(VERSION 3.28)
-          project(consumer_fetch_content LANGUAGES CXX)
-          include(FetchContent)
-          FetchContent_Declare(bit_set SOURCE_DIR "$ENV{GITHUB_WORKSPACE}")
-          FetchContent_MakeAvailable(bit_set)
-          add_executable(main main.cpp)
-          target_link_libraries(main PRIVATE bit_set::bit_set)
-          CMAKE
-          cat > main.cpp << 'CPP'
-          #include <xstd/bit_set.hpp>
-
-          int main()
-          {
-                  constexpr auto N = 100;
-                  auto s = xstd::bit_set<N>();
-                  s.insert(1);
-                  s.insert(2);
-                  s.insert(3);
-                  return s.size() == 3 ? 0 : 1;
-          }
-          CPP
-          cmake -S . -B build \
-            -DCMAKE_CXX_COMPILER=g++-15 \
-            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/vcpkg_installed/x64-linux"
-          cmake --build build -v
-          ./build/main
+  # The fifteenth stub, and the last to arrive. The shared workflow could not
+  # express this library until cpp-ci v0.4.0: it configured with no toolchain
+  # file and its own install prefix, which suits a library whose only
+  # dependencies belong to its tests. Both inputs below are what this one
+  # needs beyond that, and both default to off for the callers that don't.
+  consumption:
+    uses: rhalbersma/cpp-ci/.github/workflows/consumption.yml@d4dea1401d4e1ffc2e2b3d7b063cdc33c419d587 # v0.4.0
+    with:
+      # CMakeLists.txt does an unconditional
+      # find_package(boost_hash2 CONFIG REQUIRED), so even the
+      # -DBUILD_TESTING=OFF configure needs vcpkg here - and so does each of
+      # the three consumers, since the installed package find_dependency's it
+      # straight back.
+      vcpkg: true
+      # The same revision CMakeLists.txt pins for its FetchContent fallback.
+      # An installed xstd rather than that fallback is what the find_package
+      # model actually requires: install(EXPORT) cannot export a FetchContent
+      # build tree, so without this the package this library installs is
+      # invalid and the consumer fails to configure against it.
+      dependency_repos: |
+        https://github.com/rhalbersma/xstd.git 7f7cbdd6e4174107ea062484f31c81fbfe220f7a
