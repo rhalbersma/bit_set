@@ -30,4 +30,4 @@ jobs:
   # missed. The old single "23-SVN libc++" leg is what this replaces; running
   # the whole ladder is what makes "which rung fixed it" answerable.
   clang_libcxx:
-    uses: rhalbersma/cpp-ci/.github/workflows/clang-libc++.yml@d42a31ce27a752910b7b76cc6e3368735c8a1115 # v0.4.1
+    uses: rhalbersma/cpp-ci/.github/workflows/clang-libc++.yml@847e9ccde5651430e1dbe2cef53c85c1d3df0b90 # v0.6.1

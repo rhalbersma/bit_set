@@ -26,4 +26,4 @@ jobs:
   # been published between stable branches - now lives in cpp-ci's
   # install-winlibs action.
   mingw:
-    uses: rhalbersma/cpp-ci/.github/workflows/mingw.yml@d42a31ce27a752910b7b76cc6e3368735c8a1115 # v0.4.1
+    uses: rhalbersma/cpp-ci/.github/workflows/mingw.yml@847e9ccde5651430e1dbe2cef53c85c1d3df0b90 # v0.6.1
