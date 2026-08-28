@@ -173,13 +173,13 @@ public:
                 return { &m_ref, m_idx };
         }
 
-        [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept
+        [[nodiscard]] constexpr explicit(false) operator value_type() const noexcept  // NOLINT(misc-explicit-constructor)
         {
                 return m_idx;
         }
 
         template<std::constructible_from<value_type> T>
-        [[nodiscard]] constexpr explicit(not std::is_convertible_v<value_type, T>) operator T() const noexcept(std::is_nothrow_constructible_v<T, value_type>)
+        [[nodiscard]] constexpr explicit(not std::is_convertible_v<value_type, T>) operator T() const noexcept(std::is_nothrow_constructible_v<T, value_type>)  // NOLINT(misc-explicit-constructor)
                 requires std::is_class_v<T>
         {
                 return m_idx;
