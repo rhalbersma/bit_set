@@ -84,18 +84,24 @@ set(cxx_compile_options_optimization
     >
 )
 
-# Deliberately not applied to Debug, as an experiment - see the pull request.
-# Every MinGW Debug leg segfaults in the same five tests on all three rungs,
-# deterministically, while every MinGW Release leg passes; Debug is also the
-# first configuration this repository has ever built on MinGW, and the only
-# thing it adds to this translation unit is -g. Big COFF objects combined
-# with DWARF have a history of bad relocations in binutils, which surfaces as
-# a runtime crash rather than a link error. Dropping the flag in Debug tests
-# that: if those legs go green the interaction is the cause and this is the
-# fix; if they fail to assemble or link instead, the flag is load-bearing
-# there and the answer is -g1 or split DWARF rather than removal.
+# Required in every configuration, Debug included. #47 withheld it from Debug
+# to test whether -Wa,-mbig-obj combined with -g was what makes the MinGW
+# Debug legs segfault. Both halves of that experiment answered at once, and
+# the answer is no:
+#
+#   GCC 15 Debug    assembler: 'file too big' on test/src/set/o0.cpp.obj
+#   GCC 17-SVN Debug  same, on set/o0, set/o2 and bitset/o0
+#   GCC 16 Debug    assembles, then segfaults in exactly the four tests the
+#                   flag was suspected of breaking - test.bitset.o1,
+#                   test.set.o0, test.set.o2, test.set.sieve
+#
+# Two rungs out of three cannot even assemble these objects without the flag,
+# so it is load-bearing. The third assembles without it and crashes anyway,
+# so the flag is not what causes the crash. -g1 and split DWARF were the
+# remedies for the interaction hypothesis; there is no interaction to remedy.
+# The MinGW Debug segfaults remain open and are unrelated to this line.
 set(cxx_compile_options_mbig_obj
-    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>,$<NOT:$<CONFIG:Debug>>>:
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
 	    -Wa,-mbig-obj
     >
 )
