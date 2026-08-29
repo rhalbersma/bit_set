@@ -20,11 +20,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  # All three rungs, including VS 2022. The README keeps that leg on purpose,
-  # "for reference only, to show exactly where it fails": VS 2022's MSVC STL
-  # has no <flat_set>, which benchmark/src/set/sieve.cpp needs. VS 2026 is
-  # the actual floor supported. The 2022 leg is deliberately not a required
-  # status check, so its failure is visible without blocking a merge.
+  # All three rungs, including VS 2022. That MSVC STL has no <flat_set>, so
+  # the tests and the benchmark probe for __cpp_lib_flat_set rather than
+  # assuming the header; std::flat_set is a reference implementation in their
+  # type lists, and dropping it costs no coverage of this library.
   #
   # 2026-Preview is new here - the local workflow's third leg was already
   # this, but the preview toolset install (channel manifest ETag cache and

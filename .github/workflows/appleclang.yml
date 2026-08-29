@@ -23,10 +23,10 @@ jobs:
   # Two rungs, not three: Apple publishes no Clang trunk, and the shared
   # workflow drops the development rung with a notice rather than failing.
   #
-  # Expected red on both, and documented as such in the README: AppleClang
-  # ships libc++, which is missing the same C++23 range adaptors that keep
-  # clang-libc++.yml red. Neither leg is a required status check, so the
-  # failures stay visible without blocking a merge.
+  # AppleClang ships libc++, which has not implemented the C++23 range
+  # adaptors views::cartesian_product, views::adjacent,
+  # views::pairwise_transform and views::stride. The library used to reach
+  # for them and no longer does, so both rungs pass.
   #
   # This file keeps its name rather than following cpp-ci's apple-clang.yml:
   # the badge URL in the README is the workflow's path, so renaming it would

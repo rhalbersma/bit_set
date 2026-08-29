@@ -25,9 +25,7 @@ jobs:
   # the dependencies with different compilers.
   #
   # All three rungs. The stable one was dropped while the tests included
-  # <flat_set> unconditionally; they probe for it now. The C2228 that held
-  # msvc.yml's 2022 rung is a cl limitation clang-cl does not share, so this
-  # leg tests the MSVC STL rather than the front end.
+  # <flat_set> unconditionally; they probe for __cpp_lib_flat_set now.
   clang_cl:
     uses: rhalbersma/cpp-ci/.github/workflows/visual-studio.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
     with:
