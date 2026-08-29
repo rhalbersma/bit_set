@@ -76,6 +76,37 @@ set(cxx_compile_options_optimization
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -march=native
     >
+    # -march=native enables AVX2 on the GitHub Windows runners, and that is what
+    # makes the MinGW Debug legs segfault. gdb caught all four crashes on the
+    # same instruction:
+    #
+    #   test.bitset.o1  vmovdqa %ymm0,-0x50(%rbp)   rbp 0xbfcca0 -> 0xbfcc50
+    #   test.set.o0     vmovdqa %ymm0,-0xc0(%rbp)   rbp 0xbfd570 -> 0xbfd4b0
+    #   test.set.o2     vmovdqa %ymm0,-0xc0(%rbp)   rbp 0xbfd470 -> 0xbfd3b0
+    #   test.set.sieve  vmovdqa %ymm0,-0x50(%rbp)   rbp 0xbfcd00 -> 0xbfccb0
+    #
+    # vmovdqa is a 32-byte *aligned* store. Every one of those targets is inside
+    # the mapped stack and every one is 16-byte aligned but not 32-byte aligned -
+    # mod 32 == 16, in all four. So this is a general protection fault from an
+    # alignment violation, not a bad pointer.
+    #
+    # The Windows x64 ABI guarantees only 16-byte stack alignment, where the
+    # System V ABI's guarantee plus GCC's realignment make the same code safe on
+    # Linux. Debug is where it bites because -O0 spills every temporary to a
+    # stack slot, so 32-byte ymm stores to the stack are everywhere; -O2 keeps
+    # the same values in registers, which is why the Release legs are green.
+    #
+    # This also settles why nothing separated the four failing tests from their
+    # passing neighbours, and why fmt, __uint128_t, std::flat_set and
+    # -Wa,-mbig-obj were each ruled out in turn: the crash has nothing to do with
+    # what the test does. It lands wherever GCC happened to emit a ymm spill.
+    #
+    # -mno-avx keeps the rest of -march=native and takes 256-bit vectors, and
+    # with them every 32-byte stack slot, off the table. -mprefer-vector-width=128
+    # is the less blunt alternative if AVX is wanted back on Windows.
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
+        -mno-avx
+    >
 )
 
 get_property(bit_set_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
