@@ -19,7 +19,7 @@
 #include <limits>                               // digits
 #include <ranges>                               // distance, prev (views::drop_last when P22014R2 is accepted)
                                                 // drop, iota, pairwise_transform, reverse, take, transform, zip
-#include <type_traits>                          // is_nothrow_swappable_v
+#include <type_traits>                          // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
 #include <utility>                              // pair
 
 namespace xstd::bit {
@@ -553,8 +553,21 @@ private:
                 }
         }
 
+        // The type of self.m_bits[i], named without saying so. MSVC's cl rejects a
+        // member of the explicit object parameter inside a trailing return type --
+        // C2228, "left of '.m_bits' must have class/struct/union" -- and did so for
+        // every target in a Visual Studio 2022 build, benchmarks included, long
+        // before any test body was reached. std::array's operator[] is not
+        // ref-qualified, so this reference is a function of Self's constness alone
+        // and needs no member access to name: an rvalue self still yields Block&,
+        // exactly as the member expression did. bit_array.hpp's result_t is the
+        // same idiom, and compiles there on the same compiler.
+        template<class Self>
+        using block_reference_t = std::conditional_t<
+                std::is_const_v<std::remove_reference_t<Self>>, Block const&, Block&>;
+        
         [[nodiscard]] constexpr auto block_mask(this auto&& self, std::size_t n) noexcept
-                -> std::pair<decltype(std::forward<decltype(self)>(self).m_bits[std::declval<std::size_t>()]), Block>
+                -> std::pair<block_reference_t<decltype(self)>, Block>
         {
                 auto const [ index, offset ] = index_offset(n);
                 return { std::forward<decltype(self)>(self).m_bits[index], static_cast<Block>(unit << offset) };
