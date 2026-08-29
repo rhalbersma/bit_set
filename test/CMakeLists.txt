@@ -107,11 +107,28 @@ set(cxx_compile_options_optimization
     # -Wa,-mbig-obj were each ruled out in turn: the crash has nothing to do with
     # what the test does. It lands wherever GCC happened to emit a ymm spill.
     #
-    # -mno-avx keeps the rest of -march=native and takes 256-bit vectors, and
-    # with them every 32-byte stack slot, off the table. -mprefer-vector-width=128
-    # is the less blunt alternative if AVX is wanted back on Windows.
-    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
-        -mno-avx
+    # -mprefer-vector-width=128 caps vectors at 128 bits - exactly the 16 bytes
+    # the Windows ABI guarantees - so no 32-byte stack slot is ever needed and no
+    # 32-byte aligned store can be emitted. Verified rather than assumed: at -O0
+    # with -march=x86-64-v3 the 32-byte copies here use eight ymm registers, and
+    # adding this flag brings that to zero.
+    #
+    # Preferred over -mno-avx, which fixes the crash equally but disables AVX2
+    # outright - __AVX2__ stops being defined and -O2 falls back to SSE. This
+    # keeps AVX2 and its 128-bit VEX instructions (vpaddq, vpshufb and the rest);
+    # only 256-bit vectors go.
+    #
+    # Scoped to Debug, where the crash lives and where vector width buys nothing
+    # anyway. Release keeps the full 256-bit -march=native, which is the only
+    # configuration whose measurements depend on it.
+    #
+    # That scoping rests on an observation rather than a guarantee. Release was
+    # green throughout because -O2 keeps these values in registers instead of
+    # spilling them - but register pressure can spill a ymm to a 32-byte slot at
+    # any optimisation level. If a Release leg ever faults on a vmovdqa, the
+    # answer is to widen this to every configuration.
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>,$<CONFIG:Debug>>:
+        -mprefer-vector-width=128
     >
 )
 
