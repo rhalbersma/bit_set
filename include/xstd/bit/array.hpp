@@ -225,16 +225,7 @@ struct array
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        // The cast is the truncation, written down. A shift
-                        // can carry bits past the top of a single-block array,
-                        // and dropping them is what a fixed-width shift means;
-                        // Block being narrower than the int its operands
-                        // promote to is what makes that a conversion at all.
-                        // Left implicit it draws GCC's -Wconversion at -O0 and
-                        // Clang's -fsanitize=implicit-conversion at run time,
-                        // and the sanitizer has no pragma to silence it - only
-                        // this. Explicit, it matches how the multi-block path
-                        // below already spells every one of its narrowings.
+                        // m_bits[0] <<= n narrows the promoted int back to a Block implicitly, which -fsanitize=implicit-conversion aborts on once a bit shifts out.
                         m_bits[0] = static_cast<Block>(m_bits[0] << n);
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div_mod(n, bits_per_block);
@@ -256,7 +247,7 @@ struct array
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        // See operator<<= above for why this is cast.
+                        // m_bits[0] >>= n narrows the promoted int back to a Block implicitly, which -fsanitize=implicit-conversion instruments.
                         m_bits[0] = static_cast<Block>(m_bits[0] >> n);
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div_mod(n, bits_per_block);
