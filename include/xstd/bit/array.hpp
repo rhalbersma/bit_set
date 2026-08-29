@@ -10,7 +10,7 @@
 #include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
 #include <xstd/memory.hpp>                      // aligned_size
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
-#include <algorithm>                            // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <algorithm>                            // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                // array
 #include <cassert>                              // assert
 #include <concepts>                             // unsigned_integral
@@ -18,7 +18,7 @@
 #include <functional>                           // plus
 #include <limits>                               // digits
 #include <ranges>                               // distance, prev (views::drop_last when P22014R2 is accepted)
-                                                // drop, iota, pairwise_transform, reverse, take, transform, zip
+                                                // drop, iota, reverse, take, transform, zip
 #include <type_traits>                          // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
 #include <utility>                              // pair
 
@@ -242,12 +242,9 @@ struct array
                                 std::shift_right(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const R_shift = bits_per_block - L_shift;
-                                std::ranges::copy(
-                                        m_bits | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform([=](auto first, auto second) -> Block {
-                                                return static_cast<Block>(first << L_shift) | static_cast<Block>(second >> R_shift);
-                                        }),
-                                        m_bits.rbegin()
-                                );
+                                for (auto dst = last_block; dst > n_blocks; --dst) {
+                                        m_bits[dst] = static_cast<Block>(static_cast<Block>(m_bits[dst - n_blocks] << L_shift) | static_cast<Block>(m_bits[dst - n_blocks - 1] >> R_shift));
+                                }
                                 m_bits[n_blocks] = static_cast<Block>(m_bits[0] << L_shift);
                         }
                         std::ranges::fill_n(std::ranges::prev(m_bits.rend(), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);
@@ -267,12 +264,9 @@ struct array
                                 std::shift_left(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const L_shift = bits_per_block - R_shift;
-                                std::ranges::copy(
-                                        m_bits | std::views::drop(n_blocks) | std::views::pairwise_transform([=](auto first, auto second) -> Block {
-                                                return static_cast<Block>(first >> R_shift) | static_cast<Block>(second << L_shift);
-                                        }),
-                                        m_bits.begin()
-                                );
+                                for (auto dst = 0uz; dst + n_blocks < last_block; ++dst) {
+                                        m_bits[dst] = static_cast<Block>(static_cast<Block>(m_bits[dst + n_blocks] >> R_shift) | static_cast<Block>(m_bits[dst + n_blocks + 1] << L_shift));
+                                }
                                 m_bits[last_block - n_blocks] = static_cast<Block>(m_bits[last_block] >> R_shift);
                         }
                         std::ranges::fill_n(std::ranges::prev(m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);
