@@ -9,7 +9,7 @@
 #include <concepts>     // integral
 #include <cstddef>      // size_t
 #include <ranges>       // to
-                        // begin, end, iota, take_while
+                        // begin, end, iota, range_value_t, take_while
 
 namespace xstd {
 
@@ -86,19 +86,20 @@ auto sift_primes1(std::size_t n)
 template<class X>
 auto filter_twins(X const& primes)
 {
+        using key = std::ranges::range_value_t<X>;
         auto twins = X();
         auto first = std::ranges::begin(primes);
         auto const last = std::ranges::end(primes);
         if (first == last) {
                 return twins;
         }
-        auto prev = *first++;
+        key prev = *first++;
         if (first == last) {
                 return twins;
         }
-        auto self = *first++;
+        key self = *first++;
         for (; first != last; ++first) {
-                auto const next = *first;
+                key const next = *first;
                 if (self - 2 == prev or self + 2 == next) {
                         twins.insert(self);
                 }
