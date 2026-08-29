@@ -30,4 +30,4 @@ jobs:
   # Clang rung with a matching GCC rung for that libstdc++ rather than
   # pointing every rung at one version of it.
   clang:
-    uses: rhalbersma/cpp-ci/.github/workflows/clang.yml@676e6fb7abc784e54a227998bf3e9c39790e63cf # v0.8.0
+    uses: rhalbersma/cpp-ci/.github/workflows/clang.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
