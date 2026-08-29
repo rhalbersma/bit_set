@@ -7,15 +7,14 @@
                                         // decrement, increment
 #include <set/exhaustive.hpp>           // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
                                         // all_singleton_sets, all_singleton_set_pairs, all_valid
+#include <set/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET, is_flat_set
 #include <set/primitives.hpp>           // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
                                         // mem_lower_bound, mem_upper_bound, mem_equal_range, op_equal, op_not_equal_to,
                                         // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
 #include <xstd/bit_set.hpp>             // bit_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <concepts>                     // same_as
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
-#include <flat_set>                     // flat_set
 #include <set>                          // set
 #include <tuple>                        // tuple
 
@@ -25,7 +24,9 @@ using namespace xstd;
 
 using Types = std::tuple
 <       std::set<std::size_t>
+#ifdef XSTD_TEST_HAS_FLAT_SET
 ,       std::flat_set<std::size_t>
+#endif
 ,       bit_set< 0, uint8_t>
 ,       bit_set< 1, uint8_t>
 ,       bit_set< 8, uint8_t>
@@ -76,7 +77,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
         });
 
         // std::flat_set<std::size_t>::erase invalidates iterators
-        if constexpr (not std::same_as<T, std::flat_set<std::size_t>>) {
+        if constexpr (not is_flat_set<T>) {
                 on2::all_doubleton_sets<T>([](auto& is2) {
                         mem_erase()(is2, is2.begin(), is2.end());
                 });
