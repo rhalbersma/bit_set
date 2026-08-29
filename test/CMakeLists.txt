@@ -137,51 +137,6 @@ set(cxx_compile_options_mbig_obj
     >
 )
 
-# TEMPORARY, for the MinGW Debug segfault investigation only. Four tests -
-# test.bitset.o1, test.set.o0, test.set.o2, test.set.sieve - die with an
-# unreported access violation on every WinLibs rung in Debug, and on no other
-# platform or configuration. #48 established that -Wa,-mbig-obj is not the
-# cause. This block adds observation, not a remedy: it changes what the build
-# and the test run report, not what they do, so the four keep crashing and the
-# crash is what gets measured.
-#
-# Two independent instruments, because there are two ways to run out of stack:
-#
-#   -fstack-usage    writes a .su file next to every object, listing each
-#                    function's frame size. A POST_BUILD step ranks them. This
-#                    catches the single-oversized-frame mode - Windows reserves
-#                    2 MiB against Linux's 8 MiB, and GCC probes the guard page
-#                    through ___chkstk_ms on entry, so one frame over the
-#                    reserve faults before its body runs.
-#
-#   gdb -batch       wraps each test. This catches every mode, and says where.
-#                    Boost.Test is the reason we are blind today: on MinGW it
-#                    has neither BOOST_SEH_BASED_SIGNAL_HANDLING (that needs
-#                    _MSC_VER) nor BOOST_SIGACTION_BASED_SIGNAL_HANDLING (that
-#                    needs POSIX sigaction), so execution_monitor falls through
-#                    to BOOST_NO_SIGNAL_HANDLING and the process simply dies.
-#                    The silence under --output-on-failure is that fallback,
-#                    not evidence about when the crash happens.
-#
-# ___chkstk_ms as the faulting frame means stack exhaustion; a frame in our own
-# code, or a vector move against a misaligned slot, means something else.
-# Delete both instruments once the four are diagnosed.
-set(bit_set_mingw_debug OFF)
-if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(bit_set_mingw_debug ON)
-    find_program(bit_set_gdb NAMES gdb)
-    if(NOT bit_set_gdb)
-        message(WARNING "MinGW Debug: gdb not found, tests run unwrapped and will stay silent on crashing")
-    endif()
-endif()
-
-set(cxx_compile_options_stack_usage
-    $<$<BOOL:${bit_set_mingw_debug}>:
-        -fstack-usage
-    >
-)
-
-
 # Each public header is compiled as its own translation unit (linked against
 # the same warning flags as the unit tests), proving it is self-sufficient.
 # This is what the Clang-Tidy workflow analyzes - the Boost.Test sources
@@ -270,35 +225,7 @@ foreach(t ${targets})
         ${cxx_compile_options_warnings}
         ${cxx_compile_options_optimization}
         ${cxx_compile_options_mbig_obj}
-        ${cxx_compile_options_stack_usage}
     )
 
-    if(bit_set_mingw_debug)
-        add_custom_command(
-            TARGET ${target_id} POST_BUILD
-            COMMAND ${CMAKE_COMMAND}
-                -DSU_DIR=${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${target_id}.dir
-                -DSU_LABEL=${target_id}
-                -DSU_TOP=10
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/report_stack_usage.cmake
-            VERBATIM
-        )
-    endif()
-
-    # The dump lives in on_crash.gdb rather than in -ex flags here, because it
-    # has to be guarded: gdb -batch exits non-zero if any scripted command
-    # errors, and that overrides --return-child-result. Unguarded "bt" after a
-    # clean exit errors with "No stack.", which reported every passing test to
-    # ctest as a failure - 18 of 27, where only a handful are real crashes.
-    if(bit_set_mingw_debug AND bit_set_gdb)
-        add_test(
-            NAME ${target_id}
-            COMMAND ${bit_set_gdb} -batch -nx
-                -x ${CMAKE_CURRENT_SOURCE_DIR}/on_crash.gdb
-                --return-child-result
-                --args $<TARGET_FILE:${target_id}>
-        )
-    else()
-        add_test(${target_id} ${target_id})
-    endif()
+    add_test(${target_id} ${target_id})
 endforeach()
