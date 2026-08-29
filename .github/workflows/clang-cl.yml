@@ -24,16 +24,17 @@ jobs:
   # MSVC STL instead of cl. Its own cache prefix, since the two callers build
   # the dependencies with different compilers.
   #
-  # Two rungs, not three. clang-cl uses the MSVC STL whatever the front end,
-  # so VS 2022 fails here for the same missing <flat_set> as on msvc.yml -
-  # but unlike msvc.yml this workflow never carried that leg, and the README
-  # says so with a dash in the Clang-CL Older stable column. One reference
-  # leg for that gap is enough; a second adds a runner and no information.
-  # 2026-Preview is a gain: the local workflow tested VS 2026 alone.
+  # All three rungs. The stable one was dropped while the tests included
+  # <flat_set> unconditionally: clang-cl uses the MSVC STL whatever the front
+  # end, so VS 2022 died here on the same C1083 as on msvc.yml, and one
+  # reference leg for that gap was enough. The tests probe for the header now
+  # (test/include/set/flat_set.hpp), so that reason is gone and the leg is
+  # worth a runner again. The C2228 that also held msvc.yml's 2022 rung is a
+  # cl front-end limitation on the explicit object parameter, which clang-cl
+  # does not share -- so this leg measures the MSVC STL, not cl.
   clang_cl:
     uses: rhalbersma/cpp-ci/.github/workflows/visual-studio.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
     with:
-      tiers: qualification,development
       toolset: ClangCL,host=x64
       preview_toolset_prefix: "ClangCL,"
       cache_prefix: clang-cl
