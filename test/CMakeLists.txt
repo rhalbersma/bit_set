@@ -150,6 +150,22 @@ set(cxx_compile_options_stack_usage
     >
 )
 
+# The experiment the two instruments above were built to inform, run early
+# because it is cheap and because it doubles as the fix. 8 MiB is Linux's
+# default, against the 2 MiB mingw-w64 writes into the PE header - so this
+# asks, in one CI run, whether the four crash for no reason other than
+# having a fifth of the headroom their green Linux counterparts get.
+#
+# It does not blind the instruments. Green here is itself the answer, and
+# red leaves gdb to say what the cause is instead. Widen this to every
+# Windows-GNU configuration, not just Debug, if it turns out to be the fix;
+# it is scoped to Debug now to keep the experiment one variable.
+set(link_options_stack_reserve
+    $<$<BOOL:${bit_set_mingw_debug}>:
+        -Wl,--stack,8388608
+    >
+)
+
 # Each public header is compiled as its own translation unit (linked against
 # the same warning flags as the unit tests), proving it is self-sufficient.
 # This is what the Clang-Tidy workflow analyzes - the Boost.Test sources
@@ -239,6 +255,11 @@ foreach(t ${targets})
         ${cxx_compile_options_optimization}
         ${cxx_compile_options_mbig_obj}
         ${cxx_compile_options_stack_usage}
+    )
+
+    target_link_options(
+        ${target_id} PRIVATE
+        ${link_options_stack_reserve}
     )
 
     if(bit_set_mingw_debug)
