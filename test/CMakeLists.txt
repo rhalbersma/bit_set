@@ -82,6 +82,54 @@ set(cxx_compile_options_optimization
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -march=native
     >
+    # -march=native enables AVX2 on the GitHub Windows runners, and that is what
+    # makes the MinGW Debug legs segfault. gdb caught all four crashes on the
+    # same instruction:
+    #
+    #   test.bitset.o1  vmovdqa %ymm0,-0x50(%rbp)   rbp 0xbfcca0 -> 0xbfcc50
+    #   test.set.o0     vmovdqa %ymm0,-0xc0(%rbp)   rbp 0xbfd570 -> 0xbfd4b0
+    #   test.set.o2     vmovdqa %ymm0,-0xc0(%rbp)   rbp 0xbfd470 -> 0xbfd3b0
+    #   test.set.sieve  vmovdqa %ymm0,-0x50(%rbp)   rbp 0xbfcd00 -> 0xbfccb0
+    #
+    # vmovdqa is a 32-byte *aligned* store. Every one of those targets is inside
+    # the mapped stack and every one is 16-byte aligned but not 32-byte aligned -
+    # mod 32 == 16, in all four. So this is a general protection fault from an
+    # alignment violation, not a bad pointer.
+    #
+    # The Windows x64 ABI guarantees only 16-byte stack alignment, where the
+    # System V ABI's guarantee plus GCC's realignment make the same code safe on
+    # Linux. Debug is where it bites because -O0 spills every temporary to a
+    # stack slot, so 32-byte ymm stores to the stack are everywhere; -O2 keeps
+    # the same values in registers, which is why the Release legs are green.
+    #
+    # This also settles why nothing separated the four failing tests from their
+    # passing neighbours, and why fmt, __uint128_t, std::flat_set and
+    # -Wa,-mbig-obj were each ruled out in turn: the crash has nothing to do with
+    # what the test does. It lands wherever GCC happened to emit a ymm spill.
+    #
+    # -mprefer-vector-width=128 caps vectors at 128 bits - exactly the 16 bytes
+    # the Windows ABI guarantees - so no 32-byte stack slot is ever needed and no
+    # 32-byte aligned store can be emitted. Verified rather than assumed: at -O0
+    # with -march=x86-64-v3 the 32-byte copies here use eight ymm registers, and
+    # adding this flag brings that to zero.
+    #
+    # Preferred over -mno-avx, which fixes the crash equally but disables AVX2
+    # outright - __AVX2__ stops being defined and -O2 falls back to SSE. This
+    # keeps AVX2 and its 128-bit VEX instructions (vpaddq, vpshufb and the rest);
+    # only 256-bit vectors go.
+    #
+    # Scoped to Debug, where the crash lives and where vector width buys nothing
+    # anyway. Release keeps the full 256-bit -march=native, which is the only
+    # configuration whose measurements depend on it.
+    #
+    # That scoping rests on an observation rather than a guarantee. Release was
+    # green throughout because -O2 keeps these values in registers instead of
+    # spilling them - but register pressure can spill a ymm to a 32-byte slot at
+    # any optimisation level. If a Release leg ever faults on a vmovdqa, the
+    # answer is to widen this to every configuration.
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>,$<CONFIG:Debug>>:
+        -mprefer-vector-width=128
+    >
 )
 
 # Required in every configuration, Debug included. #47 withheld it from Debug
