@@ -242,8 +242,8 @@ struct array
                                 std::shift_right(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const R_shift = bits_per_block - L_shift;
-                                for (auto dst = last_block; dst > n_blocks; --dst) {
-                                        m_bits[dst] = static_cast<Block>(static_cast<Block>(m_bits[dst - n_blocks] << L_shift) | static_cast<Block>(m_bits[dst - n_blocks - 1] >> R_shift));
+                                for (auto i = last_block; i > n_blocks; --i) {
+                                        m_bits[i] = static_cast<Block>(static_cast<Block>(m_bits[i - n_blocks] << L_shift) | static_cast<Block>(m_bits[i - n_blocks - 1] >> R_shift));
                                 }
                                 m_bits[n_blocks] = static_cast<Block>(m_bits[0] << L_shift);
                         }
@@ -264,8 +264,8 @@ struct array
                                 std::shift_left(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const L_shift = bits_per_block - R_shift;
-                                for (auto dst = 0UZ; dst + n_blocks < last_block; ++dst) {
-                                        m_bits[dst] = static_cast<Block>(static_cast<Block>(m_bits[dst + n_blocks] >> R_shift) | static_cast<Block>(m_bits[dst + n_blocks + 1] << L_shift));
+                                for (auto i = 0UZ; i + n_blocks < last_block; ++i) {
+                                        m_bits[i] = static_cast<Block>(static_cast<Block>(m_bits[i + n_blocks] >> R_shift) | static_cast<Block>(m_bits[i + n_blocks + 1] << L_shift));
                                 }
                                 m_bits[last_block - n_blocks] = static_cast<Block>(m_bits[last_block] >> R_shift);
                         }
