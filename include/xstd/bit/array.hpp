@@ -565,7 +565,7 @@ private:
         template<class Self>
         using block_reference_t = std::conditional_t<
                 std::is_const_v<std::remove_reference_t<Self>>, Block const&, Block&>;
-        
+
         [[nodiscard]] constexpr auto block_mask(this auto&& self, std::size_t n) noexcept
                 -> std::pair<block_reference_t<decltype(self)>, Block>
         {
