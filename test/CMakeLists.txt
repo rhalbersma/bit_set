@@ -82,81 +82,10 @@ set(cxx_compile_options_optimization
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -march=native
     >
-    # -march=native enables AVX2 on the GitHub Windows runners, and that is what
-    # makes the MinGW Debug legs segfault. gdb caught all four crashes on the
-    # same instruction:
-    #
-    #   test.bitset.o1  vmovdqa %ymm0,-0x50(%rbp)   rbp 0xbfcca0 -> 0xbfcc50
-    #   test.set.o0     vmovdqa %ymm0,-0xc0(%rbp)   rbp 0xbfd570 -> 0xbfd4b0
-    #   test.set.o2     vmovdqa %ymm0,-0xc0(%rbp)   rbp 0xbfd470 -> 0xbfd3b0
-    #   test.set.sieve  vmovdqa %ymm0,-0x50(%rbp)   rbp 0xbfcd00 -> 0xbfccb0
-    #
-    # vmovdqa is a 32-byte *aligned* store. Every one of those targets is inside
-    # the mapped stack and every one is 16-byte aligned but not 32-byte aligned -
-    # mod 32 == 16, in all four. So this is a general protection fault from an
-    # alignment violation, not a bad pointer.
-    #
-    # The Windows x64 ABI guarantees only 16-byte stack alignment, where the
-    # System V ABI's guarantee plus GCC's realignment make the same code safe on
-    # Linux. Debug is where it bites because -O0 spills every temporary to a
-    # stack slot, so 32-byte ymm stores to the stack are everywhere; -O2 keeps
-    # the same values in registers, which is why the Release legs are green.
-    #
-    # This also settles why nothing separated the four failing tests from their
-    # passing neighbours, and why fmt, __uint128_t, std::flat_set and
-    # -Wa,-mbig-obj were each ruled out in turn: the crash has nothing to do with
-    # what the test does. It lands wherever GCC happened to emit a ymm spill.
-    #
-    # -mprefer-vector-width=128 caps vectors at 128 bits - exactly the 16 bytes
-    # the Windows ABI guarantees - so no 32-byte stack slot is ever needed and no
-    # 32-byte aligned store can be emitted. Verified rather than assumed: at -O0
-    # with -march=x86-64-v3 the 32-byte copies here use eight ymm registers, and
-    # adding this flag brings that to zero.
-    #
-    # Preferred over -mno-avx, which fixes the crash equally but disables AVX2
-    # outright - __AVX2__ stops being defined and -O2 falls back to SSE. This
-    # keeps AVX2 and its 128-bit VEX instructions (vpaddq, vpshufb and the rest);
-    # only 256-bit vectors go.
-    #
-    # Every configuration, not only Debug. #54 scoped this to Debug because that
-    # was where the crashes were, and said the scoping rested on an observation
-    # rather than a guarantee: Release was green because -O2 usually keeps these
-    # values in registers, but register pressure can spill a ymm to a 32-byte
-    # slot at any optimisation level.
-    #
-    # It does. Scanning the built objects with cpp-ci's Windows stack-ABI check
-    # found the instruction in Release, on all three WinLibs rungs, with no
-    # workaround applied:
-    #
-    #   15.3.0    15 aligned 32-byte stack accesses, 0 functions realigned
-    #   16.2.0    12
-    #   17-SVN    14
-    #
-    # for example, in a function no test names and no crash ever reached:
-    #
-    #   fmt::v12::detail::value<context>::format_custom<std::set<unsigned long long, ...>>
-    #     207: vmovdqa %ymm0,0x60(%rsp)
-    #
-    # 0x60(%rsp) is 16-byte aligned but not 32-byte aligned, so it faults on
-    # every entry where rsp happens to land on a 32-byte boundary and not on the
-    # others. Release was never correct; it was lucky, and only about half the
-    # time per entry. Note also that none of the types involved is over-aligned:
-    # std::set, std::bitset and std::flat_set all have alignof 8. GCC invented
-    # the 32-byte requirement on its own.
-    #
-    # Capping the width is the only remedy this target has. -mstackrealign
-    # realigns to the *preferred* stack boundary, and mingw-w64 refuses to let
-    # that boundary exceed 16 bytes - measured on GCC 13, 15.3.0 and the 17
-    # snapshot, all three rejecting "-mpreferred-stack-boundary=5" as "not
-    # between 3 and 4", where Linux x86-64 accepts it. So the frame cannot be
-    # aligned to 32 by any means, and the only fix is to stop generating code
-    # that needs it. Nothing to wait for upstream either: GCC PR target/49001
-    # has been open on this since 2011.
-    #
-    # The cost is 256-bit vectors in Release. That is a real loss for the
-    # benchmarks, and it is not optional.
+    # MinGW emits 32-byte aligned stores to a 16-byte aligned stack; the assembler rewrites
+    # them unaligned, keeping 256-bit vectors (#54, GCC PR target/54412, binutils 2.38+).
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
-        -mprefer-vector-width=128
+        -Wa$<COMMA>-muse-unaligned-vector-move
     >
 )
 
