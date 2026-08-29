@@ -24,7 +24,18 @@ run
 
 if $_isvoid($_exitcode)
         printf "=== did not exit normally ===\n"
-        info registers rsp rip
+
+        # The faulting instruction plus the general registers. Between them
+        # they give the address that was dereferenced, which says what kind of
+        # corruption this is: a null base, a small offset off null, a poisoned
+        # pointer, or an address that is merely unmapped.
+        printf "=== faulting instruction ===\n"
+        x/i $rip
+        printf "=== registers ===\n"
+        info registers
+        printf "=== frame ===\n"
+        info frame
+
         printf "=== innermost frames ===\n"
         bt 60
         printf "=== outermost frames ===\n"
