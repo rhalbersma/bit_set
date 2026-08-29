@@ -274,22 +274,16 @@ foreach(t ${targets})
         )
     endif()
 
-    # --return-child-result keeps ctest's verdict the child's own: a passing
-    # test still passes, a crashing one still fails, and only then does
-    # --output-on-failure surface the backtrace gdb printed. bt 60 gives the
-    # innermost frames (where it died), bt -20 the outermost (how it got there,
-    # and whether the two ends of a runaway recursion are the same handful of
-    # frames repeated).
+    # The dump lives in on_crash.gdb rather than in -ex flags here, because it
+    # has to be guarded: gdb -batch exits non-zero if any scripted command
+    # errors, and that overrides --return-child-result. Unguarded "bt" after a
+    # clean exit errors with "No stack.", which reported every passing test to
+    # ctest as a failure - 18 of 27, where only a handful are real crashes.
     if(bit_set_mingw_debug AND bit_set_gdb)
         add_test(
             NAME ${target_id}
             COMMAND ${bit_set_gdb} -batch -nx
-                -ex "set confirm off"
-                -ex "set pagination off"
-                -ex run
-                -ex "info registers rsp rip"
-                -ex "bt 60"
-                -ex "bt -20"
+                -x ${CMAKE_CURRENT_SOURCE_DIR}/on_crash.gdb
                 --return-child-result
                 --args $<TARGET_FILE:${target_id}>
         )
