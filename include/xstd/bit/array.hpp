@@ -396,9 +396,9 @@ struct array
                 if constexpr (has_unused_bits) {
                         if constexpr (num_blocks == 1) {
                                 return m_bits[0] == used_bits;
-                        } else if (num_blocks == 2) {
+                        } else if constexpr (num_blocks == 2) {
                                 return m_bits[0] == ones and m_bits[1] == used_bits;
-                        } else if (num_blocks >= 3) {
+                        } else if constexpr (num_blocks >= 3) {
                                 return std::ranges::all_of(m_bits | std::views::take(last_block), [](auto block) {
                                         return block == ones;
                                 }) and m_bits[last_block] == used_bits;
