@@ -93,13 +93,13 @@ auto filter_twins(X const& primes)
         if (first == last) {
                 return twins;
         }
-        key prev = *first++;
+        auto prev = static_cast<key>(*first++);
         if (first == last) {
                 return twins;
         }
-        key self = *first++;
+        auto self = static_cast<key>(*first++);
         for (; first != last; ++first) {
-                key const next = *first;
+                auto const next = static_cast<key>(*first);
                 if (self - 2 == prev or self + 2 == next) {
                         twins.insert(self);
                 }
