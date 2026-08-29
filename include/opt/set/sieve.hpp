@@ -9,7 +9,7 @@
 #include <concepts>     // integral
 #include <cstddef>      // size_t
 #include <ranges>       // to
-                        // adjacent, elements, filter, iota, stride, take_while
+                        // adjacent, elements, filter, iota, take_while
 
 namespace xstd {
 
