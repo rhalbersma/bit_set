@@ -118,16 +118,44 @@ set(cxx_compile_options_optimization
     # keeps AVX2 and its 128-bit VEX instructions (vpaddq, vpshufb and the rest);
     # only 256-bit vectors go.
     #
-    # Scoped to Debug, where the crash lives and where vector width buys nothing
-    # anyway. Release keeps the full 256-bit -march=native, which is the only
-    # configuration whose measurements depend on it.
+    # Every configuration, not only Debug. #54 scoped this to Debug because that
+    # was where the crashes were, and said the scoping rested on an observation
+    # rather than a guarantee: Release was green because -O2 usually keeps these
+    # values in registers, but register pressure can spill a ymm to a 32-byte
+    # slot at any optimisation level.
     #
-    # That scoping rests on an observation rather than a guarantee. Release was
-    # green throughout because -O2 keeps these values in registers instead of
-    # spilling them - but register pressure can spill a ymm to a 32-byte slot at
-    # any optimisation level. If a Release leg ever faults on a vmovdqa, the
-    # answer is to widen this to every configuration.
-    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>,$<CONFIG:Debug>>:
+    # It does. Scanning the built objects with cpp-ci's Windows stack-ABI check
+    # found the instruction in Release, on all three WinLibs rungs, with no
+    # workaround applied:
+    #
+    #   15.3.0    15 aligned 32-byte stack accesses, 0 functions realigned
+    #   16.2.0    12
+    #   17-SVN    14
+    #
+    # for example, in a function no test names and no crash ever reached:
+    #
+    #   fmt::v12::detail::value<context>::format_custom<std::set<unsigned long long, ...>>
+    #     207: vmovdqa %ymm0,0x60(%rsp)
+    #
+    # 0x60(%rsp) is 16-byte aligned but not 32-byte aligned, so it faults on
+    # every entry where rsp happens to land on a 32-byte boundary and not on the
+    # others. Release was never correct; it was lucky, and only about half the
+    # time per entry. Note also that none of the types involved is over-aligned:
+    # std::set, std::bitset and std::flat_set all have alignof 8. GCC invented
+    # the 32-byte requirement on its own.
+    #
+    # Capping the width is the only remedy this target has. -mstackrealign
+    # realigns to the *preferred* stack boundary, and mingw-w64 refuses to let
+    # that boundary exceed 16 bytes - measured on GCC 13, 15.3.0 and the 17
+    # snapshot, all three rejecting "-mpreferred-stack-boundary=5" as "not
+    # between 3 and 4", where Linux x86-64 accepts it. So the frame cannot be
+    # aligned to 32 by any means, and the only fix is to stop generating code
+    # that needs it. Nothing to wait for upstream either: GCC PR target/49001
+    # has been open on this since 2011.
+    #
+    # The cost is 256-bit vectors in Release. That is a real loss for the
+    # benchmarks, and it is not optional.
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
         -mprefer-vector-width=128
     >
 )
