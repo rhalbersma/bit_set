@@ -9,7 +9,7 @@
 #include <concepts>     // integral
 #include <cstddef>      // size_t
 #include <ranges>       // to
-                        // adjacent, elements, filter, iota, stride, take_while
+                        // begin, end, iota, range_value_t, take_while
 
 namespace xstd {
 
@@ -55,10 +55,7 @@ auto sift_primes0(std::size_t n)
                 if (not primes.contains(p)) {
                         continue;
                 }
-                for (auto m
-                        : std::views::iota(p * p, n)
-                        | std::views::stride(p)
-                ) {
+                for (auto m = p * p; m < n; m += p) {
                         sift(primes, m);
                 }
         }
@@ -89,12 +86,27 @@ auto sift_primes1(std::size_t n)
 template<class X>
 auto filter_twins(X const& primes)
 {
-        return primes
-                | std::views::adjacent<3>
-                | std::views::filter([](auto&& x) { auto&& [ prev, self, next ] = x; return self - 2 == prev or self + 2 == next; })
-                | std::views::elements<1>
-                | std::ranges::to<X>()
-        ;
+        using key = std::ranges::range_value_t<X>;
+        auto twins = X();
+        auto first = std::ranges::begin(primes);
+        auto const last = std::ranges::end(primes);
+        if (first == last) {
+                return twins;
+        }
+        auto prev = static_cast<key>(*first++);
+        if (first == last) {
+                return twins;
+        }
+        auto self = static_cast<key>(*first++);
+        for (; first != last; ++first) {
+                auto const next = static_cast<key>(*first);
+                if (self - 2 == prev or self + 2 == next) {
+                        twins.insert(self);
+                }
+                prev = self;
+                self = next;
+        }
+        return twins;
 }
 
 }       // namespace xstd

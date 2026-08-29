@@ -20,19 +20,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Every leg on every rung its compiler fills, less the libc++ one below.
-  # Leak detection is on; the local ASan leg this replaced ran with
-  # detect_leaks=0.
+  # Every leg on every rung its compiler fills. Leak detection is on; the
+  # local ASan leg this replaced ran with detect_leaks=0.
+  #
+  # The ASan libc++ leg was dropped while the library used range adaptors
+  # libc++ lacks. It no longer uses them, so all fifteen legs run.
   sanitizers:
     uses: rhalbersma/cpp-ci/.github/workflows/sanitizers.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
-    with:
-      # No ASan libc++ leg. Not because the sanitizer says anything different
-      # there, but because this library does not compile against libc++ at all
-      # - the same missing C++23 range adaptors that keep clang-libc++.yml red.
-      # Those three legs cannot pass, and welding them to this workflow makes
-      # its gate permanently red, which reports nothing about the twelve legs
-      # that were meant to be green: a real ASan regression on GCC 16 would
-      # look exactly like the gap that has been there all along. The libc++
-      # coverage stays in clang-libc++.yml, where its own gate makes its own
-      # red legible. Drop this the day libc++ catches up.
-      libcxx_tiers: ""

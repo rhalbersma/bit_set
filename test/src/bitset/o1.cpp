@@ -11,13 +11,13 @@
                                         // mem_at,
                                         // mem_count, mem_size, mem_test, mem_all, mem_any, mem_none, mem_compare_three_way,
                                         // op_iostream
-#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <tuple>                        // tuple
 
 BOOST_AUTO_TEST_SUITE(Linear)
 
-using Types = boost::mp11::mp_list
+using Types = std::tuple
 <       boost::dynamic_bitset<>
 ,         std::bitset<  0>
 ,         std::bitset<  1>

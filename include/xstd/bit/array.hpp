@@ -10,7 +10,7 @@
 #include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
 #include <xstd/memory.hpp>                      // aligned_size
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
-#include <algorithm>                            // all_of, any_of, copy, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <algorithm>                            // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                // array
 #include <cassert>                              // assert
 #include <concepts>                             // unsigned_integral
@@ -18,8 +18,8 @@
 #include <functional>                           // plus
 #include <limits>                               // digits
 #include <ranges>                               // distance, prev (views::drop_last when P22014R2 is accepted)
-                                                // drop, iota, pairwise_transform, reverse, take, transform, zip
-#include <type_traits>                          // is_nothrow_swappable_v
+                                                // drop, iota, reverse, take, transform, zip
+#include <type_traits>                          // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
 #include <utility>                              // pair
 
 namespace xstd::bit {
@@ -225,16 +225,7 @@ struct array
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        // The cast is the truncation, written down. A shift
-                        // can carry bits past the top of a single-block array,
-                        // and dropping them is what a fixed-width shift means;
-                        // Block being narrower than the int its operands
-                        // promote to is what makes that a conversion at all.
-                        // Left implicit it draws GCC's -Wconversion at -O0 and
-                        // Clang's -fsanitize=implicit-conversion at run time,
-                        // and the sanitizer has no pragma to silence it - only
-                        // this. Explicit, it matches how the multi-block path
-                        // below already spells every one of its narrowings.
+                        // m_bits[0] <<= n narrows the promoted int back to a Block implicitly, which -fsanitize=implicit-conversion aborts on once a bit shifts out.
                         m_bits[0] = static_cast<Block>(m_bits[0] << n);
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, L_shift ] = div_mod(n, bits_per_block);
@@ -242,12 +233,9 @@ struct array
                                 std::shift_right(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const R_shift = bits_per_block - L_shift;
-                                std::ranges::copy(
-                                        m_bits | std::views::reverse | std::views::drop(n_blocks) | std::views::pairwise_transform([=](auto first, auto second) -> Block {
-                                                return static_cast<Block>(first << L_shift) | static_cast<Block>(second >> R_shift);
-                                        }),
-                                        m_bits.rbegin()
-                                );
+                                for (auto i = last_block; i > n_blocks; --i) {
+                                        m_bits[i] = static_cast<Block>(static_cast<Block>(m_bits[i - n_blocks] << L_shift) | static_cast<Block>(m_bits[i - n_blocks - 1] >> R_shift));
+                                }
                                 m_bits[n_blocks] = static_cast<Block>(m_bits[0] << L_shift);
                         }
                         std::ranges::fill_n(std::ranges::prev(m_bits.rend(), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);
@@ -259,7 +247,7 @@ struct array
         {
                 assert(is_valid(n));
                 if constexpr (num_blocks == 1) {
-                        // See operator<<= above for why this is cast.
+                        // m_bits[0] >>= n narrows the promoted int back to a Block implicitly, which -fsanitize=implicit-conversion instruments.
                         m_bits[0] = static_cast<Block>(m_bits[0] >> n);
                 } else if constexpr (num_blocks >= 2) {
                         auto const [ n_blocks, R_shift ] = div_mod(n, bits_per_block);
@@ -267,12 +255,9 @@ struct array
                                 std::shift_left(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const L_shift = bits_per_block - R_shift;
-                                std::ranges::copy(
-                                        m_bits | std::views::drop(n_blocks) | std::views::pairwise_transform([=](auto first, auto second) -> Block {
-                                                return static_cast<Block>(first >> R_shift) | static_cast<Block>(second << L_shift);
-                                        }),
-                                        m_bits.begin()
-                                );
+                                for (auto i = 0UZ; i + n_blocks < last_block; ++i) {
+                                        m_bits[i] = static_cast<Block>(static_cast<Block>(m_bits[i + n_blocks] >> R_shift) | static_cast<Block>(m_bits[i + n_blocks + 1] << L_shift));
+                                }
                                 m_bits[last_block - n_blocks] = static_cast<Block>(m_bits[last_block] >> R_shift);
                         }
                         std::ranges::fill_n(std::ranges::prev(m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);
@@ -396,9 +381,9 @@ struct array
                 if constexpr (has_unused_bits) {
                         if constexpr (num_blocks == 1) {
                                 return m_bits[0] == used_bits;
-                        } else if (num_blocks == 2) {
+                        } else if constexpr (num_blocks == 2) {
                                 return m_bits[0] == ones and m_bits[1] == used_bits;
-                        } else if (num_blocks >= 3) {
+                        } else if constexpr (num_blocks >= 3) {
                                 return std::ranges::all_of(m_bits | std::views::take(last_block), [](auto block) {
                                         return block == ones;
                                 }) and m_bits[last_block] == used_bits;
@@ -553,8 +538,16 @@ private:
                 }
         }
 
+        // cl rejects a member of the explicit object parameter in a trailing
+        // return type (C2228). std::array's operator[] is not ref-qualified, so
+        // the reference depends on Self's constness alone; bit_array.hpp's
+        // result_t is the same idiom.
+        template<class Self>
+        using block_reference_t = std::conditional_t<
+                std::is_const_v<std::remove_reference_t<Self>>, Block const&, Block&>;
+
         [[nodiscard]] constexpr auto block_mask(this auto&& self, std::size_t n) noexcept
-                -> std::pair<decltype(std::forward<decltype(self)>(self).m_bits[std::declval<std::size_t>()]), Block>
+                -> std::pair<block_reference_t<decltype(self)>, Block>
         {
                 auto const [ index, offset ] = index_offset(n);
                 return { std::forward<decltype(self)>(self).m_bits[index], static_cast<Block>(unit << offset) };

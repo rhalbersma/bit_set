@@ -11,13 +11,13 @@
                                         // mem_shift_left_assign, mem_shift_right_assign, mem_shift_left, mem_shift_right,
                                         // mem_equal_to, mem_compare_three_way, mem_is_subset_of, mem_is_proper_subset_of, mem_intersects,
                                         // op_bit_and, op_bit_or, op_bit_xor, op_bit_minus,
-#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <tuple>                        // tuple
 
 BOOST_AUTO_TEST_SUITE(Quadratic)
 
-using Types = boost::mp11::mp_list
+using Types = std::tuple
 <       boost::dynamic_bitset<>
 ,         std::bitset<0>
 ,         std::bitset<8>

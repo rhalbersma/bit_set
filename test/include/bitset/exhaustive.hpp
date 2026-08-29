@@ -10,7 +10,7 @@
 #include <algorithm>            // max
 #include <cassert>              // assert
 #include <cstddef>              // size_t
-#include <ranges>               // cartesian_product, iota
+#include <ranges>               // iota
 
 #if defined(_MSC_VER)
         // std::bitset<0> and xstd::bit_set<0> give bogus "unreachable code" warnings
@@ -101,13 +101,12 @@ namespace on2 {
 template<class X, auto N = limit_v<X, L2>>
 auto all_singleton_set_pairs(auto fun)
 {
-        for (auto [ i, j ] : std::views::cartesian_product(
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N))
-        ) {
-                auto a = make_bitset<X>(N); a.set(i); assert(a.count() == 1);
-                auto b = make_bitset<X>(N); b.set(j); assert(b.count() == 1);
-                fun(a, b);
+        for (auto i : std::views::iota(0uz, N)) {
+                for (auto j : std::views::iota(0uz, N)) {
+                        auto a = make_bitset<X>(N); a.set(i); assert(a.count() == 1);
+                        auto b = make_bitset<X>(N); b.set(j); assert(b.count() == 1);
+                        fun(a, b);
+                }
         }
 }
 
@@ -129,15 +128,15 @@ namespace on3 {
 template<class X, auto N = limit_v<X, L3>>
 auto all_singleton_set_triples(auto fun)
 {
-        for (auto [ i, j, k ] : std::views::cartesian_product(
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N)
-        )) {
-                auto a = make_bitset<X>(N); a.set(i); assert(a.count() == 1);
-                auto b = make_bitset<X>(N); b.set(j); assert(b.count() == 1);
-                auto c = make_bitset<X>(N); c.set(k); assert(c.count() == 1);
-                fun(a, b, c);
+        for (auto i : std::views::iota(0uz, N)) {
+                for (auto j : std::views::iota(0uz, N)) {
+                        for (auto k : std::views::iota(0uz, N)) {
+                                auto a = make_bitset<X>(N); a.set(i); assert(a.count() == 1);
+                                auto b = make_bitset<X>(N); b.set(j); assert(b.count() == 1);
+                                auto c = make_bitset<X>(N); c.set(k); assert(c.count() == 1);
+                                fun(a, b, c);
+                        }
+                }
         }
 }
 
@@ -161,17 +160,15 @@ namespace on4 {
 template<class X, auto N = limit_v<X, L4>>
 auto all_doubleton_set_pairs(auto fun)
 {
-        for (auto [ j, n ] : std::views::cartesian_product(
-                std::views::iota(1uz, std::ranges::max(N, 1uz)),
-                std::views::iota(1uz, std::ranges::max(N, 1uz))
-        )) {
-                for (auto [ i, m ] : std::views::cartesian_product(
-                        std::views::iota(0uz, j),
-                        std::views::iota(0uz, n)
-                )) {
-                        auto a = make_bitset<X>(N); a.set(i); a.set(j); assert(a.count() == 2);
-                        auto b = make_bitset<X>(N); b.set(m); b.set(n); assert(b.count() == 2);
-                        fun(a, b);
+        for (auto j : std::views::iota(1uz, std::ranges::max(N, 1uz))) {
+                for (auto n : std::views::iota(1uz, std::ranges::max(N, 1uz))) {
+                        for (auto i : std::views::iota(0uz, j)) {
+                                for (auto m : std::views::iota(0uz, n)) {
+                                        auto a = make_bitset<X>(N); a.set(i); a.set(j); assert(a.count() == 2);
+                                        auto b = make_bitset<X>(N); b.set(m); b.set(n); assert(b.count() == 2);
+                                        fun(a, b);
+                                }
+                        }
                 }
         }
 }

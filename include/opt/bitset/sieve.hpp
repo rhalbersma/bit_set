@@ -9,7 +9,7 @@
 #include <xstd/proxy/bidirectional.hpp> // view
 #include <boost/dynamic_bitset_fwd.hpp> // dynamic_bitset
 #include <cstddef>                      // size_t
-#include <ranges>                       // iota, stride, take_while
+#include <ranges>                       // take_while
 
 namespace xstd {
 
@@ -90,10 +90,7 @@ auto sift_primes0(std::size_t n)
                 : proxy::bidirectional::view(primes)
                 | std::views::take_while([&](std::size_t x) { return x * x < n; })
         ) {
-                for (auto m
-                        : std::views::iota(p * p, n)
-                        | std::views::stride(static_cast<std::ptrdiff_t>(p))
-                ) {
+                for (auto m = p * p; m < n; m += p) {
                         sift(primes, m);
                 }
         }

@@ -10,8 +10,7 @@
 #include <cassert>              // assert
 #include <concepts>             // integral
 #include <initializer_list>     // initializer_list
-#include <ranges>               // to
-                                // cartesian_product, iota
+#include <ranges>               // iota, to
 #include <utility>              // declval
 
 #if defined(_MSC_VER)
@@ -147,13 +146,12 @@ auto all_doubleton_sets(auto fun)
 template<class X, std::size_t N = limit_v<X, L2>>
 auto all_singleton_set_pairs(auto fun)
 {
-        for (auto [ i, j ] : std::views::cartesian_product(
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N)
-        )) {
-                auto a = X({ i }); assert(a.size() == 1);
-                auto b = X({ j }); assert(b.size() == 1);
-                fun(a, b);
+        for (auto i : std::views::iota(0uz, N)) {
+                for (auto j : std::views::iota(0uz, N)) {
+                        auto a = X({ i }); assert(a.size() == 1);
+                        auto b = X({ j }); assert(b.size() == 1);
+                        fun(a, b);
+                }
         }
 }
 
@@ -164,15 +162,15 @@ namespace on3 {
 template<class X, std::size_t N = limit_v<X, L3>>
 auto all_singleton_set_triples(auto fun)
 {
-        for (auto [ i, j, k ] : std::views::cartesian_product(
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N),
-                std::views::iota(0uz, N)
-        )) {
-                auto a = X({ i }); assert(a.size() == 1);
-                auto b = X({ j }); assert(b.size() == 1);
-                auto c = X({ k }); assert(c.size() == 1);
-                fun(a, b, c);
+        for (auto i : std::views::iota(0uz, N)) {
+                for (auto j : std::views::iota(0uz, N)) {
+                        for (auto k : std::views::iota(0uz, N)) {
+                                auto a = X({ i }); assert(a.size() == 1);
+                                auto b = X({ j }); assert(b.size() == 1);
+                                auto c = X({ k }); assert(c.size() == 1);
+                                fun(a, b, c);
+                        }
+                }
         }
 }
 
@@ -183,17 +181,15 @@ namespace on4 {
 template<class X, std::size_t N = limit_v<X, L4>>
 auto all_doubleton_set_pairs(auto fun)
 {
-        for (auto [ j, n ] : std::views::cartesian_product(
-                std::views::iota(1uz, std::ranges::max(N, 1uz)),
-                std::views::iota(1uz, std::ranges::max(N, 1uz))
-        )) {
-                for (auto [ i, m ] : std::views::cartesian_product(
-                        std::views::iota(0uz, j),
-                        std::views::iota(0uz, n)
-                )) {
-                        auto a = X({ i, j }); assert(a.size() == 2);
-                        auto b = X({ m, n }); assert(b.size() == 2);
-                        fun(a, b);
+        for (auto j : std::views::iota(1uz, std::ranges::max(N, 1uz))) {
+                for (auto n : std::views::iota(1uz, std::ranges::max(N, 1uz))) {
+                        for (auto i : std::views::iota(0uz, j)) {
+                                for (auto m : std::views::iota(0uz, n)) {
+                                        auto a = X({ i, j }); assert(a.size() == 2);
+                                        auto b = X({ m, n }); assert(b.size() == 2);
+                                        fun(a, b);
+                                }
+                        }
                 }
         }
 }
