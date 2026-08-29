@@ -11,19 +11,19 @@
                                         // mem_lower_bound, mem_upper_bound, mem_equal_range, op_equal, op_not_equal_to,
                                         // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
 #include <xstd/bit_set.hpp>             // bit_set
-#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <concepts>                     // same_as
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <flat_set>                     // flat_set
 #include <set>                          // set
+#include <tuple>                        // tuple
 
 BOOST_AUTO_TEST_SUITE(Quadratic)
 
 using namespace xstd;
 
-using Types = boost::mp11::mp_list
+using Types = std::tuple
 <       std::set<std::size_t>
 ,       std::flat_set<std::size_t>
 ,       bit_set< 0, uint8_t>

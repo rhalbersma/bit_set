@@ -8,15 +8,15 @@
 #include <xstd/bitset.hpp>              // bitset
 #include <xstd/bit_set.hpp>             // bit_set
 #include <concepts.hpp>                 // dynamic
-#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <concepts>                     // regular, totally_ordered
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <tuple>                        // tuple
 #include <type_traits>                  // is_nothrow_xxx, is_trivially_xxx
 
 BOOST_AUTO_TEST_SUITE(TypeTraits)
 
-using Types = boost::mp11::mp_list
+using Types = std::tuple
 <       boost::dynamic_bitset<>
 ,         std::bitset<  0>
 ,         std::bitset< 64>

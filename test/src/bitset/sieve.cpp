@@ -9,16 +9,16 @@
 #include <ext/xstd/bitset.hpp>          // bitset
 #include <xstd/bit_set.hpp>             // bit_set
 #include <xstd/proxy/bidirectional.hpp> // view
-#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
 #include <fmt/format.h>                 // format
 #include <fmt/ranges.h>
+#include <tuple>                        // tuple
 
 BOOST_AUTO_TEST_SUITE(Sieve)
 
 inline constexpr auto N = 100uz;
 
-using Types = boost::mp11::mp_list
+using Types = std::tuple
 <       boost::dynamic_bitset<>
 ,         std::bitset<N>
 ,        xstd::bitset<N>

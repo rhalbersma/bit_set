@@ -4,7 +4,6 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bit_set.hpp>             // bit_set
-#include <boost/mp11/list.hpp>          // mp_list
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <concepts>                     // equality_comparable, regular, totally_ordered
 #include <cstddef>                      // size_t
@@ -13,13 +12,14 @@
 #include <iterator>                     // bidirectional_iterator
 #include <ranges>                       // bidirectional_range
 #include <set>                          // set
+#include <tuple>                        // tuple
 #include <type_traits>                  // is_default_xxx_v, is_reference_v, is_trivially_xxx_v
 
 BOOST_AUTO_TEST_SUITE(TypeTraits)
 
 using namespace xstd;
 
-using Types = boost::mp11::mp_list
+using Types = std::tuple
 <       std::set<std::size_t>
 ,       std::flat_set<std::size_t>
 ,       bit_set<  0, uint8_t>
