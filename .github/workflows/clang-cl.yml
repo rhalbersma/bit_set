@@ -25,13 +25,9 @@ jobs:
   # the dependencies with different compilers.
   #
   # All three rungs. The stable one was dropped while the tests included
-  # <flat_set> unconditionally: clang-cl uses the MSVC STL whatever the front
-  # end, so VS 2022 died here on the same C1083 as on msvc.yml, and one
-  # reference leg for that gap was enough. The tests probe for the header now
-  # (test/include/set/flat_set.hpp), so that reason is gone and the leg is
-  # worth a runner again. The C2228 that also held msvc.yml's 2022 rung is a
-  # cl front-end limitation on the explicit object parameter, which clang-cl
-  # does not share -- so this leg measures the MSVC STL, not cl.
+  # <flat_set> unconditionally; they probe for it now. The C2228 that held
+  # msvc.yml's 2022 rung is a cl limitation clang-cl does not share, so this
+  # leg tests the MSVC STL rather than the front end.
   clang_cl:
     uses: rhalbersma/cpp-ci/.github/workflows/visual-studio.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
     with:

@@ -11,21 +11,10 @@
 #include <flat_set>                     // flat_set
 #endif
 
-// std::flat_set is one of the reference implementations the set tests measure
-// bit_set against; it is not itself under test. The MSVC STL shipped with
-// Visual Studio 2022 has no <flat_set> at all, so an unconditional include is
-// a C1083 that fails every test in this directory before a single assertion
-// runs, for a reason that says nothing about bit_set. VS 2022 is the 17.x
-// line, in maintenance, so it will not be gaining the header.
-//
-// The probe lives here rather than in each test because <version> has to
-// arrive before anything can ask the question, and a test putting it first in
-// its own standard-library group would have to break that group's order to do
-// it. A translation unit takes XSTD_TEST_HAS_FLAT_SET for the entry in its
-// type list, and is_flat_set for the two cases that exempt flat_set by name.
-//
-// Dropping the entry costs a reference implementation, not coverage: every
-// bit_set specialization in those lists is tested exactly as before.
+// VS 2022's MSVC STL has no <flat_set>, and std::flat_set is only a reference
+// implementation in the set tests' type lists, so dropping it costs no bit_set
+// coverage. The probe lives here because <version> has to precede it, which a
+// test doing it itself could only manage by breaking its own include order.
 namespace xstd {
 
 template<class T>
