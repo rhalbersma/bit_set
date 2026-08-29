@@ -21,7 +21,7 @@ on:
 
 jobs:
   clang_tidy:
-    uses: rhalbersma/cpp-ci/.github/workflows/clang-tidy.yml@847e9ccde5651430e1dbe2cef53c85c1d3df0b90 # v0.6.1
+    uses: rhalbersma/cpp-ci/.github/workflows/clang-tidy.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
     with:
       # The generated per-header units alone, as run-clang-tidy matches them
       # against the compile database's absolute paths. No sources_regex: the
