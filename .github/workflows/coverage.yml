@@ -28,7 +28,7 @@ on:
 
 jobs:
   coverage:
-    uses: rhalbersma/cpp-ci/.github/workflows/coverage.yml@847e9ccde5651430e1dbe2cef53c85c1d3df0b90 # v0.6.1
+    uses: rhalbersma/cpp-ci/.github/workflows/coverage.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
     with:
       # benchmark/ as well as the shared default: unlike xstd, this
       # repository ships a benchmark tree, which measures the library rather
