@@ -264,7 +264,7 @@ struct array
                                 std::shift_left(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
                                 auto const L_shift = bits_per_block - R_shift;
-                                for (auto dst = 0uz; dst + n_blocks < last_block; ++dst) {
+                                for (auto dst = 0UZ; dst + n_blocks < last_block; ++dst) {
                                         m_bits[dst] = static_cast<Block>(static_cast<Block>(m_bits[dst + n_blocks] >> R_shift) | static_cast<Block>(m_bits[dst + n_blocks + 1] << L_shift));
                                 }
                                 m_bits[last_block - n_blocks] = static_cast<Block>(m_bits[last_block] >> R_shift);
