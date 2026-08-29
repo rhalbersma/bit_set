@@ -55,10 +55,7 @@ auto sift_primes0(std::size_t n)
                 if (not primes.contains(p)) {
                         continue;
                 }
-                for (auto m
-                        : std::views::iota(p * p, n)
-                        | std::views::stride(p)
-                ) {
+                for (auto m = p * p; m < n; m += p) {
                         sift(primes, m);
                 }
         }
