@@ -82,6 +82,37 @@ set(cxx_compile_options_optimization
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -march=native
     >
+    # -march=native enables AVX2 on the GitHub Windows runners, and that is what
+    # makes the MinGW Debug legs segfault. gdb caught all four crashes on the
+    # same instruction:
+    #
+    #   test.bitset.o1  vmovdqa %ymm0,-0x50(%rbp)   rbp 0xbfcca0 -> 0xbfcc50
+    #   test.set.o0     vmovdqa %ymm0,-0xc0(%rbp)   rbp 0xbfd570 -> 0xbfd4b0
+    #   test.set.o2     vmovdqa %ymm0,-0xc0(%rbp)   rbp 0xbfd470 -> 0xbfd3b0
+    #   test.set.sieve  vmovdqa %ymm0,-0x50(%rbp)   rbp 0xbfcd00 -> 0xbfccb0
+    #
+    # vmovdqa is a 32-byte *aligned* store. Every one of those targets is inside
+    # the mapped stack and every one is 16-byte aligned but not 32-byte aligned -
+    # mod 32 == 16, in all four. So this is a general protection fault from an
+    # alignment violation, not a bad pointer.
+    #
+    # The Windows x64 ABI guarantees only 16-byte stack alignment, where the
+    # System V ABI's guarantee plus GCC's realignment make the same code safe on
+    # Linux. Debug is where it bites because -O0 spills every temporary to a
+    # stack slot, so 32-byte ymm stores to the stack are everywhere; -O2 keeps
+    # the same values in registers, which is why the Release legs are green.
+    #
+    # This also settles why nothing separated the four failing tests from their
+    # passing neighbours, and why fmt, __uint128_t, std::flat_set and
+    # -Wa,-mbig-obj were each ruled out in turn: the crash has nothing to do with
+    # what the test does. It lands wherever GCC happened to emit a ymm spill.
+    #
+    # -mno-avx keeps the rest of -march=native and takes 256-bit vectors, and
+    # with them every 32-byte stack slot, off the table. -mprefer-vector-width=128
+    # is the less blunt alternative if AVX is wanted back on Windows.
+    $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
+        -mno-avx
+    >
 )
 
 # Required in every configuration, Debug included. #47 withheld it from Debug
@@ -150,21 +181,6 @@ set(cxx_compile_options_stack_usage
     >
 )
 
-# The experiment the two instruments above were built to inform, run early
-# because it is cheap and because it doubles as the fix. 8 MiB is Linux's
-# default, against the 2 MiB mingw-w64 writes into the PE header - so this
-# asks, in one CI run, whether the four crash for no reason other than
-# having a fifth of the headroom their green Linux counterparts get.
-#
-# It does not blind the instruments. Green here is itself the answer, and
-# red leaves gdb to say what the cause is instead. Widen this to every
-# Windows-GNU configuration, not just Debug, if it turns out to be the fix;
-# it is scoped to Debug now to keep the experiment one variable.
-set(link_options_stack_reserve
-    $<$<BOOL:${bit_set_mingw_debug}>:
-        -Wl,--stack,8388608
-    >
-)
 
 # Each public header is compiled as its own translation unit (linked against
 # the same warning flags as the unit tests), proving it is self-sufficient.
@@ -255,11 +271,6 @@ foreach(t ${targets})
         ${cxx_compile_options_optimization}
         ${cxx_compile_options_mbig_obj}
         ${cxx_compile_options_stack_usage}
-    )
-
-    target_link_options(
-        ${target_id} PRIVATE
-        ${link_options_stack_reserve}
     )
 
     if(bit_set_mingw_debug)
