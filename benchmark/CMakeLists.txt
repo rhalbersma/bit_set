@@ -76,9 +76,10 @@ set(cxx_compile_options_optimization
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -march=native
     >
-    # MinGW emits 32-byte aligned stores to a 16-byte aligned stack (#54, GCC PR target/49001).
+    # MinGW emits 32-byte aligned stores to a 16-byte aligned stack; the assembler rewrites
+    # them unaligned, keeping 256-bit vectors (#54, GCC PR target/54412, binutils 2.38+).
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
-        -mprefer-vector-width=128
+        -Wa$<COMMA>-muse-unaligned-vector-move
     >
 )
 
