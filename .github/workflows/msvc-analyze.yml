@@ -1,0 +1,36 @@
+#          Copyright Rein Halbersma 2014-2026.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: MSVC-Analyze
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  # MSVC's /analyze, in the role clang-tidy.yml fills for Clang. New here: the
+  # analyser has never been pointed at this library.
+  #
+  # The two VS 18 rungs only. /analyze is a compiler flag rather than a
+  # separate binary, so its legs compile the whole tree -- which means the 2022
+  # leg would fail on <flat_set>, exactly as msvc.yml's does, and report
+  # nothing about the code. msvc.yml keeps that leg for reference because
+  # showing where the floor is has value there; a permanently red analysis leg
+  # has none, so this ladder starts at the floor instead. Same shape as
+  # clang-cl.yml here.
+  msvc_analyze:
+    uses: rhalbersma/cpp-ci/.github/workflows/msvc-analyze.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
+    with:
+      tiers: qualification,development
