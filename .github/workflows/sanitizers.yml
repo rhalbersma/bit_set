@@ -25,7 +25,7 @@ jobs:
   # libraries, and turns leak detection on - the local ASan leg ran with
   # detect_leaks=0.
   sanitizers:
-    uses: rhalbersma/cpp-ci/.github/workflows/sanitizers.yml@847e9ccde5651430e1dbe2cef53c85c1d3df0b90 # v0.6.1
+    uses: rhalbersma/cpp-ci/.github/workflows/sanitizers.yml@676e6fb7abc784e54a227998bf3e9c39790e63cf # v0.8.0
     with:
       # No ASan libc++ leg. Not because the sanitizer says anything different
       # there, but because this library does not compile against libc++ at all
