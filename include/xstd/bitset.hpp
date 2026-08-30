@@ -156,8 +156,25 @@ public:
         constexpr bitset& operator^=(const bitset& rhs) noexcept { m_bits ^= rhs.m_bits; return *this; }
         constexpr bitset& operator-=(const bitset& rhs) noexcept { m_bits -= rhs.m_bits; return *this; }
 
-        constexpr bitset& operator<<=(std::size_t pos) noexcept { if (pos < N) { m_bits <<= pos; } else { m_bits.reset(); } return *this; }
-        constexpr bitset& operator>>=(std::size_t pos) noexcept { if (pos < N) { m_bits >>= pos; } else { m_bits.reset(); } return *this; }
+        constexpr bitset& operator<<=(std::size_t pos) noexcept
+        {
+                if (pos < N) {
+                        m_bits <<= pos;
+                } else {
+                        m_bits.reset();
+                }
+                return *this;
+        }
+
+        constexpr bitset& operator>>=(std::size_t pos) noexcept
+        {
+                if (pos < N) {
+                        m_bits >>= pos;
+                } else {
+                        m_bits.reset();
+                }
+                return *this;
+        }
 
         [[nodiscard]] constexpr bitset operator<<(std::size_t pos) const noexcept { auto nrv = *this; nrv <<= pos; return nrv; }
         [[nodiscard]] constexpr bitset operator>>(std::size_t pos) const noexcept { auto nrv = *this; nrv >>= pos; return nrv; }
@@ -168,9 +185,36 @@ public:
         constexpr bitset& reset() noexcept { m_bits.reset(); return *this; }
         constexpr bitset& flip () noexcept { m_bits.flip (); return *this; }
 
-        constexpr bitset& set  (std::size_t pos, bool val = true) { if (pos < N) { if (val) { m_bits.set  (pos); } else { m_bits.reset(pos); } return *this; } throw out_of_range(pos); }
-        constexpr bitset& reset(std::size_t pos)                  { if (pos < N) {            m_bits.reset(pos);                       return *this; } throw out_of_range(pos); }
-        constexpr bitset& flip (std::size_t pos)                  { if (pos < N) {            m_bits.flip (pos);                       return *this; } throw out_of_range(pos); }
+        constexpr bitset& set(std::size_t pos, bool val = true)
+        {
+                if (pos < N) {
+                        if (val) {
+                                m_bits.set(pos);
+                        } else {
+                                m_bits.reset(pos);
+                        }
+                        return *this;
+                }
+                throw out_of_range(pos);
+        }
+
+        constexpr bitset& reset(std::size_t pos)
+        {
+                if (pos < N) {
+                        m_bits.reset(pos);
+                        return *this;
+                }
+                throw out_of_range(pos);
+        }
+
+        constexpr bitset& flip(std::size_t pos)
+        {
+                if (pos < N) {
+                        m_bits.flip(pos);
+                        return *this;
+                }
+                throw out_of_range(pos);
+        }
 
         [[nodiscard]] constexpr bool operator[](std::size_t pos) const noexcept
         {
@@ -204,7 +248,13 @@ public:
 
         [[nodiscard]] constexpr bool operator==(const bitset& rhs) const noexcept = default;
 
-        [[nodiscard]] constexpr bool test(std::size_t pos) const { if (pos < N) { return m_bits[pos]; } throw out_of_range(pos); }
+        [[nodiscard]] constexpr bool test(std::size_t pos) const
+        {
+                if (pos < N) {
+                        return m_bits[pos];
+                }
+                throw out_of_range(pos);
+        }
 
         [[nodiscard]] constexpr bool all()  const noexcept { return m_bits.all();  }
         [[nodiscard]] constexpr bool any()  const noexcept { return m_bits.any();  }

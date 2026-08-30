@@ -20,6 +20,8 @@ This repository enforces its quality bar through CI rather than through review d
 
   Keep an `assert` on a line of its own, as the library does. The workflow drops assert branches by matching the start of a line, so an assert sharing a line with real code keeps a branch no test can take.
 
+  Write a conditional across lines rather than packing it onto one. gcov counts per line, so a single-line `if`/`else` can only read as wholly covered or wholly uncovered, and a half-tested one reads as covered.
+
 One check runs without being required:
 
 - **`clang-format` does not run on a PR.** This repository has no `.clang-format`, so [its workflow](.github/workflows/clang-format.yml) is dispatch-only; enabling it means adopting a style and reformatting the tree.
