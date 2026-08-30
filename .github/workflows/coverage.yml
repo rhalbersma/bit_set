@@ -28,20 +28,19 @@ on:
 
 jobs:
   coverage:
-    uses: rhalbersma/cpp-ci/.github/workflows/coverage.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
+    # Ahead of v0.8.1, for the exclusion of the unwind resume gcov records on
+    # a bare closing brace. Without it five closing braces are permanently
+    # short of covered and the 100 below can never be met.
+    uses: rhalbersma/cpp-ci/.github/workflows/coverage.yml@3d88e0781e1be9e82d414d263f03b9534a11828d # main
     with:
       # benchmark/ as well as the shared default: unlike xstd, this
       # repository ships a benchmark tree, which measures the library rather
       # than being part of it and has no business in its coverage figure.
       exclude: "test/.* benchmark/.* build/.*"
-      # Reported, not enforced. The 100/100 gate this repository inherited
-      # from xstd is aspirational while the test suite is still being built
-      # up - today's figure is ~85% of lines and ~60% of branches - and
-      # .github/codecov.yml already marks both Codecov statuses
-      # informational for exactly that reason. The local job said the same
-      # thing with continue-on-error, which a job that calls a reusable
-      # workflow cannot carry, so these two zeroes are what now keeps this
-      # job reporting the real number rather than failing on a gap only new
-      # tests can close. Raise them as coverage is built up.
-      fail_under_line: 0
-      fail_under_branch: 0
+      # Enforced, not just reported. Every line and branch of the library that
+      # a test can reach is reached; what cannot be is written so that it is
+      # not a line of its own, or excluded by the shared workflow for holding
+      # no code. Code that arrives without a test now fails this job, which is
+      # the point: commenting the untested part out is the way to land it.
+      fail_under_line: 100
+      fail_under_branch: 100
