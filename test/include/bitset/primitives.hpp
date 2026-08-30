@@ -20,11 +20,13 @@
 
 namespace xstd {
 
-// xstd::bitset is the only one of the three that takes a basic_string_view;
-// std::bitset takes basic_string or const charT*, boost::dynamic_bitset
-// neither. The checks below are on its overload, so they are its own.
+// The checks below are on xstd::bitset's basic_string_view overload, and are
+// its own. std::bitset has no such overload at all; boost::dynamic_bitset
+// does, but answers to its own contract rather than [bitset.cons] - having no
+// fixed N, it has no position to be out of range of, and its extractor sizes
+// itself from what it reads. "not dynamic" is what separates the two.
 template<class X>
-concept string_view_constructible = requires { X(std::string_view()); };
+concept fixed_string_view_constructible = requires { X(std::string_view()); } and not dynamic<X>;
 
 template<class X>
 struct constructor
@@ -35,7 +37,7 @@ struct constructor
                 BOOST_CHECK(a.none());                                          // [bitset.cons]/1
 
                 // [bitset.cons]/2 describes the constructor taking unsigned long long
-                if constexpr (string_view_constructible<X>) {
+                if constexpr (fixed_string_view_constructible<X>) {
                         constexpr auto N = X().size();
                         auto const zeros = std::string(N, '0');
 
@@ -555,7 +557,7 @@ struct op_istream_failure
 {
         auto operator()() const noexcept
         {
-                if constexpr (string_view_constructible<X>) {
+                if constexpr (fixed_string_view_constructible<X>) {
                         constexpr auto N = X().size();
                         for (auto const* input : { "", "2" }) {
                                 auto is = std::istringstream(input);
