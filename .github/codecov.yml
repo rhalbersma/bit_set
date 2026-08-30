@@ -3,25 +3,20 @@
 #    (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-# Mirrors the --fail-under-line 100 gate enforced locally by the Coverage
-# workflow (see .github/workflows/coverage.yml), aspiring to the same bar
-# xstd already meets. bit_set's existing tests are nowhere near it yet
-# (~85% lines / ~60% branches), so both status checks are informational:
-# they report the real number on every PR without turning red and blocking
-# on a gap that needs deliberate new tests to close, matching
-# coverage.yml's own continue-on-error treatment. Drop `informational: true`
-# once coverage catches up.
+# Mirrors the --fail-under-line 100 and --fail-under-branch 100 gates the
+# Coverage workflow enforces (see .github/workflows/coverage.yml), the same
+# bar xstd meets. Both statuses were informational while the test suite was
+# being built up; it now reaches every line and branch of the library that a
+# test can reach, so they block like the workflow does.
 coverage:
   status:
     project:
       default:
         target: 100%
         threshold: 0%
-        informational: true
     patch:
       default:
         target: 100%
         threshold: 0%
-        informational: true
 
 comment: false

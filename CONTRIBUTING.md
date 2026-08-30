@@ -12,10 +12,18 @@ This repository enforces its quality bar through CI rather than through review d
 - **Workflow files pass `actionlint`.** The [Actionlint workflow](.github/workflows/actionlint.yml) validates GitHub Actions syntax and expressions.
 - **The documented consumption methods work.** The [Consumption workflow](.github/workflows/consumption.yml) builds a consumer using `find_package`, `add_subdirectory`, and `FetchContent`.
 - **CodeQL analysis is clean.** The [CodeQL workflow](.github/workflows/codeql.yml) runs the C/C++ `security-extended` query suite.
+- **Line and branch coverage are both 100%, project-wide and for the PR's own diff.** The [Coverage workflow](.github/workflows/coverage.yml) passes `--fail-under-line 100 --fail-under-branch 100`, and [`codecov.yml`](.github/codecov.yml) sets both Codecov statuses to a 100% target with zero tolerance. New code needs a test that exercises every line and branch it adds; existing coverage may not regress.
 
-Two checks run without being required:
+  Excluded from that bar, by the shared workflow: `assert(...)` contract checks, compiler-synthesized `= default;` members, the exception-unwinding branches gcov attaches to any call that could throw, and a line holding nothing but a closing brace — which carries no code of yours, only the unwind resume for a function with a local to destroy.
 
-- **Coverage is reported, not enforced.** The test suite is still being built up, so the [Coverage workflow](.github/workflows/coverage.yml) passes `fail_under_line: 0` and `fail_under_branch: 0`, and [`codecov.yml`](.github/codecov.yml) marks both Codecov statuses `informational: true`. Today's figure is roughly 85% of lines and 60% of branches. Raise the floors as coverage is built up, and make the checks required once they reach the bar.
+  **Code that cannot be tested does not get an exemption; it gets commented out.** If you cannot reach a line from a test, comment it out and say why, so that whoever uncomments it has to write the test. One arm in the library is unreachable rather than untested: `bit_array<0>::is_valid`'s empty case, only ever called from an `assert` that a zero-size array has no member to reach, and not removable because MSVC's `/W4` rejects a bare `n < N` as always false when `N` is zero. It carries a trailing `// GCOVR_EXCL_LINE`, which drops that one line from the denominator rather than counting it as reached. The marker has to sit on the line it excludes — above or below it does nothing — and `grep -rn EXCL_LINE include/` is the whole list of such concessions. Keep it short.
+
+  Keep an `assert` on a line of its own, as the library does. The workflow drops assert branches by matching the start of a line, so an assert sharing a line with real code keeps a branch no test can take.
+
+  Write a conditional across lines rather than packing it onto one. gcov counts per line, so a single-line `if`/`else` can only read as wholly covered or wholly uncovered, and a half-tested one reads as covered.
+
+One check runs without being required:
+
 - **`clang-format` does not run on a PR.** This repository has no `.clang-format`, so [its workflow](.github/workflows/clang-format.yml) is dispatch-only; enabling it means adopting a style and reformatting the tree.
 
 The [Scorecard workflow](.github/workflows/scorecard.yml) cannot be required either: it runs on pushes to `main` and on a schedule, never on a pull request.
@@ -34,11 +42,14 @@ The names to tick under branch protection, exactly as GitHub reports them:
 | `clang_tidy / all` | clang-tidy on all three rungs |
 | `codeql / Analyze` | `security-extended` |
 | `consumption / Consume` | the three CMake consumption models |
+| `coverage / gcovr` | 100% of lines and branches |
 | `gcc / all` | GCC 15, 16, 17-SVN |
 | `mingw / all` | MinGW 15 and 16 |
 | `msvc / all` | cl on VS 2022, 2026, 2026-Preview |
 | `msvc_analyze / all` | `/analyze` on all three rungs |
 | `sanitizers / all` | all fifteen sanitizer legs |
+
+Codecov posts two more, `codecov/project` and `codecov/patch`, which carry the same 100% bar for the whole tree and for the diff.
 
 ## License
 

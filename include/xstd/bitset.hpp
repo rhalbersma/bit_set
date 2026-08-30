@@ -156,8 +156,25 @@ public:
         constexpr bitset& operator^=(const bitset& rhs) noexcept { m_bits ^= rhs.m_bits; return *this; }
         constexpr bitset& operator-=(const bitset& rhs) noexcept { m_bits -= rhs.m_bits; return *this; }
 
-        constexpr bitset& operator<<=(std::size_t pos) noexcept { if (pos < N) { m_bits <<= pos; } else { m_bits.reset(); } return *this; }
-        constexpr bitset& operator>>=(std::size_t pos) noexcept { if (pos < N) { m_bits >>= pos; } else { m_bits.reset(); } return *this; }
+        constexpr bitset& operator<<=(std::size_t pos) noexcept
+        {
+                if (pos < N) {
+                        m_bits <<= pos;
+                } else {
+                        m_bits.reset();
+                }
+                return *this;
+        }
+
+        constexpr bitset& operator>>=(std::size_t pos) noexcept
+        {
+                if (pos < N) {
+                        m_bits >>= pos;
+                } else {
+                        m_bits.reset();
+                }
+                return *this;
+        }
 
         [[nodiscard]] constexpr bitset operator<<(std::size_t pos) const noexcept { auto nrv = *this; nrv <<= pos; return nrv; }
         [[nodiscard]] constexpr bitset operator>>(std::size_t pos) const noexcept { auto nrv = *this; nrv >>= pos; return nrv; }
@@ -168,9 +185,36 @@ public:
         constexpr bitset& reset() noexcept { m_bits.reset(); return *this; }
         constexpr bitset& flip () noexcept { m_bits.flip (); return *this; }
 
-        constexpr bitset& set  (std::size_t pos, bool val = true) { if (pos < N) { if (val) { m_bits.set  (pos); } else { m_bits.reset(pos); } return *this; } throw out_of_range(pos); }
-        constexpr bitset& reset(std::size_t pos)                  { if (pos < N) {            m_bits.reset(pos);                       return *this; } throw out_of_range(pos); }
-        constexpr bitset& flip (std::size_t pos)                  { if (pos < N) {            m_bits.flip (pos);                       return *this; } throw out_of_range(pos); }
+        constexpr bitset& set(std::size_t pos, bool val = true)
+        {
+                if (pos < N) {
+                        if (val) {
+                                m_bits.set(pos);
+                        } else {
+                                m_bits.reset(pos);
+                        }
+                        return *this;
+                }
+                throw out_of_range(pos);
+        }
+
+        constexpr bitset& reset(std::size_t pos)
+        {
+                if (pos < N) {
+                        m_bits.reset(pos);
+                        return *this;
+                }
+                throw out_of_range(pos);
+        }
+
+        constexpr bitset& flip(std::size_t pos)
+        {
+                if (pos < N) {
+                        m_bits.flip(pos);
+                        return *this;
+                }
+                throw out_of_range(pos);
+        }
 
         [[nodiscard]] constexpr bool operator[](std::size_t pos) const noexcept
         {
@@ -204,7 +248,13 @@ public:
 
         [[nodiscard]] constexpr bool operator==(const bitset& rhs) const noexcept = default;
 
-        [[nodiscard]] constexpr bool test(std::size_t pos) const { if (pos < N) { return m_bits[pos]; } throw out_of_range(pos); }
+        [[nodiscard]] constexpr bool test(std::size_t pos) const
+        {
+                if (pos < N) {
+                        return m_bits[pos];
+                }
+                throw out_of_range(pos);
+        }
 
         [[nodiscard]] constexpr bool all()  const noexcept { return m_bits.all();  }
         [[nodiscard]] constexpr bool any()  const noexcept { return m_bits.any();  }
@@ -361,7 +411,16 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
         auto state = std::ios_base::goodbit;
         charT ch;
         auto i = 0UZ;
-        while (i < N and not is.eof() and (traits::eq_int_type(is.peek(), is.widen('0')) or traits::eq_int_type(is.peek(), is.widen('1')))) {
+        // One peek per character, held in next. Peeking twice cost a correct
+        // extraction its stream state: the first peek past the end sets
+        // eofbit, and the second then builds a sentry on a stream that is no
+        // longer good, which sets failbit. A short but valid input came back
+        // failed, when only an empty one should ([bitset.operators]/6).
+        while (i < N) {
+                auto const next = is.peek();
+                if (not traits::eq_int_type(next, is.widen('0')) and not traits::eq_int_type(next, is.widen('1'))) {
+                        break;
+                }
                 is >> ch;
                 if (traits::eq(ch, is.widen('1'))) {
                         str[i] = ch;

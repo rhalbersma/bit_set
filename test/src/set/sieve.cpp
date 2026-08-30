@@ -46,4 +46,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
         );
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE(Degenerate, T, Types)
+{
+        // Below three candidates sift_primes1 runs its loop to exhaustion
+        // rather than breaking on the first p whose square is out of range,
+        // and filter_twins returns before it has a triple to compare.
+        auto const none = xstd::sift_primes1<T>(2);
+        BOOST_CHECK(none.empty());
+        BOOST_CHECK(xstd::filter_twins(none).empty());
+
+        auto const one = xstd::sift_primes1<T>(3);
+        BOOST_CHECK_EQUAL(fmt::format("{}", one), "{2}");
+        BOOST_CHECK(xstd::filter_twins(one).empty());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

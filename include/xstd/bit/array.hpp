@@ -516,7 +516,8 @@ private:
         [[nodiscard]] static constexpr bool is_valid(std::size_t n [[maybe_unused]]) noexcept
         {
                 if constexpr (N == 0) {
-                        return false;
+                        // Unreachable: only an assert calls is_valid, and a bit_array<0> has no member that reaches one. Not removable either - MSVC's /W4 rejects a bare n < N as always false (C4296).
+                        return false;                   // GCOVR_EXCL_LINE
                 } else {
                         return n < N;
                 }

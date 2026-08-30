@@ -88,6 +88,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
         on0::empty_set_pair<T>(mem_compare_three_way());
         on0::empty_set_pair<T>(mem_is_subset_of());
         on0::empty_set_pair<T>(mem_is_proper_subset_of());
+        on0::empty_set_pair<T>(mem_is_proper_subset_of_edges());
         on0::empty_set_pair<T>(mem_intersects());
 }
 
@@ -97,6 +98,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
         on0::empty_set_pair<T>(op_bit_or());
         on0::empty_set_pair<T>(op_bit_xor());
         on0::empty_set_pair<T>(op_bit_minus());
+        op_istream_failure<T>()();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

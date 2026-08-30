@@ -12,11 +12,21 @@
 #include <iterator>                     // distance, inserter
 #include <memory>                       // addressof
 #include <set>                          // set
-#include <sstream>                      // stringstream
-#include <stdexcept>                    // out_of_range
+#include <sstream>                      // istringstream, stringstream
+#include <stdexcept>                    // invalid_argument, out_of_range
+#include <string>                       // string
+#include <string_view>                  // string_view
 #include <type_traits>                  // remove_cvref_t
 
 namespace xstd {
+
+// The checks below are on xstd::bitset's basic_string_view overload, and are
+// its own. std::bitset has no such overload at all; boost::dynamic_bitset
+// does, but answers to its own contract rather than [bitset.cons] - having no
+// fixed N, it has no position to be out of range of, and its extractor sizes
+// itself from what it reads. "not dynamic" is what separates the two.
+template<class X>
+concept fixed_string_view_constructible = requires { X(std::string_view()); } and not dynamic<X>;
 
 template<class X>
 struct constructor
@@ -25,9 +35,28 @@ struct constructor
         {
                 X a;
                 BOOST_CHECK(a.none());                                          // [bitset.cons]/1
-        }
 
-        // [bitset.cons]/2-8 describe constructors taking unsigned long long, basic_string and const char*
+                // [bitset.cons]/2 describes the constructor taking unsigned long long
+                if constexpr (fixed_string_view_constructible<X>) {
+                        constexpr auto N = X().size();
+                        auto const zeros = std::string(N, '0');
+
+                        BOOST_CHECK_THROW(                                      // [bitset.cons]/3
+                                (static_cast<void>(X(std::string_view(zeros), N + 1))), std::out_of_range
+                        );
+
+                        if constexpr (N > 0) {
+                                auto ones = std::string(N, '1');
+                                BOOST_CHECK(X(std::string_view(ones)).all());   // [bitset.cons]/4
+
+                                auto invalid = zeros;
+                                invalid[N - 1] = '2';
+                                BOOST_CHECK_THROW(                              // [bitset.cons]/5
+                                        (static_cast<void>(X(std::string_view(invalid)))), std::invalid_argument
+                                );
+                        }
+                }
+        }
 };
 
 struct mem_bit_and_assign
@@ -423,6 +452,32 @@ struct mem_is_proper_subset_of
         }
 };
 
+// is_proper_subset_of stops at the first block that is not a subset, and its
+// multi-block paths only reach the last block when every earlier one compares
+// equal. Neither shape occurs among the singleton and doubleton pairs the
+// exhaustive tests build, so the four edges are named here.
+struct mem_is_proper_subset_of_edges
+{
+        template<class X>
+        auto operator()(X& a, X&) const noexcept
+        {
+                auto const N = a.size();
+                if (N == 0) {
+                        return;
+                }
+                auto const lo = 0uz;
+                auto const hi = N - 1;
+                auto const one = [&](std::size_t i)                 { auto x = a; x.set(i);           return x; };
+                auto const two = [&](std::size_t i, std::size_t j)  { auto x = a; x.set(i); x.set(j); return x; };
+
+                auto const check = mem_is_proper_subset_of();
+                check(one(lo), one(lo));                // equal: every block compares the same
+                check(one(lo), two(lo, hi));            // proper subset, differing in the last block
+                check(one(hi), one(lo));                // not a subset, differing in the first block
+                check(two(lo, hi), one(lo));            // a subset up to the last block, then not
+        }
+};
+
 struct mem_intersects
 {
         template<class X>
@@ -491,6 +546,38 @@ struct op_iostream
                 sstr << x;
                 sstr >> y;
                 BOOST_CHECK_EQUAL(x, y);                                        // [bitset.operators]/4-8
+        }
+};
+
+// The extractor stores nothing when the first character is neither zero nor
+// one, and nothing is exactly what an empty stream offers too. Both leave
+// failbit set for a non-empty bitset, and both leave a zero-size one alone.
+template<class X>
+struct op_istream_failure
+{
+        auto operator()() const noexcept
+        {
+                if constexpr (fixed_string_view_constructible<X>) {
+                        constexpr auto N = X().size();
+                        for (auto const* input : { "", "2" }) {
+                                auto is = std::istringstream(input);
+                                auto x = X();
+                                is >> x;
+                                BOOST_CHECK(x.none());
+                                BOOST_CHECK_EQUAL(is.fail(), N > 0);            // [bitset.operators]/6
+                        }
+
+                        // Fewer digits than N: the loop stops on eof rather
+                        // than on N, and what was read lands at the front.
+                        if constexpr (N > 1) {
+                                auto is = std::istringstream("1");
+                                auto x = X();
+                                is >> x;
+                                BOOST_CHECK(not is.fail());
+                                BOOST_CHECK_EQUAL(x.count(), 1uz);
+                                BOOST_CHECK(x.test(N - 1));                     // [bitset.operators]/5
+                        }
+                }
         }
 };
 

@@ -46,4 +46,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
         );
 }
 
+BOOST_AUTO_TEST_CASE(Degenerate)
+{
+        // Sifting 0 and 1 out of a two-bit sieve leaves nothing, so
+        // sift_primes1 runs its loop to exhaustion rather than breaking on the
+        // first p whose square is out of range. Only dynamic_bitset can be
+        // that small; the fixed-size types above are all sized N.
+        BOOST_CHECK(xstd::sift_primes1<boost::dynamic_bitset<>>(2).none());
+}
+
 BOOST_AUTO_TEST_SUITE_END()
