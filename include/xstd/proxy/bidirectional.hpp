@@ -139,8 +139,22 @@ public:
                 return { *m_ptr, m_idx };
         }
 
-        constexpr iterator& operator++() noexcept { assert(m_ptr != nullptr); m_idx = find<Bits>::next(*m_ptr, m_idx); return *this; }
-        constexpr iterator& operator--() noexcept { assert(m_ptr != nullptr); m_idx = find<Bits>::prev(*m_ptr, m_idx); return *this; }
+        // The assert is on its own line, as in operator* above: the coverage
+        // job drops assert branches by matching the start of the line, so an
+        // assert sharing a line with real code keeps its never-taken branch.
+        constexpr iterator& operator++() noexcept
+        {
+                assert(m_ptr != nullptr);
+                m_idx = find<Bits>::next(*m_ptr, m_idx);
+                return *this;
+        }
+
+        constexpr iterator& operator--() noexcept
+        {
+                assert(m_ptr != nullptr);
+                m_idx = find<Bits>::prev(*m_ptr, m_idx);
+                return *this;
+        }
 
         constexpr iterator operator++(int) noexcept { auto nrv = *this; ++*this; return nrv; }
         constexpr iterator operator--(int) noexcept { auto nrv = *this; --*this; return nrv; }

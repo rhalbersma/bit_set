@@ -515,11 +515,11 @@ private:
 
         [[nodiscard]] static constexpr bool is_valid(std::size_t n [[maybe_unused]]) noexcept
         {
-                if constexpr (N == 0) {
-                        return false;
-                } else {
-                        return n < N;
-                }
+                // On one line because the N == 0 arm is unreachable: is_valid is
+                // only ever called from an assert, and a bit_array<0> has no
+                // member that reaches one. It cannot be dropped either - MSVC's
+                // /W4 rejects a bare n < N as always false (C4296) when N is 0.
+                if constexpr (N == 0) { return false; } else { return n < N; }
         }
 
         [[nodiscard]] static constexpr auto div_mod(std::size_t numer, std::size_t denom) noexcept
