@@ -361,7 +361,16 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
         auto state = std::ios_base::goodbit;
         charT ch;
         auto i = 0UZ;
-        while (i < N and not is.eof() and (traits::eq_int_type(is.peek(), is.widen('0')) or traits::eq_int_type(is.peek(), is.widen('1')))) {
+        // One peek per character, held in next. Peeking twice cost a correct
+        // extraction its stream state: the first peek past the end sets
+        // eofbit, and the second then builds a sentry on a stream that is no
+        // longer good, which sets failbit. A short but valid input came back
+        // failed, when only an empty one should ([bitset.operators]/6).
+        while (i < N) {
+                auto const next = is.peek();
+                if (not traits::eq_int_type(next, is.widen('0')) and not traits::eq_int_type(next, is.widen('1'))) {
+                        break;
+                }
                 is >> ch;
                 if (traits::eq(ch, is.widen('1'))) {
                         str[i] = ch;
