@@ -35,7 +35,7 @@ if(NOT xstd_FOUND)
         #
         # This bump renames aligned_size(alignment, size) to align_up(value,
         # alignment); it points at rhalbersma/xstd#215 until that merges.
-        GIT_TAG e1aa71a3c4e7f98d311c70ef9bb782d9afbb7854
+        GIT_TAG b49f21fdcdda22bfa340dcfe51926061b57768c1
     )
     FetchContent_MakeAvailable(xstd)
 endif()
