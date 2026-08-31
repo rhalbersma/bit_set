@@ -32,7 +32,14 @@ if(NOT xstd_FOUND)
         # <xstd/memory.hpp>, and every compiling job went red with no commit in
         # this repository. Bump this deliberately, fixing whatever the bump
         # renames, rather than discovering it from CI.
-        GIT_TAG 7f7cbdd6e4174107ea062484f31c81fbfe220f7a
+        #
+        # This bump renames aligned_size(alignment, size) to align_up(value,
+        # alignment); it points at rhalbersma/xstd#215 until that merges.
+        # Move .github/workflows/consumption.yml's dependency_repos with this:
+        # the find_package consumer builds against an installed xstd from
+        # there, not against this fallback, so a stale pin there fails only
+        # that one job, with a rename error this configure never sees.
+        GIT_TAG dad4ef60368187766835408e5a955edbca572296
     )
     FetchContent_MakeAvailable(xstd)
 endif()
