@@ -35,6 +35,10 @@ if(NOT xstd_FOUND)
         #
         # This bump renames aligned_size(alignment, size) to align_up(value,
         # alignment); it points at rhalbersma/xstd#215 until that merges.
+        # Move .github/workflows/consumption.yml's dependency_repos with this:
+        # the find_package consumer builds against an installed xstd from
+        # there, not against this fallback, so a stale pin there fails only
+        # that one job, with a rename error this configure never sees.
         GIT_TAG b49f21fdcdda22bfa340dcfe51926061b57768c1
     )
     FetchContent_MakeAvailable(xstd)
