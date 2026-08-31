@@ -32,7 +32,10 @@ if(NOT xstd_FOUND)
         # <xstd/memory.hpp>, and every compiling job went red with no commit in
         # this repository. Bump this deliberately, fixing whatever the bump
         # renames, rather than discovering it from CI.
-        GIT_TAG 7f7cbdd6e4174107ea062484f31c81fbfe220f7a
+        #
+        # This bump renames aligned_size(alignment, size) to align_up(value,
+        # alignment); it points at rhalbersma/xstd#215 until that merges.
+        GIT_TAG e1aa71a3c4e7f98d311c70ef9bb782d9afbb7854
     )
     FetchContent_MakeAvailable(xstd)
 endif()

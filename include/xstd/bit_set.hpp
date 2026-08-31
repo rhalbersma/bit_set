@@ -11,7 +11,7 @@
 #include <compare>              // strong_ordering
 #include <initializer_list>     // initializer_list
 
-#include <xstd/memory.hpp>      // aligned_size
+#include <xstd/memory.hpp>      // align_up
 #include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <limits>               // digits
@@ -33,7 +33,7 @@ constexpr bit_set<N, Block>::size_type erase_if(bit_set<N, Block>& c, Predicate 
 namespace aligned {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
-using bit_set = xstd::bit_set<xstd::aligned_size(std::numeric_limits<Block>::digits, N), Block>;
+using bit_set = xstd::bit_set<xstd::align_up(N, static_cast<std::size_t>(std::numeric_limits<Block>::digits)), Block>;
 
 }       // namespace aligned
 }       // namespace xstd

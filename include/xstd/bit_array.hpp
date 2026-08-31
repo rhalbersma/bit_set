@@ -11,7 +11,7 @@
 #include <compare>              // strong_ordering
 #include <initializer_list>     // initializer_list
 
-#include <xstd/memory.hpp>      // aligned_size
+#include <xstd/memory.hpp>      // align_up
 #include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <limits>               // digits
@@ -30,7 +30,7 @@ template<std::size_t N, std::unsigned_integral Block>               constexpr vo
 namespace aligned {
 
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
-using bit_array = xstd::bit_array<xstd::aligned_size(std::numeric_limits<Block>::digits, N), Block>;
+using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std::numeric_limits<Block>::digits)), Block>;
 
 }       // namespace aligned
 }       // namespace xstd
@@ -41,7 +41,7 @@ using bit_array = xstd::bit_array<xstd::aligned_size(std::numeric_limits<Block>:
 // NOLINTBEGIN(readability-duplicate-include): deliberate, see above
 #include <xstd/bit/array.hpp>   // array
 #include <xstd/proxy.hpp>       // begin, end, iterator, reference
-#include <xstd/memory.hpp>      // aligned_size
+#include <xstd/memory.hpp>      // align_up
 #include <algorithm>            // lexicographical_compare_three_way
 #include <cassert>              // assert
 #include <compare>              // strong_ordering

@@ -8,7 +8,7 @@
 
 #include <xstd/bit/intrin.hpp>                  // countl_zero, countr_zero, popcount
 #include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
-#include <xstd/memory.hpp>                      // aligned_size
+#include <xstd/memory.hpp>                      // align_up
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
 #include <algorithm>                            // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                // array
@@ -28,7 +28,7 @@ template<std::size_t N, std::unsigned_integral Block>
 struct array
 {
         static constexpr auto bits_per_block = static_cast<std::size_t>(std::numeric_limits<Block>::digits);
-        static constexpr auto num_bits       = aligned_size(bits_per_block, N);
+        static constexpr auto num_bits       = align_up(N, bits_per_block);
         static constexpr auto num_blocks     = std::ranges::max(num_bits / bits_per_block, 1UZ);
 
         std::array<Block, num_blocks> m_bits;
