@@ -39,7 +39,7 @@ if(NOT xstd_FOUND)
         # the find_package consumer builds against an installed xstd from
         # there, not against this fallback, so a stale pin there fails only
         # that one job, with a rename error this configure never sees.
-        GIT_TAG b49f21fdcdda22bfa340dcfe51926061b57768c1
+        GIT_TAG 172721e98abfbf678f4fbbe0a7a937a09d920306
     )
     FetchContent_MakeAvailable(xstd)
 endif()
