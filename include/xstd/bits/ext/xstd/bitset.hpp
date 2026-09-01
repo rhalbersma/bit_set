@@ -6,7 +6,7 @@
 #ifndef XSTD_BITS_EXT_XSTD_BITSET_HPP
 #define XSTD_BITS_EXT_XSTD_BITSET_HPP
 
-#include <xstd/bits/proxy/bidirectional.hpp> // begin, end
+#include <xstd/bits/ranges/set_view.hpp> // begin, end
 #include <xstd/bits/bitset/bitset.hpp>              // bitset
 #include <concepts>                     // unsigned_integral
 #include <iterator>                     // make_reverse_iterator
@@ -14,10 +14,10 @@
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto begin  (      bitset<N, Block>& c) noexcept { return xstd::proxy::bidirectional::begin(c); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto begin  (const bitset<N, Block>& c) noexcept { return xstd::proxy::bidirectional::begin(c); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto end    (      bitset<N, Block>& c) noexcept { return xstd::proxy::bidirectional::end(c); }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto end    (const bitset<N, Block>& c) noexcept { return xstd::proxy::bidirectional::end(c); }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto begin  (      bitset<N, Block>& c) noexcept { return xstd::ranges::set_begin(c); }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto begin  (const bitset<N, Block>& c) noexcept { return xstd::ranges::set_begin(c); }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto end    (      bitset<N, Block>& c) noexcept { return xstd::ranges::set_end(c); }
+template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto end    (const bitset<N, Block>& c) noexcept { return xstd::ranges::set_end(c); }
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto cbegin (const bitset<N, Block>& c) noexcept { return std::ranges::begin(c); }
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto cend   (const bitset<N, Block>& c) noexcept { return std::ranges::end  (c); }
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto rbegin (      bitset<N, Block>& c) noexcept { return std::make_reverse_iterator(std::ranges::end(c)); }

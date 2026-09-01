@@ -43,7 +43,7 @@ using finite_bit_set = xstd::finite_bit_set<xstd::align_up(N, static_cast<std::s
 // between the two lists is deliberate: neither is complete without it.
 // NOLINTBEGIN(readability-duplicate-include): deliberate, see above
 #include <xstd/bits/bit/array.hpp>           // array
-#include <xstd/bits/proxy.hpp>               // const_iterator, const_reference
+#include <xstd/bits/ranges.hpp>               // const_iterator, const_reference
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
 #include <algorithm>                    // lexicographical_compare_three_way
@@ -92,11 +92,11 @@ public:
         using block_type             = Block;
         using pointer                = void;
         using const_pointer          = pointer;
-        using reference              = proxy::bidirectional::reference<finite_bit_set>;
+        using reference              = xstd::ranges::set_reference<finite_bit_set>;
         using const_reference        = reference;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = proxy::bidirectional::iterator<finite_bit_set>;
+        using iterator               = xstd::ranges::set_iterator<finite_bit_set>;
         using const_iterator         = iterator;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
@@ -134,8 +134,8 @@ public:
         friend constexpr auto operator<=> <>(const finite_bit_set&, const finite_bit_set&) noexcept -> std::strong_ordering;
 
         // iterators
-        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return proxy::bidirectional::begin(self); }
-        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return proxy::bidirectional::end  (self); }
+        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return xstd::ranges::set_begin(self); }
+        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return xstd::ranges::set_end  (self); }
         [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept { return std::make_reverse_iterator(self.end()  ); }
         [[nodiscard]] constexpr auto rend  (this auto&& self) noexcept { return std::make_reverse_iterator(self.begin()); }
 

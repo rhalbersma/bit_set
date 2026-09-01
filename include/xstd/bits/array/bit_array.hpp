@@ -40,7 +40,7 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 // between the two lists is deliberate: neither is complete without it.
 // NOLINTBEGIN(readability-duplicate-include): deliberate, see above
 #include <xstd/bits/bit/array.hpp>   // array
-#include <xstd/bits/proxy.hpp>       // begin, end, iterator, reference
+#include <xstd/bits/ranges.hpp>       // begin, end, iterator, reference
 #include <xstd/ints/memory.hpp> // align_up
 #include <algorithm>            // lexicographical_compare_three_way
 #include <cassert>              // assert
@@ -76,12 +76,12 @@ struct bit_array
         using block_type             = Block;
         using pointer                = void;
         using const_pointer          = pointer;
-        using reference              = proxy::random_access::reference<bit_array, false>;
-        using const_reference        = proxy::random_access::reference<bit_array, true >;
+        using reference              = xstd::ranges::array_reference<bit_array, false>;
+        using const_reference        = xstd::ranges::array_reference<bit_array, true >;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = proxy::random_access::iterator<bit_array, false>;
-        using const_iterator         = proxy::random_access::iterator<bit_array, true >;
+        using iterator               = xstd::ranges::array_iterator<bit_array, false>;
+        using const_iterator         = xstd::ranges::array_iterator<bit_array, true >;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -102,8 +102,8 @@ struct bit_array
         } 
 
         // iterators
-        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return proxy::random_access::begin(self); }
-        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return proxy::random_access::end  (self); }
+        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return xstd::ranges::array_begin(self); }
+        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return xstd::ranges::array_end  (self); }
         [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept { return std::make_reverse_iterator(self.end()  ); }
         [[nodiscard]] constexpr auto rend  (this auto&& self) noexcept { return std::make_reverse_iterator(self.begin()); }
 

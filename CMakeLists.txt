@@ -85,9 +85,10 @@ target_sources(
         include/xstd/bits/ext/std/bitset.hpp
         include/xstd/bits/ext/xstd.hpp
         include/xstd/bits/ext/xstd/bitset.hpp
-        include/xstd/bits/proxy.hpp
-        include/xstd/bits/proxy/bidirectional.hpp
-        include/xstd/bits/proxy/random_access.hpp
+        include/xstd/bits/ranges.hpp
+        include/xstd/bits/ranges/array_view.hpp
+        include/xstd/bits/ranges/bit_extent.hpp
+        include/xstd/bits/ranges/set_view.hpp
         include/xstd/bits/set.hpp
         include/xstd/bits/set/finite_bit_set.hpp
 )

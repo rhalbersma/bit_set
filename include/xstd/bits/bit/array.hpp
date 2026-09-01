@@ -49,8 +49,8 @@ struct array
         // ordering), or as a fixed-length sequence of bools (bit_array's
         // contract, matching e.g. std::array<bool, N>'s ordering). Those are
         // different relations in general (proven this doesn't just come down
-        // to bit/word direction - see the xstd::proxy::bidirectional::
-        // compare<Bits> comments), so array can't offer one without silently
+        // to bit/word direction - see the xstd::ranges::set_iterator
+        // set_compare<Bits> comments), so array can't offer one without silently
         // picking a side; == is unaffected because equality of the
         // underlying bits is the same relation under either interpretation.
         // finite_bit_set, bitset, and bit_array each provide their own <=> in terms

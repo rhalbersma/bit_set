@@ -6,8 +6,8 @@
 #ifndef XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
 #define XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
 
-#include <xstd/bits/proxy/bidirectional.hpp> // find, view
-#include <xstd/bits/proxy/random_access.hpp> // find, view
+#include <xstd/bits/ranges/set_view.hpp> // find, view
+#include <xstd/bits/ranges/array_view.hpp> // find, view
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <cassert>                      // assert
@@ -23,15 +23,15 @@
 // ordinary range-for and std::ranges algorithms alike - so an ADL
 // customization declared in namespace boost is liable to silently stop
 // being used the moment Boost adds a same-named member. Specializing
-// xstd::proxy::bidirectional::find here instead avoids that: unlike ADL,
+// xstd::ranges::set_find here instead avoids that: unlike ADL,
 // template specialization matching considers specializations visible
 // before the point of use, wherever declared, and nothing
 // boost::dynamic_bitset<> adds to its own namespace or its own members can
 // shadow it.
-namespace xstd::proxy::bidirectional {
+namespace xstd::ranges {
 
 template<std::unsigned_integral Block, class Allocator>
-struct find<boost::dynamic_bitset<Block, Allocator>>
+struct set_find<boost::dynamic_bitset<Block, Allocator>>
 {
         [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const& c) noexcept
         {
@@ -58,23 +58,23 @@ struct find<boost::dynamic_bitset<Block, Allocator>>
 };
 
 // boost::dynamic_bitset<> may add its own <=> upstream at some point (as it
-// already did for begin()/end() - see find<> above), with no guarantee its
+// already did for begin()/end() - see set_find<> above), with no guarantee its
 // semantics would match std::set<int>'s ordering (the same concern as
-// std::bitset<N> - see compare<Bits>'s primary template). Opt in to the
+// std::bitset<N> - see set_set_compare<Bits>'s primary template). Opt in to the
 // safe, iteration-based ordering explicitly rather than risk inheriting
 // whatever a future native <=> decides to mean. This is what
-// view<boost::dynamic_bitset<...>>::operator<=> uses; unlike find<>, this
+// set_view<boost::dynamic_bitset<...>>::operator<=> uses; unlike set_find<>, this
 // isn't reachable via infix x <=> y - boost::dynamic_bitset<> is a real
 // (non-std) namespace so an ADL operator<=> here would be legal, but
 // ordering isn't unambiguous enough to be worth adding one - use
-// view(x) <=> view(y).
+// set_view(x) <=> set_view(y).
 template<std::unsigned_integral Block, class Allocator>
-struct compare<boost::dynamic_bitset<Block, Allocator>>
+struct set_compare<boost::dynamic_bitset<Block, Allocator>>
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(boost::dynamic_bitset<Block, Allocator> const& x, boost::dynamic_bitset<Block, Allocator> const& y) noexcept
         {
-                auto const xv = view(x);
-                auto const yv = view(y);
+                auto const xv = set_view(x);
+                auto const yv = set_view(y);
                 return std::lexicographical_compare_three_way(
                         xv.begin(), xv.end(),
                         yv.begin(), yv.end()
@@ -82,42 +82,24 @@ struct compare<boost::dynamic_bitset<Block, Allocator>>
         }
 };
 
-}       // namespace xstd::proxy::bidirectional
+}       // namespace xstd::ranges
 
-// Same reasoning as bidirectional::find above, for the array-of-bool
+// Same reasoning as set_find above, for the array-of-bool
 // interpretation: boost::dynamic_bitset<> already has operator[] for every
 // index, so this specialization is trivial - it exists purely so a future
-// upstream begin()/end()/at() addition can't shadow it, same as find<>
+// upstream begin()/end()/at() addition can't shadow it, same as set_find<>
 // above.
-namespace xstd::proxy::random_access {
+namespace xstd::ranges {
 
 template<std::unsigned_integral Block, class Allocator>
-struct find<boost::dynamic_bitset<Block, Allocator>>
+struct array_find<boost::dynamic_bitset<Block, Allocator>>
 {
         [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const&) noexcept { return 0UZ; }
         [[nodiscard]] static constexpr std::size_t last (boost::dynamic_bitset<Block, Allocator> const& c) noexcept { return c.size(); }
         [[nodiscard]] static constexpr bool         at  (boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept { return c[n]; }
 };
 
-// boost::dynamic_bitset<> has classic operator</<=/>/>= but no operator<=>
-// at all (so compare<Bits>'s default x <=> y wouldn't even compile, let
-// alone be guaranteed to mean the same thing as this namespace's fixed-
-// length sequence-of-bool order) - opt in explicitly, same as
-// bidirectional::compare<boost::dynamic_bitset<...>> above.
-template<std::unsigned_integral Block, class Allocator>
-struct compare<boost::dynamic_bitset<Block, Allocator>>
-{
-        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(boost::dynamic_bitset<Block, Allocator> const& x, boost::dynamic_bitset<Block, Allocator> const& y) noexcept
-        {
-                auto const xv = view(x);
-                auto const yv = view(y);
-                return std::lexicographical_compare_three_way(
-                        xv.begin(), xv.end(),
-                        yv.begin(), yv.end()
-                );
-        }
-};
 
-}       // namespace xstd::proxy::random_access
+}       // namespace xstd::ranges
 
 #endif // XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
