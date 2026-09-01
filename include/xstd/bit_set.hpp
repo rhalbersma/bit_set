@@ -11,7 +11,7 @@
 #include <compare>              // strong_ordering
 #include <initializer_list>     // initializer_list
 
-#include <xstd/core/memory.hpp> // align_up
+#include <xstd/ints/memory.hpp> // align_up
 #include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <limits>               // digits

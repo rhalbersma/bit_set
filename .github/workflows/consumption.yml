@@ -43,4 +43,4 @@ jobs:
       # build tree, so without this the package this library installs is
       # invalid and the consumer fails to configure against it.
       dependency_repos: |
-        https://github.com/rhalbersma/xstd.git 1ce2e2e521bb0c07009922c9631fdffaab94cf9d
+        https://github.com/rhalbersma/xstd.git 42ab0d409fc9118ea0dc8846508ea62e97b90c7e
