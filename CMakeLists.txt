@@ -28,19 +28,22 @@ if(NOT xstd_FOUND)
         xstd
         GIT_REPOSITORY https://github.com/rhalbersma/xstd.git
         # Pinned, not main. This is the only first-party dependency here and it
-        # moved under us: aligned_size left <xstd/utility.hpp> for
+        # moves under us: aligned_size left <xstd/utility.hpp> for
         # <xstd/memory.hpp>, and every compiling job went red with no commit in
         # this repository. Bump this deliberately, fixing whatever the bump
-        # renames, rather than discovering it from CI.
+        # relocates, rather than discovering it from CI.
         #
-        # This bump renames aligned_size(alignment, size) to align_up(value,
-        # alignment), from rhalbersma/xstd#215. Name a commit on xstd's main,
-        # not a pull request branch head, which merging leaves on no branch.
+        # This bump follows xstd's split into xstd/core and xstd/ints, from
+        # rhalbersma/xstd#223 and #226: <xstd/memory.hpp> is now
+        # <xstd/core/memory.hpp>, and align_up is constrained on the alignable
+        # concept rather than on unsigned_integer. Name a commit on xstd's
+        # main, not a pull request branch head, which merging leaves on no
+        # branch.
         # Move .github/workflows/consumption.yml's dependency_repos with this:
         # the find_package consumer builds against an installed xstd from
         # there, not against this fallback, so a stale pin there fails only
         # that one job, with a rename error this configure never sees.
-        GIT_TAG ef66c2bd31e44a2bfff64b7acc6fdae06afe6c75
+        GIT_TAG 1ce2e2e521bb0c07009922c9631fdffaab94cf9d
     )
     FetchContent_MakeAvailable(xstd)
 endif()
