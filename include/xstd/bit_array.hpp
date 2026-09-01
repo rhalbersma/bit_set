@@ -11,7 +11,7 @@
 #include <compare>              // strong_ordering
 #include <initializer_list>     // initializer_list
 
-#include <xstd/memory.hpp>      // align_up
+#include <xstd/ints/memory.hpp> // align_up
 #include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <limits>               // digits
@@ -41,7 +41,7 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 // NOLINTBEGIN(readability-duplicate-include): deliberate, see above
 #include <xstd/bit/array.hpp>   // array
 #include <xstd/proxy.hpp>       // begin, end, iterator, reference
-#include <xstd/memory.hpp>      // align_up
+#include <xstd/ints/memory.hpp> // align_up
 #include <algorithm>            // lexicographical_compare_three_way
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
