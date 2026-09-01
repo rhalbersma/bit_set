@@ -70,6 +70,7 @@ struct bit_array
         [[nodiscard]] friend constexpr std::size_t find_first(const bit_array&)                  noexcept { return 0UZ;         }
         [[nodiscard]] friend constexpr std::size_t find_last (const bit_array&)                  noexcept { return N;           }
         [[nodiscard]] friend constexpr std::size_t find_at   (const bit_array& c, std::size_t n) noexcept { return c.m_bits[n]; }
+        friend constexpr void assign_at(bit_array& c, std::size_t n, bool value) noexcept { if (value) { c.m_bits.set(n); } else { c.m_bits.reset(n); } }
 
         // types
         using value_type             = bool;

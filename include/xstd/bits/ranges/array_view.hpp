@@ -77,13 +77,23 @@ struct array_ops
                 }
         }
 
+        // The write side of array_find::at, and deliberately without an
+        // operator[] fallback. A type whose operator[] returns a proxy of ours -
+        // xstd::bit_array does - would take `c[n] = value` straight back into
+        // array_reference::operator=, which calls this, which calls that: it
+        // compiles, and recurses until the stack is gone. So the only ways in are
+        // a real set(pos, value) member and the ADL hook, and a type offering
+        // neither is a compile error rather than a silent one at run time.
         static constexpr void assign(Bits& c, std::size_t n, bool value) noexcept
+                requires requires { c.set(n, value); }
         {
-                if constexpr (requires { c.set(n, value); }) {
-                        c.set(n, value);
-                } else {
-                        c[n] = value;
-                }
+                c.set(n, value);
+        }
+
+        static constexpr void assign(Bits& c, std::size_t n, bool value) noexcept
+                requires (not requires { c.set(n, value); }) and requires { assign_at(c, n, value); }
+        {
+                assign_at(c, n, value);
         }
 
         static constexpr void fill(Bits& c, bool value) noexcept
@@ -246,20 +256,20 @@ public:
         }
 
         constexpr array_reference const& operator=(bool value) const noexcept
-                requires (not IsConst)
+                requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
                 array_ops<Bits>::assign(m_ref, m_idx, value);
                 return *this;
         }
 
         constexpr array_reference const& operator=(array_reference const& other) const noexcept
-                requires (not IsConst)
+                requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
                 return *this = static_cast<bool>(other);
         }
 
         constexpr array_reference const& flip() const noexcept
-                requires (not IsConst)
+                requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
                 return *this = not static_cast<bool>(*this);
         }
