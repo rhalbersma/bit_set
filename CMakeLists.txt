@@ -50,7 +50,7 @@ if(NOT xstd_FOUND)
     FetchContent_MakeAvailable(xstd)
 endif()
 
-# xstd/bit/array.hpp and xstd/bitset.hpp hash_append their state through
+# xstd/bits/bit/array.hpp and xstd/bits/bitset/bitset.hpp hash_append their state through
 # Boost.Hash2 (boost/hash2/{fnv1a,hash_append}.hpp), so it is a real,
 # public dependency of this library's headers, not just of the tests -
 # declared explicitly here rather than relying on it being pulled in
@@ -70,15 +70,26 @@ target_sources(
     FILE_SET HEADERS
     BASE_DIRS include
     FILES
-        include/xstd/bit_array.hpp
-        include/xstd/bit_set.hpp
-        include/xstd/bitset.hpp
-        include/xstd/proxy.hpp
-        include/xstd/bit/array.hpp
-        include/xstd/bit/intrin.hpp
-        include/xstd/bit/pred.hpp
-        include/xstd/proxy/bidirectional.hpp
-        include/xstd/proxy/random_access.hpp
+        include/xstd/bits.hpp
+        include/xstd/bits/array.hpp
+        include/xstd/bits/array/bit_array.hpp
+        include/xstd/bits/bit.hpp
+        include/xstd/bits/bit/array.hpp
+        include/xstd/bits/bit/intrin.hpp
+        include/xstd/bits/bit/pred.hpp
+        include/xstd/bits/bitset.hpp
+        include/xstd/bits/bitset/bitset.hpp
+        include/xstd/bits/ext/boost.hpp
+        include/xstd/bits/ext/boost/dynamic_bitset.hpp
+        include/xstd/bits/ext/std.hpp
+        include/xstd/bits/ext/std/bitset.hpp
+        include/xstd/bits/ext/xstd.hpp
+        include/xstd/bits/ext/xstd/bitset.hpp
+        include/xstd/bits/proxy.hpp
+        include/xstd/bits/proxy/bidirectional.hpp
+        include/xstd/bits/proxy/random_access.hpp
+        include/xstd/bits/set.hpp
+        include/xstd/bits/set/finite_bit_set.hpp
 )
 
 target_link_libraries(

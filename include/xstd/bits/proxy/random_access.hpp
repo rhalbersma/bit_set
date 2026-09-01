@@ -1,10 +1,10 @@
-#ifndef XSTD_PROXY_RANDOM_ACCESS_HPP
-#define XSTD_PROXY_RANDOM_ACCESS_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_BITS_PROXY_RANDOM_ACCESS_HPP
+#define XSTD_BITS_PROXY_RANDOM_ACCESS_HPP
 
 #include <algorithm>    // equal
 #include <cassert>      // assert
@@ -275,4 +275,4 @@ struct compare
 
 }       // namespace xstd::proxy::random_access
 
-#endif  // include guard
+#endif // XSTD_BITS_PROXY_RANDOM_ACCESS_HPP

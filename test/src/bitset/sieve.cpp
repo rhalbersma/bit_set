@@ -4,11 +4,11 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <opt/bitset/sieve.hpp>         // filter_twins, sift_primes0, sift_primes1
-#include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
-#include <ext/std/bitset.hpp>           // bitset
-#include <ext/xstd/bitset.hpp>          // bitset
-#include <xstd/bit_set.hpp>             // bit_set
-#include <xstd/proxy/bidirectional.hpp> // view
+#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
+#include <xstd/bits/ext/std/bitset.hpp>           // bitset
+#include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
+#include <xstd/bits/set/finite_bit_set.hpp>             // finite_bit_set
+#include <xstd/bits/proxy/bidirectional.hpp> // view
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
 #include <fmt/format.h>                 // format
 #include <fmt/ranges.h>
@@ -22,7 +22,7 @@ using Types = std::tuple
 <       boost::dynamic_bitset<>
 ,         std::bitset<N>
 ,        xstd::bitset<N>
-,        xstd::bit_set<N>
+,        xstd::finite_bit_set<N>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)

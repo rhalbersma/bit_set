@@ -1,13 +1,13 @@
-#ifndef XSTD_SUBDIR_BIT_SUBDIR_ARRAY_HPP
-#define XSTD_SUBDIR_BIT_SUBDIR_ARRAY_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bit/intrin.hpp>                  // countl_zero, countr_zero, popcount
-#include <xstd/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
+#ifndef XSTD_BITS_BIT_ARRAY_HPP
+#define XSTD_BITS_BIT_ARRAY_HPP
+
+#include <xstd/bits/bit/intrin.hpp>                  // countl_zero, countr_zero, popcount
+#include <xstd/bits/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
 #include <xstd/ints/memory.hpp>                 // align_up
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
 #include <algorithm>                            // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
@@ -45,7 +45,7 @@ struct array
         // No operator<=> here: array is a pure storage vehicle for a fixed
         // number of bits, with no opinion on how those bits should be
         // interpreted as a sequence to order - as a set of the indices that
-        // are set (bit_set/bitset's contract, matching std::set<int>'s
+        // are set (finite_bit_set/bitset's contract, matching std::set<int>'s
         // ordering), or as a fixed-length sequence of bools (bit_array's
         // contract, matching e.g. std::array<bool, N>'s ordering). Those are
         // different relations in general (proven this doesn't just come down
@@ -53,7 +53,7 @@ struct array
         // compare<Bits> comments), so array can't offer one without silently
         // picking a side; == is unaffected because equality of the
         // underlying bits is the same relation under either interpretation.
-        // bit_set, bitset, and bit_array each provide their own <=> in terms
+        // finite_bit_set, bitset, and bit_array each provide their own <=> in terms
         // of their own iteration instead.
 
         template<class Provider, class Hash, class Flavor>
@@ -571,4 +571,4 @@ private:
 
 }       // namespace xstd::bit
 
-#endif  // include guard
+#endif // XSTD_BITS_BIT_ARRAY_HPP

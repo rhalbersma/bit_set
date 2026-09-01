@@ -1,10 +1,10 @@
-#ifndef XSTD_SUBDIR_BIT_SUBDIR_PRED_HPP
-#define XSTD_SUBDIR_BIT_SUBDIR_PRED_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_BITS_BIT_PRED_HPP
+#define XSTD_BITS_BIT_PRED_HPP
 
 #include <concepts>     // unsigned_integral
 
@@ -30,4 +30,4 @@ template<std::unsigned_integral Block>
 
 }       // namespace xstd::bit
 
-#endif  // include guard
+#endif // XSTD_BITS_BIT_PRED_HPP

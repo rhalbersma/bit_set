@@ -6,7 +6,7 @@
 #include <set/exhaustive.hpp>           // all_singleton_set_triples
 #include <set/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET
 #include <set/primitives.hpp>           // op_equal_to, op_less
-#include <xstd/bit_set.hpp>             // bit_set
+#include <xstd/bits/set/finite_bit_set.hpp>             // finite_bit_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
@@ -22,15 +22,15 @@ using Types = std::tuple
 #ifdef XSTD_TEST_HAS_FLAT_SET
 ,       std::flat_set<std::size_t>
 #endif
-,       bit_set< 0, uint8_t>
-,       bit_set< 8, uint8_t>
-,       bit_set< 9, uint8_t>
-,       bit_set<17, uint8_t>
-,       bit_set<17, uint16_t>
-,       bit_set<17, uint32_t>
-,       bit_set<17, uint64_t>
+,       finite_bit_set< 0, uint8_t>
+,       finite_bit_set< 8, uint8_t>
+,       finite_bit_set< 9, uint8_t>
+,       finite_bit_set<17, uint8_t>
+,       finite_bit_set<17, uint16_t>
+,       finite_bit_set<17, uint32_t>
+,       finite_bit_set<17, uint64_t>
 #if defined(__GNUG__)
-,       bit_set<17, __uint128_t>
+,       finite_bit_set<17, __uint128_t>
 #endif
 >;
 

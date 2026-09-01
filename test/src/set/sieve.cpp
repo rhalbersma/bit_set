@@ -5,7 +5,7 @@
 
 #include <opt/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
 #include <set/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET
-#include <xstd/bit_set.hpp>             // bit_set
+#include <xstd/bits/set/finite_bit_set.hpp>             // finite_bit_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <fmt/format.h>                 // format
 #include <fmt/ranges.h>
@@ -22,7 +22,7 @@ using Types = std::tuple
 #ifdef XSTD_TEST_HAS_FLAT_SET
 ,       std::flat_set<std::size_t>
 #endif
-,       xstd::bit_set<N>
+,       xstd::finite_bit_set<N>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)

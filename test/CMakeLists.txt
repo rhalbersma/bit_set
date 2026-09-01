@@ -136,9 +136,13 @@ foreach(h ${public_headers})
 
     add_executable(header.${header_test_id} ${header_test_source})
 
+    # Boost::headers because xstd/bits/ext/boost/dynamic_bitset.hpp adapts a
+    # header-only Boost library, and the self-sufficiency units under ext/ have
+    # to see it. The bit_set target itself carries only Boost::hash2.
     target_link_libraries(
         header.${header_test_id} PRIVATE
         ${CMAKE_PROJECT_NAME}
+        Boost::headers
     )
 
     target_compile_definitions(

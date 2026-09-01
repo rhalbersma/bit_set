@@ -3,9 +3,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
-#include <ext/std/bitset.hpp>           // bitset
-#include <ext/xstd/bitset.hpp>          // bitset
+#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
+#include <xstd/bits/ext/std/bitset.hpp>           // bitset
+#include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
 #include <bitset/exhaustive.hpp>        // all_singleton_sets, all_singleton_set_pairs, all_doubleton_sets, any_value, empty_set, full_set
 #include <bitset/primitives.hpp>        // mem_bit_and_assign, mem_bit_or_assign, mem_bit_xor_assign, mem_bit_minus_assign,
                                         // mem_shift_left_assign, mem_shift_right_assign, mem_shift_left, mem_shift_right,

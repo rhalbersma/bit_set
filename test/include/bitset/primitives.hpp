@@ -6,7 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <concepts.hpp>                 // dynamic
-#include <xstd/proxy/bidirectional.hpp> // view
+#include <xstd/bits/proxy/bidirectional.hpp> // view
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <cstddef>                      // ptrdiff_t, size_t
 #include <iterator>                     // distance, inserter

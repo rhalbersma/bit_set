@@ -1,13 +1,13 @@
-#ifndef EXT_XSTD_BITSET_HPP
-#define EXT_XSTD_BITSET_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/proxy/bidirectional.hpp> // begin, end
-#include <xstd/bitset.hpp>              // bitset
+#ifndef XSTD_BITS_EXT_XSTD_BITSET_HPP
+#define XSTD_BITS_EXT_XSTD_BITSET_HPP
+
+#include <xstd/bits/proxy/bidirectional.hpp> // begin, end
+#include <xstd/bits/bitset/bitset.hpp>              // bitset
 #include <concepts>                     // unsigned_integral
 #include <iterator>                     // make_reverse_iterator
 #include <ranges>                       // begin, end, rbegin, rend
@@ -29,4 +29,4 @@ template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr au
 
 }       // namespace xstd
 
-#endif  // include guard
+#endif // XSTD_BITS_EXT_XSTD_BITSET_HPP

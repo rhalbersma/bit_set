@@ -1,13 +1,13 @@
-#ifndef EXT_BOOST_DYNAMIC_BITSET_HPP
-#define EXT_BOOST_DYNAMIC_BITSET_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/proxy/bidirectional.hpp> // find, view
-#include <xstd/proxy/random_access.hpp> // find, view
+#ifndef XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
+#define XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
+
+#include <xstd/bits/proxy/bidirectional.hpp> // find, view
+#include <xstd/bits/proxy/random_access.hpp> // find, view
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <cassert>                      // assert
@@ -120,4 +120,4 @@ struct compare<boost::dynamic_bitset<Block, Allocator>>
 
 }       // namespace xstd::proxy::random_access
 
-#endif  // include guard
+#endif // XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP

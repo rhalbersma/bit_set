@@ -6,7 +6,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/proxy/bidirectional.hpp> // view
+#include <xstd/bits/proxy/bidirectional.hpp> // view
 #include <boost/dynamic_bitset_fwd.hpp> // dynamic_bitset
 #include <cstddef>                      // size_t
 #include <ranges>                       // take_while

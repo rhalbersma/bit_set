@@ -1,10 +1,10 @@
-#ifndef XSTD_BITSET_HPP
-#define XSTD_BITSET_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_BITS_BITSET_BITSET_HPP
+#define XSTD_BITS_BITSET_BITSET_HPP
 
 // Bitsets                                                              [bitset]
 // Header <bitset> synopsis                                         [bitset.syn]
@@ -29,8 +29,8 @@ template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
 
 }       // namespace xstd
 
-#include <xstd/bit/array.hpp>           // array
-#include <xstd/proxy/bidirectional.hpp> // find
+#include <xstd/bits/bit/array.hpp>           // array
+#include <xstd/bits/proxy/bidirectional.hpp> // find
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
 #include <algorithm>                    // lexicographical_compare_three_way
@@ -448,4 +448,4 @@ std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>&
 
 }       // namespace xstd
 
-#endif  // include guard
+#endif // XSTD_BITS_BITSET_BITSET_HPP

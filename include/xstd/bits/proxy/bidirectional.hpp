@@ -1,10 +1,10 @@
-#ifndef XSTD_PROXY_BIDIRECTIONAL_HPP
-#define XSTD_PROXY_BIDIRECTIONAL_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_BITS_PROXY_BIDIRECTIONAL_HPP
+#define XSTD_BITS_PROXY_BIDIRECTIONAL_HPP
 
 #include <algorithm>    // includes, lexicographical_compare_three_way
 #include <cassert>      // assert
@@ -20,7 +20,7 @@ namespace xstd::proxy::bidirectional {
 // Bits customizes its iteration either by providing hidden friends
 // find_first/find_last/find_next/find_prev discoverable via ADL (the
 // default below, delegating to them - used by xstd's own types, e.g.
-// bit_set/bitset, whose associated namespace is xstd and can legitimately
+// finite_bit_set/bitset, whose associated namespace is xstd and can legitimately
 // hold them), or by giving find<Bits> an explicit specialization for a
 // foreign type that cannot provide those via ADL - e.g. std::bitset<N>,
 // whose only associated namespace is std, where a program may not add
@@ -216,7 +216,7 @@ template<bit_range Bits>
 // preferred over ADL. Wrapping in view<Bits> sidesteps that: the adaptor
 // itself has no competing members, so its begin()/end() are what get used.
 //
-// key_type mirrors bit_set/bitset's own nested key_type: fmt's range
+// key_type mirrors finite_bit_set/bitset's own nested key_type: fmt's range
 // formatter (fmt/ranges.h) detects "format like a set" purely by checking
 // for a nested key_type, so a view<Bits> already formats with {} delimiters
 // on its own.
@@ -242,7 +242,7 @@ public:
         // begin()/cbegin() (and end()/cend()) coincide: this proxy iteration
         // is inherently read-only (reference<Bits> only converts to
         // std::size_t, there is no assignment-through-iterator here), same
-        // as bit_set/bitset's own cbegin()/cend() are plain aliases for
+        // as finite_bit_set/bitset's own cbegin()/cend() are plain aliases for
         // begin()/end() rather than a distinct const-iteration path.
         [[nodiscard]] constexpr auto begin() const noexcept { return bidirectional::begin(*m_ptr); }
         [[nodiscard]] constexpr auto end()   const noexcept { return bidirectional::end  (*m_ptr); }
@@ -327,7 +327,7 @@ template<bit_range Bits>
 view(Bits const&) -> view<Bits>;
 
 // compare<Bits>::lexicographical_three_way defaults to trusting Bits' own
-// <=>: xstd's own bit_set/bitset (bit::array's operator<=>) is meant to
+// <=>: xstd's own finite_bit_set/bitset (bit::array's operator<=>) is meant to
 // already compute std::set<int>-equivalent ordering, word-parallel, for
 // every cardinality - so the default here is just to call it directly
 // rather than pay for iterating through view.
@@ -356,4 +356,4 @@ struct compare
 
 }       // namespace xstd::proxy::bidirectional
 
-#endif  // include guard
+#endif // XSTD_BITS_PROXY_BIDIRECTIONAL_HPP

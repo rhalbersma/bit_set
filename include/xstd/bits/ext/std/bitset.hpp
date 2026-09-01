@@ -1,13 +1,13 @@
-#ifndef EXT_STD_BITSET_HPP
-#define EXT_STD_BITSET_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/proxy/bidirectional.hpp> // find, view
-#include <xstd/proxy/random_access.hpp> // find, view
+#ifndef XSTD_BITS_EXT_STD_BITSET_HPP
+#define XSTD_BITS_EXT_STD_BITSET_HPP
+
+#include <xstd/bits/proxy/bidirectional.hpp> // find, view
+#include <xstd/bits/proxy/random_access.hpp> // find, view
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <bitset>                       // bitset
 #include <cassert>                      // assert
@@ -159,4 +159,4 @@ bitset<N> operator-(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
 
 }       // namespace std
 
-#endif  // include guard
+#endif // XSTD_BITS_EXT_STD_BITSET_HPP
