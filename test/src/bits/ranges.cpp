@@ -10,7 +10,6 @@
 #include <concepts>                      // same_as
 #include <cstddef>                       // size_t
 #include <type_traits>                   // is_convertible_v
-#include <vector>                        // vector
 
 BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ranges)
@@ -37,13 +36,22 @@ constexpr bool has_address_of = requires(R r) { r.operator&(); };
 // gives an iterator back, and the value -- a key for the set view, a bool for
 // the sequence view -- is reached only by converting the reference.
 //
-// Neither of the standard's own bit proxies is built this way, and they differ
-// on both halves. Their proxy exists only on the mutable path: std::bitset's
-// const operator[] hands back a plain bool, and std::vector<bool>::const_reference
-// is bool, so reading through const leaves the proxy behind entirely. And even
-// the mutable proxy has no operator&, so from one of those references there is no
-// way back to the iterator it came from. Here both paths are proxies -- the const
-// one differing only in that it will not assign -- and both close the loop.
+// The standard says nothing about this shape, and its implementations disagree
+// about all of it. Measured on the same four questions:
+//
+//                                              libstdc++   libc++
+//   vector<bool>::const_reference is bool         yes        no
+//   vector<bool>::reference has operator&         no         yes
+//   bitset::reference has operator&               no         yes
+//   bitset's const operator[] returns bool        yes        no
+//
+// libc++ already builds its bit references exactly this way, proxies on both
+// paths and an operator& that hands an iterator back; libstdc++ does neither.
+// So this is not a novel shape, it is libc++'s -- and because it is a choice
+// rather than a rule, none of those four is asserted here. A test that pinned
+// them would be pinning whichever standard library it happened to run against,
+// which is what the first version of this file did, and Apple Clang said so.
+// What is asserted below is what our own views guarantee on every toolchain.
 BOOST_AUTO_TEST_CASE(DereferencingYieldsAProxyRatherThanTheValue)
 {
         static_assert(std::same_as<decltype(*std::declval<SetIt const&>()), SetRef>);
@@ -62,17 +70,12 @@ BOOST_AUTO_TEST_CASE(AddressOfAProxyYieldsAnIterator)
         static_assert(has_address_of<SetRef>);
         static_assert(has_address_of<ArrRef>);
 
-        // The standard's bit proxies stop one short of this.
-        static_assert(not has_address_of<std::bitset<64>::reference>);
-        static_assert(not has_address_of<std::vector<bool>::reference>);
         BOOST_CHECK(true);
 }
 
-// The const path is a proxy too, which is where the standard's convention parts
-// company with this one: reading a std::bitset or a std::vector<bool> through
-// const yields a plain bool, so its const_reference is not a proxy and has
-// nothing to take the address of. Here const_reference is the same proxy as
-// reference, minus the assignment.
+// The const path is a proxy too, and is the same proxy as the mutable one minus
+// the assignment -- not a plain bool, which is what libstdc++ hands back and
+// libc++ does not.
 BOOST_AUTO_TEST_CASE(TheConstPathIsAProxyAsWell)
 {
         using ConstArrRef = xstd::ranges::array_reference<Bits, true>;
@@ -86,9 +89,6 @@ BOOST_AUTO_TEST_CASE(TheConstPathIsAProxyAsWell)
         static_assert(    std::is_assignable_v<ArrRef const&, bool>);
         static_assert(not std::is_assignable_v<ConstArrRef const&, bool>);
 
-        // The standard reads through const as a plain bool, not as a proxy.
-        static_assert(std::same_as<decltype(std::declval<std::bitset<64> const&>()[0]), bool>);
-        static_assert(std::same_as<std::vector<bool>::const_reference, bool>);
         BOOST_CHECK(true);
 }
 

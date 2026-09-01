@@ -82,6 +82,25 @@ container typedefs, bidirectional iterators, `empty`/`size`/`max_size`,
 `array_view`/`vector_view` pair, for the reason `std::span` is one template: the
 two differ only in whether `size()` is a constant expression.
 
+The proxies are a closed pair: `*it` yields a proxy reference, `&ref` yields the
+iterator back, and the value -- a key or a `bool` -- is reached only by converting
+the reference. Both the mutable and the const path are proxies, the const one
+differing only in refusing assignment.
+
+That shape is not novel and it is not the standard's, because the standard has no
+opinion here and its implementations disagree about all of it:
+
+|                                          | libstdc++ | libc++ |
+| ---------------------------------------- | --------- | ------ |
+| `vector<bool>::const_reference` is `bool` | yes       | no     |
+| `vector<bool>::reference` has `operator&` | no        | yes    |
+| `bitset::reference` has `operator&`       | no        | yes    |
+| `bitset`'s const `operator[]` gives `bool`| yes       | no     |
+
+libc++ already builds its bit references this way; libstdc++ does neither half.
+So the choice here is libc++'s, made a guarantee rather than left to whichever
+standard library a consumer happens to have.
+
 Two customization points, both defaulted so that `std::bitset`,
 `boost::dynamic_bitset` and our own types all work unspecialized:
 
