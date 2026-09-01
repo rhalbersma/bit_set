@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <set/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET
-#include <xstd/bits/set/finite_bit_set.hpp>             // finite_bit_set
+#include <xstd/bits/finite_bit_set.hpp>             // finite_bit_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <concepts>                     // equality_comparable, regular, totally_ordered
 #include <cstddef>                      // size_t

@@ -7,8 +7,8 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/bits/bitset/bitset.hpp>              // bitset
-#include <xstd/bits/set/finite_bit_set.hpp>             // finite_bit_set
+#include <xstd/bits/bitset.hpp>              // bitset
+#include <xstd/bits/finite_bit_set.hpp>             // finite_bit_set
 #include <benchmark/benchmark.h>        // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN
 
 constexpr auto N = 10'000uz;

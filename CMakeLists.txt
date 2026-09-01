@@ -50,7 +50,7 @@ if(NOT xstd_FOUND)
     FetchContent_MakeAvailable(xstd)
 endif()
 
-# xstd/bits/bit/array.hpp and xstd/bits/bitset/bitset.hpp hash_append their state through
+# xstd/bits/impl/array.hpp and xstd/bits/bitset.hpp hash_append their state through
 # Boost.Hash2 (boost/hash2/{fnv1a,hash_append}.hpp), so it is a real,
 # public dependency of this library's headers, not just of the tests -
 # declared explicitly here rather than relying on it being pulled in
@@ -71,14 +71,12 @@ target_sources(
     BASE_DIRS include
     FILES
         include/xstd/bits.hpp
-        include/xstd/bits/array.hpp
-        include/xstd/bits/array/bit_array.hpp
-        include/xstd/bits/bit.hpp
-        include/xstd/bits/bit/array.hpp
-        include/xstd/bits/bit/intrin.hpp
-        include/xstd/bits/bit/pred.hpp
+        include/xstd/bits/bit_array.hpp
         include/xstd/bits/bitset.hpp
-        include/xstd/bits/bitset/bitset.hpp
+        include/xstd/bits/finite_bit_set.hpp
+        include/xstd/bits/impl/array.hpp
+        include/xstd/bits/impl/intrin.hpp
+        include/xstd/bits/impl/pred.hpp
         include/xstd/bits/ext/boost.hpp
         include/xstd/bits/ext/boost/dynamic_bitset.hpp
         include/xstd/bits/ext/std.hpp
@@ -89,8 +87,6 @@ target_sources(
         include/xstd/bits/ranges/array_view.hpp
         include/xstd/bits/ranges/bit_extent.hpp
         include/xstd/bits/ranges/set_view.hpp
-        include/xstd/bits/set.hpp
-        include/xstd/bits/set/finite_bit_set.hpp
 )
 
 target_link_libraries(

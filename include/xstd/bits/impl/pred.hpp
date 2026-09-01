@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_BITS_BIT_PRED_HPP
-#define XSTD_BITS_BIT_PRED_HPP
+#ifndef XSTD_BITS_IMPL_PRED_HPP
+#define XSTD_BITS_IMPL_PRED_HPP
 
 #include <concepts>     // unsigned_integral
 
@@ -30,4 +30,4 @@ template<std::unsigned_integral Block>
 
 }       // namespace xstd::bit
 
-#endif // XSTD_BITS_BIT_PRED_HPP
+#endif // XSTD_BITS_IMPL_PRED_HPP

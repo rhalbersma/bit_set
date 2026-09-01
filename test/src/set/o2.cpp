@@ -11,7 +11,7 @@
 #include <set/primitives.hpp>           // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
                                         // mem_lower_bound, mem_upper_bound, mem_equal_range, op_equal, op_not_equal_to,
                                         // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
-#include <xstd/bits/set/finite_bit_set.hpp>             // finite_bit_set
+#include <xstd/bits/finite_bit_set.hpp>             // finite_bit_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t

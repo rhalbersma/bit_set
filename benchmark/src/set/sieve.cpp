@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <opt/set/sieve.hpp>            // filter_twins, sift_primes
-#include <xstd/bits/set/finite_bit_set.hpp>             // finite_bit_set
+#include <xstd/bits/finite_bit_set.hpp>             // finite_bit_set
 #include <version>                      // __cpp_lib_flat_set
 #include <set>                          // set
 #include <benchmark/benchmark.h>        // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN

@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_BITS_BIT_INTRIN_HPP
-#define XSTD_BITS_BIT_INTRIN_HPP
+#ifndef XSTD_BITS_IMPL_INTRIN_HPP
+#define XSTD_BITS_IMPL_INTRIN_HPP
 
 #include <bit>          // countl_zero, countr_zero, popcount
 #include <concepts>     // unsigned_integral
@@ -29,4 +29,4 @@ namespace xstd::bit {
 
 }       // namespace xstd::bit
 
-#endif // XSTD_BITS_BIT_INTRIN_HPP
+#endif // XSTD_BITS_IMPL_INTRIN_HPP

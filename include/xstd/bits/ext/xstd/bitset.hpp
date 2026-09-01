@@ -7,7 +7,7 @@
 #define XSTD_BITS_EXT_XSTD_BITSET_HPP
 
 #include <xstd/bits/ranges/set_view.hpp> // begin, end
-#include <xstd/bits/bitset/bitset.hpp>              // bitset
+#include <xstd/bits/bitset.hpp>              // bitset
 #include <concepts>                     // unsigned_integral
 #include <iterator>                     // make_reverse_iterator
 #include <ranges>                       // begin, end, rbegin, rend

@@ -3,11 +3,11 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_BITS_BIT_ARRAY_HPP
-#define XSTD_BITS_BIT_ARRAY_HPP
+#ifndef XSTD_BITS_IMPL_ARRAY_HPP
+#define XSTD_BITS_IMPL_ARRAY_HPP
 
-#include <xstd/bits/bit/intrin.hpp>                  // countl_zero, countr_zero, popcount
-#include <xstd/bits/bit/pred.hpp>                    // intersects, is_subset_of, not_equal_to
+#include <xstd/bits/impl/intrin.hpp>                  // countl_zero, countr_zero, popcount
+#include <xstd/bits/impl/pred.hpp>                    // intersects, is_subset_of, not_equal_to
 #include <xstd/ints/memory.hpp>                 // align_up
 #include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
 #include <algorithm>                            // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
@@ -571,4 +571,4 @@ private:
 
 }       // namespace xstd::bit
 
-#endif // XSTD_BITS_BIT_ARRAY_HPP
+#endif // XSTD_BITS_IMPL_ARRAY_HPP

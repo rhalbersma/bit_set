@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_BITS_ARRAY_BIT_ARRAY_HPP
-#define XSTD_BITS_ARRAY_BIT_ARRAY_HPP
+#ifndef XSTD_BITS_BIT_ARRAY_HPP
+#define XSTD_BITS_BIT_ARRAY_HPP
 
 // Header <array> synopsis                                           [array.syn]
 
@@ -39,7 +39,7 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 // section needs, mirroring the layout of the standard itself. The overlap
 // between the two lists is deliberate: neither is complete without it.
 // NOLINTBEGIN(readability-duplicate-include): deliberate, see above
-#include <xstd/bits/bit/array.hpp>   // array
+#include <xstd/bits/impl/array.hpp>   // array
 #include <xstd/bits/ranges.hpp>       // begin, end, iterator, reference
 #include <xstd/ints/memory.hpp> // align_up
 #include <algorithm>            // lexicographical_compare_three_way
@@ -172,4 +172,4 @@ template<std::size_t N, std::unsigned_integral Block> constexpr void swap(bit_ar
 
 }       // namespace xstd
 
-#endif // XSTD_BITS_ARRAY_BIT_ARRAY_HPP
+#endif // XSTD_BITS_BIT_ARRAY_HPP

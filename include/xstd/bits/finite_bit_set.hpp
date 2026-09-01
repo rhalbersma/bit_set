@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_BITS_SET_FINITE_BIT_SET_HPP
-#define XSTD_BITS_SET_FINITE_BIT_SET_HPP
+#ifndef XSTD_BITS_FINITE_BIT_SET_HPP
+#define XSTD_BITS_FINITE_BIT_SET_HPP
 
 // Header <set> synopsis                                   [associative.set.syn]
 
@@ -42,7 +42,7 @@ using finite_bit_set = xstd::finite_bit_set<xstd::align_up(N, static_cast<std::s
 // section needs, mirroring the layout of the standard itself. The overlap
 // between the two lists is deliberate: neither is complete without it.
 // NOLINTBEGIN(readability-duplicate-include): deliberate, see above
-#include <xstd/bits/bit/array.hpp>           // array
+#include <xstd/bits/impl/array.hpp>           // array
 #include <xstd/bits/ranges.hpp>               // const_iterator, const_reference
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
@@ -319,4 +319,4 @@ template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr fi
 
 }       // namespace xstd
 
-#endif // XSTD_BITS_SET_FINITE_BIT_SET_HPP
+#endif // XSTD_BITS_FINITE_BIT_SET_HPP

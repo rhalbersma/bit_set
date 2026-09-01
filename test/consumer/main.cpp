@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/set/finite_bit_set.hpp>
+#include <xstd/bits/finite_bit_set.hpp>
 
 int main()
 {

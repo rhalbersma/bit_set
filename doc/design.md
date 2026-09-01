@@ -20,11 +20,30 @@ vehicles reproduce the legacy types at no cost -- `xstd::bitset` against
 `std::bitset`, `xstd::dynamic_bitset` against `boost::dynamic_bitset` -- so a thin
 interface over the array implementation throws nothing away.
 
-The header tree names the Standard header in the directory and our entity in the
-leaf, whether or not the Standard has an entity of that name. There is no
-`<finite_set>` and no `<dynamic_bitset>`, so `finite_bit_set` is a `<set>` and
-`dynamic_bitset` is a `<bitset>` -- the way `xstd/ints/cstdint/int128.hpp` sits
-under a real `<cstdint>` while `std::int128` does not exist.
+Every container the library provides is one header named after the type it
+declares, directly under `xstd/bits`. A directory per Standard section was tried
+and dropped: with one entity behind each, `xstd/bits/set/finite_bit_set.hpp` and
+`xstd/bits/bitset/bitset.hpp` spent a path component to say what the filename
+already said, and the section umbrellas above them re-exported a single header
+apiece. The Standard's own sections are still the organizing idea -- they are the
+rows of the table above -- they are just not directories.
+
+```
+xstd/bits.hpp                 the front door, over every container and the views
+xstd/bits/bit_array.hpp       one header per container, named for the type
+xstd/bits/bitset.hpp
+xstd/bits/finite_bit_set.hpp
+xstd/bits/impl/               the vehicles and the block operations, namespace xstd::bit
+xstd/bits/ranges/             set_view, array_view, bit_extent
+xstd/bits/ext/                the adaptors, asked for by name
+```
+
+`impl` rather than `bit` for the vehicles' directory, because flattening made
+`bits/bit/array.hpp` and `bits/bit_array.hpp` derive the same include guard, and
+the way out of that is not the `XSTD_SUBDIR_BIT_SUBDIR_ARRAY_HPP` spelling this
+tree just got rid of. The namespace stays `xstd::bit`: the directory says these
+headers are implementation, and that is a separate question from what to call the
+bit-level operations, which do not need a namespace layer to hide behind.
 
 ## There is no bitset-like concept
 
