@@ -452,7 +452,11 @@ public:
                 insert(ilist.begin(), ilist.end());
         }
 
-        constexpr size_type erase(key_type x) const noexcept
+        // Not [[nodiscard]], for the reason std::set::erase is not: the count is
+        // there for callers who want it and discarded by the ones who don't.
+        // modernize-use-nodiscard reaches it only because a view's modifiers are
+        // const members, writing through the pointer rather than to it.
+        constexpr size_type erase(key_type x) const noexcept  // NOLINT(modernize-use-nodiscard)
                 requires (not std::is_const_v<Bits>)
         {
                 auto const erased = contains(x);

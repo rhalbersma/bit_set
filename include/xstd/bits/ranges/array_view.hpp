@@ -255,14 +255,22 @@ public:
                 return array_find<Bits>::at(m_ref, m_idx);
         }
 
-        constexpr array_reference const& operator=(bool value) const noexcept
+        // const-qualified and returning a const reference, which is what a proxy
+        // reference is: the assignment writes through the proxy rather than to
+        // it, so the proxy itself need not be modifiable. C++23 gives
+        // std::vector<bool>::reference exactly this overload, added by P2321R2
+        // so that a prvalue proxy coming out of a view's operator* is still
+        // assignable. misc-unconventional-assign-operator only knows the
+        // ordinary shape - a non-const member returning a mutable reference -
+        // and reports the standard's own proxy shape as unconventional.
+        constexpr array_reference const& operator=(bool value) const noexcept  // NOLINT(misc-unconventional-assign-operator)
                 requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
                 array_ops<Bits>::assign(m_ref, m_idx, value);
                 return *this;
         }
 
-        constexpr array_reference const& operator=(array_reference const& other) const noexcept
+        constexpr array_reference const& operator=(array_reference const& other) const noexcept  // NOLINT(misc-unconventional-assign-operator)
                 requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
                 return *this = static_cast<bool>(other);
@@ -375,7 +383,7 @@ public:
         {
                 return std::lexicographical_compare_three_way(
                         lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
-                        [](bool x, bool y) static noexcept { return x <=> y; });
+                        [](bool x, bool y) static noexcept { return static_cast<int>(x) <=> static_cast<int>(y); });
         }
 };
 
