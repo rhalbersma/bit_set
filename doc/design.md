@@ -114,9 +114,39 @@ shadow any same-named free function. `set_ops` needs neither: a member call is
 always found, so its default just probes for `insert`/`erase`/`clear` and falls
 back to `set`/`reset`.
 
+### The prize is word-at-a-time
+
+Howard Hinnant, then libc++'s maintainer, made the case for this data structure in
+2012 ([On `vector<bool>`](https://howardhinnant.github.io/onvectorbool.html)). Two
+things there bear directly on this library.
+
+The name. He proposed lifting the specialization out into `std::bit_vector<A>`
+rather than leaving it pretending to be a `vector` of `bool` -- "it should not
+pretend to be one". The vector column of the grid above is that proposal.
+
+The numbers. His measurements are of algorithms specialized to operate a word at a
+time against the same algorithms walking bits one by one:
+
+| `find` | `count` | `fill` | `copy` | `swap_ranges` | `rotate` | `equal` |
+| ------ | ------- | ------ | ------ | ------------- | -------- | ------- |
+| 76.9x  | 22.7x   | 2.5x   | 2.8x   | 15.4x         | 1.69x    | 62.5x   |
+
+which is the whole argument for the structure, and also the standing warning
+against a view that quietly walks bits. Every relation on `set_view` therefore
+tries, cheapest first: the Bits' own member, then its bitwise operators, then the
+element-wise scan. `std::bitset<N>` has no `is_subset_of`, but `(a & ~b).none()`
+asks the same question a word at a time, and only a Bits with neither pays for the
+scan.
+
+What the essay does not say is anything about `operator&` on the proxy or about
+`const_reference`. Those are libc++'s own choices, visible in the table above but
+unargued there.
+
 Open: whether `is_subset_of`, `is_proper_subset_of` and `intersects` stay members
 of `set_view`. They are not in `[set]`, and lazy set intersection and union may be
-the better home for what they do.
+the better home for what they do -- and would be the place to capture the rest of
+Hinnant's numbers, since a lazy intersection could stay word-at-a-time end to end
+rather than materializing.
 
 ## Tests mirror the headers
 

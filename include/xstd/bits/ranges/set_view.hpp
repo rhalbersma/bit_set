@@ -535,10 +535,20 @@ public:
         // better home for what these do. They stay for now because the types
         // viewed here have them natively, and routing through std::ranges::
         // includes would make the view slower than the thing it views.
+        // Three paths, cheapest first. A Bits with the relation as a member has
+        // already done the work word-at-a-time -- ours through bit::array,
+        // boost::dynamic_bitset through its own. A Bits with only the bitwise
+        // operators can still answer a whole word at a time: std::bitset<N> has
+        // no is_subset_of, but (a & ~b).none() is the same question and does not
+        // walk the bits one at a time. Only a Bits with neither pays for the
+        // element-wise scan, which is the case Hinnant measured at up to two
+        // orders of magnitude (doc/design.md).
         [[nodiscard]] constexpr bool is_subset_of(set_view other) const noexcept
         {
                 if constexpr (requires { m_ptr->is_subset_of(*other.m_ptr); }) {
                         return m_ptr->is_subset_of(*other.m_ptr);
+                } else if constexpr (requires { (*m_ptr & ~*other.m_ptr).none(); }) {
+                        return (*m_ptr & ~*other.m_ptr).none();
                 } else {
                         return std::ranges::includes(other, *this);
                 }
@@ -557,6 +567,8 @@ public:
         {
                 if constexpr (requires { m_ptr->intersects(*other.m_ptr); }) {
                         return m_ptr->intersects(*other.m_ptr);
+                } else if constexpr (requires { (*m_ptr & *other.m_ptr).any(); }) {
+                        return (*m_ptr & *other.m_ptr).any();
                 } else {
                         auto first1 = begin();
                         auto last1  = end();
