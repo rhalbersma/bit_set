@@ -4,6 +4,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bits/ranges/block_access.hpp>      // block_access, block_range
+#include <xstd/test/three_way_invariant.hpp>      // three_way_by_iteration
+#include <xstd/test/bitset/factory.hpp>           // make_bitset
 #include <xstd/bits/bit_array.hpp>                // bit_array
 #include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
 #include <xstd/bits/bitset.hpp>                   // bitset
@@ -33,8 +35,9 @@ namespace {
 template<std::size_t N, class Block>
 auto sweep() -> void
 {
-        auto set_disagreements   = 0;
-        auto array_disagreements = 0;
+        auto set_disagreements    = 0;
+        auto array_disagreements  = 0;
+        auto opaque_disagreements = 0;
 
         for (auto i = 0UZ; i < (1UZ << N); ++i) {
                 for (auto j = 0UZ; j < (1UZ << N); ++j) {
@@ -54,6 +57,11 @@ auto sweep() -> void
 
                         set_disagreements   += ((sx <=> sy) < 0) != std::lexicographical_compare(kx.begin(), kx.end(), ky.begin(), ky.end());
                         array_disagreements += ((ax <=> ay) < 0) != std::lexicographical_compare(vx.begin(), vx.end(), vy.begin(), vy.end());
+
+                        // The invariant proper: these two stream blocks and never
+                        // iterate, and must still mean what iterating would.
+                        opaque_disagreements += (sx <=> sy) != xstd::test::three_way_by_iteration(sx, sy);
+                        opaque_disagreements += (ax <=> ay) != xstd::test::three_way_by_iteration(ax, ay);
                 }
         }
 
@@ -61,6 +69,7 @@ auto sweep() -> void
         // more than one, and drown the log if any of them fails.
         BOOST_CHECK_EQUAL(set_disagreements, 0);
         BOOST_CHECK_EQUAL(array_disagreements, 0);
+        BOOST_CHECK_EQUAL(opaque_disagreements, 0);
 }
 
 // Dependent, so a standard library without the member is a substitution failure
@@ -69,6 +78,40 @@ auto sweep() -> void
 // ranges.cpp's has_address_of is written this way.
 template<class B>
 constexpr bool has_getword = requires (B const& c) { c._Getword(0UZ); };
+
+// The same invariant through the two views, over both routes a view now has to
+// an ordering. xstd::bitset and std::bitset say where their blocks are (the
+// latter only where the standard library allows), so their views stream;
+// boost::dynamic_bitset does not, so its views iterate. Neither is allowed to
+// mean anything other than what iterating means, which is the point of stating
+// it as an invariant rather than as a property of the fast path.
+template<class Bits>
+auto views_agree_with_iteration(std::size_t universe) -> void
+{
+        auto disagreements = 0;
+        auto const bound = 1UZ << universe;
+
+        for (auto i = 0UZ; i < bound; ++i) {
+                for (auto j = 0UZ; j < bound; ++j) {
+                        auto x = xstd::test::bitset::make_bitset<Bits>(universe);
+                        auto y = xstd::test::bitset::make_bitset<Bits>(universe);
+                        for (auto k = 0UZ; k < universe; ++k) {
+                                if (i >> k & 1UZ) { x.set(k); }
+                                if (j >> k & 1UZ) { y.set(k); }
+                        }
+
+                        auto const sx = xstd::set_view(x);
+                        auto const sy = xstd::set_view(y);
+                        auto const ax = xstd::array_view(x);
+                        auto const ay = xstd::array_view(y);
+
+                        disagreements += (sx <=> sy) != xstd::test::three_way_by_iteration(sx, sy);
+                        disagreements += (ax <=> ay) != xstd::test::three_way_by_iteration(ax, ay);
+                }
+        }
+
+        BOOST_CHECK_EQUAL(disagreements, 0);
+}
 
 } // namespace
 
@@ -128,6 +171,14 @@ BOOST_AUTO_TEST_CASE(TwoBlocksWithOneBitInTheSecond)
 BOOST_AUTO_TEST_CASE(TwoBlocksWithPaddingAboveTheLastPosition)
 {
         sweep<10, std::uint8_t>();
+}
+
+// Through the views, for the streaming route and the iterating one alike.
+BOOST_AUTO_TEST_CASE(TheViewsMeanWhatIteratingMeans)
+{
+        views_agree_with_iteration<xstd::bitset<8>>(4);
+        views_agree_with_iteration<std::bitset<8>>(4);
+        views_agree_with_iteration<boost::dynamic_bitset<>>(4);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
