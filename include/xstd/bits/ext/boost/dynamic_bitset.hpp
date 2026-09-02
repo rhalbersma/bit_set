@@ -10,7 +10,7 @@
 #include <xstd/bits/ranges/set_view.hpp> // find, view
 #include <xstd/bits/ranges/array_view.hpp> // find, view
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
-#include <algorithm>                    // lexicographical_compare_three_way
+#include <algorithm>                    // find_if, min
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
 #include <cstddef>                      // std::size_t
@@ -73,12 +73,7 @@ struct set_compare<boost::dynamic_bitset<Block, Allocator>>
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(boost::dynamic_bitset<Block, Allocator> const& x, boost::dynamic_bitset<Block, Allocator> const& y) noexcept
         {
-                auto const xv = set_view(x);
-                auto const yv = set_view(y);
-                return std::lexicographical_compare_three_way(
-                        xv.begin(), xv.end(),
-                        yv.begin(), yv.end()
-                );
+                return set_three_way(set_view(x), set_view(y));
         }
 };
 

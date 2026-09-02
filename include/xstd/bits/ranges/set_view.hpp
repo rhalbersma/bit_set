@@ -183,6 +183,26 @@ struct set_ops
         }
 };
 
+// The set ordering, defined once: the keys in increasing order, compared
+// lexicographically. bit_finite_set orders itself with this and every
+// set_compare specialization routes to it, so the ordering has one definition
+// rather than one per type that happens to need it -- four copies, before.
+//
+// It takes the ranges rather than four iterators because that is what a
+// data-parallel implementation needs: with the containers in hand, one that can
+// reach the underlying blocks can compare them a word at a time, and every
+// caller picks that up without changing. The rule it would use is not the
+// sequence one -- at the lowest differing bit, the set that HAS it is the
+// smaller, unless the other has no bit above it and is therefore a prefix.
+template<std::ranges::input_range X, std::ranges::input_range Y>
+[[nodiscard]] constexpr std::strong_ordering set_three_way(X const& x, Y const& y) noexcept
+{
+        return std::lexicographical_compare_three_way(
+                std::ranges::begin(x), std::ranges::end(x),
+                std::ranges::begin(y), std::ranges::end(y)
+        );
+}
+
 template<class Bits_cv, class Bits = std::remove_const_t<Bits_cv>>
 concept set_range =
         requires(Bits const& c)

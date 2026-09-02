@@ -108,6 +108,28 @@ struct array_ops
         }
 };
 
+// The sequence ordering, defined once: the bools in position order, compared
+// lexicographically. bit_array orders itself with this and so does array_view --
+// two copies, before, one of which cast to int and one of which did not.
+//
+// The cast is kept: the elements are proxy references, and comparing two of them
+// should mean comparing the bools they stand for, not whatever a proxy's own
+// <=> would do.
+//
+// Ranges rather than iterators, for the reason set_three_way takes them, and the
+// rule a data-parallel implementation would use here is the simpler of the two:
+// at the lowest differing bit, the sequence that LACKS it is the smaller. No
+// prefix clause, because both sequences are the same length.
+template<std::ranges::input_range X, std::ranges::input_range Y>
+[[nodiscard]] constexpr std::strong_ordering array_three_way(X const& x, Y const& y) noexcept
+{
+        return std::lexicographical_compare_three_way(
+                std::ranges::begin(x), std::ranges::end(x),
+                std::ranges::begin(y), std::ranges::end(y),
+                [](bool a, bool b) static noexcept { return static_cast<int>(a) <=> static_cast<int>(b); }
+        );
+}
+
 template<class Bits_cv, class Bits = std::remove_const_t<Bits_cv>>
 concept array_range =
         requires(Bits const& c)
@@ -381,9 +403,7 @@ public:
         // and no set_compare analogue to opt out of.
         [[nodiscard]] friend constexpr std::strong_ordering operator<=>(array_view lhs, array_view rhs) noexcept
         {
-                return std::lexicographical_compare_three_way(
-                        lhs.begin(), lhs.end(), rhs.begin(), rhs.end(),
-                        [](bool x, bool y) static noexcept { return static_cast<int>(x) <=> static_cast<int>(y); });
+                return array_three_way(lhs, rhs);
         }
 };
 

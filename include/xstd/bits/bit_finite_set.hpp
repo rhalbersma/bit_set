@@ -47,7 +47,6 @@ using bit_finite_set = xstd::bit_finite_set<xstd::align_up(N, static_cast<std::s
 #include <xstd/bits/ranges.hpp>               // const_iterator, const_reference
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
-#include <algorithm>                    // lexicographical_compare_three_way
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
 #include <concepts>                     // constructible_from
@@ -288,7 +287,7 @@ template<std::size_t N, xstd::unsigned_integer Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept
         -> std::strong_ordering
 {
-        return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
+        return ranges::set_three_way(x, y);
 }
 template<std::size_t N, xstd::unsigned_integer Block>               constexpr void swap       (      bit_finite_set<N, Block>& x,       bit_finite_set<N, Block>& y) noexcept(noexcept(x.swap(y)))    { x.swap(y);                    }
 

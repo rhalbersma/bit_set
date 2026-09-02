@@ -8,7 +8,7 @@
 
 #include <xstd/bits/ranges/set_view.hpp> // find, view
 #include <xstd/bits/ranges/array_view.hpp> // find, view
-#include <algorithm>                    // lexicographical_compare_three_way
+#include <algorithm>                    // find_if
 #include <bitset>                       // bitset
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
@@ -80,12 +80,7 @@ struct set_compare<std::bitset<N>>
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(std::bitset<N> const& x, std::bitset<N> const& y) noexcept
         {
-                auto const xv = set_view(x);
-                auto const yv = set_view(y);
-                return std::lexicographical_compare_three_way(
-                        xv.begin(), xv.end(),
-                        yv.begin(), yv.end()
-                );
+                return set_three_way(set_view(x), set_view(y));
         }
 };
 

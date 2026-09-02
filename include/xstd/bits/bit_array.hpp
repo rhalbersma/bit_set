@@ -42,7 +42,6 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 #include <xstd/bits/detail/array.hpp>   // array
 #include <xstd/bits/ranges.hpp>       // begin, end, iterator, reference
 #include <xstd/ints/memory.hpp> // align_up
-#include <algorithm>            // lexicographical_compare_three_way
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
 #include <cstddef>              // ptrdiff_t, size_t
@@ -164,7 +163,7 @@ template<std::size_t N, xstd::unsigned_integer Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept
         -> std::strong_ordering
 {
-        return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
+        return ranges::array_three_way(x, y);
 }
 
 template<std::size_t N, xstd::unsigned_integer Block> constexpr void swap(bit_array<N, Block>& x, bit_array<N, Block>& y) noexcept(noexcept(x.swap(y))) { x.swap(y); }

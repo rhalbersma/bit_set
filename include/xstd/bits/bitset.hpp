@@ -34,7 +34,7 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 #include <xstd/bits/ranges/set_view.hpp>   // set_find, set_compare
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
-#include <algorithm>                    // lexicographical_compare_three_way
+#include <algorithm>                    // find_if, min
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
 #include <format>                       // format
@@ -373,12 +373,7 @@ struct set_compare<xstd::bitset<N, Block>>
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(xstd::bitset<N, Block> const& x, xstd::bitset<N, Block> const& y) noexcept
         {
-                auto const xv = set_view(x);
-                auto const yv = set_view(y);
-                return std::lexicographical_compare_three_way(
-                        xv.begin(), xv.end(),
-                        yv.begin(), yv.end()
-                );
+                return set_three_way(set_view(x), set_view(y));
         }
 };
 
