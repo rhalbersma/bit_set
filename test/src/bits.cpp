@@ -5,11 +5,14 @@
 
 #include <xstd/bits.hpp>                   // the whole bits surface
 #include <xstd/test/block_types.hpp>       // graded_extents
+#include <xstd/test/flat_set.hpp>          // XSTD_TEST_HAS_FLAT_SET
+#include <xstd/test/set/concepts.hpp>      // bit_set
 #include <xstd/test/sequence/concepts.hpp> // bit_sequence
 #include <boost/test/unit_test.hpp>        // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <array>                           // array
 #include <cstddef>                         // size_t
 #include <ranges>                          // bidirectional_range, random_access_range
+#include <set>                             // set
 #include <tuple>                           // tuple_element_t, tuple_size_v
 #include <utility>                         // declval, index_sequence, make_index_sequence
 
@@ -56,6 +59,27 @@ BOOST_AUTO_TEST_CASE(APackedArrayIsTheArrayItPacks)
         using packed = xstd::test::graded_extents<xstd::bit_array>;
         [] <std::size_t... I> (std::index_sequence<I...>) {
                 static_assert((bit_sequence<std::tuple_element_t<I, packed>> and ...));
+        }(std::make_index_sequence<std::tuple_size_v<packed>>{});
+}
+
+// The same claim on the other reading, and the reason there are two contracts
+// rather than one: a set of keys and a sequence of bools are different
+// interfaces, and a packed container answers to whichever one it is packing.
+BOOST_AUTO_TEST_CASE(APackedSetIsTheSetItPacks)
+{
+        using namespace xstd::test::set;
+
+        // The standard's side. std::flat_set is here for the same reason
+        // std::array is above: a second, differently built reference keeps the
+        // concept from quietly describing one implementation.
+        static_assert(bit_set<std::set<std::size_t>>);
+#ifdef XSTD_TEST_HAS_FLAT_SET
+        static_assert(bit_set<std::flat_set<std::size_t>>);
+#endif
+
+        using packed = xstd::test::graded_extents<xstd::bit_finite_set>;
+        [] <std::size_t... I> (std::index_sequence<I...>) {
+                static_assert((bit_set<std::tuple_element_t<I, packed>> and ...));
         }(std::make_index_sequence<std::tuple_size_v<packed>>{});
 }
 

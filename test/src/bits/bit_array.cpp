@@ -5,7 +5,8 @@
 
 #include <xstd/bits/bit_array.hpp>            // bit_array
 #include <xstd/test/block_types.hpp>          // graded_extents
-#include <xstd/test/sequence/concepts.hpp>    // bit_sequence, value_reference
+#include <xstd/test/sequence/concepts.hpp>    // bit_sequence
+#include <xstd/test/value_reference.hpp>      // value_reference
 #include <boost/test/unit_test.hpp>           // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <concepts>                           // regular, totally_ordered
 #include <iterator>                           // random_access_iterator
@@ -44,7 +45,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(RandomAccessIterator, T, Types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(ConstReference, T, Types)
 {
-        static_assert(xstd::test::sequence::value_reference<typename T::const_reference>);
+        static_assert(xstd::test::value_reference<typename T::const_reference>);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(BitSequence, T, Types)
