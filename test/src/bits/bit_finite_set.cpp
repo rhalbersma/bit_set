@@ -12,7 +12,6 @@
 #include <iterator>                     // bidirectional_iterator
 #include <ranges>                       // bidirectional_range
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(BitFiniteSet)
 
 // Every Block model within one block, and the narrow ones across block
@@ -52,5 +51,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsABitSet, T, Types)
         static_assert(xstd::test::set::bit_set<T>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

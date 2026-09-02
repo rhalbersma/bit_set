@@ -12,7 +12,6 @@
 #include <iterator>                           // random_access_iterator
 #include <ranges>                             // random_access_range
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(BitArray)
 
 // Every Block model within one block, and the narrow ones across block
@@ -53,5 +52,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsABitSequence, T, Types)
         static_assert(xstd::test::sequence::bit_sequence<T>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

@@ -10,7 +10,6 @@
 #include <ranges>                        // begin, end, rbegin, rend, bidirectional_range
 #include <vector>                        // vector
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Xstd)
 BOOST_AUTO_TEST_SUITE(Bitset)
@@ -51,7 +50,6 @@ BOOST_AUTO_TEST_CASE(ReverseIteratingVisitsThemInDescendingOrder)
         BOOST_CHECK((keys == std::vector<std::size_t>{15, 7, 1}));
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

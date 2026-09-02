@@ -8,7 +8,7 @@
 #include <xstd/test/flat_set.hpp>          // XSTD_TEST_HAS_FLAT_SET
 #include <xstd/test/set/concepts.hpp>      // bit_set
 #include <xstd/test/sequence/concepts.hpp> // bit_sequence
-#include <boost/test/unit_test.hpp>        // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <boost/test/unit_test.hpp>        // BOOST_AUTO_TEST_CASE
 #include <array>                           // array
 #include <cstddef>                         // size_t
 #include <ranges>                          // bidirectional_range, random_access_range
@@ -16,7 +16,6 @@
 #include <tuple>                           // tuple_element_t, tuple_size_v
 #include <utility>                         // declval, index_sequence, make_index_sequence
 
-BOOST_AUTO_TEST_SUITE(Bits)
 
 // Every entity the front door promises, reached through it alone, and each one
 // doing the thing it exists to do. No leaf test can state this: each includes
@@ -82,5 +81,3 @@ BOOST_AUTO_TEST_CASE(APackedSetIsTheSetItPacks)
                 static_assert((bit_set<std::tuple_element_t<I, packed>> and ...));
         }(std::make_index_sequence<std::tuple_size_v<packed>>{});
 }
-
-BOOST_AUTO_TEST_SUITE_END()

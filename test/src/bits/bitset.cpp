@@ -9,7 +9,6 @@
 #include <concepts>                  // regular, totally_ordered
 #include <type_traits>               // is_nothrow_*, is_trivially_*
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Bitset)
 
 using Types = xstd::test::graded_extents<xstd::bitset>;
@@ -52,5 +51,4 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsTrivial, T, Types)
         static_assert(    std::is_trivially_move_assignable_v<T>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

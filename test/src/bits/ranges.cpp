@@ -11,7 +11,6 @@
 #include <cstddef>                       // size_t
 #include <type_traits>                   // is_convertible_v
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ranges)
 
 namespace {
@@ -139,5 +138,4 @@ BOOST_AUTO_TEST_CASE(TheProxyPairRoundTrips)
         BOOST_CHECK(b.test(4));
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

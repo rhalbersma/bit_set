@@ -14,7 +14,6 @@
 #include <cstddef>                                // size_t
 #include <ranges>                                 // bidirectional_range
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ranges)
 BOOST_AUTO_TEST_SUITE(SetView)
 
@@ -46,6 +45,5 @@ BOOST_AUTO_TEST_CASE(EveryViewedTypeOrdersLikeAStdSet)
         xstd::test::set::ordering_agrees_with_std_set<boost::dynamic_bitset<>>();
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

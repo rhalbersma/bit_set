@@ -7,7 +7,6 @@
 #include <boost/test/unit_test.hpp> // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <span>                     // dynamic_extent
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Boost)
 
@@ -21,6 +20,5 @@ BOOST_AUTO_TEST_CASE(AskingForItByNameIsEnough)
         static_assert(xstd::ranges::bit_extent<boost::dynamic_bitset<>> == std::dynamic_extent);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

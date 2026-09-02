@@ -94,11 +94,12 @@ set(cxx_compile_options_optimization
 # Debug legs segfault. Both halves of that experiment answered at once, and
 # the answer is no:
 #
-#   GCC 15 Debug    assembler: 'file too big' on test/src/set/o0.cpp.obj
+#   GCC 15 Debug    assembler: 'file too big' on test/src/bits/set/o0.cpp.obj
 #   GCC 17-SVN Debug  same, on set/o0, set/o2 and bitset/o0
 #   GCC 16 Debug    assembles, then segfaults in exactly the four tests the
-#                   flag was suspected of breaking - test.bitset.o1,
-#                   test.set.o0, test.set.o2, test.set.sieve
+#                   flag was suspected of breaking - test.bits.bitset.o1,
+#                   test.bits.set.o0, test.bits.set.o2,
+#                   test.bits.set.sieve
 #
 # Two rungs out of three cannot even assemble these objects without the flag,
 # so it is load-bearing. The third assembles without it and crashes anyway,
@@ -211,7 +212,12 @@ cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME target_source_dir)
 foreach(t ${targets})
     cmake_path(GET t PARENT_PATH target_parent_path)
     cmake_path(GET t STEM        target_stem       )
+    # A source directly under src/ has an empty parent path, which used to
+    # leave an empty component in the middle -- test/src/bits.cpp came out as
+    # test..bits. Collapse runs of separators before splitting on them, so the
+    # id is the path and nothing else.
     string(REPLACE "/" "." target_id ${target_source_dir}/${target_parent_path}/${target_stem})
+    string(REGEX REPLACE "[.]+" "." target_id ${target_id})
     string(REGEX REPLACE "^[.]" "" target_id ${target_id})
 
     add_executable(${target_id} src/${t})

@@ -9,7 +9,6 @@
 #include <cstddef>                  // size_t
 #include <span>                     // dynamic_extent
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Std)
 
@@ -26,6 +25,5 @@ BOOST_AUTO_TEST_CASE(AskingForItByNameIsEnough)
         static_assert(xstd::ranges::bit_extent<std::bitset<8>> != std::dynamic_extent);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

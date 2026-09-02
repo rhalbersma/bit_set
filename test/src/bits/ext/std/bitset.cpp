@@ -13,7 +13,6 @@
 #include <tuple>                        // tuple
 #include <type_traits>                  // is_nothrow_*, is_trivially_*
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Std)
 BOOST_AUTO_TEST_SUITE(Bitset)
@@ -71,7 +70,6 @@ BOOST_AUTO_TEST_CASE(OursReproducesItsTraits)
         static_assert(std::is_trivially_copy_assignable_v<theirs>    == std::is_trivially_copy_assignable_v<ours>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

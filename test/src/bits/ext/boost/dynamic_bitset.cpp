@@ -14,7 +14,6 @@
 #include <ranges>                                 // range
 #include <type_traits>                            // is_trivially_copyable_v
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Boost)
 BOOST_AUTO_TEST_SUITE(DynamicBitset)
@@ -79,7 +78,6 @@ BOOST_AUTO_TEST_CASE(ItIsTheDynamicOne)
         static_assert(not std::is_trivially_copyable_v<T>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

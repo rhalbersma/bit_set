@@ -12,7 +12,6 @@
 #include <cstddef>                                // size_t
 #include <span>                                   // dynamic_extent
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ranges)
 BOOST_AUTO_TEST_SUITE(BitExtent)
 
@@ -52,6 +51,5 @@ BOOST_AUTO_TEST_CASE(SayingNothingMeansDynamic)
         static_assert(not xstd::ranges::static_bit_extent<unknown_to_the_library>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

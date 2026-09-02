@@ -7,7 +7,6 @@
 #include <boost/test/unit_test.hpp> // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <ranges>                   // bidirectional_range
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Xstd)
 
@@ -21,6 +20,5 @@ BOOST_AUTO_TEST_CASE(TheOptInIsWhatMakesOurBitsetARange)
         static_assert(std::ranges::bidirectional_range<xstd::bitset<8>>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

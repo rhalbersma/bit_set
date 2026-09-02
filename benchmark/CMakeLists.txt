@@ -90,11 +90,12 @@ get_property(bit_set_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 # Debug legs segfault. Both halves of that experiment answered at once, and
 # the answer is no:
 #
-#   GCC 15 Debug    assembler: 'file too big' on test/src/set/o0.cpp.obj
+#   GCC 15 Debug    assembler: 'file too big' on test/src/bits/set/o0.cpp.obj
 #   GCC 17-SVN Debug  same, on set/o0, set/o2 and bitset/o0
 #   GCC 16 Debug    assembles, then segfaults in exactly the four tests the
-#                   flag was suspected of breaking - test.bitset.o1,
-#                   test.set.o0, test.set.o2, test.set.sieve
+#                   flag was suspected of breaking - test.bits.bitset.o1,
+#                   test.bits.set.o0, test.bits.set.o2,
+#                   test.bits.set.sieve
 #
 # Two rungs out of three cannot even assemble these objects without the flag,
 # so it is load-bearing. The third assembles without it and crashes anyway,

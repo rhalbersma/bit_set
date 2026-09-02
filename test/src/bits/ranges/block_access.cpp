@@ -22,7 +22,6 @@
 #include <set>                                    // set
 #include <vector>                                 // vector
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ranges)
 BOOST_AUTO_TEST_SUITE(BlockAccess)
 
@@ -181,6 +180,5 @@ BOOST_AUTO_TEST_CASE(TheViewsMeanWhatIteratingMeans)
         views_agree_with_iteration<boost::dynamic_bitset<>>(4);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

@@ -24,21 +24,23 @@ This repository enforces its quality bar through CI rather than through review d
 
 ## Test layout and naming
 
-The test tree mirrors the header tree, and `test/CMakeLists.txt` fails configuration if it ever stops doing so: `include/xstd/bits/ranges/set_view.hpp` is answered by `test/src/bits/ranges/set_view.cpp`. `detail/` is excluded, being machinery rather than interface. Directories that answer no header — `bitset/`, `set/`, `block/` — carry the exhaustive behavioural sweeps instead, and follow the same naming rules.
+The test tree mirrors the header tree, and `test/CMakeLists.txt` fails configuration if it ever stops doing so: `include/xstd/bits/ranges/set_view.hpp` is answered by `test/src/bits/ranges/set_view.cpp`. The rule runs one way — every public header needs a source, `detail/` excepted, being machinery rather than interface. It does not forbid a source that answers no header, and three directories are exactly that: `bits/bitset/`, `bits/set/` and `bits/block/` hold the exhaustive behavioural sweeps, which belong to a container rather than to a header. They live under `bits/` with everything else and follow the same naming rules.
 
-**Suites nest directory-wise.** One `BOOST_AUTO_TEST_SUITE` per path component under `test/src/`, the file stem included, each component PascalCased. That makes the suite path the CTest target id, spelled the other way round:
+**Suites nest directory-wise.** One `BOOST_AUTO_TEST_SUITE` per path component under `test/src/`, the file stem included, each component PascalCased. That makes the suite path the CTest target id, spelled the other way round, so a failing target says where to look:
 
 | source | target | suites |
 | :--- | :--- | :--- |
-| `test/src/bits/ranges/set_view.cpp` | `test.bits.ranges.set_view` | `Bits` / `Ranges` / `SetView` |
-| `test/src/bits/ext/std/bitset.cpp` | `test.bits.ext.std.bitset` | `Bits` / `Ext` / `Std` / `Bitset` |
-| `test/src/set/o2.cpp` | `test.set.o2` | `Set` / `O2` |
+| `test/src/bits/ranges/set_view.cpp` | `test.bits.ranges.set_view` | `Ranges` / `SetView` |
+| `test/src/bits/ext/std/bitset.cpp` | `test.bits.ext.std.bitset` | `Ext` / `Std` / `Bitset` |
+| `test/src/bits/set/o2.cpp` | `test.bits.set.o2` | `Set` / `O2` |
 
-An umbrella source takes the stem too, so `test/src/bits/ranges.cpp` is `Bits` / `Ranges` and `test/src/bits.cpp` is `Bits`. Nothing else goes in a suite name: the tier a sweep runs at (constant, linear, quadratic) belongs in its case names, not in place of the directory it lives in.
+With one subtraction: `bits` is every source's first component, so as a suite it distinguishes nothing and is left out. `test/src/bits.cpp` is what remains — the umbrella over the whole library, and the one source whose cases sit in the master suite. Should this library ever grow a second top-level directory, `Bits` comes back at the front of every row above.
+
+An umbrella source takes the stem like any other, so `test/src/bits/ranges.cpp` is `Ranges`, alongside the `Ranges` / `SetView` of the directory beside it. Nothing else goes in a suite name: the tier a sweep runs at (constant, linear, quadratic) belongs in its case names, not in place of the directory it lives in.
 
 **Cases are declarative.** A case name is a sentence about what holds, with the thing under test as the implied subject — `TheOrderingsAgreeInsideASingleBlock`, `AWidthInTheTypeIsAStaticExtent`, `DefaultConstructionYieldsAnEmptySet`. A name that only says which members were exercised (`Observers`, `Operators`, `Constructors`) names where the test looked rather than what it claims, and reads as nothing at all in a failure log. A conformance check may be the predicate itself, since that already is the claim: `IsRegular`, `IsTrivial`, `IsABitSequence`.
 
-This is [xstd](https://github.com/rhalbersma/xstd)'s convention as well; the two libraries' test trees are meant to read the same way.
+This is [xstd](https://github.com/rhalbersma/xstd)'s convention as well, including the subtraction: `Ints` goes the same way once xstd splits into xstd-ints and xstd-core and `ints/` stops distinguishing anything. The two libraries' test trees are meant to read the same way.
 
 One check runs without being required:
 
