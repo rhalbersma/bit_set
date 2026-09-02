@@ -6,7 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <concepts.hpp>                 // dynamic
-#include <xstd/proxy/bidirectional.hpp> // view
+#include <xstd/bits/ranges/set_view.hpp> // view
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <cstddef>                      // ptrdiff_t, size_t
 #include <iterator>                     // distance, inserter
@@ -321,8 +321,8 @@ struct mem_equal_to
                                 return self[i] == rhs[i];
                         })
                 );                                                              // [bitset.members]/45
-                auto const lhs_view = proxy::bidirectional::view(self);
-                auto const rhs_view = proxy::bidirectional::view(rhs);
+                auto const lhs_view = xstd::set_view(self);
+                auto const rhs_view = xstd::set_view(rhs);
 #if defined(_MSC_VER)
                 BOOST_CHECK_EQUAL(
                         self == rhs,
@@ -346,7 +346,7 @@ struct mem_compare_three_way
                 if constexpr (requires { lhs <=> rhs; }) {
                         return lhs <=> rhs;
                 } else {
-                        return proxy::bidirectional::view(lhs) <=> proxy::bidirectional::view(rhs);
+                        return xstd::set_view(lhs) <=> xstd::set_view(rhs);
                 }
         }
 
@@ -357,7 +357,7 @@ struct mem_compare_three_way
         // fn_compare_three_way actually implements - it only ever agreed by
         // coincidence, because every caller until now only ever compared
         // equal-cardinality operands, where the two relations happen to
-        // coincide (see xstd::proxy::bidirectional::compare's comments). It
+        // coincide (see xstd::ranges::set_compare's comments). It
         // fails for genuinely mixed-cardinality pairs (e.g. empty vs.
         // singleton), which isn't a bug in the type being tested - the
         // construction itself doesn't generalize. The view-based check below
@@ -366,8 +366,8 @@ struct mem_compare_three_way
         template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
         {
-                auto const lhs_view = proxy::bidirectional::view(self);
-                auto const rhs_view = proxy::bidirectional::view(rhs);
+                auto const lhs_view = xstd::set_view(self);
+                auto const rhs_view = xstd::set_view(rhs);
                 BOOST_CHECK(
                         fn_compare_three_way(self, rhs) ==
                         std::lexicographical_compare_three_way(
@@ -422,7 +422,7 @@ struct mem_is_subset_of
                 if constexpr (requires { lhs.is_subset_of(rhs); }) {
                         return lhs.is_subset_of(rhs);
                 } else {
-                        return proxy::bidirectional::view(lhs).is_subset_of(proxy::bidirectional::view(rhs));
+                        return xstd::set_view(lhs).is_subset_of(xstd::set_view(rhs));
                 }
         }
 
@@ -441,7 +441,7 @@ struct mem_is_proper_subset_of
                 if constexpr (requires { lhs.is_proper_subset_of(rhs); }) {
                         return lhs.is_proper_subset_of(rhs);
                 } else {
-                        return proxy::bidirectional::view(lhs).is_proper_subset_of(proxy::bidirectional::view(rhs));
+                        return xstd::set_view(lhs).is_proper_subset_of(xstd::set_view(rhs));
                 }
         }
 
@@ -486,7 +486,7 @@ struct mem_intersects
                 if constexpr (requires { lhs.intersects(rhs); }) {
                         return lhs.intersects(rhs);
                 } else {
-                        return proxy::bidirectional::view(lhs).intersects(proxy::bidirectional::view(rhs));
+                        return xstd::set_view(lhs).intersects(xstd::set_view(rhs));
                 }
         }
 

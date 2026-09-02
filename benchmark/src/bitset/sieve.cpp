@@ -4,11 +4,11 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <opt/bitset/sieve.hpp>         // filter_twins, sift_primes
-#include <ext/boost/dynamic_bitset.hpp> // dynamic_bitset
-#include <ext/std/bitset.hpp>           // bitset
-#include <ext/xstd/bitset.hpp>          // bitset
-#include <xstd/bitset.hpp>              // bitset
-#include <xstd/bit_set.hpp>             // bit_set
+#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
+#include <xstd/bits/ext/std/bitset.hpp>           // bitset
+#include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
+#include <xstd/bits/bitset.hpp>              // bitset
+#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <benchmark/benchmark.h>        // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN
 
 constexpr auto N = 10'000uz;
@@ -38,16 +38,16 @@ static void bm_filter_twins(benchmark::State& state) {
 BENCHMARK_TEMPLATE1(bm_sift_primes0, boost::dynamic_bitset<>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0,   std::bitset<N>);
 BENCHMARK_TEMPLATE1(bm_sift_primes0,  xstd::bitset<N>);
-BENCHMARK_TEMPLATE1(bm_sift_primes0,  xstd::bit_set<N>);
+BENCHMARK_TEMPLATE1(bm_sift_primes0,  xstd::bit_finite_set<N>);
 
 BENCHMARK_TEMPLATE1(bm_sift_primes1, boost::dynamic_bitset<>);
 BENCHMARK_TEMPLATE1(bm_sift_primes1,   std::bitset<N>);
 BENCHMARK_TEMPLATE1(bm_sift_primes1,  xstd::bitset<N>);
-BENCHMARK_TEMPLATE1(bm_sift_primes1,  xstd::bit_set<N>);
+BENCHMARK_TEMPLATE1(bm_sift_primes1,  xstd::bit_finite_set<N>);
 
 BENCHMARK_TEMPLATE1(bm_filter_twins, boost::dynamic_bitset<>);
 BENCHMARK_TEMPLATE1(bm_filter_twins,   std::bitset<N>);
 BENCHMARK_TEMPLATE1(bm_filter_twins,  xstd::bitset<N>);
-BENCHMARK_TEMPLATE1(bm_filter_twins,  xstd::bit_set<N>);
+BENCHMARK_TEMPLATE1(bm_filter_twins,  xstd::bit_finite_set<N>);
 
 BENCHMARK_MAIN();

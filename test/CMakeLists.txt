@@ -74,7 +74,7 @@ set(cxx_compile_options_warnings
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<CONFIG:Release>>:
         -Wno-array-bounds                   # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
         -Wno-stringop-overflow              # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
-        -Wno-maybe-uninitialized            # false positive on bit::array's std::array member (WinLibs gcc 15.3.0, Release mode)
+        -Wno-maybe-uninitialized            # false positive on detail::array's std::array member (WinLibs gcc 15.3.0, Release mode)
     >
 )
 
@@ -136,9 +136,13 @@ foreach(h ${public_headers})
 
     add_executable(header.${header_test_id} ${header_test_source})
 
+    # Boost::headers because xstd/bits/ext/boost/dynamic_bitset.hpp adapts a
+    # header-only Boost library, and the self-sufficiency units under ext/ have
+    # to see it. The bit_set target itself carries only Boost::hash2.
     target_link_libraries(
         header.${header_test_id} PRIVATE
         ${CMAKE_PROJECT_NAME}
+        Boost::headers
     )
 
     target_compile_definitions(

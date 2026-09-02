@@ -1,10 +1,10 @@
-#ifndef XSTD_BITSET_HPP
-#define XSTD_BITSET_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_BITS_BITSET_HPP
+#define XSTD_BITS_BITSET_HPP
 
 // Bitsets                                                              [bitset]
 // Header <bitset> synopsis                                         [bitset.syn]
@@ -29,8 +29,8 @@ template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
 
 }       // namespace xstd
 
-#include <xstd/bit/array.hpp>           // array
-#include <xstd/proxy/bidirectional.hpp> // find
+#include <xstd/bits/detail/array.hpp>           // array
+#include <xstd/bits/ranges/set_view.hpp> // find
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
 #include <algorithm>                    // lexicographical_compare_three_way
@@ -59,11 +59,11 @@ class bitset
         // begin()/end() and no operator<, only ==). Ordering/iteration for
         // an xstd::bitset, like for std::bitset itself (see ext/std/
         // bitset.hpp), is only available by explicitly choosing an
-        // interpretation via xstd::proxy::bidirectional::view (set of the
-        // indices that are set) or xstd::proxy::random_access::view
+        // interpretation via xstd::set_view (set of the
+        // indices that are set) or xstd::array_view
         // (fixed-length sequence of bools) - xstd::bitset itself takes no
         // side on which one is "the" ordering.
-        bit::array<N, Block> m_bits{};
+        detail::bits::array<N, Block> m_bits{};
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bitset const* v) noexcept
@@ -293,24 +293,28 @@ private:
 }       // namespace xstd
 
 // xstd::bitset provides no find_first/find_last/find_next/find_prev of its
-// own (see the comment on m_bits above) - specializing find<> here is what
-// lets xstd::proxy::bidirectional::view(x) still work for it, the same
+// own (see the comment on m_bits above) - specializing set_find<> here is what
+// lets xstd::set_view(x) still work for it, the same
 // mechanism ext/std/bitset.hpp uses for the real std::bitset<N>, just
 // without that header's [namespace.std] motivation: here it's purely a
 // deliberate choice to keep xstd::bitset itself opinion-free about ordering.
 //
 // This scans through xstd::bitset's own public operator[], the same way
-// ext/std/bitset.hpp's find<std::bitset<N>> has to (it has no choice - it
+// ext/std/bitset.hpp's set_find<std::bitset<N>> has to (it has no choice - it
 // can't reach std::bitset's internals at all) - not through m_bits
 // directly, even though this header could grant itself friend access to
-// bit::array's already-O(1) find_first/find_last/find_next/find_prev.
+// detail::bits::array's already-O(1) find_first/find_last/find_next/find_prev.
 // xstd::bitset is meant to be nothing more than std::bitset reimplemented
-// in terms of bit::array: it shouldn't get a privileged, faster find<> that
+// in terms of detail::bits::array: it shouldn't get a privileged, faster set_find<> that
 // std::bitset itself has no way of also getting.
-namespace xstd::proxy::bidirectional {
+namespace xstd::ranges {
+
+// As for std::bitset<N>: the width is in the type.
+template<std::size_t N, std::unsigned_integral Block>
+inline constexpr std::size_t bit_extent<xstd::bitset<N, Block>> = N;
 
 template<std::size_t N, std::unsigned_integral Block>
-struct find<xstd::bitset<N, Block>>
+struct set_find<xstd::bitset<N, Block>>
 {
         [[nodiscard]] static constexpr std::size_t first(xstd::bitset<N, Block> const& c) noexcept
         {
@@ -345,16 +349,16 @@ struct find<xstd::bitset<N, Block>>
 };
 
 // xstd::bitset has no <=> of its own either (by the same design choice), so
-// compare<Bits>'s default (trust Bits' own <=>) doesn't apply - opt in to
+// set_set_compare<Bits>'s default (trust Bits' own <=>) doesn't apply - opt in to
 // the safe, iteration-based ordering explicitly, same as std::bitset<N> and
 // boost::dynamic_bitset<> do in their own headers.
 template<std::size_t N, std::unsigned_integral Block>
-struct compare<xstd::bitset<N, Block>>
+struct set_compare<xstd::bitset<N, Block>>
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(xstd::bitset<N, Block> const& x, xstd::bitset<N, Block> const& y) noexcept
         {
-                auto const xv = view(x);
-                auto const yv = view(y);
+                auto const xv = set_view(x);
+                auto const yv = set_view(y);
                 return std::lexicographical_compare_three_way(
                         xv.begin(), xv.end(),
                         yv.begin(), yv.end()
@@ -362,7 +366,7 @@ struct compare<xstd::bitset<N, Block>>
         }
 };
 
-}       // namespace xstd::proxy::bidirectional
+}       // namespace xstd::ranges
 
 namespace std {
 
@@ -448,4 +452,4 @@ std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>&
 
 }       // namespace xstd
 
-#endif  // include guard
+#endif // XSTD_BITS_BITSET_HPP

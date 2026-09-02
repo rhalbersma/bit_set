@@ -12,7 +12,7 @@
 #endif
 
 // VS 2022's MSVC STL has no <flat_set>, and std::flat_set is only a reference
-// implementation in the set tests' type lists, so dropping it costs no bit_set
+// implementation in the set tests' type lists, so dropping it costs no bit_finite_set
 // coverage. The probe lives here because <version> has to precede it, which a
 // test doing it itself could only manage by breaking its own include order.
 namespace xstd {

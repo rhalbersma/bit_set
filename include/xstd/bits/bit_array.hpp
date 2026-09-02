@@ -1,10 +1,10 @@
-#ifndef XSTD_BIT_ARRAY_HPP
-#define XSTD_BIT_ARRAY_HPP
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_BITS_BIT_ARRAY_HPP
+#define XSTD_BITS_BIT_ARRAY_HPP
 
 // Header <array> synopsis                                           [array.syn]
 
@@ -39,8 +39,8 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 // section needs, mirroring the layout of the standard itself. The overlap
 // between the two lists is deliberate: neither is complete without it.
 // NOLINTBEGIN(readability-duplicate-include): deliberate, see above
-#include <xstd/bit/array.hpp>   // array
-#include <xstd/proxy.hpp>       // begin, end, iterator, reference
+#include <xstd/bits/detail/array.hpp>   // array
+#include <xstd/bits/ranges.hpp>       // begin, end, iterator, reference
 #include <xstd/ints/memory.hpp> // align_up
 #include <algorithm>            // lexicographical_compare_three_way
 #include <cassert>              // assert
@@ -65,23 +65,24 @@ namespace xstd {
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 struct bit_array
 {
-        bit::array<N, Block> m_bits;
+        detail::bits::array<N, Block> m_bits;
 
         [[nodiscard]] friend constexpr std::size_t find_first(const bit_array&)                  noexcept { return 0UZ;         }
         [[nodiscard]] friend constexpr std::size_t find_last (const bit_array&)                  noexcept { return N;           }
         [[nodiscard]] friend constexpr std::size_t find_at   (const bit_array& c, std::size_t n) noexcept { return c.m_bits[n]; }
+        friend constexpr void assign_at(bit_array& c, std::size_t n, bool value) noexcept { if (value) { c.m_bits.set(n); } else { c.m_bits.reset(n); } }
 
         // types
         using value_type             = bool;
         using block_type             = Block;
         using pointer                = void;
         using const_pointer          = pointer;
-        using reference              = proxy::random_access::reference<bit_array, false>;
-        using const_reference        = proxy::random_access::reference<bit_array, true >;
+        using reference              = xstd::ranges::array_reference<bit_array, false>;
+        using const_reference        = xstd::ranges::array_reference<bit_array, true >;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = proxy::random_access::iterator<bit_array, false>;
-        using const_iterator         = proxy::random_access::iterator<bit_array, true >;
+        using iterator               = xstd::ranges::array_iterator<bit_array, false>;
+        using const_iterator         = xstd::ranges::array_iterator<bit_array, true >;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -102,8 +103,8 @@ struct bit_array
         } 
 
         // iterators
-        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return proxy::random_access::begin(self); }
-        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return proxy::random_access::end  (self); }
+        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return xstd::ranges::array_begin(self); }
+        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return xstd::ranges::array_end  (self); }
         [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept { return std::make_reverse_iterator(self.end()  ); }
         [[nodiscard]] constexpr auto rend  (this auto&& self) noexcept { return std::make_reverse_iterator(self.begin()); }
 
@@ -155,11 +156,11 @@ private:
 
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
 
-// bit::array is a pure storage vehicle with no <=> of its own (see its
+// detail::bits::array is a pure storage vehicle with no <=> of its own (see its
 // comments) - bit_array's own ordering is the fixed-length sequence-of-bool
 // order (index 0 first), exactly what std::array<bool, N>'s <=> would
 // compute, via its own random_access iteration over every index (not just
-// the set ones - that's bit_set's contract, a different relation).
+// the set ones - that's bit_finite_set's contract, a different relation).
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept
         -> std::strong_ordering
@@ -171,4 +172,4 @@ template<std::size_t N, std::unsigned_integral Block> constexpr void swap(bit_ar
 
 }       // namespace xstd
 
-#endif  // include guard
+#endif // XSTD_BITS_BIT_ARRAY_HPP
