@@ -1,12 +1,13 @@
-#pragma once
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <bitset/factory.hpp>   // make_bitset
-#include <concepts.hpp>         // dynamic
+#ifndef XSTD_TEST_BITSET_EXHAUSTIVE_HPP
+#define XSTD_TEST_BITSET_EXHAUSTIVE_HPP
+
+#include <xstd/test/bitset/factory.hpp>   // make_bitset
+#include <xstd/test/dynamic.hpp>         // dynamic
 #include <algorithm>            // max
 #include <cassert>              // assert
 #include <cstddef>              // size_t
@@ -17,7 +18,7 @@
         __pragma(warning(disable: 4702))
 #endif
 
-namespace xstd {
+namespace xstd::test::bitset {
 
 template<class X, auto Limit>
 inline constexpr auto limit_v = dynamic<X> ? Limit : X().size();
@@ -175,4 +176,6 @@ auto all_doubleton_set_pairs(auto fun)
 
 }       // namespace on4
 
-}       // namespace xstd
+} // namespace xstd::test::bitset
+
+#endif // XSTD_TEST_BITSET_EXHAUSTIVE_HPP

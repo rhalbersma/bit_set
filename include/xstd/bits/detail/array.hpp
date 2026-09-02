@@ -6,6 +6,7 @@
 #ifndef XSTD_BITS_DETAIL_ARRAY_HPP
 #define XSTD_BITS_DETAIL_ARRAY_HPP
 
+#include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <xstd/bits/detail/intrin.hpp>                  // countl_zero, countr_zero, popcount
 #include <xstd/bits/detail/pred.hpp>                    // intersects, is_subset_of, not_equal_to
 #include <xstd/ints/memory.hpp>                 // align_up
@@ -13,7 +14,6 @@
 #include <algorithm>                            // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                // array
 #include <cassert>                              // assert
-#include <concepts>                             // unsigned_integral
 #include <cstddef>                              // ptrdiff_t, size_t
 #include <functional>                           // plus
 #include <limits>                               // digits
@@ -24,7 +24,7 @@
 
 namespace xstd::detail::bits {
 
-template<std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, xstd::unsigned_integer Block>
 struct array
 {
         static constexpr auto bits_per_block = static_cast<std::size_t>(std::numeric_limits<Block>::digits);
@@ -32,6 +32,15 @@ struct array
         static constexpr auto num_blocks     = std::ranges::max(num_bits / bits_per_block, 1UZ);
 
         std::array<Block, num_blocks> m_bits;
+
+        // For xstd::ranges::block_access, which the two orderings use to compare a
+        // word at a time. num_blocks above is the count; this is the block. The
+        // padding above position N stays zero, which operator== below already
+        // relies on, and which is what makes comparing whole blocks meaningful.
+        [[nodiscard]] constexpr Block block(std::size_t i) const noexcept
+        {
+                return m_bits[i];
+        }
 
         [[nodiscard]] friend constexpr bool operator==(array const& x [[maybe_unused]], array const& y [[maybe_unused]]) noexcept
         {

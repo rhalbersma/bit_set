@@ -1,9 +1,10 @@
-#pragma once
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_TEST_SET_PRIMITIVES_HPP
+#define XSTD_TEST_SET_PRIMITIVES_HPP
 
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
 #include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
@@ -19,7 +20,7 @@
 #include <type_traits>                  // add_const_t, common_type, make_signed_t, remove_reference_t
 #include <utility>                      // declval, pair
 
-namespace xstd {
+namespace xstd::test::set {
 
 template<class X>
 struct ref_same_as_pred
@@ -677,4 +678,6 @@ struct fn_empty
         }
 };
 
-}       // namespace xstd
+} // namespace xstd::test::set
+
+#endif // XSTD_TEST_SET_PRIMITIVES_HPP

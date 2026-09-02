@@ -6,6 +6,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <xstd/bits/ranges/set_view.hpp> // view
 #include <boost/dynamic_bitset_fwd.hpp> // dynamic_bitset
 #include <cstddef>                      // size_t
@@ -36,7 +37,7 @@ struct generate_empty
         }
 };
 
-template<std::unsigned_integral Block, class Allocator>
+template<xstd::unsigned_integer Block, class Allocator>
 struct generate_empty<boost::dynamic_bitset<Block, Allocator>>
 {
         auto operator()(std::size_t n) const

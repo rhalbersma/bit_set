@@ -6,23 +6,23 @@
 #ifndef XSTD_BITS_DETAIL_PRED_HPP
 #define XSTD_BITS_DETAIL_PRED_HPP
 
-#include <concepts>     // unsigned_integral
+#include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 
 namespace xstd::detail::bits {
 
-template<std::unsigned_integral Block>
+template<xstd::unsigned_integer Block>
 [[nodiscard]] constexpr bool intersects(Block lhs, Block rhs) noexcept
 {
         return lhs & rhs;
 }   
 
-template<std::unsigned_integral Block>
+template<xstd::unsigned_integer Block>
 [[nodiscard]] constexpr bool is_subset_of(Block lhs, Block rhs) noexcept
 {
         return not (lhs & static_cast<Block>(~rhs));
 }  
 
-template<std::unsigned_integral Block>
+template<xstd::unsigned_integer Block>
 [[nodiscard]] constexpr bool not_equal_to(Block lhs, Block rhs) noexcept
 {
         return lhs != rhs;

@@ -6,13 +6,16 @@
 #ifndef XSTD_BITS_EXT_STD_BITSET_HPP
 #define XSTD_BITS_EXT_STD_BITSET_HPP
 
+#include <xstd/bits/ranges/block_access.hpp> // block_access
 #include <xstd/bits/ranges/set_view.hpp> // find, view
 #include <xstd/bits/ranges/array_view.hpp> // find, view
-#include <algorithm>                    // lexicographical_compare_three_way
+#include <algorithm>                    // find_if
 #include <bitset>                       // bitset
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
 #include <cstddef>                      // size_t
+#include <limits>                       // numeric_limits
+#include <utility>                      // declval
 #include <ranges>                       // find_if
                                         // iota
 
@@ -80,12 +83,7 @@ struct set_compare<std::bitset<N>>
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(std::bitset<N> const& x, std::bitset<N> const& y) noexcept
         {
-                auto const xv = set_view(x);
-                auto const yv = set_view(y);
-                return std::lexicographical_compare_three_way(
-                        xv.begin(), xv.end(),
-                        yv.begin(), yv.end()
-                );
+                return set_three_way(set_view(x), set_view(y));
         }
 };
 
@@ -98,6 +96,37 @@ struct set_compare<std::bitset<N>>
 // trivial - the whole point is just making it reachable without adding
 // declarations to namespace std.
 namespace xstd::ranges {
+
+// The Microsoft STL publishes its words through a nonstandard but public
+// _Getword, so a std::bitset there can be ordered a word at a time like our own
+// types. libstdc++ keeps its words in _Base_bitset, which std::bitset inherits
+// privately, and exposes only _Find_first/_Find_next; libc++ exposes neither. So
+// this is a specialization guarded on the member rather than on the platform:
+// where it is absent the primary template leaves block_range unsatisfied and the
+// element-wise path stands.
+//
+// The layout matches what block_access documents -- ascending words, and the
+// least significant bit of a word is its lowest position -- and std::bitset must
+// keep the padding above N zero for count() and all() to work, which is the
+// other thing comparing whole words relies on.
+template<std::size_t N>
+        requires requires (std::bitset<N> const& c) { { c._Getword(0UZ) } -> xstd::unsigned_integer; }
+struct block_access<std::bitset<N>>
+{
+        using block_type = decltype(std::declval<std::bitset<N> const&>()._Getword(0UZ));
+
+        static constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
+
+        [[nodiscard]] static constexpr std::size_t num_blocks(std::bitset<N> const&) noexcept
+        {
+                return N == 0UZ ? 1UZ : (N + digits - 1UZ) / digits;
+        }
+
+        [[nodiscard]] static constexpr block_type block(std::bitset<N> const& c, std::size_t i) noexcept
+        {
+                return c._Getword(i);
+        }
+};
 
 template<std::size_t N>
 struct array_find<std::bitset<N>>

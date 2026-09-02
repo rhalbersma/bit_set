@@ -1,11 +1,12 @@
-#pragma once
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <concepts.hpp>                 // dynamic
+#ifndef XSTD_TEST_BITSET_PRIMITIVES_HPP
+#define XSTD_TEST_BITSET_PRIMITIVES_HPP
+
+#include <xstd/test/dynamic.hpp>                 // dynamic
 #include <xstd/bits/ranges/set_view.hpp> // view
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <cstddef>                      // ptrdiff_t, size_t
@@ -18,7 +19,7 @@
 #include <string_view>                  // string_view
 #include <type_traits>                  // remove_cvref_t
 
-namespace xstd {
+namespace xstd::test::bitset {
 
 // The checks below are on xstd::bitset's basic_string_view overload, and are
 // its own. std::bitset has no such overload at all; boost::dynamic_bitset
@@ -581,4 +582,6 @@ struct op_istream_failure
         }
 };
 
-}       // namespace xstd
+} // namespace xstd::test::bitset
+
+#endif // XSTD_TEST_BITSET_PRIMITIVES_HPP

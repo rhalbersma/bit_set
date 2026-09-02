@@ -6,7 +6,8 @@
 #ifndef XSTD_BITS_RANGES_SET_VIEW_HPP
 #define XSTD_BITS_RANGES_SET_VIEW_HPP
 
-#include <xstd/bits/ranges/bit_extent.hpp> // bit_extent, static_bit_extent
+#include <xstd/bits/ranges/bit_extent.hpp>   // bit_extent, static_bit_extent
+#include <xstd/bits/ranges/block_access.hpp> // block_access, block_range, first_difference, any_above
 #include <algorithm>                       // includes
 #include <cassert>                         // assert
 #include <compare>                         // strong_ordering
@@ -183,6 +184,59 @@ struct set_ops
         }
 };
 
+// The set ordering, defined once: the keys in increasing order, compared
+// lexicographically. bit_finite_set orders itself with this and every
+// set_compare specialization routes to it, so the ordering has one definition
+// rather than one per type that happens to need it -- four copies, before.
+//
+// It takes the ranges rather than four iterators because that is what a
+// data-parallel implementation needs: with the containers in hand, one that can
+// reach the underlying blocks can compare them a word at a time, and every
+// caller picks that up without changing. The rule it would use is not the
+// sequence one -- at the lowest differing bit, the set that HAS it is the
+// smaller, unless the other has no bit above it and is therefore a prefix.
+template<std::ranges::input_range X, std::ranges::input_range Y>
+[[nodiscard]] constexpr std::strong_ordering set_three_way(X const& x, Y const& y) noexcept
+{
+        return std::lexicographical_compare_three_way(
+                std::ranges::begin(x), std::ranges::end(x),
+                std::ranges::begin(y), std::ranges::end(y)
+        );
+}
+
+// The same ordering, a word at a time, for a Bits that says where its blocks are.
+//
+// Let d be the lowest position at which the two differ. Below d they hold the
+// same keys, so the comparison is decided there: the one that HAS d contributes
+// d where the other contributes something larger, and is the smaller -- unless
+// the other holds nothing above d at all, in which case the other has run out
+// and a prefix is the smaller. That exception is the whole difference from the
+// sequence ordering, which needs no such clause because its two operands are the
+// same length.
+// Chosen over the element-wise overload above by partial ordering: two operands
+// of one type is more specialized than two of any types. So every caller of
+// set_three_way picks this up without naming it, which is what taking ranges
+// rather than iterators was for.
+template<block_range Bits>
+[[nodiscard]] constexpr std::strong_ordering set_three_way(Bits const& x, Bits const& y) noexcept
+{
+        using access = block_access<Bits>;
+        using block_type = decltype(access::block(x, 0UZ));
+
+        auto const [index, diff] = first_difference(x, y);
+        if (diff == block_type{}) {
+                return std::strong_ordering::equal;
+        }
+
+        auto const offset = detail::bits::countr_zero(diff);
+        auto const x_has  = (static_cast<block_type>(access::block(x, index) >> offset) & block_type{1}) != block_type{};
+
+        if (x_has) {
+                return any_above(y, index, offset) ? std::strong_ordering::less : std::strong_ordering::greater;
+        }
+        return any_above(x, index, offset) ? std::strong_ordering::greater : std::strong_ordering::less;
+}
+
 template<class Bits_cv, class Bits = std::remove_const_t<Bits_cv>>
 concept set_range =
         requires(Bits const& c)
@@ -202,8 +256,8 @@ concept set_range =
 // template, not this one.
 template<set_range Bits> class set_view;
 
-template<set_range> class set_iterator;
-template<set_range> class set_reference;
+template<class> class set_iterator;
+template<class> class set_reference;
 template<set_range> struct set_compare;
 
 // Forward-declared so the dependent friend template-id declarations inside
@@ -215,7 +269,7 @@ template<set_range> struct set_compare;
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_begin(Bits const& c) noexcept;
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_end  (Bits const& c) noexcept;
 
-template<set_range Bits>
+template<class Bits>
 class set_iterator
 {
         Bits const* m_ptr{};
@@ -261,6 +315,7 @@ public:
         // job drops assert branches by matching the start of the line, so an
         // assert sharing a line with real code keeps its never-taken branch.
         constexpr set_iterator& operator++() noexcept
+                requires requires (Bits const& c, std::size_t n) { set_find<Bits>::next(c, n); }
         {
                 assert(m_ptr != nullptr);
                 m_idx = set_find<Bits>::next(*m_ptr, m_idx);
@@ -268,6 +323,7 @@ public:
         }
 
         constexpr set_iterator& operator--() noexcept
+                requires requires (Bits const& c, std::size_t n) { set_find<Bits>::prev(c, n); }
         {
                 assert(m_ptr != nullptr);
                 m_idx = set_find<Bits>::prev(*m_ptr, m_idx);
@@ -281,7 +337,7 @@ public:
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_begin(Bits const& c) noexcept { return { &c, set_find<Bits>::first(c) }; }
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_end  (Bits const& c) noexcept { return { &c, set_find<Bits>::last (c) }; }
 
-template<set_range Bits>
+template<class Bits>
 class set_reference
 {
         Bits const& m_ref;
@@ -318,7 +374,7 @@ public:
         }
 };
 
-template<set_range Bits>
+template<class Bits>
 [[nodiscard]] constexpr auto format_as(set_reference<Bits> ref) noexcept
         -> set_reference<Bits>::value_type
 {
@@ -378,6 +434,22 @@ class set_view : public std::ranges::view_base
         using ops       = set_ops<bits_type>;
 
         Bits* m_ptr;
+
+        // A view is as block-accessible as the thing it views, so an ordering over
+        // the view takes the same word-at-a-time path an ordering over the viewed
+        // type would. Constrained, so a view over a type that keeps its blocks to
+        // itself is simply not a block_range and keeps the element-wise path.
+        [[nodiscard]] friend constexpr std::size_t block_count(set_view v) noexcept
+                requires block_range<bits_type>
+        {
+                return block_access<bits_type>::num_blocks(*v.m_ptr);
+        }
+
+        [[nodiscard]] friend constexpr auto block_at(set_view v, std::size_t i) noexcept
+                requires block_range<bits_type>
+        {
+                return block_access<bits_type>::block(*v.m_ptr, i);
+        }
 
 public:
         using key_type               = std::size_t;
