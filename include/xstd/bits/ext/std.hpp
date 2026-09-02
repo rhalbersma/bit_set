@@ -8,8 +8,7 @@
 
 // IWYU pragma: always_keep
 
-// The standard library's own bitset, and no umbrella above this one: an adapted
-// library is asked for by name.
+// The standard library's own bitset, and no umbrella above it: an adapted library is asked for by name.
 
 #include <xstd/bits/ext/std/bitset.hpp> // IWYU pragma: export; find, view over std::bitset
 

@@ -20,10 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # No inputs: this library builds on every rung of the ladder, which is what
-  # the shared workflow defaults to. The WinLibs release lookup that used to
-  # live here - including the deliberate soft-fail when no snapshot build has
-  # been published between stable branches - now lives in cpp-ci's
-  # install-winlibs action.
+  # No inputs: every rung. The WinLibs release lookup lives in cpp-ci's install-winlibs action now.
   mingw:
     uses: rhalbersma/cpp-ci/.github/workflows/mingw.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1

@@ -8,8 +8,7 @@
 
 // IWYU pragma: always_keep
 
-// Our own bitset made a range by ADL, which xstd/bits/bitset.hpp deliberately
-// does not do: iterating a bitset is opt-in, so it is asked for by name too.
+// Our own bitset made a range by ADL, which xstd/bits/bitset.hpp deliberately does not do: iterating is opt-in.
 
 #include <xstd/bits/ext/xstd/bitset.hpp> // IWYU pragma: export; begin, end, rbegin, rend
 

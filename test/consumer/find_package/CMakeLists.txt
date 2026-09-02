@@ -6,10 +6,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(consumer_find_package LANGUAGES CXX)
 
-# CMAKE_PREFIX_PATH names the install trees the caller populated. Three of
-# them, unlike a library with no dependencies: bit_set's own, xstd's --
-# bit_setConfig.cmake find_dependency()s it -- and vcpkg's, for the
-# Boost.Hash2 that bit_set's headers hash_append through.
+# Three install trees: bit_set's own, xstd's (find_dependency'd) and vcpkg's, for the Boost.Hash2 the headers use.
 find_package(bit_set 0.1.0 CONFIG REQUIRED)
 
 add_executable(main ../main.cpp)

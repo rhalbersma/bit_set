@@ -14,47 +14,20 @@ project(
 
 include(GNUInstallDirs)
 
-# Prefer an already-installed xstd (so that install(EXPORT ...) below can
-# correctly record it as a find_package(xstd) dependency of the installed
-# bit_set package); fall back to fetching it for casual local builds where
-# xstd isn't installed. FetchContent alone cannot be exported: it produces a
-# build-tree target, and install(EXPORT) requires every dependency of an
-# exported target to be either part of the same export set or an IMPORTED
-# target that itself came from a find_package() call.
+# Prefer an installed xstd so install(EXPORT) can record it as a dependency; a FetchContent build tree cannot be exported.
 find_package(xstd 0.1.0 CONFIG QUIET)
 if(NOT xstd_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         xstd
         GIT_REPOSITORY https://github.com/rhalbersma/xstd.git
-        # Pinned, not main. This is the only first-party dependency here and it
-        # moves under us: aligned_size left <xstd/utility.hpp> for
-        # <xstd/memory.hpp>, and every compiling job went red with no commit in
-        # this repository. Bump this deliberately, fixing whatever the bump
-        # relocates, rather than discovering it from CI.
-        #
-        # This bump follows xstd's split into xstd/core and xstd/ints, from
-        # rhalbersma/xstd#223, #226 and #227: <xstd/memory.hpp> is now
-        # <xstd/ints/memory.hpp>, alignment having landed in core and then
-        # moved to ints once alignable turned out to be an integer concept.
-        # align_up is constrained on alignable rather than on unsigned_integer,
-        # which does not reach the call sites here: they pass N as the value and
-        # the block width only as the alignment. Name a commit on xstd's main,
-        # not a pull request branch head, which merging leaves on no branch.
-        # Move .github/workflows/consumption.yml's dependency_repos with this:
-        # the find_package consumer builds against an installed xstd from
-        # there, not against this fallback, so a stale pin there fails only
-        # that one job, with a rename error this configure never sees.
+        # Pinned to a commit on xstd's main, not a branch head; move consumption.yml's dependency_repos with it.
         GIT_TAG 42ab0d409fc9118ea0dc8846508ea62e97b90c7e
     )
     FetchContent_MakeAvailable(xstd)
 endif()
 
-# xstd/bits/detail/array.hpp and xstd/bits/bitset.hpp hash_append their state through
-# Boost.Hash2 (boost/hash2/{fnv1a,hash_append}.hpp), so it is a real,
-# public dependency of this library's headers, not just of the tests -
-# declared explicitly here rather than relying on it being pulled in
-# incidentally by whatever links Boost::headers.
+# Boost.Hash2 is a public dependency of this library's headers, not just of the tests, so it is declared explicitly.
 find_package(boost_hash2 CONFIG REQUIRED)
 
 add_library(
@@ -62,9 +35,7 @@ add_library(
 )
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-# No target_include_directories: the HEADERS file set below adds its base
-# directory to the build interface, and install(TARGETS ... FILE_SET) adds
-# the install destination to the install interface.
+# No target_include_directories: the HEADERS file set supplies both the build and the install interface.
 target_sources(
     ${PROJECT_NAME} INTERFACE
     FILE_SET HEADERS
@@ -101,11 +72,7 @@ target_compile_features(
     cxx_std_23
 )
 
-# Tests and benchmarks (and their Boost/fmt/Google Benchmark dependencies)
-# only exist when bit_set itself is being developed. Consumers vendoring
-# this directory via add_subdirectory or FetchContent get just the
-# header-only target, with no BUILD_TESTING workaround required on their
-# side.
+# Tests and benchmarks exist only when bit_set itself is being developed; consumers get the header-only target.
 if(PROJECT_IS_TOP_LEVEL)
     include(CTest)
     if(BUILD_TESTING)
@@ -125,9 +92,7 @@ install(
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
-# Package config + version files, so consumers can locate the installed
-# package with find_package(bit_set CONFIG). ARCH_INDEPENDENT because a
-# header-only library has no architecture-specific binaries.
+# Package config and version files, ARCH_INDEPENDENT because a header-only library has no architecture-specific binaries.
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
     cmake/${PROJECT_NAME}Config.cmake.in

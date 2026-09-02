@@ -3,16 +3,15 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/ranges/bit_extent.hpp>        // bit_extent, static_bit_extent
-#include <xstd/bits/bitset.hpp>                   // bit_extent over xstd::bitset
-#include <xstd/bits/ext/std/bitset.hpp>           // bit_extent over std::bitset
-#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // bit_extent over boost::dynamic_bitset
 #include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <xstd/bits/bitset.hpp>                   // bit_extent over xstd::bitset
+#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // bit_extent over boost::dynamic_bitset
+#include <xstd/bits/ext/std/bitset.hpp>           // bit_extent over std::bitset
+#include <xstd/bits/ranges/bit_extent.hpp>        // bit_extent, static_bit_extent
 #include <bitset>                                 // bitset
 #include <cstddef>                                // size_t
 #include <span>                                   // dynamic_extent
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(Ranges)
 BOOST_AUTO_TEST_SUITE(BitExtent)
 
@@ -23,8 +22,7 @@ struct unknown_to_the_library {};
 
 } // namespace
 
-// Where the width is in the type, the extent is a constant expression, and both
-// views can make size() and max_size() constant expressions from it.
+// Where the width is in the type, the extent is a constant expression and both views can make size() one too.
 BOOST_AUTO_TEST_CASE(AWidthInTheTypeIsAStaticExtent)
 {
         static_assert(xstd::ranges::bit_extent<std::bitset<  0>> ==   0);
@@ -43,15 +41,12 @@ BOOST_AUTO_TEST_CASE(AWidthInTheObjectIsADynamicExtent)
         static_assert(not xstd::ranges::static_bit_extent<boost::dynamic_bitset<>>);
 }
 
-// The default is dynamic, so a type that has said nothing is asked at run time
-// rather than assumed to be some width. Getting this backwards would make every
-// unspecialized type silently claim an extent of zero.
+// The default is dynamic, so a type that has said nothing is asked at run time rather than claiming an extent of zero.
 BOOST_AUTO_TEST_CASE(SayingNothingMeansDynamic)
 {
         static_assert(xstd::ranges::bit_extent<unknown_to_the_library> == std::dynamic_extent);
         static_assert(not xstd::ranges::static_bit_extent<unknown_to_the_library>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

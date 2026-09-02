@@ -3,55 +3,50 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/bit_array.hpp>            // bit_array
-#include <xstd/test/block_types.hpp>          // graded_extents
-#include <xstd/test/sequence/concepts.hpp>    // bit_sequence
-#include <xstd/test/value_reference.hpp>      // value_reference
-#include <boost/test/unit_test.hpp>           // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
-#include <concepts>                           // regular, totally_ordered
-#include <iterator>                           // random_access_iterator
-#include <ranges>                             // random_access_range
+#include <boost/test/unit_test.hpp>   // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <test/block_types.hpp>       // graded_extents
+#include <test/sequence/concepts.hpp> // bit_sequence
+#include <test/value_reference.hpp>   // value_reference
+#include <xstd/bits/bit_array.hpp>    // bit_array
+#include <concepts>                   // regular, totally_ordered
+#include <iterator>                   // random_access_iterator
+#include <ranges>                     // random_access_range
 
-BOOST_AUTO_TEST_SUITE(Bits)
 BOOST_AUTO_TEST_SUITE(BitArray)
 
-// Every Block model within one block, and the narrow ones across block
-// boundaries too. The grading is in xstd/test/block_types.hpp, shared with the
-// other two containers taking <size_t N, class Block>.
-using Types = xstd::test::graded_extents<xstd::bit_array>;
+// Every Block model within one block and the narrow ones across boundaries; the grading is in test/block_types.hpp.
+using Types = test::graded_extents<xstd::bit_array>;
 
-// The clauses one at a time, so a failure names which one. The umbrella asserts
-// the composite over this and over the std::array it packs.
-BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
+// The clauses one at a time, so a failure names which one; the umbrella asserts the composite.
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, Types)
 {
         static_assert(std::regular<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(TotallyOrdered, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsTotallyOrdered, T, Types)
 {
         static_assert(std::totally_ordered<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(RandomAccessRange, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsARandomAccessRange, T, Types)
 {
         static_assert(std::ranges::random_access_range<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(RandomAccessIterator, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(ItsIteratorIsRandomAccess, T, Types)
 {
         using I = T::iterator;
         static_assert(std::random_access_iterator<I>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ConstReference, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(ItsConstReferenceIsAValue, T, Types)
 {
-        static_assert(xstd::test::value_reference<typename T::const_reference>);
+        static_assert(test::value_reference<typename T::const_reference>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitSequence, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsABitSequence, T, Types)
 {
-        static_assert(xstd::test::sequence::bit_sequence<T>);
+        static_assert(test::sequence::bit_sequence<T>);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

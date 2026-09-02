@@ -8,67 +8,22 @@
 
 #include <xstd/bits/ranges/bit_extent.hpp>   // bit_extent, static_bit_extent
 #include <xstd/bits/ranges/block_access.hpp> // block_access, block_range, first_difference, any_above
-#include <algorithm>                       // includes
-#include <cassert>                         // assert
-#include <compare>                         // strong_ordering
-#include <concepts>                        // constructible_from, convertible_to
-#include <cstddef>                         // ptrdiff_t, size_t
-#include <functional>                      // less
-#include <initializer_list>                // initializer_list
-#include <iterator>                        // bidirectional_iterator_tag, make_reverse_iterator, reverse_iterator
-#include <ranges>                          // distance, equal, view_base
-#include <type_traits>                     // is_class_v, is_const_v, is_convertible_v, is_nothrow_constructible_v, remove_const_t
-#include <utility>                          // pair
+#include <algorithm>                         // includes
+#include <cassert>                           // assert
+#include <compare>                           // strong_ordering
+#include <concepts>                          // constructible_from, convertible_to
+#include <cstddef>                           // ptrdiff_t, size_t
+#include <functional>                        // less
+#include <initializer_list>                  // initializer_list
+#include <iterator>                          // bidirectional_iterator_tag, make_reverse_iterator, reverse_iterator
+#include <ranges>                            // distance, equal, view_base
+#include <type_traits>                       // is_class_v, is_const_v, is_convertible_v, is_nothrow_constructible_v, remove_const_t
+#include <utility>                           // pair
 
-// A std::set<std::size_t> over a sequence of bits it does not own.
-//
-// The hook points this way round, unlike std::string_view's. A string opts into
-// being viewed by carrying operator basic_string_view() itself; neither type this
-// view exists for can do that -- std::bitset<N>'s only associated namespace is
-// std, where [namespace.std] forbids a program adding anything, and
-// boost::dynamic_bitset<> is not ours either. std::span is the precedent that
-// works: the view carries the converting constructor and the viewed type carries
-// nothing, so everything a Bits has to say arrives through the traits below.
-//
-// Non-owning and mutable through, again like span rather than string_view. The
-// point is not to freeze a bitset but to rename it: a bitset's count() is a set's
-// size(), a bitset's size() is a set's max_size(), set(pos) is insert(pos), and
-// reset(pos) is erase(pos). There is a set inside a bitset, and this is what lets
-// it out.
-//
-// It dangles over a temporary exactly as string_view does over s + "x". Viewing an
-// rvalue within one full-expression is legitimate, so there is no deleted overload
-// here, only this paragraph.
+// A std::set<std::size_t> over bits it does not own: span's hook direction, non-owning, and mutable through.
 namespace xstd::ranges {
 
-// Where the elements are.
-//
-// Bits customizes its iteration either by providing hidden friends
-// find_first/find_last/find_next/find_prev discoverable via ADL (the default
-// below, delegating to them - used by xstd's own types, whose associated
-// namespace is xstd and can legitimately hold them), or by giving
-// set_find<Bits> an explicit specialization for a foreign type that cannot
-// provide those via ADL - e.g. std::bitset<N>, per [namespace.std] above; or
-// boost::dynamic_bitset<>, whose own member begin()/end() can shadow a
-// same-named ADL free function. Calls to find_first(c) and friends below are
-// dependent (c's type is the template parameter Bits), so non-ADL unqualified
-// lookup for them is fixed at this point of definition and can never see a
-// later header's free functions - only ADL, deferred to each point of
-// instantiation, can. set_find<Bits>'s specializations aren't subject to that:
-// specialization matching considers any specialization visible before the point
-// of use, regardless of which header declares it, so it works for foreign types
-// where ADL cannot.
-//
-// Each member below is individually constrained on the underlying ADL call
-// actually being valid, rather than just declared with a fixed return type.
-// Without that, set_find<Bits>::first(c) would be a well-formed *expression* for
-// any Bits at all (the declaration alone doesn't depend on whether find_first(c)
-// in the body compiles - body instantiation is lazy and, on failure, a hard
-// error rather than SFINAE), which made set_range<Bits> a false positive for
-// every Bits, including set_reference<Bits> itself: nothing stopped
-// set_reference<set_reference<Bits>> from being formed, recursively without end.
-// Constraining each member here makes it (and so set_range) correctly SFINAE
-// away when Bits doesn't actually provide the customization.
+// Where the elements are: ADL hidden friends by default, an explicit specialization for foreign types, each member constrained.
 template<class Bits>
 struct set_find
 {
@@ -97,28 +52,14 @@ struct set_find
         }
 };
 
-// Which of the two vocabularies a Bits speaks.
-//
-// count() with no argument is the discriminator: only a bitset has one, because
-// std::set::count takes a key. Asked once, here, rather than per member -- and
-// that is not tidiness. Probing member by member reads whichever name matches
-// first, and the two vocabularies share names that mean different things:
-// boost::dynamic_bitset::clear() erases the bits and leaves size() at zero, where
-// std::set::clear() empties the set and leaves the universe alone. A per-member
-// probe picks that clear() and silently destroys the container it was asked to
-// empty. Deciding the language first and then speaking only that one cannot.
+// Which vocabulary a Bits speaks, decided once by no-arg count(): probing member by member picks clear() and empties the container.
 template<class Bits>
 concept bitset_vocabulary = requires(Bits const& c)
 {
         { c.count() } -> std::convertible_to<std::size_t>;
 };
 
-// The vocabulary, rewired.
-//
-// Unlike set_find above, this needs no ADL and no specialization for the types it
-// serves: a member call is always found, whoever declared the member. So a type
-// speaking either vocabulary is served unspecialized, and a type speaking neither
-// specializes this.
+// The vocabulary, rewired; this needs no ADL, a member call being found whoever declared it.
 template<class Bits>
 struct set_ops
 {
@@ -132,8 +73,7 @@ struct set_ops
                 }
         }
 
-        // and a bitset's size() is a set's max_size(), constant where the type
-        // declares its width.
+        // and a bitset's size() is a set's max_size(), constant where the type declares its width.
         [[nodiscard]] static constexpr std::size_t max_size(Bits const& c) noexcept
         {
                 if constexpr (static_bit_extent<Bits>) {
@@ -172,8 +112,7 @@ struct set_ops
                 }
         }
 
-        // reset(), never clear(): see bitset_vocabulary above for what
-        // boost::dynamic_bitset::clear() would have done here.
+        // reset(), never clear(): see bitset_vocabulary above for what dynamic_bitset::clear() would have done.
         static constexpr void clear(Bits& c) noexcept
         {
                 if constexpr (bitset_vocabulary<Bits>) {
@@ -184,17 +123,7 @@ struct set_ops
         }
 };
 
-// The set ordering, defined once: the keys in increasing order, compared
-// lexicographically. bit_finite_set orders itself with this and every
-// set_compare specialization routes to it, so the ordering has one definition
-// rather than one per type that happens to need it -- four copies, before.
-//
-// It takes the ranges rather than four iterators because that is what a
-// data-parallel implementation needs: with the containers in hand, one that can
-// reach the underlying blocks can compare them a word at a time, and every
-// caller picks that up without changing. The rule it would use is not the
-// sequence one -- at the lowest differing bit, the set that HAS it is the
-// smaller, unless the other has no bit above it and is therefore a prefix.
+// The set ordering, defined once: the keys in increasing order, lexicographically, over ranges so a block path can replace it.
 template<std::ranges::input_range X, std::ranges::input_range Y>
 [[nodiscard]] constexpr std::strong_ordering set_three_way(X const& x, Y const& y) noexcept
 {
@@ -204,19 +133,7 @@ template<std::ranges::input_range X, std::ranges::input_range Y>
         );
 }
 
-// The same ordering, a word at a time, for a Bits that says where its blocks are.
-//
-// Let d be the lowest position at which the two differ. Below d they hold the
-// same keys, so the comparison is decided there: the one that HAS d contributes
-// d where the other contributes something larger, and is the smaller -- unless
-// the other holds nothing above d at all, in which case the other has run out
-// and a prefix is the smaller. That exception is the whole difference from the
-// sequence ordering, which needs no such clause because its two operands are the
-// same length.
-// Chosen over the element-wise overload above by partial ordering: two operands
-// of one type is more specialized than two of any types. So every caller of
-// set_three_way picks this up without naming it, which is what taking ranges
-// rather than iterators was for.
+// The same ordering a word at a time; the set HAVING the lowest differing bit is smaller, unless the other is a prefix.
 template<block_range Bits>
 [[nodiscard]] constexpr std::strong_ordering set_three_way(Bits const& x, Bits const& y) noexcept
 {
@@ -251,21 +168,14 @@ concept set_range =
         }
 ;
 
-// Declared here, constraint and all, so set_iterator below can befriend both
-// spellings: a redeclaration with different constraints would be a different
-// template, not this one.
+// Declared here, constraint and all, so set_iterator below can befriend both spellings.
 template<set_range Bits> class set_view;
 
 template<class> class set_iterator;
 template<class> class set_reference;
 template<set_range> struct set_compare;
 
-// Forward-declared so the dependent friend template-id declarations inside
-// set_iterator below (set_begin<>, set_end<>) have a template to refer to:
-// [temp.friend] requires that form to name an already-visible template, not one
-// declared later in the same header. GCC tolerates the forward reference; Clang
-// rejects it ("no candidate function template was found for dependent friend
-// function template specialization") per the stricter reading.
+// Forward-declared so set_iterator's dependent friend template-ids have a template to name; Clang requires it, GCC does not.
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_begin(Bits const& c) noexcept;
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_end  (Bits const& c) noexcept;
 
@@ -311,9 +221,7 @@ public:
                 return { *m_ptr, m_idx };
         }
 
-        // The assert is on its own line, as in operator* above: the coverage
-        // job drops assert branches by matching the start of the line, so an
-        // assert sharing a line with real code keeps its never-taken branch.
+        // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
         constexpr set_iterator& operator++() noexcept
                 requires requires (Bits const& c, std::size_t n) { set_find<Bits>::next(c, n); }
         {
@@ -381,25 +289,7 @@ template<class Bits>
         return ref;
 }
 
-// set_compare<Bits>::lexicographical_three_way defaults to trusting Bits' own
-// <=>: xstd's own bit_finite_set/bitset (detail::bits::array's operator<=>) is meant to
-// already compute std::set<int>-equivalent ordering, word-parallel, for every
-// cardinality - so the default here is just to call it directly rather than pay
-// for iterating through the view.
-//
-// This mirrors set_find<>'s reason for existing, aimed at the opposite failure
-// mode: set_find<> exists because boost::dynamic_bitset<> silently started
-// shadowing this library's ADL begin()/end() the moment it grew its own
-// same-named members (a foreign type's own thing quietly taking over).
-// set_compare<> guards against a foreign type's own <=> quietly taking over with
-// the WRONG semantics later - std::bitset<N> has none today, and
-// boost::dynamic_bitset<> could add one upstream, but neither is under any
-// obligation to make it std::set<int>-equivalent (it could just as well be
-// sequence-of-bool, matching the type's own element/index order instead).
-// Trusting Bits' <=> by default is only safe for types this library controls;
-// std::bitset<N> and boost::dynamic_bitset<> instead opt in to the safe,
-// iteration-based fallback via explicit set_compare<Bits> specializations (see
-// xstd/bits/ext/std/bitset.hpp and its neighbour).
+// set_compare defaults to trusting Bits' own <=>, which is safe only for types this library controls; foreign ones opt out.
 template<set_range Bits>
 struct set_compare
 {
@@ -409,24 +299,7 @@ struct set_compare
         }
 };
 
-// The [set] interface, over storage this does not own.
-//
-// Bits may be const-qualified, as span's element type may be: set_view<B> is
-// mutable through and set_view<B const> is not, and CTAD picks whichever the
-// argument was. Every trait above is consulted on the unqualified type, so one
-// set_find/set_ops/bit_extent specialization serves both.
-//
-// Stored as a pointer, not a reference: std::ranges::view requires std::movable,
-// which requires assignable_from<T&, T> - a reference data member makes copy and
-// move assignment implicitly deleted (references cannot be rebound), which would
-// make this fail the view concept entirely and break composition with
-// std::views::take_while and the other adaptors. A pointer keeps the defaulted
-// assignment working while the constructor still takes Bits& so construction
-// reads like any other reference-taking adaptor.
-//
-// key_type mirrors bit_finite_set's own: fmt's range formatter (fmt/ranges.h)
-// detects "format like a set" purely by checking for a nested key_type, so a
-// set_view formats with {} delimiters on its own.
+// The [set] interface over storage it does not own; held by pointer so the view stays movable, with key_type for fmt.
 template<set_range Bits>
 class set_view : public std::ranges::view_base
 {
@@ -435,10 +308,7 @@ class set_view : public std::ranges::view_base
 
         Bits* m_ptr;
 
-        // A view is as block-accessible as the thing it views, so an ordering over
-        // the view takes the same word-at-a-time path an ordering over the viewed
-        // type would. Constrained, so a view over a type that keeps its blocks to
-        // itself is simply not a block_range and keeps the element-wise path.
+        // A view is as block-accessible as the thing it views; constrained, so one over an opaque type keeps the element-wise path.
         [[nodiscard]] friend constexpr std::size_t block_count(set_view v) noexcept
                 requires block_range<bits_type>
         {
@@ -467,11 +337,7 @@ public:
 
         [[nodiscard]] constexpr explicit set_view(Bits& c) noexcept : m_ptr(&c) {}
 
-        // begin()/cbegin() (and end()/cend()) coincide: this proxy iteration is
-        // inherently read-only - set_reference only converts to std::size_t,
-        // there is no assignment through an iterator here - the same way
-        // bit_finite_set's own cbegin()/cend() are plain aliases rather than a
-        // distinct const-iteration path. Mutation goes through insert and erase.
+        // begin() and cbegin() coincide, this proxy iteration being read-only; mutation goes through insert and erase.
         [[nodiscard]] constexpr const_iterator begin() const noexcept { return set_begin(*m_ptr); }
         [[nodiscard]] constexpr const_iterator end()   const noexcept { return set_end  (*m_ptr); }
 
@@ -491,9 +357,7 @@ public:
         // Constant where the Bits knows its own width, per bit_extent.
         [[nodiscard]] constexpr size_type max_size() const noexcept { return ops::max_size(*m_ptr); }
 
-        // Modifiers, present only where Bits is not const - and returning what
-        // [set] says they return, which is what makes the harness able to run
-        // one body over a set_view and a std::set alike.
+        // Modifiers, present only where Bits is not const, returning what [set] says they return.
         constexpr std::pair<const_iterator, bool> insert(key_type x) const noexcept
                 requires (not std::is_const_v<Bits>)
         {
@@ -524,10 +388,7 @@ public:
                 insert(ilist.begin(), ilist.end());
         }
 
-        // Not [[nodiscard]], for the reason std::set::erase is not: the count is
-        // there for callers who want it and discarded by the ones who don't.
-        // modernize-use-nodiscard reaches it only because a view's modifiers are
-        // const members, writing through the pointer rather than to it.
+        // Not [[nodiscard]], for the reason std::set::erase is not: the count is there for callers who want it.
         constexpr size_type erase(key_type x) const noexcept  // NOLINT(modernize-use-nodiscard)
                 requires (not std::is_const_v<Bits>)
         {
@@ -551,8 +412,7 @@ public:
                 ops::clear(*m_ptr);
         }
 
-        // Lookup. Every one of these falls out of set_find's four operations, so
-        // a Bits that can be iterated can be searched, with no further hook.
+        // Lookup, all of it falling out of set_find's four operations, with no further hook.
         [[nodiscard]] constexpr bool contains(key_type x) const noexcept { return ops::contains(*m_ptr, x); }
 
         [[nodiscard]] constexpr size_type count(key_type x) const noexcept { return contains(x); }
@@ -562,9 +422,7 @@ public:
                 return contains(x) ? const_iterator{ m_ptr, x } : end();
         }
 
-        // The first element not less than x. next() steps strictly past its
-        // argument, so x itself is asked about separately rather than by
-        // stepping from x - 1, which would underflow at x == 0.
+        // The first element not less than x, asked about directly because stepping from x - 1 would underflow at zero.
         [[nodiscard]] constexpr const_iterator lower_bound(key_type x) const noexcept
         {
                 return contains(x) ? const_iterator{ m_ptr, x } : upper_bound(x);
@@ -580,10 +438,7 @@ public:
                 return { lower_bound(x), upper_bound(x) };
         }
 
-        // Prefer Bits' own == when it has one (cheaper than iterating through
-        // the proxy iterators above), else compare elementwise. Equality of two
-        // sets is unambiguous regardless of any bitset's internal bit-layout
-        // convention, so this is purely an optimization.
+        // Prefer Bits' own == when it has one; equality is unambiguous either way, so this is purely an optimization.
         [[nodiscard]] friend constexpr bool operator==(set_view lhs, set_view rhs) noexcept
         {
                 if constexpr (requires { *lhs.m_ptr == *rhs.m_ptr; }) {
@@ -593,28 +448,13 @@ public:
                 }
         }
 
-        // Ordering is not as unambiguous as == - see set_compare<Bits> above for
-        // why the default trusts Bits' own <=> and why some Bits opt out. This
-        // never duplicates that decision here: it always goes through
-        // set_compare, so specializing the trait changes how any set_view over
-        // that Bits orders too.
+        // Always through set_compare, so specializing that trait changes how any set_view over the Bits orders too.
         [[nodiscard]] friend constexpr std::strong_ordering operator<=>(set_view lhs, set_view rhs) noexcept
         {
                 return set_compare<bits_type>::lexicographical_three_way(*lhs.m_ptr, *rhs.m_ptr);
         }
 
-        // Not [set], and under review: lazy set intersection and union may be a
-        // better home for what these do. They stay for now because the types
-        // viewed here have them natively, and routing through std::ranges::
-        // includes would make the view slower than the thing it views.
-        // Three paths, cheapest first. A Bits with the relation as a member has
-        // already done the work word-at-a-time -- ours through detail::bits::array,
-        // boost::dynamic_bitset through its own. A Bits with only the bitwise
-        // operators can still answer a whole word at a time: std::bitset<N> has
-        // no is_subset_of, but (a & ~b).none() is the same question and does not
-        // walk the bits one at a time. Only a Bits with neither pays for the
-        // element-wise scan, which is the case Hinnant measured at up to two
-        // orders of magnitude (doc/design.md).
+        // Not [set] and under review; three paths, cheapest first: the member, then the bitwise operators, then the element-wise scan.
         [[nodiscard]] constexpr bool is_subset_of(set_view other) const noexcept
         {
                 if constexpr (requires { m_ptr->is_subset_of(*other.m_ptr); }) {

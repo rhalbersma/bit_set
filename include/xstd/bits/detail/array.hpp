@@ -6,21 +6,21 @@
 #ifndef XSTD_BITS_DETAIL_ARRAY_HPP
 #define XSTD_BITS_DETAIL_ARRAY_HPP
 
+#include <boost/hash2/hash_append_fwd.hpp>         // hash_append, hash_append_tag
+#include <xstd/bits/detail/intrin.hpp>             // countl_zero, countr_zero, popcount
+#include <xstd/bits/detail/pred.hpp>               // intersects, is_subset_of, not_equal_to
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
-#include <xstd/bits/detail/intrin.hpp>                  // countl_zero, countr_zero, popcount
-#include <xstd/bits/detail/pred.hpp>                    // intersects, is_subset_of, not_equal_to
-#include <xstd/ints/memory.hpp>                 // align_up
-#include <boost/hash2/hash_append_fwd.hpp>      // hash_append, hash_append_tag
-#include <algorithm>                            // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
-#include <array>                                // array
-#include <cassert>                              // assert
-#include <cstddef>                              // ptrdiff_t, size_t
-#include <functional>                           // plus
-#include <limits>                               // digits
-#include <ranges>                               // distance, prev (views::drop_last when P22014R2 is accepted)
+#include <xstd/ints/memory.hpp>                    // align_up
+#include <algorithm>                               // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <array>                                   // array
+#include <cassert>                                 // assert
+#include <cstddef>                                 // ptrdiff_t, size_t
+#include <functional>                              // plus
+#include <limits>                                  // digits
+#include <ranges>                                  // distance, prev (views::drop_last when P22014R2 is accepted)
                                                 // drop, iota, reverse, take, transform, zip
-#include <type_traits>                          // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
-#include <utility>                              // pair
+#include <type_traits> // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
+#include <utility>     // pair
 
 namespace xstd::detail::bits {
 
@@ -33,10 +33,7 @@ struct array
 
         std::array<Block, num_blocks> m_bits;
 
-        // For xstd::ranges::block_access, which the two orderings use to compare a
-        // word at a time. num_blocks above is the count; this is the block. The
-        // padding above position N stays zero, which operator== below already
-        // relies on, and which is what makes comparing whole blocks meaningful.
+        // The block, for xstd::ranges::block_access; padding above N stays zero, which is what makes whole-block comparison mean anything.
         [[nodiscard]] constexpr Block block(std::size_t i) const noexcept
         {
                 return m_bits[i];
@@ -51,19 +48,7 @@ struct array
                 }
         }
               
-        // No operator<=> here: array is a pure storage vehicle for a fixed
-        // number of bits, with no opinion on how those bits should be
-        // interpreted as a sequence to order - as a set of the indices that
-        // are set (bit_finite_set/bitset's contract, matching std::set<int>'s
-        // ordering), or as a fixed-length sequence of bools (bit_array's
-        // contract, matching e.g. std::array<bool, N>'s ordering). Those are
-        // different relations in general (proven this doesn't just come down
-        // to bit/word direction - see the xstd::ranges::set_iterator
-        // set_compare<Bits> comments), so array can't offer one without silently
-        // picking a side; == is unaffected because equality of the
-        // underlying bits is the same relation under either interpretation.
-        // bit_finite_set, bitset, and bit_array each provide their own <=> in terms
-        // of their own iteration instead.
+        // No operator<=>: array is pure storage with no opinion on set-of-indices versus sequence-of-bools order; == is unaffected.
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, array const* v) noexcept
@@ -548,10 +533,7 @@ private:
                 }
         }
 
-        // cl rejects a member of the explicit object parameter in a trailing
-        // return type (C2228). std::array's operator[] is not ref-qualified, so
-        // the reference depends on Self's constness alone; bit_array.hpp's
-        // result_t is the same idiom.
+        // cl rejects a member of the explicit object parameter in a trailing return type (C2228); bit_array.hpp's result_t is the same idiom.
         template<class Self>
         using block_reference_t = std::conditional_t<
                 std::is_const_v<std::remove_reference_t<Self>>, Block const&, Block&>;

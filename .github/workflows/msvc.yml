@@ -20,15 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # All three rungs, including VS 2022. That MSVC STL has no <flat_set>, so
-  # the tests and the benchmark probe for __cpp_lib_flat_set rather than
-  # assuming the header; std::flat_set is a reference implementation in their
-  # type lists, and dropping it costs no coverage of this library.
-  #
-  # 2026-Preview is new here - the local workflow's third leg was already
-  # this, but the preview toolset install (channel manifest ETag cache and
-  # all) now lives in cpp-ci's install-msvc-preview action.
-  #
-  # The toolset input is left at its default, which is the MSVC one.
+  # All three rungs; VS 2022's STL has no <flat_set>, which the tests probe for rather than assume.
   msvc:
     uses: rhalbersma/cpp-ci/.github/workflows/visual-studio.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1

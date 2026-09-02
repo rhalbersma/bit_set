@@ -6,9 +6,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <concepts>     // integral
-#include <cstddef>      // size_t
-#include <ranges>       // to
+#include <concepts> // integral
+#include <cstddef>  // size_t
+#include <ranges>   // to
                         // begin, end, iota, range_value_t, take_while
 
 namespace xstd {
@@ -28,21 +28,7 @@ struct generate_candidates
         }
 };
 
-// Both sieves iterate a snapshot rather than primes itself, because sift()
-// erases from primes and the range-for has already cached that container's
-// end(). For a node-based X -- std::set -- erasing invalidates only the erased
-// element, and m is always composite while p is not, so the cached end()
-// survives. For a vector-backed X -- std::flat_set -- every erase shifts the
-// tail and the cached end() is stale from the first sift onwards. MSVC's
-// _ITERATOR_DEBUG_LEVEL=2 rejects the comparison outright ("vector iterators
-// incompatible", <vector>:203); libstdc++ has no such check, so the MinGW
-// legs walk past the real end and segfault, and the Linux legs read
-// still-allocated memory and pass.
-//
-// The contains() guard restores what iterating the shrinking container gave
-// for free: p skips values already sifted out. Without it the snapshot also
-// offers composite p, whose multiples are all sifted already -- the same
-// result for strictly more work.
+// Iterate a snapshot and guard with contains(): sift() erases, which invalidates a vector-backed X's cached end().
 template<class X>
 auto sift_primes0(std::size_t n)
 {

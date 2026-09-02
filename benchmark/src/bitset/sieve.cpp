@@ -3,13 +3,13 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <opt/bitset/sieve.hpp>         // filter_twins, sift_primes
+#include <benchmark/benchmark.h>                  // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN
+#include <opt/bitset/sieve.hpp>                   // filter_twins, sift_primes
+#include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
+#include <xstd/bits/bitset.hpp>                   // bitset
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/bits/bitset.hpp>              // bitset
-#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
-#include <benchmark/benchmark.h>        // DoNotOptimize, BENCHMARK_TEMPLATE1, BENCHMARK_MAIN
 
 constexpr auto N = 10'000uz;
 

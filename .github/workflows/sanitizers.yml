@@ -20,10 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # Every leg on every rung its compiler fills. Leak detection is on; the
-  # local ASan leg this replaced ran with detect_leaks=0.
-  #
-  # The ASan libc++ leg was dropped while the library used range adaptors
-  # libc++ lacks. It no longer uses them, so all fifteen legs run.
+  # Every leg on every rung, leak detection on; all fifteen run now that the missing range adaptors are unused.
   sanitizers:
     uses: rhalbersma/cpp-ci/.github/workflows/sanitizers.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1

@@ -6,28 +6,18 @@
 #ifndef XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
 #define XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
 
+#include <boost/dynamic_bitset.hpp>                // dynamic_bitset
+#include <xstd/bits/ranges/array_view.hpp>         // find, view
+#include <xstd/bits/ranges/set_view.hpp>           // find, view
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
-#include <xstd/bits/ranges/set_view.hpp> // find, view
-#include <xstd/bits/ranges/array_view.hpp> // find, view
-#include <boost/dynamic_bitset.hpp>     // dynamic_bitset
-#include <algorithm>                    // find_if, min
-#include <cassert>                      // assert
-#include <compare>                      // strong_ordering
-#include <cstddef>                      // std::size_t
-#include <ranges>                       // find_if, min
+#include <algorithm>                               // find_if, min
+#include <cassert>                                 // assert
+#include <compare>                                 // strong_ordering
+#include <cstddef>                                 // std::size_t
+#include <ranges>                                  // find_if, min
                                         // iota, reverse
 
-// boost::dynamic_bitset<> now provides its own member begin()/end() (added
-// upstream after this ADL customization was originally written), which
-// always take priority over an ADL free function of the same name in
-// ordinary range-for and std::ranges algorithms alike - so an ADL
-// customization declared in namespace boost is liable to silently stop
-// being used the moment Boost adds a same-named member. Specializing
-// xstd::ranges::set_find here instead avoids that: unlike ADL,
-// template specialization matching considers specializations visible
-// before the point of use, wherever declared, and nothing
-// boost::dynamic_bitset<> adds to its own namespace or its own members can
-// shadow it.
+// Specializing set_find rather than using ADL: dynamic_bitset's own members would silently shadow a same-named free function.
 namespace xstd::ranges {
 
 template<xstd::unsigned_integer Block, class Allocator>
@@ -57,17 +47,7 @@ struct set_find<boost::dynamic_bitset<Block, Allocator>>
         }
 };
 
-// boost::dynamic_bitset<> may add its own <=> upstream at some point (as it
-// already did for begin()/end() - see set_find<> above), with no guarantee its
-// semantics would match std::set<int>'s ordering (the same concern as
-// std::bitset<N> - see set_set_compare<Bits>'s primary template). Opt in to the
-// safe, iteration-based ordering explicitly rather than risk inheriting
-// whatever a future native <=> decides to mean. This is what
-// set_view<boost::dynamic_bitset<...>>::operator<=> uses; unlike set_find<>, this
-// isn't reachable via infix x <=> y - boost::dynamic_bitset<> is a real
-// (non-std) namespace so an ADL operator<=> here would be legal, but
-// ordering isn't unambiguous enough to be worth adding one - use
-// set_view(x) <=> set_view(y).
+// Opt in to the iteration-based ordering rather than risk inheriting whatever a future native <=> decides to mean.
 template<xstd::unsigned_integer Block, class Allocator>
 struct set_compare<boost::dynamic_bitset<Block, Allocator>>
 {
@@ -79,11 +59,7 @@ struct set_compare<boost::dynamic_bitset<Block, Allocator>>
 
 }       // namespace xstd::ranges
 
-// Same reasoning as set_find above, for the array-of-bool
-// interpretation: boost::dynamic_bitset<> already has operator[] for every
-// index, so this specialization is trivial - it exists purely so a future
-// upstream begin()/end()/at() addition can't shadow it, same as set_find<>
-// above.
+// Same reasoning as set_find above, for the array-of-bool reading: trivial, and unshadowable by a future upstream member.
 namespace xstd::ranges {
 
 template<xstd::unsigned_integer Block, class Allocator>

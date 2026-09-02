@@ -20,12 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # MSVC's /analyze, in the role clang-tidy.yml fills for Clang. New here: the
-  # analyser has never been pointed at this library.
-  #
-  # All three rungs. /analyze is a compiler flag rather than a separate
-  # binary, so its legs compile the whole tree; the 2022 one was dropped while
-  # <flat_set> made that fail before the analyser reached the code, and the
-  # tests probe for the header now.
+  # MSVC's /analyze, in the role clang-tidy.yml fills for Clang; all three rungs, the flag compiling the whole tree.
   msvc_analyze:
     uses: rhalbersma/cpp-ci/.github/workflows/msvc-analyze.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1

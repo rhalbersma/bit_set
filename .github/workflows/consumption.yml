@@ -20,27 +20,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  # The fifteenth stub, and the last to arrive. The shared workflow could not
-  # express this library at all before cpp-ci v0.4.0, which added the two
-  # inputs below, nor correctly before v0.4.1: v0.4.0 handed the consumers
-  # vcpkg's toolchain file, which puts a project with no vcpkg.json of its
-  # own into classic mode, looking in a global installed/ tree the manifest
-  # install never wrote to. This repository is what found that, on the first
-  # run of the stub. Both inputs default to off for the callers that need
-  # neither.
+  # The last stub to arrive: the shared workflow could not express this library before cpp-ci v0.4.1.
   consumption:
     uses: rhalbersma/cpp-ci/.github/workflows/consumption.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
     with:
-      # CMakeLists.txt does an unconditional
-      # find_package(boost_hash2 CONFIG REQUIRED), so even the
-      # -DBUILD_TESTING=OFF configure needs vcpkg here - and so does each of
-      # the three consumers, since the installed package find_dependency's it
-      # straight back.
+      # CMakeLists.txt find_package()s boost_hash2 unconditionally, so every configure here needs vcpkg.
       vcpkg: true
-      # The same revision CMakeLists.txt pins for its FetchContent fallback.
-      # An installed xstd rather than that fallback is what the find_package
-      # model actually requires: install(EXPORT) cannot export a FetchContent
-      # build tree, so without this the package this library installs is
-      # invalid and the consumer fails to configure against it.
+      # The revision CMakeLists.txt pins; install(EXPORT) cannot export a FetchContent build tree, so an installed xstd is required.
       dependency_repos: |
         https://github.com/rhalbersma/xstd.git 42ab0d409fc9118ea0dc8846508ea62e97b90c7e

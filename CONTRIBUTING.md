@@ -22,6 +22,40 @@ This repository enforces its quality bar through CI rather than through review d
 
   Write a conditional across lines rather than packing it onto one. gcov counts per line, so a single-line `if`/`else` can only read as wholly covered or wholly uncovered, and a half-tested one reads as covered.
 
+## Test layout and naming
+
+The test tree mirrors the header tree, and `test/CMakeLists.txt` fails configuration if it ever stops doing so: `include/xstd/bits/ranges/set_view.hpp` is answered by `test/src/bits/ranges/set_view.cpp`. The rule runs one way — every public header needs a source, `detail/` excepted, being machinery rather than interface. It does not forbid a source that answers no header, and some directories are exactly that.
+
+**A directory whose name is a header's is that header's tests. A `std_`-prefixed one is a contract's.** The sweeps in `bits/std_set/` and `bits/std_bitset/` are not tests of `std::set` or `std::bitset`, and not tests of ours either: each runs one Standard clause's requirements — `[set]`, `[bitset]` — over every type claiming to meet it, ours and the standard library's and Boost's alike, so the claim is checked against the same primitives on all of them. `std_` names which clause; it does not name a type. `bits/std_array/` follows for the sequence contract.
+
+That prefix is also what keeps `bits/std_bitset/` from being read as more tests of `xstd::bits::bitset` — those are in `bits/bitset.cpp`, one mirrored source, sitting right beside it. Note the near-neighbour it does *not* mean either: `bits/ext/std/bitset.cpp` (`Ext` / `Std` / `Bitset`) tests the adaptor that teaches `std::bitset` to be viewed, one header, and is mirrored like any other.
+
+`bits/block/` carries no prefix on purpose. Block is this library's own named requirement rather than a Standard clause, so there is no `std_` to claim.
+
+**In a clause sweep no implementation gets a shorter name than another.** Every candidate is spelled with its namespace — `std::set`, `std::flat_set`, `xstd::bit_finite_set`; `std::bitset`, `boost::dynamic_bitset`, `xstd::bitset` — and these sources carry no `using namespace xstd;`. Ours is one implementation among those being checked and gets no name lookup it has not earned: an unqualified `bit_finite_set` sitting in a list where `std::flat_set` had to be spelled out makes ours read as the local default, which is exactly the thing a conformance sweep must not assume. The harness directives (`test`, `test::set`, `test::bitset`) stay — they name the checking primitives, which are applied identically to every candidate, so they privilege nobody.
+
+**The harness sits outside the library, on purpose.** It is a top-level `namespace test`, reached as `<test/...>`, with no `xstd` above it. Nested inside `xstd` — where it used to be — an unqualified name in a harness header falls back to the library and finds *our* overload for every candidate, `std::` ones included, at which point the sweep quietly stops comparing implementations and starts confirming ours. That is not a discipline to keep up; there is now no enclosing namespace to fall back to.
+
+It was not hypothetical. `set/composable.hpp` wrote `ranges::views::set_union` meaning range-v3's, and got it only because that header happens to sort before the one declaring `xstd::ranges` in all three sources that include it. Re-order the includes and it would have found `xstd::ranges` instead and stopped compiling. It says `::ranges` now, and the arrangement no longer depends on either.
+
+Boost is worth knowing here, because it splits both ways: Boost.Unordered puts its harness in a top-level `namespace test` with no `using namespace boost` anywhere, while Boost.Container and Abseil nest theirs in the library namespace — and Boost.Container's tests show the cost, naming its own container unqualified 45 times against an always-spelled-out `std::`.
+
+**Suites nest directory-wise.** One `BOOST_AUTO_TEST_SUITE` per path component under `test/src/`, the file stem included, each component PascalCased. That makes the suite path the CTest target id, spelled the other way round, so a failing target says where to look:
+
+| source | target | suites |
+| :--- | :--- | :--- |
+| `test/src/bits/ranges/set_view.cpp` | `test.bits.ranges.set_view` | `Ranges` / `SetView` |
+| `test/src/bits/ext/std/bitset.cpp` | `test.bits.ext.std.bitset` | `Ext` / `Std` / `Bitset` |
+| `test/src/bits/std_set/o2.cpp` | `test.bits.std_set.o2` | `StdSet` / `O2` |
+
+With one subtraction: `bits` is every source's first component, so as a suite it distinguishes nothing and is left out. `test/src/bits.cpp` is what remains — the umbrella over the whole library, and the one source whose cases sit in the master suite. Should this library ever grow a second top-level directory, `Bits` comes back at the front of every row above.
+
+An umbrella source takes the stem like any other, so `test/src/bits/ranges.cpp` is `Ranges`, alongside the `Ranges` / `SetView` of the directory beside it. Nothing else goes in a suite name: the tier a sweep runs at (constant, linear, quadratic) belongs in its case names, not in place of the directory it lives in.
+
+**Cases are declarative.** A case name is a sentence about what holds, with the thing under test as the implied subject — `TheOrderingsAgreeInsideASingleBlock`, `AWidthInTheTypeIsAStaticExtent`, `DefaultConstructionYieldsAnEmptySet`. A name that only says which members were exercised (`Observers`, `Operators`, `Constructors`) names where the test looked rather than what it claims, and reads as nothing at all in a failure log. A conformance check may be the predicate itself, since that already is the claim: `IsRegular`, `IsTrivial`, `IsABitSequence`.
+
+This is [xstd](https://github.com/rhalbersma/xstd)'s convention as well, including the subtraction: `Ints` goes the same way once xstd splits into xstd-ints and xstd-core and `ints/` stops distinguishing anything. The two libraries' test trees are meant to read the same way.
+
 One check runs without being required:
 
 - **`clang-format` does not run on a PR.** This repository has no `.clang-format`, so [its workflow](.github/workflows/clang-format.yml) is dispatch-only; enabling it means adopting a style and reformatting the tree.

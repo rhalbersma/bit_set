@@ -5,8 +5,7 @@
 
 name: Coverage
 
-# id-token for Codecov's tokenless upload; the shared workflow cannot exceed
-# what is granted here.
+# id-token for Codecov's tokenless upload; the shared workflow cannot exceed what is granted here.
 permissions:
   contents: read
   id-token: write
@@ -20,27 +19,18 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  # The Codecov CLI only queues an upload, so a report dropped on their side
-  # greys the badge with every leg green; the daily re-upload self-heals that.
+  # The Codecov CLI only queues an upload, so the daily re-upload self-heals a report dropped on their side.
   schedule:
     - cron: '30 3 * * *'
   workflow_dispatch:
 
 jobs:
   coverage:
-    # Ahead of v0.8.1, for the exclusion of the unwind resume gcov records on
-    # a bare closing brace. Without it five closing braces are permanently
-    # short of covered and the 100 below can never be met.
+    # Ahead of v0.8.1, for the unwind-resume exclusion on a bare closing brace, without which 100 can never be met.
     uses: rhalbersma/cpp-ci/.github/workflows/coverage.yml@3d88e0781e1be9e82d414d263f03b9534a11828d # main
     with:
-      # benchmark/ as well as the shared default: unlike xstd, this
-      # repository ships a benchmark tree, which measures the library rather
-      # than being part of it and has no business in its coverage figure.
+      # benchmark/ as well: it measures the library rather than being part of it.
       exclude: "test/.* benchmark/.* build/.*"
-      # Enforced, not just reported. Every line and branch of the library that
-      # a test can reach is reached; what cannot be is written so that it is
-      # not a line of its own, or excluded by the shared workflow for holding
-      # no code. Code that arrives without a test now fails this job, which is
-      # the point: commenting the untested part out is the way to land it.
+      # Enforced, not reported: code arriving without a test fails this job, and commenting the untested part out is how to land it.
       fail_under_line: 100
       fail_under_branch: 100

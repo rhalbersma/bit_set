@@ -5,11 +5,7 @@
 
 name: Scorecard
 
-# Read-only at workflow level. The write grants the analysis needs are on the
-# job below rather than here: the OpenSSF webapp that ingests published
-# results verifies a workflow file first, and for a job that calls a reusable
-# workflow the path in the OIDC certificate names the shared workflow, not
-# this stub - so this placement is least privilege rather than a requirement.
+# Read-only at workflow level; the analysis's write grants sit on the job, which is least privilege rather than a requirement.
 permissions:
   contents: read
 

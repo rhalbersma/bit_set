@@ -8,9 +8,7 @@ find_package(Boost CONFIG REQUIRED)
 find_package(benchmark REQUIRED)
 find_package(fmt REQUIRED)
 
-# clang-cl reports CXX_COMPILER_ID Clang but only understands its MSVC-style
-# driver flags, not GNU-style ones like -pedantic-errors (see test/
-# CMakeLists.txt's identical check).
+# clang-cl reports CXX_COMPILER_ID Clang but understands only MSVC-style driver flags.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     set(bit_set_is_clang_cl ON)
 else()
@@ -76,8 +74,7 @@ set(cxx_compile_options_optimization
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -march=native
     >
-    # MinGW emits 32-byte aligned stores to a 16-byte aligned stack; the assembler rewrites
-    # them unaligned, keeping 256-bit vectors (#54, GCC PR target/54412, binutils 2.38+).
+    # MinGW emits 32-byte stores to a 16-byte aligned stack; the assembler rewrites them unaligned (#54, GCC PR target/54412).
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
         -Wa$<COMMA>-muse-unaligned-vector-move
     >
@@ -85,22 +82,7 @@ set(cxx_compile_options_optimization
 
 get_property(bit_set_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
-# Required in every configuration, Debug included. #47 withheld it from Debug
-# to test whether -Wa,-mbig-obj combined with -g was what makes the MinGW
-# Debug legs segfault. Both halves of that experiment answered at once, and
-# the answer is no:
-#
-#   GCC 15 Debug    assembler: 'file too big' on test/src/set/o0.cpp.obj
-#   GCC 17-SVN Debug  same, on set/o0, set/o2 and bitset/o0
-#   GCC 16 Debug    assembles, then segfaults in exactly the four tests the
-#                   flag was suspected of breaking - test.bitset.o1,
-#                   test.set.o0, test.set.o2, test.set.sieve
-#
-# Two rungs out of three cannot even assemble these objects without the flag,
-# so it is load-bearing. The third assembles without it and crashes anyway,
-# so the flag is not what causes the crash. -g1 and split DWARF were the
-# remedies for the interaction hypothesis; there is no interaction to remedy.
-# The MinGW Debug segfaults remain open and are unrelated to this line.
+# Load-bearing in every configuration: without it two of three MinGW rungs cannot assemble these objects at all (#47).
 set(cxx_compile_options_mbig_obj
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
 	    -Wa,-mbig-obj
@@ -140,24 +122,7 @@ foreach(t ${targets})
         ${cxx_compile_options_mbig_obj}
     )
 
-    # Release only. A benchmark measures the library rather than verifying
-    # it, and an unoptimised measurement is meaningless anyway - which is why
-    # #32 moved every leg to Release in the first place. Registering it in
-    # Debug costs 25 minutes per Windows leg to learn nothing: the MSVC STL's
-    # _ITERATOR_DEBUG_LEVEL=2 makes the sieve's repeated flat_set erase about
-    # 60x slower, and benchmark.set.sieve then trips ctest's 1500s per-test
-    # timeout.
-    #
-    # Two spellings, because neither works on both generator kinds:
-    #
-    # - Multi-config (the Visual Studio generator) leaves CMAKE_BUILD_TYPE
-    #   empty, so an if() on it would register these in every configuration,
-    #   Debug included. CONFIGURATIONS is the only thing that discriminates.
-    # - Single-config (Ninja, Makefiles) does set CMAKE_BUILD_TYPE, but
-    #   CONFIGURATIONS is matched by ctest against the -C it was given, and
-    #   the GCC, Clang and MinGW legs invoke a bare "ctest --test-dir build"
-    #   with no -C. There it matches nothing, and the benchmarks would
-    #   silently stop running anywhere at all rather than in Debug only.
+    # Release only, and by CONFIGURATIONS rather than if(): neither spelling alone works on both generator kinds (#32).
     if(bit_set_is_multi_config)
         add_test(NAME ${target_id} CONFIGURATIONS Release COMMAND ${target_id})
     elseif(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")

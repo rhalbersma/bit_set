@@ -20,10 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # New here: this repository had no workflow linting of its own. With almost
-  # every workflow reduced to a "uses" stub there is much less left to get
-  # wrong, but that cuts both ways - a typo in an input name or a broken pin
-  # is now most of what a stub can contain. No inputs: the defaults lint
-  # .github/workflows with shellcheck on.
+  # New here; with almost every workflow a "uses" stub, a typo in an input name is most of what can go wrong.
   actionlint:
     uses: rhalbersma/cpp-ci/.github/workflows/actionlint.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
