@@ -33,6 +33,15 @@ struct array
 
         std::array<Block, num_blocks> m_bits;
 
+        // For xstd::ranges::block_access, which the two orderings use to compare a
+        // word at a time. num_blocks above is the count; this is the block. The
+        // padding above position N stays zero, which operator== below already
+        // relies on, and which is what makes comparing whole blocks meaningful.
+        [[nodiscard]] constexpr Block block(std::size_t i) const noexcept
+        {
+                return m_bits[i];
+        }
+
         [[nodiscard]] friend constexpr bool operator==(array const& x [[maybe_unused]], array const& y [[maybe_unused]]) noexcept
         {
                 if constexpr (N == 0) {

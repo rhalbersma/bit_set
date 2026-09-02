@@ -86,6 +86,7 @@ target_sources(
         include/xstd/bits/ranges.hpp
         include/xstd/bits/ranges/array_view.hpp
         include/xstd/bits/ranges/bit_extent.hpp
+        include/xstd/bits/ranges/block_access.hpp
         include/xstd/bits/ranges/set_view.hpp
 )
 

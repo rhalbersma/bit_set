@@ -65,6 +65,12 @@ struct bit_array
 {
         detail::bits::array<N, Block> m_bits;
 
+        // xstd::ranges::block_access, so the two orderings can compare a word at a
+        // time instead of an element at a time. ADL rather than a specialization
+        // because this type is ours to add hidden friends to.
+        [[nodiscard]] friend constexpr std::size_t block_count(const bit_array&) noexcept { return detail::bits::array<N, Block>::num_blocks; }
+        [[nodiscard]] friend constexpr Block block_at(const bit_array& c, std::size_t i) noexcept { return c.m_bits.block(i); }
+
         [[nodiscard]] friend constexpr std::size_t find_first(const bit_array&)                  noexcept { return 0UZ;         }
         [[nodiscard]] friend constexpr std::size_t find_last (const bit_array&)                  noexcept { return N;           }
         [[nodiscard]] friend constexpr std::size_t find_at   (const bit_array& c, std::size_t n) noexcept { return c.m_bits[n]; }

@@ -66,6 +66,12 @@ class bitset
         // side on which one is "the" ordering.
         detail::bits::array<N, Block> m_bits{};
 
+        // xstd::ranges::block_access, so the two orderings can compare a word at a
+        // time instead of an element at a time. ADL rather than a specialization
+        // because this type is ours to add hidden friends to.
+        [[nodiscard]] friend constexpr std::size_t block_count(const bitset&) noexcept { return detail::bits::array<N, Block>::num_blocks; }
+        [[nodiscard]] friend constexpr Block block_at(const bitset& c, std::size_t i) noexcept { return c.m_bits.block(i); }
+
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bitset const* v) noexcept
         {
