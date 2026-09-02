@@ -128,7 +128,17 @@ struct bit_array
         template<class Self>
         using result_t = std::conditional_t<std::is_const_v<std::remove_reference_t<Self>>, const_reference, reference>;
 
-        [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept -> result_t<decltype(self)> { assert(n < N); return { self, n };                             }
+        // The assert is on its own line, as set_iterator's operator* and operator++
+        // already are: the coverage job drops assert branches by matching the start
+        // of the line, so an assert sharing a line with real code keeps its
+        // never-taken branch. This was the last one in the library sharing a line,
+        // and it went unnoticed while nothing indexed a bit_array at run time.
+        [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept -> result_t<decltype(self)>
+        {
+                assert(n < N);
+                return { self, n };
+        }
+
         [[nodiscard]] constexpr auto at(this auto&& self, size_type n) -> result_t<decltype(self)>
         {
                 if (n < N) {

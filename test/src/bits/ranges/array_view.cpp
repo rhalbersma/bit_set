@@ -80,6 +80,20 @@ BOOST_AUTO_TEST_CASE(APackedArrayAgreesWithItsOwnView)
         for (auto k = 0UZ; k < 8UZ; ++k) {
                 BOOST_CHECK_EQUAL(static_cast<bool>(view[k]), static_cast<bool>(packed[k]));
         }
+
+        // Both directions, through both the container's own proxy and the view's.
+        // Only the setting direction was exercised at first, which left the
+        // clearing half of bit_array's assign_at hook unreached -- the write hook
+        // is a single line, so the branch it holds is the container's to cover.
+        packed[1] = false;
+        BOOST_CHECK(not static_cast<bool>(packed[1]));
+        BOOST_CHECK(not static_cast<bool>(view[1]));
+
+        view[6] = false;
+        BOOST_CHECK(not static_cast<bool>(packed[6]));
+
+        view[0] = true;
+        BOOST_CHECK(static_cast<bool>(packed[0]));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
