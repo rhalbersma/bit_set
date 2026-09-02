@@ -160,6 +160,21 @@ What the essay does not say is anything about `operator&` on the proxy or about
 `const_reference`. Those are libc++'s own choices, visible in the table above but
 unargued there.
 
+There is an obvious objection to `set_view` existing at all: the 1-bits are
+already reachable through the sequence reading, as `find(first, last, true)`
+repeatedly, and libc++ makes exactly that fast. The objection is right about the
+primitive -- `set_find<Bits>::next` *is* that search, and `__find_bool` is its
+word-at-a-time implementation. What it misses is what surfacing the primitive as
+a search rather than as iteration costs:
+
+- the position comes back only by subtracting from `begin()`
+- the value type is `bool`, so the elements iterated are not the keys
+- there is no `[set]` interface over it -- no `lower_bound`, no `contains`, no
+  ordering by key
+- and stepping back to the *previous* 1-bit is not a `find` at all
+
+`set_view` is what those four cost, paid once and in one place.
+
 Open: whether `is_subset_of`, `is_proper_subset_of` and `intersects` stay members
 of `set_view`. They are not in `[set]`, and lazy set intersection and union may be
 the better home for what they do -- and would be the place to capture the rest of
