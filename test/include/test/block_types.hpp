@@ -19,7 +19,7 @@
 namespace test {
 
 template<class Block>
-inline constexpr auto digits_v = static_cast<std::size_t>(numeric_limits<Block>::digits);
+inline constexpr auto digits_v = static_cast<std::size_t>(xstd::numeric_limits<Block>::digits);
 
 // Every Block the library is instantiated over.
 //
