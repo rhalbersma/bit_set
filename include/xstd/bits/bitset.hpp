@@ -30,7 +30,8 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 }       // namespace xstd
 
 #include <xstd/bits/detail/array.hpp>           // array
-#include <xstd/bits/ranges/set_view.hpp> // find
+#include <xstd/bits/ranges/array_view.hpp> // array_find
+#include <xstd/bits/ranges/set_view.hpp>   // set_find, set_compare
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
 #include <algorithm>                    // lexicographical_compare_three_way
@@ -346,6 +347,21 @@ struct set_find<xstd::bitset<N, Block>>
                         return c[i];
                 });
         }
+};
+
+// The other reading, and trivial for the same reason it is trivial in
+// ext/std/bitset.hpp: operator[] already answers every position, so unlike the
+// set reading there is no bit-scanning to arrange. Without this xstd::bitset
+// would be readable as a set and not as a sequence, where std::bitset -- the
+// type it reproduces -- is readable as both. The whole claim of this header is
+// that reimplementing std::bitset over detail::bits::array gives up nothing, and
+// a missing reading is something given up.
+template<std::size_t N, xstd::unsigned_integer Block>
+struct array_find<xstd::bitset<N, Block>>
+{
+        [[nodiscard]] static constexpr std::size_t first(xstd::bitset<N, Block> const&) noexcept { return 0UZ; }
+        [[nodiscard]] static constexpr std::size_t last (xstd::bitset<N, Block> const&) noexcept { return N;   }
+        [[nodiscard]] static constexpr bool         at  (xstd::bitset<N, Block> const& c, std::size_t n) noexcept { return c[n]; }
 };
 
 // xstd::bitset has no <=> of its own either (by the same design choice), so
