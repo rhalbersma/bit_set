@@ -3,15 +3,15 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_THREE_WAY_INVARIANT_HPP
-#define XSTD_TEST_THREE_WAY_INVARIANT_HPP
+#ifndef TEST_THREE_WAY_INVARIANT_HPP
+#define TEST_THREE_WAY_INVARIANT_HPP
 
 #include <algorithm>                // lexicographical_compare_three_way
 #include <compare>                  // strong_ordering
 #include <concepts>                 // same_as
 #include <ranges>                   // begin, end, input_range, range_value_t
 
-namespace xstd::test {
+namespace test {
 
 // The invariant the block-streaming path has to keep: a type's operator<=> means
 // the same as comparing its own iterator range lexicographically. Whenever the
@@ -48,6 +48,6 @@ template<std::ranges::input_range C>
         );
 }
 
-} // namespace xstd::test
+} // namespace test
 
-#endif // XSTD_TEST_THREE_WAY_INVARIANT_HPP
+#endif // TEST_THREE_WAY_INVARIANT_HPP

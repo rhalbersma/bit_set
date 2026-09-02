@@ -3,18 +3,18 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_SET_ORDERING_HPP
-#define XSTD_TEST_SET_ORDERING_HPP
+#ifndef TEST_SET_ORDERING_HPP
+#define TEST_SET_ORDERING_HPP
 
 #include <xstd/bits/ranges/set_view.hpp>  // set_view
-#include <xstd/test/bitset/factory.hpp>   // make_bitset
+#include <test/bitset/factory.hpp>        // make_bitset
 #include <boost/test/unit_test.hpp>       // BOOST_CHECK_EQUAL
 #include <algorithm>                      // lexicographical_compare
 #include <compare>                        // strong_ordering
 #include <cstddef>                        // size_t
 #include <set>                            // set
 
-namespace xstd::test::set {
+namespace test::set {
 
 // What the set reading of a bitset must order like, checked against the
 // standard container that defines the relation rather than against a
@@ -36,8 +36,8 @@ auto ordering_agrees_with_std_set(std::size_t universe = 4) -> void
         auto const bound = 1UZ << universe;
         for (auto i = 0UZ; i < bound; ++i) {
                 for (auto j = 0UZ; j < bound; ++j) {
-                        auto x = xstd::test::bitset::make_bitset<Bits>(universe);
-                        auto y = xstd::test::bitset::make_bitset<Bits>(universe);
+                        auto x = test::bitset::make_bitset<Bits>(universe);
+                        auto y = test::bitset::make_bitset<Bits>(universe);
                         auto kx = std::set<std::size_t>();
                         auto ky = std::set<std::size_t>();
 
@@ -60,6 +60,6 @@ auto ordering_agrees_with_std_set(std::size_t universe = 4) -> void
         }
 }
 
-} // namespace xstd::test::set
+} // namespace test::set
 
-#endif // XSTD_TEST_SET_ORDERING_HPP
+#endif // TEST_SET_ORDERING_HPP

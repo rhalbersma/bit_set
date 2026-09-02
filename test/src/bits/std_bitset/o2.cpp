@@ -6,8 +6,8 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/test/bitset/exhaustive.hpp>        // all_singleton_sets, all_singleton_set_pairs, all_doubleton_sets, any_value, empty_set, full_set
-#include <xstd/test/bitset/primitives.hpp>        // mem_bit_and_assign, mem_bit_or_assign, mem_bit_xor_assign, mem_bit_minus_assign,
+#include <test/bitset/exhaustive.hpp>             // all_singleton_sets, all_singleton_set_pairs, all_doubleton_sets, any_value, empty_set, full_set
+#include <test/bitset/primitives.hpp>             // mem_bit_and_assign, mem_bit_or_assign, mem_bit_xor_assign, mem_bit_minus_assign,
                                         // mem_shift_left_assign, mem_shift_right_assign, mem_shift_left, mem_shift_right,
                                         // mem_equal_to, mem_compare_three_way, mem_is_subset_of, mem_is_proper_subset_of, mem_intersects,
                                         // op_bit_and, op_bit_or, op_bit_xor, op_bit_minus,
@@ -34,7 +34,7 @@ using Types = std::tuple
 #endif
 >;
 
-using namespace xstd::test::bitset;
+using namespace test::bitset;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(TheCompoundAssignmentsAndShiftsHoldOverEverySingletonPair, T, Types)
 {

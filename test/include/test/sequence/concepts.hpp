@@ -3,15 +3,15 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_SEQUENCE_CONCEPTS_HPP
-#define XSTD_TEST_SEQUENCE_CONCEPTS_HPP
+#ifndef TEST_SEQUENCE_CONCEPTS_HPP
+#define TEST_SEQUENCE_CONCEPTS_HPP
 
-#include <xstd/test/value_reference.hpp> // value_reference
+#include <test/value_reference.hpp>      // value_reference
 #include <concepts>                      // regular, totally_ordered
 #include <iterator>                      // random_access_iterator
 #include <ranges>                        // random_access_range
 
-namespace xstd::test::sequence {
+namespace test::sequence {
 
 // The interface a bit-packed sequence shares with the sequence it packs. Named
 // here rather than restated per container, so the umbrella can say the two
@@ -24,6 +24,6 @@ concept bit_sequence =
     and std::random_access_iterator<typename C::iterator>
     and value_reference<typename C::const_reference>;
 
-} // namespace xstd::test::sequence
+} // namespace test::sequence
 
-#endif // XSTD_TEST_SEQUENCE_CONCEPTS_HPP
+#endif // TEST_SEQUENCE_CONCEPTS_HPP

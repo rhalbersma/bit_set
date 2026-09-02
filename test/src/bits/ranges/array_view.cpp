@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bits/ranges/array_view.hpp>        // array_view, array_range
-#include <xstd/test/sequence/ordering.hpp>        // ordering_agrees_with_vector_bool
+#include <test/sequence/ordering.hpp>             // ordering_agrees_with_vector_bool
 #include <xstd/bits/bit_array.hpp>                // bit_array
 #include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
 #include <xstd/bits/bitset.hpp>                   // array_find over xstd::bitset
@@ -105,9 +105,9 @@ BOOST_AUTO_TEST_CASE(APackedArrayAgreesWithItsOwnView)
 // dynamic one exercises the element-wise route at all now.
 BOOST_AUTO_TEST_CASE(EveryViewedTypeOrdersLikeAVectorBool)
 {
-        xstd::test::sequence::ordering_agrees_with_vector_bool<xstd::bitset<8>>();
-        xstd::test::sequence::ordering_agrees_with_vector_bool<std::bitset<8>>();
-        xstd::test::sequence::ordering_agrees_with_vector_bool<boost::dynamic_bitset<>>();
+        test::sequence::ordering_agrees_with_vector_bool<xstd::bitset<8>>();
+        test::sequence::ordering_agrees_with_vector_bool<std::bitset<8>>();
+        test::sequence::ordering_agrees_with_vector_bool<boost::dynamic_bitset<>>();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

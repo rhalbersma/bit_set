@@ -3,12 +3,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_DYNAMIC_HPP
-#define XSTD_TEST_DYNAMIC_HPP
+#ifndef TEST_DYNAMIC_HPP
+#define TEST_DYNAMIC_HPP
 
 #include <utility>      // declval
 
-namespace xstd::test {
+namespace test {
 
 template<class T>
 concept dynamic = requires(T&& t)
@@ -17,6 +17,6 @@ concept dynamic = requires(T&& t)
         t.resize(std::declval<typename T::size_type>(), std::declval<bool>());
 };
 
-} // namespace xstd::test
+} // namespace test
 
-#endif // XSTD_TEST_DYNAMIC_HPP
+#endif // TEST_DYNAMIC_HPP

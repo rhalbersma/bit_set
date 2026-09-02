@@ -3,22 +3,22 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_SEQUENCE_ORDERING_HPP
-#define XSTD_TEST_SEQUENCE_ORDERING_HPP
+#ifndef TEST_SEQUENCE_ORDERING_HPP
+#define TEST_SEQUENCE_ORDERING_HPP
 
 #include <xstd/bits/ranges/array_view.hpp> // array_view
-#include <xstd/test/bitset/factory.hpp>    // make_bitset
+#include <test/bitset/factory.hpp>         // make_bitset
 #include <boost/test/unit_test.hpp>        // BOOST_CHECK_EQUAL
 #include <algorithm>                       // lexicographical_compare
 #include <compare>                         // strong_ordering
 #include <cstddef>                         // size_t
 #include <vector>                          // vector
 
-namespace xstd::test::sequence {
+namespace test::sequence {
 
 // What the sequence reading of a bitset must order like, checked against the
 // standard container that defines the relation rather than against a restatement
-// of it. The set counterpart is xstd/test/set/ordering.hpp, and this exists for
+// of it. The set counterpart is test/set/ordering.hpp, and this exists for
 // the same reason plus one more: array_view reaches its ordering by two routes
 // now -- a word at a time where the viewed type says where its blocks are, and
 // element by element where it does not -- and both have to give this answer.
@@ -30,8 +30,8 @@ auto ordering_agrees_with_vector_bool(std::size_t universe = 4) -> void
         auto const bound = 1UZ << universe;
         for (auto i = 0UZ; i < bound; ++i) {
                 for (auto j = 0UZ; j < bound; ++j) {
-                        auto x = xstd::test::bitset::make_bitset<Bits>(universe);
-                        auto y = xstd::test::bitset::make_bitset<Bits>(universe);
+                        auto x = test::bitset::make_bitset<Bits>(universe);
+                        auto y = test::bitset::make_bitset<Bits>(universe);
 
                         // Written through the view, in the sequence vocabulary,
                         // which is the interface under test rather than the
@@ -65,6 +65,6 @@ auto ordering_agrees_with_vector_bool(std::size_t universe = 4) -> void
         }
 }
 
-} // namespace xstd::test::sequence
+} // namespace test::sequence
 
-#endif // XSTD_TEST_SEQUENCE_ORDERING_HPP
+#endif // TEST_SEQUENCE_ORDERING_HPP

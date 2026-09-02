@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_SET_COMPOSABLE_HPP
-#define XSTD_TEST_SET_COMPOSABLE_HPP
+#ifndef TEST_SET_COMPOSABLE_HPP
+#define TEST_SET_COMPOSABLE_HPP
 
 #include <boost/test/unit_test.hpp>             // BOOST_CHECK, BOOST_CHECK_EQUAL
 #include <range/v3/view/set_algorithm.hpp>      // set_difference, set_intersection, set_symmetric_difference, set_union
@@ -12,7 +12,7 @@
 #include <ranges>                               // to
                                                 // filter, transform
 
-namespace xstd::test::set::composable {
+namespace test::set::composable {
 
 struct includes
 {
@@ -31,7 +31,7 @@ struct set_union
         auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a | b; }) {
-                        BOOST_CHECK((a | b) == (ranges::views::set_union(a, b) | std::ranges::to<X>()));
+                        BOOST_CHECK((a | b) == (::ranges::views::set_union(a, b) | std::ranges::to<X>()));
                 }
         }
 };
@@ -42,7 +42,7 @@ struct set_intersection
         auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a & b; }) {
-                        BOOST_CHECK((a & b) == (ranges::views::set_intersection(a, b) | std::ranges::to<X>()));
+                        BOOST_CHECK((a & b) == (::ranges::views::set_intersection(a, b) | std::ranges::to<X>()));
                 }
         }
 };
@@ -53,7 +53,7 @@ struct set_difference
         auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a - b; }) {
-                        BOOST_CHECK((a - b) == (ranges::views::set_difference(a, b) | std::ranges::to<X>()));
+                        BOOST_CHECK((a - b) == (::ranges::views::set_difference(a, b) | std::ranges::to<X>()));
                 }
         }
 };
@@ -64,7 +64,7 @@ struct set_symmetric_difference
         auto operator()(const X& a, const X& b) const noexcept
         {
                 if constexpr (requires { a ^ b; }) {
-                        BOOST_CHECK((a ^ b) == (ranges::views::set_symmetric_difference(a, b) | std::ranges::to<X>()));
+                        BOOST_CHECK((a ^ b) == (::ranges::views::set_symmetric_difference(a, b) | std::ranges::to<X>()));
                 }
         }
 };
@@ -106,6 +106,6 @@ struct decrement_modulo
         }
 };
 
-} // namespace xstd::test::set::composable
+} // namespace test::set::composable
 
-#endif // XSTD_TEST_SET_COMPOSABLE_HPP
+#endif // TEST_SET_COMPOSABLE_HPP

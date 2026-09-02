@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <opt/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
-#include <xstd/test/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET
+#include <test/flat_set.hpp>                  // TEST_HAS_FLAT_SET
 #include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <fmt/format.h>                 // format
@@ -20,7 +20,7 @@ inline constexpr auto N = 100uz;
 
 using Types = std::tuple
 <       std::set<std::size_t>
-#ifdef XSTD_TEST_HAS_FLAT_SET
+#ifdef TEST_HAS_FLAT_SET
 ,       std::flat_set<std::size_t>
 #endif
 ,       xstd::bit_finite_set<N>

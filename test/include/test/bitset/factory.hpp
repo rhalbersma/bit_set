@@ -3,14 +3,14 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_BITSET_FACTORY_HPP
-#define XSTD_TEST_BITSET_FACTORY_HPP
+#ifndef TEST_BITSET_FACTORY_HPP
+#define TEST_BITSET_FACTORY_HPP
 
 #include <boost/dynamic_bitset_fwd.hpp> // dynamic_bitset
 #include <concepts>                     // unsigned_integral
 #include <cstddef>                      // size_t
 
-namespace xstd::test::bitset {
+namespace test::bitset {
 
 template<class T>
 struct factory
@@ -44,6 +44,6 @@ auto make_bitset(std::size_t num_bits, bool value = false)
         return factory<T>()(num_bits, value);
 }
 
-} // namespace xstd::test::bitset
+} // namespace test::bitset
 
-#endif // XSTD_TEST_BITSET_FACTORY_HPP
+#endif // TEST_BITSET_FACTORY_HPP

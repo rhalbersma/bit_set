@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // bit_extent, set_find, set_compare, array_find
-#include <xstd/test/dynamic.hpp>                  // dynamic
+#include <test/dynamic.hpp>                       // dynamic
 #include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <algorithm>                              // lexicographical_compare
 #include <compare>                                // strong_ordering
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(BothReadingsAreReachable)
 // nothrow batteries the fixed-width bitsets pass do not apply to it at all.
 BOOST_AUTO_TEST_CASE(ItIsTheDynamicOne)
 {
-        static_assert(    xstd::test::dynamic<T>);
+        static_assert(    test::dynamic<T>);
         static_assert(not std::is_trivially_copyable_v<T>);
 }
 

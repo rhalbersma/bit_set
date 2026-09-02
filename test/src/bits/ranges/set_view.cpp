@@ -7,7 +7,7 @@
 #include <xstd/bits/bitset.hpp>                   // bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // set_find, set_compare over std::bitset
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // set_find, set_compare over boost::dynamic_bitset
-#include <xstd/test/set/ordering.hpp>             // ordering_agrees_with_std_set
+#include <test/set/ordering.hpp>                  // ordering_agrees_with_std_set
 #include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <bitset>                                 // bitset
 #include <concepts>                               // totally_ordered
@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE(TheViewedTypesAreTheOnesHoldingASetWithoutOfferingIt)
 // the one whose own <=> disagrees.
 BOOST_AUTO_TEST_CASE(EveryViewedTypeOrdersLikeAStdSet)
 {
-        xstd::test::set::ordering_agrees_with_std_set<std::bitset<8>>();
-        xstd::test::set::ordering_agrees_with_std_set<xstd::bitset<8>>();
-        xstd::test::set::ordering_agrees_with_std_set<boost::dynamic_bitset<>>();
+        test::set::ordering_agrees_with_std_set<std::bitset<8>>();
+        test::set::ordering_agrees_with_std_set<xstd::bitset<8>>();
+        test::set::ordering_agrees_with_std_set<boost::dynamic_bitset<>>();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

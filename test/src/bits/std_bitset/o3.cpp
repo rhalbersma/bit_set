@@ -6,8 +6,8 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/test/bitset/exhaustive.hpp>        // all_singleton_sets, all_doubleton_sets, all_triplet_sets, empty_set, full_set
-#include <xstd/test/bitset/primitives.hpp>        // mem_compare_three_way
+#include <test/bitset/exhaustive.hpp>             // all_singleton_sets, all_doubleton_sets, all_triplet_sets, empty_set, full_set
+#include <test/bitset/primitives.hpp>             // mem_compare_three_way
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
@@ -15,7 +15,7 @@
 BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(O3)
 
-using namespace xstd::test::bitset;
+using namespace test::bitset;
 
 using Types = std::tuple
 <       boost::dynamic_bitset<>

@@ -3,10 +3,10 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/test/set/composable.hpp>           // includes, set_difference, set_intersection, set_symmetric_difference, set_union
-#include <xstd/test/set/exhaustive.hpp>           // empty_set_pair
-#include <xstd/test/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET
-#include <xstd/test/set/primitives.hpp>           // constructor mem_swap,fn_swap, op_equal, op_not_equal_to,
+#include <test/set/composable.hpp>                // includes, set_difference, set_intersection, set_symmetric_difference, set_union
+#include <test/set/exhaustive.hpp>                // empty_set_pair
+#include <test/flat_set.hpp>                  // TEST_HAS_FLAT_SET
+#include <test/set/primitives.hpp>                // constructor mem_swap,fn_swap, op_equal, op_not_equal_to,
                                         // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal,
 #include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
@@ -18,12 +18,12 @@
 BOOST_AUTO_TEST_SUITE(StdSet)
 BOOST_AUTO_TEST_SUITE(O0)
 
-using namespace xstd::test;
-using namespace xstd::test::set;
+using namespace test;
+using namespace test::set;
 
 using Types = std::tuple
 <       std::set<std::size_t>
-#ifdef XSTD_TEST_HAS_FLAT_SET
+#ifdef TEST_HAS_FLAT_SET
 ,       std::flat_set<std::size_t>
 #endif
 ,       xstd::bit_finite_set<  0, uint8_t>

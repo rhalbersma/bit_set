@@ -4,8 +4,8 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bits/ranges/block_access.hpp>      // block_access, block_range
-#include <xstd/test/three_way_invariant.hpp>      // three_way_by_iteration
-#include <xstd/test/bitset/factory.hpp>           // make_bitset
+#include <test/three_way_invariant.hpp>           // three_way_by_iteration
+#include <test/bitset/factory.hpp>                // make_bitset
 #include <xstd/bits/bit_array.hpp>                // bit_array
 #include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
 #include <xstd/bits/bitset.hpp>                   // bitset
@@ -59,8 +59,8 @@ auto sweep() -> void
 
                         // The invariant proper: these two stream blocks and never
                         // iterate, and must still mean what iterating would.
-                        opaque_disagreements += (sx <=> sy) != xstd::test::three_way_by_iteration(sx, sy);
-                        opaque_disagreements += (ax <=> ay) != xstd::test::three_way_by_iteration(ax, ay);
+                        opaque_disagreements += (sx <=> sy) != test::three_way_by_iteration(sx, sy);
+                        opaque_disagreements += (ax <=> ay) != test::three_way_by_iteration(ax, ay);
                 }
         }
 
@@ -92,8 +92,8 @@ auto views_agree_with_iteration(std::size_t universe) -> void
 
         for (auto i = 0UZ; i < bound; ++i) {
                 for (auto j = 0UZ; j < bound; ++j) {
-                        auto x = xstd::test::bitset::make_bitset<Bits>(universe);
-                        auto y = xstd::test::bitset::make_bitset<Bits>(universe);
+                        auto x = test::bitset::make_bitset<Bits>(universe);
+                        auto y = test::bitset::make_bitset<Bits>(universe);
                         for (auto k = 0UZ; k < universe; ++k) {
                                 if (i >> k & 1UZ) { x.set(k); }
                                 if (j >> k & 1UZ) { y.set(k); }
@@ -104,8 +104,8 @@ auto views_agree_with_iteration(std::size_t universe) -> void
                         auto const ax = xstd::array_view(x);
                         auto const ay = xstd::array_view(y);
 
-                        disagreements += (sx <=> sy) != xstd::test::three_way_by_iteration(sx, sy);
-                        disagreements += (ax <=> ay) != xstd::test::three_way_by_iteration(ax, ay);
+                        disagreements += (sx <=> sy) != test::three_way_by_iteration(sx, sy);
+                        disagreements += (ax <=> ay) != test::three_way_by_iteration(ax, ay);
                 }
         }
 

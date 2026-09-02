@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_BLOCK_TYPES_HPP
-#define XSTD_TEST_BLOCK_TYPES_HPP
+#ifndef TEST_BLOCK_TYPES_HPP
+#define TEST_BLOCK_TYPES_HPP
 
 #include <xstd/ints/limits.hpp> // numeric_limits
 #include <cstddef>              // size_t
@@ -16,7 +16,7 @@
 // one is worth instantiating at. Assembled here rather than spelled out per
 // container: bit_array, bit_finite_set and xstd::bitset all take <size_t N,
 // class Block>, so one list serves all three and widens in one place.
-namespace xstd::test {
+namespace test {
 
 template<class Block>
 inline constexpr auto digits_v = static_cast<std::size_t>(numeric_limits<Block>::digits);
@@ -90,6 +90,6 @@ using graded_extents = decltype(std::tuple_cat(
         std::declval<decltype(detail::expand<C, straddling_extents>(std::declval<narrow_word_types>()))>()
 ));
 
-} // namespace xstd::test
+} // namespace test
 
-#endif // XSTD_TEST_BLOCK_TYPES_HPP
+#endif // TEST_BLOCK_TYPES_HPP

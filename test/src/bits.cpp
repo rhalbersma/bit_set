@@ -4,10 +4,10 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bits.hpp>                   // the whole bits surface
-#include <xstd/test/block_types.hpp>       // graded_extents
-#include <xstd/test/flat_set.hpp>          // XSTD_TEST_HAS_FLAT_SET
-#include <xstd/test/set/concepts.hpp>      // bit_set
-#include <xstd/test/sequence/concepts.hpp> // bit_sequence
+#include <test/block_types.hpp>            // graded_extents
+#include <test/flat_set.hpp>               // TEST_HAS_FLAT_SET
+#include <test/set/concepts.hpp>           // bit_set
+#include <test/sequence/concepts.hpp>      // bit_sequence
 #include <boost/test/unit_test.hpp>        // BOOST_AUTO_TEST_CASE
 #include <array>                           // array
 #include <cstddef>                         // size_t
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(EveryContainerArrivesThroughTheOneDoor)
 // answers to it too, so both sides are checked against the one concept.
 BOOST_AUTO_TEST_CASE(APackedArrayIsTheArrayItPacks)
 {
-        using namespace xstd::test::sequence;
+        using namespace test::sequence;
 
         // The standard's side, at the extents a packed array grades over.
         static_assert(bit_sequence<std::array<bool,  0>>);
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(APackedArrayIsTheArrayItPacks)
         static_assert(bit_sequence<std::array<bool, 64>>);
 
         // And ours, over every Block model and extent the grading names.
-        using packed = xstd::test::graded_extents<xstd::bit_array>;
+        using packed = test::graded_extents<xstd::bit_array>;
         [] <std::size_t... I> (std::index_sequence<I...>) {
                 static_assert((bit_sequence<std::tuple_element_t<I, packed>> and ...));
         }(std::make_index_sequence<std::tuple_size_v<packed>>{});
@@ -66,17 +66,17 @@ BOOST_AUTO_TEST_CASE(APackedArrayIsTheArrayItPacks)
 // interfaces, and a packed container answers to whichever one it is packing.
 BOOST_AUTO_TEST_CASE(APackedSetIsTheSetItPacks)
 {
-        using namespace xstd::test::set;
+        using namespace test::set;
 
         // The standard's side. std::flat_set is here for the same reason
         // std::array is above: a second, differently built reference keeps the
         // concept from quietly describing one implementation.
         static_assert(bit_set<std::set<std::size_t>>);
-#ifdef XSTD_TEST_HAS_FLAT_SET
+#ifdef TEST_HAS_FLAT_SET
         static_assert(bit_set<std::flat_set<std::size_t>>);
 #endif
 
-        using packed = xstd::test::graded_extents<xstd::bit_finite_set>;
+        using packed = test::graded_extents<xstd::bit_finite_set>;
         [] <std::size_t... I> (std::index_sequence<I...>) {
                 static_assert((bit_set<std::tuple_element_t<I, packed>> and ...));
         }(std::make_index_sequence<std::tuple_size_v<packed>>{});

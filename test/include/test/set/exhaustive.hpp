@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_SET_EXHAUSTIVE_HPP
-#define XSTD_TEST_SET_EXHAUSTIVE_HPP
+#ifndef TEST_SET_EXHAUSTIVE_HPP
+#define TEST_SET_EXHAUSTIVE_HPP
 
 #include <algorithm>            // max
 #include <array>                // array
@@ -19,7 +19,7 @@
         __pragma(warning(disable: 4702))
 #endif
 
-namespace xstd::test::set {
+namespace test::set {
 
 inline constexpr auto L1 = 128uz;
 inline constexpr auto L2 =  64uz;
@@ -197,6 +197,6 @@ auto all_doubleton_set_pairs(auto fun)
 
 }       // namespace on4
 
-} // namespace xstd::test::set
+} // namespace test::set
 
-#endif // XSTD_TEST_SET_EXHAUSTIVE_HPP
+#endif // TEST_SET_EXHAUSTIVE_HPP

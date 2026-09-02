@@ -3,10 +3,10 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/test/set/exhaustive.hpp>           // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets,
+#include <test/set/exhaustive.hpp>                // all_cardinality_sets, all_singleton_arrays, all_singleton_ilists, all_singleton_sets,
                                         // all_valid, empty_set, full_set
-#include <xstd/test/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET, is_flat_set
-#include <xstd/test/set/primitives.hpp>           // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
+#include <test/flat_set.hpp>                  // TEST_HAS_FLAT_SET, is_flat_set
+#include <test/set/primitives.hpp>                // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
                                         // mem_empty, mem_size, mem_max_size, mem_insert, mem_erase, mem_clear,
                                         // op_equal, op_compare_three_way, fn_iterator, fn_size, fn_ssize, fn_empty
 #include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
@@ -19,12 +19,12 @@
 BOOST_AUTO_TEST_SUITE(StdSet)
 BOOST_AUTO_TEST_SUITE(O1)
 
-using namespace xstd::test;
-using namespace xstd::test::set;
+using namespace test;
+using namespace test::set;
 
 using Types = std::tuple
 <       std::set<std::size_t>
-#ifdef XSTD_TEST_HAS_FLAT_SET
+#ifdef TEST_HAS_FLAT_SET
 ,       std::flat_set<std::size_t>
 #endif
 ,       xstd::bit_finite_set< 0, uint8_t>

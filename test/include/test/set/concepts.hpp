@@ -3,15 +3,15 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_TEST_SET_CONCEPTS_HPP
-#define XSTD_TEST_SET_CONCEPTS_HPP
+#ifndef TEST_SET_CONCEPTS_HPP
+#define TEST_SET_CONCEPTS_HPP
 
-#include <xstd/test/value_reference.hpp> // value_reference
+#include <test/value_reference.hpp>      // value_reference
 #include <concepts>                      // regular, totally_ordered
 #include <iterator>                      // bidirectional_iterator
 #include <ranges>                        // bidirectional_range
 
-namespace xstd::test::set {
+namespace test::set {
 
 // The interface a bit-packed set shares with the set it packs. The sequence
 // counterpart is random-access over bool; this one is bidirectional over the
@@ -24,6 +24,6 @@ concept bit_set =
     and std::bidirectional_iterator<typename C::iterator>
     and value_reference<typename C::const_reference>;
 
-} // namespace xstd::test::set
+} // namespace test::set
 
-#endif // XSTD_TEST_SET_CONCEPTS_HPP
+#endif // TEST_SET_CONCEPTS_HPP

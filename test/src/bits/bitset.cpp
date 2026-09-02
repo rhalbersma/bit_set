@@ -4,14 +4,14 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <xstd/bits/bitset.hpp>      // bitset
-#include <xstd/test/block_types.hpp> // graded_extents
+#include <test/block_types.hpp>      // graded_extents
 #include <boost/test/unit_test.hpp>  // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <concepts>                  // regular, totally_ordered
 #include <type_traits>               // is_nothrow_*, is_trivially_*
 
 BOOST_AUTO_TEST_SUITE(Bitset)
 
-using Types = xstd::test::graded_extents<xstd::bitset>;
+using Types = test::graded_extents<xstd::bitset>;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, Types)
 {
