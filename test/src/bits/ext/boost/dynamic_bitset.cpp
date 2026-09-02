@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_SUITE(DynamicBitset)
 
 using T = boost::dynamic_bitset<>;
 
-BOOST_AUTO_TEST_CASE(Regular)
+BOOST_AUTO_TEST_CASE(IsRegular)
 {
         static_assert(std::regular<T>);
 }

@@ -12,7 +12,8 @@
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Cubic)
+BOOST_AUTO_TEST_SUITE(Bitset)
+BOOST_AUTO_TEST_SUITE(O3)
 
 using namespace xstd;
 using namespace xstd::test::bitset;
@@ -33,7 +34,7 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWayHoldsOverEveryTripletAndDoubleton, T, Types)
 {
         // empty/full set vs. every triplet, at matching N - see o1.cpp's
         // identical singleton case for why N is pinned explicitly.
@@ -54,4 +55,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
         });
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

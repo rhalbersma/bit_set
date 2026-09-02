@@ -15,7 +15,8 @@
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Linear)
+BOOST_AUTO_TEST_SUITE(Bitset)
+BOOST_AUTO_TEST_SUITE(O1)
 
 using Types = std::tuple
 <       boost::dynamic_bitset<>
@@ -40,7 +41,7 @@ using Types = std::tuple
 using namespace xstd;
 using namespace xstd::test::bitset;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(SetResetComplementAndFlipHoldOverEveryPosition, T, Types)
 {
         on1::all_cardinality_sets<T>(mem_set());
         on1::all_cardinality_sets<T>(mem_set());
@@ -80,7 +81,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
        });
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ElementAccess, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(AtHoldsOverEveryValidPosition, T, Types)
 {
         on1::all_valid<T>([](auto pos) {
                 on0::empty_set<T>([&](auto const& bs0) {
@@ -110,7 +111,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ElementAccess, T, Types)
         });
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheObserversHoldOverEveryCardinalityAndSingleton, T, Types)
 {
         on1::all_cardinality_sets<T>(mem_count());
 
@@ -144,10 +145,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
         });
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(StreamingRoundTripsOverEveryCardinalityAndSingleton, T, Types)
 {
         on1::all_cardinality_sets<T>(op_iostream());
         on1::all_singleton_sets<T>(op_iostream());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

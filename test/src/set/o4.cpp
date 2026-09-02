@@ -14,7 +14,8 @@
 #include <set>                          // set
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Quartic)
+BOOST_AUTO_TEST_SUITE(Set)
+BOOST_AUTO_TEST_SUITE(O4)
 
 using namespace xstd;
 using namespace xstd::test;
@@ -37,14 +38,15 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWay, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWayHoldsOverEveryDoubletonPair, T, Types)
 {
         on4::all_doubleton_set_pairs<T>(op_compare_three_way());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Includes, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IncludesHoldsOverEveryDoubletonPair, T, Types)
 {
         on4::all_doubleton_set_pairs<T>(composable::includes());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

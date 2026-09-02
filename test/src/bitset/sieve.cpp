@@ -14,6 +14,7 @@
 #include <fmt/ranges.h>
 #include <tuple>                        // tuple
 
+BOOST_AUTO_TEST_SUITE(Bitset)
 BOOST_AUTO_TEST_SUITE(Sieve)
 
 inline constexpr auto N = 100uz;
@@ -25,7 +26,7 @@ using Types = std::tuple
 ,        xstd::bit_finite_set<N>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheSiftedPrimesAndTwinsFormatAsExpected, T, Types)
 {
         auto const primes0 = xstd::sift_primes0<T>(N);
         BOOST_CHECK_EQUAL(
@@ -46,7 +47,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
         );
 }
 
-BOOST_AUTO_TEST_CASE(Degenerate)
+BOOST_AUTO_TEST_CASE(ATwoBitSieveSiftsToNothing)
 {
         // Sifting 0 and 1 out of a two-bit sieve leaves nothing, so
         // sift_primes1 runs its loop to exhaustion rather than breaking on the
@@ -55,4 +56,5 @@ BOOST_AUTO_TEST_CASE(Degenerate)
         BOOST_CHECK(xstd::sift_primes1<boost::dynamic_bitset<>>(2).none());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

@@ -158,17 +158,17 @@ BOOST_AUTO_TEST_CASE(StdBitsetOnlyWhereItsWordsAreReachable)
 // at three shapes: inside one block, spanning two with the second nearly empty,
 // and spanning two with padding above the last position. The block loop only
 // does anything in the last two.
-BOOST_AUTO_TEST_CASE(OneBlockExactly)
+BOOST_AUTO_TEST_CASE(TheOrderingsAgreeInsideASingleBlock)
 {
         sweep<8, std::uint8_t>();
 }
 
-BOOST_AUTO_TEST_CASE(TwoBlocksWithOneBitInTheSecond)
+BOOST_AUTO_TEST_CASE(TheOrderingsAgreeWithOneBitInASecondBlock)
 {
         sweep<9, std::uint8_t>();
 }
 
-BOOST_AUTO_TEST_CASE(TwoBlocksWithPaddingAboveTheLastPosition)
+BOOST_AUTO_TEST_CASE(TheOrderingsAgreeWithPaddingAboveTheLastPosition)
 {
         sweep<10, std::uint8_t>();
 }

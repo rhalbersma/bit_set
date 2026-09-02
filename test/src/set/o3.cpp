@@ -13,7 +13,8 @@
 #include <set>                          // set
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Cubic)
+BOOST_AUTO_TEST_SUITE(Set)
+BOOST_AUTO_TEST_SUITE(O3)
 
 using namespace xstd;
 using namespace xstd::test;
@@ -36,9 +37,10 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Transitivity, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(LessIsTransitiveOverEverySingletonTriple, T, Types)
 {
         on3::all_singleton_set_triples<T>(op_less());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

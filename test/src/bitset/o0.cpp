@@ -15,7 +15,8 @@
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Constant)
+BOOST_AUTO_TEST_SUITE(Bitset)
+BOOST_AUTO_TEST_SUITE(O0)
 
 using Types = std::tuple
 <       boost::dynamic_bitset<>
@@ -70,12 +71,12 @@ using Types = std::tuple
 using namespace xstd;
 using namespace xstd::test::bitset;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Constructors, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(DefaultConstructionYieldsAnEmptySet, T, Types)
 {
         constructor<T>()();
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheCompoundBitwiseAssignmentsHoldOnAnEmptyPair, T, Types)
 {
         on0::empty_set_pair<T>(mem_bit_and_assign());
         on0::empty_set_pair<T>(mem_bit_or_assign());
@@ -83,7 +84,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
         on0::empty_set_pair<T>(mem_bit_minus_assign());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheComparisonsAndSetPredicatesHoldOnAnEmptyPair, T, Types)
 {
         on0::empty_set_pair<T>(mem_equal_to());
         on0::empty_set_pair<T>(mem_compare_three_way());
@@ -93,7 +94,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
         on0::empty_set_pair<T>(mem_intersects());
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheBitwiseOperatorsHoldOnAnEmptyPairAndExtractionRespectsFailbit, T, Types)
 {
         on0::empty_set_pair<T>(op_bit_and());
         on0::empty_set_pair<T>(op_bit_or());
@@ -102,4 +103,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
         op_istream_failure<T>()();
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

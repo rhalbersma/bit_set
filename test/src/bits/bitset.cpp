@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_SUITE(Bitset)
 
 using Types = xstd::test::graded_extents<xstd::bitset>;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, Types)
 {
         static_assert(std::regular<T>);
 }

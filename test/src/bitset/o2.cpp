@@ -15,7 +15,8 @@
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Quadratic)
+BOOST_AUTO_TEST_SUITE(Bitset)
+BOOST_AUTO_TEST_SUITE(O2)
 
 using Types = std::tuple
 <       boost::dynamic_bitset<>
@@ -36,7 +37,7 @@ using Types = std::tuple
 using namespace xstd;
 using namespace xstd::test::bitset;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheCompoundAssignmentsAndShiftsHoldOverEverySingletonPair, T, Types)
 {
         on2::all_singleton_set_pairs<T>(mem_bit_and_assign());
         on2::all_singleton_set_pairs<T>(mem_bit_or_assign());
@@ -66,7 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
         });
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheComparisonsHoldOverEverySingletonPair, T, Types)
 {
         on2::all_singleton_set_pairs<T>(mem_equal_to());
         on2::all_singleton_set_pairs<T>(mem_compare_three_way());
@@ -86,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
         });
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheBitwiseOperatorsHoldOverEverySingletonPair, T, Types)
 {
         on2::all_singleton_set_pairs<T>(op_bit_and());
         on2::all_singleton_set_pairs<T>(op_bit_or());
@@ -94,4 +95,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Operators, T, Types)
         on2::all_singleton_set_pairs<T>(op_bit_minus());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

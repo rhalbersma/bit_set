@@ -11,6 +11,7 @@
 #include <tuple>                        // tuple
 #include <type_traits>                  // is_integral, is_unsigned
 
+BOOST_AUTO_TEST_SUITE(Block)
 BOOST_AUTO_TEST_SUITE(TypeTraits)
 
 using Types = std::tuple
@@ -53,4 +54,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(DigitsEqualsPopCount, T, Types)
         static_assert(std::numeric_limits<T>::digits == std::popcount(static_cast<T>(-1)));
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

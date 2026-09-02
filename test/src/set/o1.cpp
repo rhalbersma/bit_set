@@ -16,7 +16,8 @@
 #include <set>                          // set
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Linear)
+BOOST_AUTO_TEST_SUITE(Set)
+BOOST_AUTO_TEST_SUITE(O1)
 
 using namespace xstd;
 using namespace xstd::test;
@@ -42,7 +43,7 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheSetOperationsHoldOverEverySingleton, T, Types)
 {
         on1::all_singleton_arrays<T>([](auto const& a1) {
                 constructor<T>()(a1.begin(), a1.end());
@@ -163,4 +164,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
         on1::all_cardinality_sets<T>(fn_empty());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

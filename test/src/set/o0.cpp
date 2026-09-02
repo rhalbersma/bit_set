@@ -15,7 +15,8 @@
 #include <set>                          // set
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Constant)
+BOOST_AUTO_TEST_SUITE(Set)
+BOOST_AUTO_TEST_SUITE(O0)
 
 using namespace xstd;
 using namespace xstd::test;
@@ -66,7 +67,7 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheSetOperationsHoldOnAnEmptyPair, T, Types)
 {
         [[maybe_unused]] auto _ = nested_types<T>();
         constructor<T>()();
@@ -90,4 +91,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
         on0::empty_set_pair<T>(composable::set_symmetric_difference());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

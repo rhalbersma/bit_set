@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(IteratingVisitsTheOneBitsAsKeys)
 }
 
 // And backwards, which is the half a repeated find(first, last, true) cannot do.
-BOOST_AUTO_TEST_CASE(AndBackwards)
+BOOST_AUTO_TEST_CASE(ReverseIteratingVisitsThemInDescendingOrder)
 {
         auto c = xstd::bitset<16>();
         c.set(1);

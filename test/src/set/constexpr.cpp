@@ -8,6 +8,7 @@
 #include <compare>                      // strong_ordering
 #include <tuple>                        // tuple
 
+BOOST_AUTO_TEST_SUITE(Set)
 BOOST_AUTO_TEST_SUITE(Constexpr)
 
 using namespace xstd;
@@ -53,7 +54,7 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Empty, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(AnEmptySetIsUsableInAConstantExpression, T, Types)
 {
         constexpr auto b = T();
         static_assert(b.empty());
@@ -63,7 +64,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Empty, T, Types)
         static_assert((b <=> b) == std::strong_ordering::equal);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Full, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(AFullSetIsUsableInAConstantExpression, T, Types)
 {
         constexpr auto b = ~T();
         static_assert(b.full());
@@ -74,4 +75,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Full, T, Types)
         static_assert((b <=> b) == std::strong_ordering::equal);
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

@@ -14,6 +14,7 @@
 #include <set>                          // set
 #include <tuple>                        // tuple
 
+BOOST_AUTO_TEST_SUITE(Set)
 BOOST_AUTO_TEST_SUITE(Implicit)
 
 using namespace xstd;
@@ -55,7 +56,7 @@ public:
         [[nodiscard]] constexpr explicit(false) operator std::size_t() const noexcept { return m_value; }
 };
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ImplicitConstructible, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheKeysCopyIntoASetOfAnImplicitlyConstructibleType, T, Types)
 {
         auto src = T({ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 });
         std::set<Implicit> dst;
@@ -63,4 +64,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ImplicitConstructible, T, Types)
         BOOST_CHECK_EQUAL_COLLECTIONS(src.begin(), src.end(), dst.begin(), dst.end());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

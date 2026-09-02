@@ -21,33 +21,33 @@ using Types = xstd::test::graded_extents<xstd::bit_finite_set>;
 
 // The clauses one at a time, so a failure names which one. The umbrella asserts
 // the composite over this and over the std::set it packs.
-BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, Types)
 {
         static_assert(std::regular<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(TotallyOrdered, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsTotallyOrdered, T, Types)
 {
         static_assert(std::totally_ordered<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BidirectionalRange, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsABidirectionalRange, T, Types)
 {
         static_assert(std::ranges::bidirectional_range<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BidirectionalIterator, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(ItsIteratorIsBidirectional, T, Types)
 {
         using I = T::iterator;
         static_assert(std::bidirectional_iterator<I>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ConstReference, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(ItsConstReferenceIsAValue, T, Types)
 {
         static_assert(xstd::test::value_reference<typename T::const_reference>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitSet, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsABitSet, T, Types)
 {
         static_assert(xstd::test::set::bit_set<T>);
 }

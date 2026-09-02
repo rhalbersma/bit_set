@@ -12,7 +12,8 @@
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Quartic)
+BOOST_AUTO_TEST_SUITE(Bitset)
+BOOST_AUTO_TEST_SUITE(O4)
 
 using namespace xstd;
 using namespace xstd::test::bitset;
@@ -33,11 +34,12 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Observers, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheOrderingAndSubsetTestsHoldOverEveryDoubletonPair, T, Types)
 {
         on4::all_doubleton_set_pairs<T>(mem_compare_three_way());
         on4::all_doubleton_set_pairs<T>(mem_is_subset_of());
         on4::all_doubleton_set_pairs<T>(mem_is_proper_subset_of());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

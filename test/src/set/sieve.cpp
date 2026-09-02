@@ -13,6 +13,7 @@
 #include <set>                          // set
 #include <tuple>                        // tuple
 
+BOOST_AUTO_TEST_SUITE(Set)
 BOOST_AUTO_TEST_SUITE(Sieve)
 
 inline constexpr auto N = 100uz;
@@ -25,7 +26,7 @@ using Types = std::tuple
 ,       xstd::bit_finite_set<N>
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheSiftedPrimesAndTwinsFormatAsExpected, T, Types)
 {
         auto const primes0 = xstd::sift_primes0<T>(N);
         BOOST_CHECK_EQUAL(
@@ -46,7 +47,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)
         );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(Degenerate, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(SievesTooSmallForTheSquareBreakStillSiftCorrectly, T, Types)
 {
         // Below three candidates sift_primes1 runs its loop to exhaustion
         // rather than breaking on the first p whose square is out of range,
@@ -60,4 +61,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(Degenerate, T, Types)
         BOOST_CHECK(xstd::filter_twins(one).empty());
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

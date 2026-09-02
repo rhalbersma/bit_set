@@ -18,7 +18,8 @@
 #include <set>                          // set
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Quadratic)
+BOOST_AUTO_TEST_SUITE(Set)
+BOOST_AUTO_TEST_SUITE(O2)
 
 using namespace xstd;
 using namespace xstd::test;
@@ -44,7 +45,7 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheSetOperationsHoldOverEveryDoubletonAndSingletonPair, T, Types)
 {
         on2::all_doubleton_arrays<T>([](auto const& a2) {
                 constructor<T>()(a2.begin(), a2.end());
@@ -163,4 +164,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IntSet, T, Types)
         });
 }
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

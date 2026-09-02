@@ -22,33 +22,33 @@ using Types = xstd::test::graded_extents<xstd::bit_array>;
 
 // The clauses one at a time, so a failure names which one. The umbrella asserts
 // the composite over this and over the std::array it packs.
-BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, Types)
 {
         static_assert(std::regular<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(TotallyOrdered, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsTotallyOrdered, T, Types)
 {
         static_assert(std::totally_ordered<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(RandomAccessRange, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsARandomAccessRange, T, Types)
 {
         static_assert(std::ranges::random_access_range<T>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(RandomAccessIterator, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(ItsIteratorIsRandomAccess, T, Types)
 {
         using I = T::iterator;
         static_assert(std::random_access_iterator<I>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(ConstReference, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(ItsConstReferenceIsAValue, T, Types)
 {
         static_assert(xstd::test::value_reference<typename T::const_reference>);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(BitSequence, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(IsABitSequence, T, Types)
 {
         static_assert(xstd::test::sequence::bit_sequence<T>);
 }
