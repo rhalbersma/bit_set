@@ -6,8 +6,8 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <bitset/exhaustive.hpp>        // empty_set_pair
-#include <bitset/primitives.hpp>        // constructor,
+#include <xstd/test/bitset/exhaustive.hpp>        // empty_set_pair
+#include <xstd/test/bitset/primitives.hpp>        // constructor,
                                         // mem_bit_and_assign, mem_bit_or_assign, mem_bit_xor_assign, mem_bit_minus_assign,
                                         // mem_equal_to, mem_compare_three_way, mem_is_subset_of, mem_is_proper_subset_of, mem_intersect,
                                         // op_bit_and, op_bit_or, op_bit_xor, op_bit_minus,
@@ -68,6 +68,7 @@ using Types = std::tuple
 >;
 
 using namespace xstd;
+using namespace xstd::test::bitset;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Constructors, T, Types)
 {

@@ -7,7 +7,7 @@
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/bitset.hpp>              // bitset
 #include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
-#include <concepts.hpp>                 // dynamic
+#include <xstd/test/dynamic.hpp>                 // dynamic
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <concepts>                     // regular, totally_ordered
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
@@ -48,6 +48,7 @@ using Types = std::tuple
 >;
 
 using namespace xstd;
+using namespace xstd::test;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Regular, T, Types)
 {

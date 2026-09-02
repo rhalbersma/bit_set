@@ -1,9 +1,10 @@
-#pragma once
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_TEST_SET_COMPOSABLE_HPP
+#define XSTD_TEST_SET_COMPOSABLE_HPP
 
 #include <boost/test/unit_test.hpp>             // BOOST_CHECK, BOOST_CHECK_EQUAL
 #include <range/v3/view/set_algorithm.hpp>      // set_difference, set_intersection, set_symmetric_difference, set_union
@@ -11,7 +12,7 @@
 #include <ranges>                               // to
                                                 // filter, transform
 
-namespace xstd::composable {
+namespace xstd::test::set::composable {
 
 struct includes
 {
@@ -105,4 +106,6 @@ struct decrement_modulo
         }
 };
 
-}       // namespace xstd::composable
+} // namespace xstd::test::set::composable
+
+#endif // XSTD_TEST_SET_COMPOSABLE_HPP

@@ -6,8 +6,8 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/bitset.hpp>              // bitset
-#include <bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set
-#include <bitset/primitives.hpp>        // mem_set, mem_reset, mem_bit_not, mem_flip,
+#include <xstd/test/bitset/exhaustive.hpp>        // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set
+#include <xstd/test/bitset/primitives.hpp>        // mem_set, mem_reset, mem_bit_not, mem_flip,
                                         // mem_at,
                                         // mem_count, mem_size, mem_test, mem_all, mem_any, mem_none, mem_compare_three_way,
                                         // op_iostream
@@ -38,6 +38,7 @@ using Types = std::tuple
 >;
 
 using namespace xstd;
+using namespace xstd::test::bitset;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Operations, T, Types)
 {

@@ -1,9 +1,10 @@
-#pragma once
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef XSTD_TEST_FLAT_SET_HPP
+#define XSTD_TEST_FLAT_SET_HPP
 
 #include <version>                      // __cpp_lib_flat_set
 #if defined(__cpp_lib_flat_set)
@@ -15,7 +16,7 @@
 // implementation in the set tests' type lists, so dropping it costs no bit_finite_set
 // coverage. The probe lives here because <version> has to precede it, which a
 // test doing it itself could only manage by breaking its own include order.
-namespace xstd {
+namespace xstd::test {
 
 template<class T>
 inline constexpr bool is_flat_set = false;
@@ -27,4 +28,6 @@ inline constexpr bool is_flat_set<std::flat_set<Key, Compare, KeyContainer>> = t
 
 #endif
 
-}       // namespace xstd
+} // namespace xstd::test
+
+#endif // XSTD_TEST_FLAT_SET_HPP

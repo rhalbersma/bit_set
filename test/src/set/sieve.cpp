@@ -4,7 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <opt/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
-#include <set/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET
+#include <xstd/test/flat_set.hpp>             // XSTD_TEST_HAS_FLAT_SET
 #include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <fmt/format.h>                 // format

@@ -1,13 +1,14 @@
-#pragma once
-
-//          Copyright Rein Halbersma 2014-2025.
+//          Copyright Rein Halbersma 2014-2026.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#ifndef XSTD_TEST_DYNAMIC_HPP
+#define XSTD_TEST_DYNAMIC_HPP
+
 #include <utility>      // declval
 
-namespace xstd {
+namespace xstd::test {
 
 template<class T>
 concept dynamic = requires(T&& t)
@@ -16,4 +17,6 @@ concept dynamic = requires(T&& t)
         t.resize(std::declval<typename T::size_type>(), std::declval<bool>());
 };
 
-}       // namespace xstd
+} // namespace xstd::test
+
+#endif // XSTD_TEST_DYNAMIC_HPP
