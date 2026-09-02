@@ -17,7 +17,6 @@
 BOOST_AUTO_TEST_SUITE(StdSet)
 BOOST_AUTO_TEST_SUITE(O4)
 
-using namespace xstd;
 using namespace xstd::test;
 using namespace xstd::test::set;
 
@@ -26,15 +25,15 @@ using Types = std::tuple
 #ifdef XSTD_TEST_HAS_FLAT_SET
 ,       std::flat_set<std::size_t>
 #endif
-,       bit_finite_set< 0, uint8_t>
-,       bit_finite_set< 8, uint8_t>
-,       bit_finite_set< 9, uint8_t>
-,       bit_finite_set<17, uint8_t>
-,       bit_finite_set<17, uint16_t>
-,       bit_finite_set<17, uint32_t>
-,       bit_finite_set<17, uint64_t>
+,       xstd::bit_finite_set< 0, uint8_t>
+,       xstd::bit_finite_set< 8, uint8_t>
+,       xstd::bit_finite_set< 9, uint8_t>
+,       xstd::bit_finite_set<17, uint8_t>
+,       xstd::bit_finite_set<17, uint16_t>
+,       xstd::bit_finite_set<17, uint32_t>
+,       xstd::bit_finite_set<17, uint64_t>
 #if defined(__GNUG__)
-,       bit_finite_set<17, __uint128_t>
+,       xstd::bit_finite_set<17, __uint128_t>
 #endif
 >;
 

@@ -38,7 +38,6 @@ using Types = std::tuple
 #endif
 >;
 
-using namespace xstd;
 using namespace xstd::test::bitset;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(SetResetComplementAndFlipHoldOverEveryPosition, T, Types)

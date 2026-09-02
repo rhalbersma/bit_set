@@ -15,7 +15,6 @@
 BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(O4)
 
-using namespace xstd;
 using namespace xstd::test::bitset;
 
 using Types = std::tuple

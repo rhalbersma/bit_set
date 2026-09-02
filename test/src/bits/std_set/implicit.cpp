@@ -17,7 +17,6 @@
 BOOST_AUTO_TEST_SUITE(StdSet)
 BOOST_AUTO_TEST_SUITE(Implicit)
 
-using namespace xstd;
 using namespace xstd::test;
 
 using Types = std::tuple
@@ -25,25 +24,25 @@ using Types = std::tuple
 #ifdef XSTD_TEST_HAS_FLAT_SET
 ,       std::flat_set<std::size_t>
 #endif
-,       bit_finite_set< 32, uint16_t>
-,       bit_finite_set< 33, uint16_t>
-,       bit_finite_set< 48, uint16_t>
-,       bit_finite_set< 32, uint32_t>
-,       bit_finite_set< 33, uint32_t>
-,       bit_finite_set< 64, uint32_t>
-,       bit_finite_set< 65, uint32_t>
-,       bit_finite_set< 96, uint32_t>
-,       bit_finite_set< 64, uint64_t>
-,       bit_finite_set< 65, uint64_t>
-,       bit_finite_set<128, uint64_t>
-,       bit_finite_set<129, uint64_t>
-,       bit_finite_set<192, uint64_t>
+,       xstd::bit_finite_set< 32, uint16_t>
+,       xstd::bit_finite_set< 33, uint16_t>
+,       xstd::bit_finite_set< 48, uint16_t>
+,       xstd::bit_finite_set< 32, uint32_t>
+,       xstd::bit_finite_set< 33, uint32_t>
+,       xstd::bit_finite_set< 64, uint32_t>
+,       xstd::bit_finite_set< 65, uint32_t>
+,       xstd::bit_finite_set< 96, uint32_t>
+,       xstd::bit_finite_set< 64, uint64_t>
+,       xstd::bit_finite_set< 65, uint64_t>
+,       xstd::bit_finite_set<128, uint64_t>
+,       xstd::bit_finite_set<129, uint64_t>
+,       xstd::bit_finite_set<192, uint64_t>
 #if defined(__GNUG__)
-,       bit_finite_set<128, __uint128_t>
-,       bit_finite_set<129, __uint128_t>
-,       bit_finite_set<256, __uint128_t>
-,       bit_finite_set<257, __uint128_t>
-,       bit_finite_set<384, __uint128_t>
+,       xstd::bit_finite_set<128, __uint128_t>
+,       xstd::bit_finite_set<129, __uint128_t>
+,       xstd::bit_finite_set<256, __uint128_t>
+,       xstd::bit_finite_set<257, __uint128_t>
+,       xstd::bit_finite_set<384, __uint128_t>
 #endif
 >;
 

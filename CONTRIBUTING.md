@@ -32,6 +32,10 @@ That prefix is also what keeps `bits/std_bitset/` from being read as more tests 
 
 `bits/block/` carries no prefix on purpose. Block is this library's own named requirement rather than a Standard clause, so there is no `std_` to claim.
 
+**In a clause sweep no implementation gets a shorter name than another.** Every candidate is spelled with its namespace — `std::set`, `std::flat_set`, `xstd::bit_finite_set`; `std::bitset`, `boost::dynamic_bitset`, `xstd::bitset` — and these sources carry no `using namespace xstd;`. Ours is one implementation among those being checked and gets no name lookup it has not earned: an unqualified `bit_finite_set` sitting in a list where `std::flat_set` had to be spelled out makes ours read as the local default, which is exactly the thing a conformance sweep must not assume. The harness directives (`xstd::test`, `xstd::test::set`, `xstd::test::bitset`) stay — they name the checking primitives, which are applied identically to every candidate, so they privilege nobody.
+
+Worth knowing when adding a contract: `xstd::test` is nested inside `xstd`, so an unqualified call in a harness header falls back to `xstd` and would find our overload for *every* candidate, `std::` ones included. No harness header does that today. Qualify, or the sweep quietly stops comparing implementations and starts confirming ours.
+
 **Suites nest directory-wise.** One `BOOST_AUTO_TEST_SUITE` per path component under `test/src/`, the file stem included, each component PascalCased. That makes the suite path the CTest target id, spelled the other way round, so a failing target says where to look:
 
 | source | target | suites |
