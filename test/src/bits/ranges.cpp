@@ -45,10 +45,12 @@ constexpr bool has_address_of = requires(R r) { r.operator&(); };
 //   bitset::reference has operator&               no         yes
 //   bitset's const operator[] returns bool        yes        no
 //
-// libc++ already builds its bit references exactly this way, proxies on both
-// paths and an operator& that hands an iterator back; libstdc++ does neither.
-// So this is not a novel shape, it is libc++'s -- and because it is a choice
-// rather than a rule, none of those four is asserted here. A test that pinned
+// libc++ already builds its bit references this way, proxies on both paths and an
+// operator& that hands an iterator back; libstdc++ does neither. But that is the
+// sequence reading only: libc++'s bit reference has value_type bool and a random
+// access category, so it prefigures array_view and not set_view. Neither
+// implementation offers value_type size_t or iterates the 1-bits. Because all of
+// it is a choice rather than a rule, none of those four is asserted here. A test that pinned
 // them would be pinning whichever standard library it happened to run against,
 // which is what the first version of this file did, and Apple Clang said so.
 // What is asserted below is what our own views guarantee on every toolchain.

@@ -97,9 +97,27 @@ opinion here and its implementations disagree about all of it:
 | `bitset::reference` has `operator&`       | no        | yes    |
 | `bitset`'s const `operator[]` gives `bool`| yes       | no     |
 
-libc++ already builds its bit references this way; libstdc++ does neither half.
-So the choice here is libc++'s, made a guarantee rather than left to whichever
-standard library a consumer happens to have.
+libc++ already builds its bit references this way and libstdc++ does neither half
+-- but that is a statement about `array_view` alone, and it is worth being exact
+about which of the two views the standard library prefigures.
+
+`std::bitset::reference`, and libc++'s `__bit_reference` behind `vector<bool>`,
+have `value_type = bool` and `iterator_category = random_access_iterator_tag`.
+That is the sequence reading, and `array_view` recapitulates it -- the proxy pair,
+the extent, the writing through. Nothing here is new.
+
+The set reading is absent from both. Neither offers `value_type = size_t`, and
+neither iterates the 1-bits: to walk them you call `find(first, last, true)`
+repeatedly and subtract to recover positions. libc++ even computes the primitive
+this needs, quickly -- `__find_bool` and `__count_bool` specialize `find` and
+`count` over `__bit_iterator` a word at a time, which is where Hinnant's 76.9x
+comes from -- but exposes it only as a search returning a bool-sequence iterator.
+
+`set_find<Bits>::next` is that same operation surfaced as iteration, with
+`operator*` yielding the position rather than `true`. So `array_view` is libc++'s
+design made a guarantee, and `set_view` is the reading it does not offer, built on
+the primitive it already has. The two together are why a bit sequence needs no
+third vocabulary.
 
 Two customization points, both defaulted so that `std::bitset`,
 `boost::dynamic_bitset` and our own types all work unspecialized:
