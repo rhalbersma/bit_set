@@ -121,8 +121,8 @@ concept array_range =
         }
 ;
 
-template<array_range, bool> class array_iterator;
-template<array_range, bool> class array_reference;
+template<class, bool> class array_iterator;
+template<class, bool> class array_reference;
 
 // Forward-declared so the dependent friend template-id declarations inside
 // array_iterator have a template to refer to - see set_view.hpp for why Clang
@@ -132,7 +132,7 @@ template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > a
 template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, false> array_end  (      Bits& c) noexcept;
 template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > array_end  (Bits const& c) noexcept;
 
-template<array_range Bits, bool IsConst>
+template<class Bits, bool IsConst>
 class array_iterator
 {
         using ptr_const_t = std::conditional_t<IsConst, Bits const*, Bits*>;
@@ -217,7 +217,7 @@ template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > a
 // what makes this a span rather than a string_view: std::ranges::fill and friends
 // work through it. std::vector<bool>::reference is the precedent, down to
 // assignment being const-qualified because it writes through the proxy, not to it.
-template<array_range Bits, bool IsConst>
+template<class Bits, bool IsConst>
 class array_reference
 {
         using ref_const_t = std::conditional_t<IsConst, Bits const&, Bits&>;

@@ -202,8 +202,8 @@ concept set_range =
 // template, not this one.
 template<set_range Bits> class set_view;
 
-template<set_range> class set_iterator;
-template<set_range> class set_reference;
+template<class> class set_iterator;
+template<class> class set_reference;
 template<set_range> struct set_compare;
 
 // Forward-declared so the dependent friend template-id declarations inside
@@ -215,7 +215,7 @@ template<set_range> struct set_compare;
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_begin(Bits const& c) noexcept;
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_end  (Bits const& c) noexcept;
 
-template<set_range Bits>
+template<class Bits>
 class set_iterator
 {
         Bits const* m_ptr{};
@@ -261,6 +261,7 @@ public:
         // job drops assert branches by matching the start of the line, so an
         // assert sharing a line with real code keeps its never-taken branch.
         constexpr set_iterator& operator++() noexcept
+                requires requires (Bits const& c, std::size_t n) { set_find<Bits>::next(c, n); }
         {
                 assert(m_ptr != nullptr);
                 m_idx = set_find<Bits>::next(*m_ptr, m_idx);
@@ -268,6 +269,7 @@ public:
         }
 
         constexpr set_iterator& operator--() noexcept
+                requires requires (Bits const& c, std::size_t n) { set_find<Bits>::prev(c, n); }
         {
                 assert(m_ptr != nullptr);
                 m_idx = set_find<Bits>::prev(*m_ptr, m_idx);
@@ -281,7 +283,7 @@ public:
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_begin(Bits const& c) noexcept { return { &c, set_find<Bits>::first(c) }; }
 template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_end  (Bits const& c) noexcept { return { &c, set_find<Bits>::last (c) }; }
 
-template<set_range Bits>
+template<class Bits>
 class set_reference
 {
         Bits const& m_ref;
@@ -318,7 +320,7 @@ public:
         }
 };
 
-template<set_range Bits>
+template<class Bits>
 [[nodiscard]] constexpr auto format_as(set_reference<Bits> ref) noexcept
         -> set_reference<Bits>::value_type
 {
