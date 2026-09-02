@@ -6,41 +6,24 @@
 #ifndef XSTD_BITS_RANGES_ARRAY_VIEW_HPP
 #define XSTD_BITS_RANGES_ARRAY_VIEW_HPP
 
+#include <xstd/bits/ranges/bit_extent.hpp>   // bit_extent, static_bit_extent
 #include <xstd/bits/ranges/block_access.hpp> // block_access, block_range, first_difference
-#include <xstd/bits/ranges/bit_extent.hpp> // bit_extent, static_bit_extent
-#include <algorithm>                       // equal, lexicographical_compare_three_way
-#include <cassert>                         // assert
-#include <compare>                         // strong_ordering
-#include <concepts>                        // constructible_from, convertible_to
-#include <cstddef>                         // ptrdiff_t, size_t
-#include <iterator>                        // make_reverse_iterator, random_access_iterator_tag, reverse_iterator
-#include <ranges>                          // view_base
-#include <span>                            // dynamic_extent
-#include <stdexcept>                       // out_of_range
-#include <type_traits>                     // conditional_t, is_class_v, is_const_v, is_convertible_v, is_nothrow_constructible_v, remove_const_t
-#include <utility>                         // as_const
+#include <algorithm>                         // equal, lexicographical_compare_three_way
+#include <cassert>                           // assert
+#include <compare>                           // strong_ordering
+#include <concepts>                          // constructible_from, convertible_to
+#include <cstddef>                           // ptrdiff_t, size_t
+#include <iterator>                          // make_reverse_iterator, random_access_iterator_tag, reverse_iterator
+#include <ranges>                            // view_base
+#include <span>                              // dynamic_extent
+#include <stdexcept>                         // out_of_range
+#include <type_traits>                       // conditional_t, is_class_v, is_const_v, is_convertible_v, is_nothrow_constructible_v, remove_const_t
+#include <utility>                           // as_const
 
-// A sequence of bool over bits it does not own - std::span's shape, not
-// std::array's and not std::vector's.
-//
-// One template rather than an array_view/vector_view pair, for the reason span is
-// one template: a fixed-width and a dynamic bit sequence differ only in whether
-// size() is a constant expression, and an Extent parameter says that in one place
-// instead of duplicating twenty-five members to vary one of them.
-//
-// The extent is not the caller's to supply. std::bitset<N> and xstd::bitset<N,
-// Block> carry their width in the type and boost::dynamic_bitset<> carries it in
-// the object; which of the two a Bits is, is the Bits' business, so it arrives
-// through bit_extent<Bits> and the default argument below.
-//
-// Mutable through, unlike the read-only adaptor this replaces: array_reference
-// assigns back into the bits, so std::ranges algorithms that write work on it.
+// A sequence of bool over bits it does not own: span's shape, one template for both extents, and mutable through.
 namespace xstd::ranges {
 
-// Where the bits are: the two ends of the sequence and the value at a position.
-// Same ADL-with-explicit-specialization design as set_find, for the same reason -
-// see xstd/bits/ranges/set_view.hpp, whose comment explains both the [namespace.std]
-// problem and why every member is individually constrained.
+// Where the bits are; same ADL-with-explicit-specialization design as set_find, and see set_view.hpp for why.
 template<class Bits>
 struct array_find
 {
@@ -63,9 +46,7 @@ struct array_find
         }
 };
 
-// The vocabulary, rewired - the sequence half of what set_ops does for the set
-// half. A bitset's size() is already a sequence's size(), so only writing needs
-// renaming: set(pos, value) is v[pos] = value, and set()/reset() are fill().
+// The vocabulary, rewired: only writing needs renaming, a bitset's size() being already a sequence's size().
 template<class Bits>
 struct array_ops
 {
@@ -78,13 +59,7 @@ struct array_ops
                 }
         }
 
-        // The write side of array_find::at, and deliberately without an
-        // operator[] fallback. A type whose operator[] returns a proxy of ours -
-        // xstd::bit_array does - would take `c[n] = value` straight back into
-        // array_reference::operator=, which calls this, which calls that: it
-        // compiles, and recurses until the stack is gone. So the only ways in are
-        // a real set(pos, value) member and the ADL hook, and a type offering
-        // neither is a compile error rather than a silent one at run time.
+        // No operator[] fallback: a type whose operator[] returns our own proxy would recurse until the stack is gone.
         static constexpr void assign(Bits& c, std::size_t n, bool value) noexcept
                 requires requires { c.set(n, value); }
         {
@@ -109,18 +84,7 @@ struct array_ops
         }
 };
 
-// The sequence ordering, defined once: the bools in position order, compared
-// lexicographically. bit_array orders itself with this and so does array_view --
-// two copies, before, one of which cast to int and one of which did not.
-//
-// The cast is kept: the elements are proxy references, and comparing two of them
-// should mean comparing the bools they stand for, not whatever a proxy's own
-// <=> would do.
-//
-// Ranges rather than iterators, for the reason set_three_way takes them, and the
-// rule a data-parallel implementation would use here is the simpler of the two:
-// at the lowest differing bit, the sequence that LACKS it is the smaller. No
-// prefix clause, because both sequences are the same length.
+// The sequence ordering, defined once: the bools in position order, compared lexicographically through value_type.
 template<std::ranges::input_range X, std::ranges::input_range Y>
 [[nodiscard]] constexpr std::strong_ordering array_three_way(X const& x, Y const& y) noexcept
 {
@@ -131,16 +95,7 @@ template<std::ranges::input_range X, std::ranges::input_range Y>
         );
 }
 
-// The same ordering, a word at a time, for a Bits that says where its blocks are.
-//
-// Let d be the lowest position at which the two differ. Below d they hold the
-// same bools, so position d decides it, and false is less than true: the one
-// that LACKS d is the smaller. No prefix clause, unlike the set ordering --
-// both operands are sequences of the same length, so neither can run out first.
-// Chosen over the element-wise overload above by partial ordering: two operands
-// of one type is more specialized than two of any types. So every caller of
-// array_three_way picks this up without naming it, which is what taking ranges
-// rather than iterators was for.
+// The same ordering a word at a time; at the lowest differing bit the sequence LACKING it is smaller, with no prefix clause.
 template<block_range Bits>
 [[nodiscard]] constexpr std::strong_ordering array_three_way(Bits const& x, Bits const& y) noexcept
 {
@@ -174,9 +129,7 @@ concept array_range =
 template<class, bool> class array_iterator;
 template<class, bool> class array_reference;
 
-// Forward-declared so the dependent friend template-id declarations inside
-// array_iterator have a template to refer to - see set_view.hpp for why Clang
-// requires this and GCC does not.
+// Forward-declared so array_iterator's dependent friend template-ids have a template to name; Clang requires it, GCC does not.
 template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, false> array_begin(      Bits& c) noexcept;
 template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > array_begin(Bits const& c) noexcept;
 template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, false> array_end  (      Bits& c) noexcept;
@@ -263,10 +216,7 @@ template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > a
 template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, false> array_end  (      Bits& c) noexcept { return { &c, array_find<Bits>::last (c) }; }
 template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > array_end  (Bits const& c) noexcept { return { &c, array_find<Bits>::last (c) }; }
 
-// A proxy bool. The non-const instantiation assigns back into the bits, which is
-// what makes this a span rather than a string_view: std::ranges::fill and friends
-// work through it. std::vector<bool>::reference is the precedent, down to
-// assignment being const-qualified because it writes through the proxy, not to it.
+// A proxy bool assigning back into the bits, with std::vector<bool>::reference the precedent, const-qualified assignment included.
 template<class Bits, bool IsConst>
 class array_reference
 {
@@ -305,14 +255,7 @@ public:
                 return array_find<Bits>::at(m_ref, m_idx);
         }
 
-        // const-qualified and returning a const reference, which is what a proxy
-        // reference is: the assignment writes through the proxy rather than to
-        // it, so the proxy itself need not be modifiable. C++23 gives
-        // std::vector<bool>::reference exactly this overload, added by P2321R2
-        // so that a prvalue proxy coming out of a view's operator* is still
-        // assignable. misc-unconventional-assign-operator only knows the
-        // ordinary shape - a non-const member returning a mutable reference -
-        // and reports the standard's own proxy shape as unconventional.
+        // const-qualified and returning a const reference, the proxy shape P2321R2 gave std::vector<bool>::reference.
         constexpr array_reference const& operator=(bool value) const noexcept  // NOLINT(misc-unconventional-assign-operator)
                 requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
@@ -340,9 +283,7 @@ template<array_range Bits, bool IsConst>
         return ref;
 }
 
-// Deliberately no key_type, unlike set_view: this is a sequence of bool with
-// index 0 first, so fmt's range formatter should print it [t, f, t, ...] rather
-// than with the set delimiters a nested key_type would select.
+// Deliberately no key_type, unlike set_view: fmt should print this as a sequence rather than with set delimiters.
 template<array_range Bits_cv, std::size_t Extent = bit_extent<std::remove_const_t<Bits_cv>>>
 class array_view : public std::ranges::view_base
 {
@@ -353,10 +294,7 @@ class array_view : public std::ranges::view_base
 
         Bits_cv* m_ptr;
 
-        // A view is as block-accessible as the thing it views, so an ordering over
-        // the view takes the same word-at-a-time path an ordering over the viewed
-        // type would. Constrained, so a view over a type that keeps its blocks to
-        // itself is simply not a block_range and keeps the element-wise path.
+        // A view is as block-accessible as the thing it views; constrained, so one over an opaque type keeps the element-wise path.
         [[nodiscard]] friend constexpr std::size_t block_count(array_view v) noexcept
                 requires block_range<bits_type>
         {
@@ -396,8 +334,7 @@ public:
         [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept { return std::make_reverse_iterator(cend());   }
         [[nodiscard]] constexpr const_reverse_iterator crend()   const noexcept { return std::make_reverse_iterator(cbegin()); }
 
-        // A constant expression wherever the Bits knows its own width, which is
-        // the whole reason Extent is a parameter rather than a runtime number.
+        // A constant expression wherever the Bits knows its own width, which is why Extent is a parameter at all.
         [[nodiscard]] constexpr size_type size() const noexcept
         {
                 if constexpr (extent != std::dynamic_extent) {
@@ -441,10 +378,7 @@ public:
                 }
         }
 
-        // Sequence order, index 0 first - not the set ordering set_view uses, and
-        // not any bitset's own <=>, whose element order is its own business. This
-        // one is always computed from the sequence, so there is nothing to trust
-        // and no set_compare analogue to opt out of.
+        // Sequence order, index 0 first, always computed from the sequence: nothing to trust, and no set_compare analogue.
         [[nodiscard]] friend constexpr std::strong_ordering operator<=>(array_view lhs, array_view rhs) noexcept
         {
                 return array_three_way(lhs, rhs);

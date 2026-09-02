@@ -6,14 +6,13 @@
 #ifndef XSTD_BITS_BITSET_HPP
 #define XSTD_BITS_BITSET_HPP
 
-// Bitsets                                                              [bitset]
-// Header <bitset> synopsis                                         [bitset.syn]
+// Bitsets [bitset], Header <bitset> synopsis [bitset.syn]
 
-#include <string>       // basic_string, char_traits
-#include <iosfwd>       // basic_istream, basic_ostream
+#include <iosfwd> // basic_istream, basic_ostream
+#include <string> // basic_string, char_traits
 
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
-#include <cstddef>      // size_t
+#include <cstddef>                                 // size_t
 
 namespace xstd {
 
@@ -29,46 +28,35 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 
 }       // namespace xstd
 
-#include <xstd/bits/detail/array.hpp>           // array
+#include <boost/hash2/fnv1a.hpp>           // fnv1a_64
+#include <boost/hash2/hash_append.hpp>     // hash_append
+#include <xstd/bits/detail/array.hpp>      // array
 #include <xstd/bits/ranges/array_view.hpp> // array_find
 #include <xstd/bits/ranges/set_view.hpp>   // set_find, set_compare
-#include <boost/hash2/fnv1a.hpp>        // fnv1a_64
-#include <boost/hash2/hash_append.hpp>  // hash_append
-#include <algorithm>                    // find_if, min
-#include <cassert>                      // assert
-#include <compare>                      // strong_ordering
-#include <format>                       // format
-#include <functional>                   // hash
-#include <ios>                          // ios_base
-#include <locale>                       // ctype, use_facet
-#include <memory>                       // allocator
-#include <ranges>                       // find_if, iota, reverse
-#include <source_location>              // source_location
-#include <string_view>                  // basic_string_view
-#include <stdexcept>                    // invalid_argument, out_of_range, overflow_error
+#include <algorithm>                       // find_if, min
+#include <cassert>                         // assert
+#include <compare>                         // strong_ordering
+#include <format>                          // format
+#include <functional>                      // hash
+#include <ios>                             // ios_base
+#include <locale>                          // ctype, use_facet
+#include <memory>                          // allocator
+#include <ranges>                          // find_if, iota, reverse
+#include <source_location>                 // source_location
+#include <stdexcept>                       // invalid_argument, out_of_range, overflow_error
+#include <string_view>                     // basic_string_view
 
-// Class template bitset                                       [template.bitset]
-// General                                             [template.bitset.general]
+// Class template bitset [template.bitset], General [template.bitset.general]
 
 namespace xstd {
 
 template<std::size_t N, xstd::unsigned_integer Block>
 class bitset
 {
-        // No iteration, no <=> here, by design: xstd::bitset mirrors
-        // std::bitset's own contract, which has neither (std::bitset has no
-        // begin()/end() and no operator<, only ==). Ordering/iteration for
-        // an xstd::bitset, like for std::bitset itself (see ext/std/
-        // bitset.hpp), is only available by explicitly choosing an
-        // interpretation via xstd::set_view (set of the
-        // indices that are set) or xstd::array_view
-        // (fixed-length sequence of bools) - xstd::bitset itself takes no
-        // side on which one is "the" ordering.
+        // No iteration and no <=> here by design, because std::bitset has neither: choose set_view or array_view.
         detail::bits::array<N, Block> m_bits{};
 
-        // xstd::ranges::block_access, so the two orderings can compare a word at a
-        // time instead of an element at a time. ADL rather than a specialization
-        // because this type is ours to add hidden friends to.
+        // ADL rather than a specialization, because this type is ours to add hidden friends to.
         [[nodiscard]] friend constexpr std::size_t block_count(const bitset&) noexcept { return detail::bits::array<N, Block>::num_blocks; }
         [[nodiscard]] friend constexpr Block block_at(const bitset& c, std::size_t i) noexcept { return c.m_bits.block(i); }
 
@@ -88,9 +76,7 @@ public:
                 constexpr ~reference() = default;
                 constexpr reference& operator=(bool x) noexcept;
                 constexpr reference& operator=(const reference& x) noexcept = default;
-                // A proxy reference assigns through a const proxy: the proxy is const,
-                // the bit it refers to is not. This is the shape the standard gives
-                // vector<bool>::reference, so the conventional signature is wrong here.
+                // A proxy reference assigns through a const proxy, the shape the standard gives vector<bool>::reference.
                 constexpr const reference& operator=(bool x) const noexcept;  // NOLINT(misc-unconventional-assign-operator)
                 constexpr explicit(false) operator bool() const noexcept;  // NOLINT(misc-explicit-constructor)
                 constexpr bool operator~() const noexcept;
@@ -299,21 +285,7 @@ private:
 
 }       // namespace xstd
 
-// xstd::bitset provides no find_first/find_last/find_next/find_prev of its
-// own (see the comment on m_bits above) - specializing set_find<> here is what
-// lets xstd::set_view(x) still work for it, the same
-// mechanism ext/std/bitset.hpp uses for the real std::bitset<N>, just
-// without that header's [namespace.std] motivation: here it's purely a
-// deliberate choice to keep xstd::bitset itself opinion-free about ordering.
-//
-// This scans through xstd::bitset's own public operator[], the same way
-// ext/std/bitset.hpp's set_find<std::bitset<N>> has to (it has no choice - it
-// can't reach std::bitset's internals at all) - not through m_bits
-// directly, even though this header could grant itself friend access to
-// detail::bits::array's already-O(1) find_first/find_last/find_next/find_prev.
-// xstd::bitset is meant to be nothing more than std::bitset reimplemented
-// in terms of detail::bits::array: it shouldn't get a privileged, faster set_find<> that
-// std::bitset itself has no way of also getting.
+// Specializing set_find is what lets set_view(x) work, and it scans public operator[], claiming no privilege std::bitset lacks.
 namespace xstd::ranges {
 
 // As for std::bitset<N>: the width is in the type.
@@ -355,13 +327,7 @@ struct set_find<xstd::bitset<N, Block>>
         }
 };
 
-// The other reading, and trivial for the same reason it is trivial in
-// ext/std/bitset.hpp: operator[] already answers every position, so unlike the
-// set reading there is no bit-scanning to arrange. Without this xstd::bitset
-// would be readable as a set and not as a sequence, where std::bitset -- the
-// type it reproduces -- is readable as both. The whole claim of this header is
-// that reimplementing std::bitset over detail::bits::array gives up nothing, and
-// a missing reading is something given up.
+// The other reading, trivial because operator[] answers every position; without it we would be a set and not a sequence.
 template<std::size_t N, xstd::unsigned_integer Block>
 struct array_find<xstd::bitset<N, Block>>
 {
@@ -370,10 +336,7 @@ struct array_find<xstd::bitset<N, Block>>
         [[nodiscard]] static constexpr bool         at  (xstd::bitset<N, Block> const& c, std::size_t n) noexcept { return c[n]; }
 };
 
-// xstd::bitset has no <=> of its own either (by the same design choice), so
-// set_set_compare<Bits>'s default (trust Bits' own <=>) doesn't apply - opt in to
-// the safe, iteration-based ordering explicitly, same as std::bitset<N> and
-// boost::dynamic_bitset<> do in their own headers.
+// No <=> of its own, so opt in to the iteration-based ordering explicitly, as std::bitset and dynamic_bitset do.
 template<std::size_t N, xstd::unsigned_integer Block>
 struct set_compare<xstd::bitset<N, Block>>
 {
@@ -389,19 +352,7 @@ namespace std {
 
 // NOLINTBEGIN(bugprone-std-namespace-modification)
 
-// bitset hash support                                             [bitset.hash]
-//
-// No "template<class T> struct hash;" forward declaration here: std::hash's
-// primary template is already declared by <functional> (below), and
-// redeclaring it ourselves is the same [namespace.std] problem this
-// codebase has spent a lot of effort avoiding elsewhere (find_first et al.
-// in ext/std/bitset.hpp) - it just happened to go unnoticed here, since
-// libstdc++'s declaration of the primary template is compatible enough with
-// a redeclaration to not conflict, while libc++'s isn't (confirmed: this
-// redeclaration makes "hash" ambiguous under AppleClang's libc++). A full/
-// partial specialization of std::hash for a user type is explicitly
-// sanctioned by the standard either way - only the primary template's own
-// declaration is off-limits to add ourselves.
+// bitset hash support [bitset.hash]; no redeclaration of std::hash's primary template, which [namespace.std] forbids.
 template<size_t N, unsigned_integral Block>
 struct hash<xstd::bitset<N, Block>>
 {
@@ -432,11 +383,7 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
         auto state = std::ios_base::goodbit;
         charT ch;
         auto i = 0UZ;
-        // One peek per character, held in next. Peeking twice cost a correct
-        // extraction its stream state: the first peek past the end sets
-        // eofbit, and the second then builds a sentry on a stream that is no
-        // longer good, which sets failbit. A short but valid input came back
-        // failed, when only an empty one should ([bitset.operators]/6).
+        // One peek per character: peeking twice sets eofbit then failbit, failing a short but valid extraction ([bitset.operators]/6).
         while (i < N) {
                 auto const next = is.peek();
                 if (not traits::eq_int_type(next, is.widen('0')) and not traits::eq_int_type(next, is.widen('1'))) {

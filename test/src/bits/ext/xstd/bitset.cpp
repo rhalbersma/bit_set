@@ -3,8 +3,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/ext/xstd/bitset.hpp> // begin, end, rbegin, rend over xstd::bitset
 #include <boost/test/unit_test.hpp>      // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <xstd/bits/ext/xstd/bitset.hpp> // begin, end, rbegin, rend over xstd::bitset
 #include <cstddef>                       // size_t
 #include <iterator>                      // distance
 #include <ranges>                        // begin, end, rbegin, rend, bidirectional_range
@@ -14,10 +14,7 @@ BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Xstd)
 BOOST_AUTO_TEST_SUITE(Bitset)
 
-// The ADL free functions this header adds route to the set reading, so iterating
-// an xstd::bitset visits the positions that are set, in increasing order -- the
-// keys, not the bools. That is the choice the header makes on the reader's
-// behalf, and the one worth pinning.
+// The ADL free functions route to the set reading, so iterating an xstd::bitset visits the keys, not the bools.
 BOOST_AUTO_TEST_CASE(IteratingVisitsTheOneBitsAsKeys)
 {
         auto c = xstd::bitset<16>();

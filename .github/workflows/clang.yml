@@ -20,14 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # No inputs: this library builds on every rung of the ladder, which is what
-  # the shared workflow defaults to.
-  #
-  # The libc++ leg that used to ride along in this file's matrix is now its
-  # own workflow (clang-libc++.yml), which is also where the note about the
-  # C++23 range adaptors libc++ is still missing has moved to. What is left
-  # here is the libstdc++ side, as before, and the shared ladder pairs each
-  # Clang rung with a matching GCC rung for that libstdc++ rather than
-  # pointing every rung at one version of it.
+  # No inputs: every rung. The libc++ leg is its own workflow now; what is left here is the libstdc++ side.
   clang:
     uses: rhalbersma/cpp-ci/.github/workflows/clang.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1

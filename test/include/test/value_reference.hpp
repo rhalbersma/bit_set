@@ -8,17 +8,10 @@
 
 #include <concepts>    // equality_comparable
 #include <type_traits> // is_copy_assignable_v, is_default_constructible_v, is_move_assignable_v,
-                       // is_trivially_copy_constructible_v, is_trivially_destructible_v,
-                       // is_trivially_move_constructible_v
 
 namespace test {
 
-// What a container's const_reference must be for a[i] = a[j] to write through it
-// rather than rebind it. A packed container's proxy and an unpacked one's
-// const bool& or const size_t& all satisfy this, which is the whole point: the
-// assignment means the same thing either way, so the caller cannot tell which it
-// has. Shared by both contracts -- a set's reference and a sequence's answer to
-// the same list.
+// What a const_reference must be for a[i] = a[j] to write through rather than rebind; a proxy and a const bool& both qualify.
 template<class R>
 concept value_reference =
             std::is_trivially_destructible_v<R>

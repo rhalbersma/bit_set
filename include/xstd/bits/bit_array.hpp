@@ -8,13 +8,13 @@
 
 // Header <array> synopsis                                           [array.syn]
 
-#include <compare>              // strong_ordering
-#include <initializer_list>     // initializer_list
+#include <compare>          // strong_ordering
+#include <initializer_list> // initializer_list
 
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
-#include <xstd/ints/memory.hpp> // align_up
-#include <cstddef>              // size_t
-#include <limits>               // digits
+#include <xstd/ints/memory.hpp>                    // align_up
+#include <cstddef>                                 // size_t
+#include <limits>                                  // digits
 
 namespace xstd {
 
@@ -35,28 +35,24 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 }       // namespace aligned
 }       // namespace xstd
 
-// The synopsis above and the implementation below each list the headers that
-// section needs, mirroring the layout of the standard itself. The overlap
-// between the two lists is deliberate: neither is complete without it.
-// NOLINTBEGIN(readability-duplicate-include): deliberate, see above
-#include <xstd/bits/detail/array.hpp>   // array
+// NOLINTBEGIN(readability-duplicate-include): synopsis and implementation each list what that section needs.
+#include <xstd/bits/detail/array.hpp> // array
 #include <xstd/bits/ranges.hpp>       // begin, end, iterator, reference
-#include <xstd/ints/memory.hpp> // align_up
-#include <cassert>              // assert
-#include <compare>              // strong_ordering
-#include <cstddef>              // ptrdiff_t, size_t
-#include <format>               // format
-#include <initializer_list>     // initializer_list
-#include <iterator>             // make_reverse_iterator, reverse_iterator, 
-#include <limits>               // digits
-#include <source_location>      // source_location
-#include <stdexcept>            // out_of_range
-#include <type_traits>          // conditional_t
-#include <utility>              // pair
+#include <xstd/ints/memory.hpp>       // align_up
+#include <cassert>                    // assert
+#include <compare>                    // strong_ordering
+#include <cstddef>                    // ptrdiff_t, size_t
+#include <format>                     // format
+#include <initializer_list>           // initializer_list
+#include <iterator>                   // make_reverse_iterator, reverse_iterator,
+#include <limits>                     // digits
+#include <source_location>            // source_location
+#include <stdexcept>                  // out_of_range
+#include <type_traits>                // conditional_t
+#include <utility>                    // pair
 // NOLINTEND(readability-duplicate-include)
 
-// Class template array                                                  [array]
-// Overview                                                     [array.overview]
+// Class template array [array], Overview [array.overview]
 
 namespace xstd {
 
@@ -65,9 +61,7 @@ struct bit_array
 {
         detail::bits::array<N, Block> m_bits;
 
-        // xstd::ranges::block_access, so the two orderings can compare a word at a
-        // time instead of an element at a time. ADL rather than a specialization
-        // because this type is ours to add hidden friends to.
+        // ADL rather than a specialization, because this type is ours to add hidden friends to.
         [[nodiscard]] friend constexpr std::size_t block_count(const bit_array&) noexcept { return detail::bits::array<N, Block>::num_blocks; }
         [[nodiscard]] friend constexpr Block block_at(const bit_array& c, std::size_t i) noexcept { return c.m_bits.block(i); }
 
@@ -122,23 +116,11 @@ struct bit_array
         [[nodiscard]] constexpr size_type     size() const noexcept { return N;      }
         [[nodiscard]] constexpr size_type max_size() const noexcept { return N;      }
 
-        // element access
-        //
-        // A plain auto return type can't deduce from a braced-init-list
-        // return statement (that's only valid to initialize a named
-        // variable, e.g. auto x = {1, 2}, not to deduce a function's return
-        // type) - both GCC and Clang reject it. An explicit trailing return
-        // type sidesteps that entirely; it's just reference or
-        // const_reference depending on self's constness, same as the
-        // (unconstrained) auto was trying to express.
+        // element access; an explicit trailing return type, because plain auto cannot deduce from a braced-init-list return.
         template<class Self>
         using result_t = std::conditional_t<std::is_const_v<std::remove_reference_t<Self>>, const_reference, reference>;
 
-        // The assert is on its own line, as set_iterator's operator* and operator++
-        // already are: the coverage job drops assert branches by matching the start
-        // of the line, so an assert sharing a line with real code keeps its
-        // never-taken branch. This was the last one in the library sharing a line,
-        // and it went unnoticed while nothing indexed a bit_array at run time.
+        // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
         [[nodiscard]] constexpr auto operator[](this auto&& self, size_type n) noexcept -> result_t<decltype(self)>
         {
                 assert(n < N);
@@ -170,11 +152,7 @@ private:
 
 template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
 
-// detail::bits::array is a pure storage vehicle with no <=> of its own (see its
-// comments) - bit_array's own ordering is the fixed-length sequence-of-bool
-// order (index 0 first), exactly what std::array<bool, N>'s <=> would
-// compute, via its own random_access iteration over every index (not just
-// the set ones - that's bit_finite_set's contract, a different relation).
+// bit_array orders as a sequence of bool over every index, which is what std::array<bool, N>'s <=> would compute.
 template<std::size_t N, xstd::unsigned_integer Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept
         -> std::strong_ordering

@@ -3,17 +3,14 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <test/bitset/exhaustive.hpp>             // empty_set_pair
+#include <test/bitset/primitives.hpp>             // constructor,
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <test/bitset/exhaustive.hpp>             // empty_set_pair
-#include <test/bitset/primitives.hpp>             // constructor,
-                                        // mem_bit_and_assign, mem_bit_or_assign, mem_bit_xor_assign, mem_bit_minus_assign,
-                                        // mem_equal_to, mem_compare_three_way, mem_is_subset_of, mem_is_proper_subset_of, mem_intersect,
-                                        // op_bit_and, op_bit_or, op_bit_xor, op_bit_minus,
-#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
-#include <tuple>                        // tuple
+#include <cstdint>                                // uint8_t, uint16_t, uint32_t, uint64_t
+#include <tuple>                                  // tuple
 
 BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(O0)

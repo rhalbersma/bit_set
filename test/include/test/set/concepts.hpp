@@ -6,16 +6,14 @@
 #ifndef TEST_SET_CONCEPTS_HPP
 #define TEST_SET_CONCEPTS_HPP
 
-#include <test/value_reference.hpp>      // value_reference
-#include <concepts>                      // regular, totally_ordered
-#include <iterator>                      // bidirectional_iterator
-#include <ranges>                        // bidirectional_range
+#include <test/value_reference.hpp> // value_reference
+#include <concepts>                 // regular, totally_ordered
+#include <iterator>                 // bidirectional_iterator
+#include <ranges>                   // bidirectional_range
 
 namespace test::set {
 
-// The interface a bit-packed set shares with the set it packs. The sequence
-// counterpart is random-access over bool; this one is bidirectional over the
-// keys, which is the whole difference between the two readings of a bitset.
+// The interface a bit-packed set shares with the set it packs: bidirectional over keys, where the sequence reading is random-access over bool.
 template<class C>
 concept bit_set =
         std::regular<C>

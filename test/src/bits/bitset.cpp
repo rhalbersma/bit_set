@@ -3,11 +3,11 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/bitset.hpp>      // bitset
-#include <test/block_types.hpp>      // graded_extents
-#include <boost/test/unit_test.hpp>  // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
-#include <concepts>                  // regular, totally_ordered
-#include <type_traits>               // is_nothrow_*, is_trivially_*
+#include <boost/test/unit_test.hpp> // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <test/block_types.hpp>     // graded_extents
+#include <xstd/bits/bitset.hpp>     // bitset
+#include <concepts>                 // regular, totally_ordered
+#include <type_traits>              // is_nothrow_*, is_trivially_*
 
 BOOST_AUTO_TEST_SUITE(Bitset)
 
@@ -18,11 +18,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, Types)
         static_assert(std::regular<T>);
 }
 
-// Deliberately not orderable by itself, because std::bitset is not: this type
-// reproduces that one, and an infix <=> it does not have would be a difference,
-// not a bonus. The ordering is reached the same way std::bitset's is, through
-// the set reading -- see xstd/bits/ext/std/bitset.hpp for why that is the only
-// place it can live for std::bitset, and why ours follows suit.
+// Deliberately not orderable by itself, because std::bitset is not: the ordering is reached through the set reading.
 BOOST_AUTO_TEST_CASE_TEMPLATE(OrderedThroughTheViewRatherThanInfix, T, Types)
 {
         static_assert(not std::totally_ordered<T>);

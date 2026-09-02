@@ -6,26 +6,22 @@
 #ifndef TEST_BITSET_PRIMITIVES_HPP
 #define TEST_BITSET_PRIMITIVES_HPP
 
-#include <test/dynamic.hpp>                      // dynamic
+#include <boost/test/unit_test.hpp>      // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
+#include <test/dynamic.hpp>              // dynamic
 #include <xstd/bits/ranges/set_view.hpp> // view
-#include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
-#include <cstddef>                      // ptrdiff_t, size_t
-#include <iterator>                     // distance, inserter
-#include <memory>                       // addressof
-#include <set>                          // set
-#include <sstream>                      // istringstream, stringstream
-#include <stdexcept>                    // invalid_argument, out_of_range
-#include <string>                       // string
-#include <string_view>                  // string_view
-#include <type_traits>                  // remove_cvref_t
+#include <cstddef>                       // ptrdiff_t, size_t
+#include <iterator>                      // distance, inserter
+#include <memory>                        // addressof
+#include <set>                           // set
+#include <sstream>                       // istringstream, stringstream
+#include <stdexcept>                     // invalid_argument, out_of_range
+#include <string>                        // string
+#include <string_view>                   // string_view
+#include <type_traits>                   // remove_cvref_t
 
 namespace test::bitset {
 
-// The checks below are on xstd::bitset's basic_string_view overload, and are
-// its own. std::bitset has no such overload at all; boost::dynamic_bitset
-// does, but answers to its own contract rather than [bitset.cons] - having no
-// fixed N, it has no position to be out of range of, and its extractor sizes
-// itself from what it reads. "not dynamic" is what separates the two.
+// These checks are on xstd::bitset's basic_string_view overload: std::bitset has none, and dynamic_bitset answers to its own contract.
 template<class X>
 concept fixed_string_view_constructible = requires { X(std::string_view()); } and not dynamic<X>;
 
@@ -351,19 +347,7 @@ struct mem_compare_three_way
                 }
         }
 
-        // A prior version of this also checked fn_compare_three_way(self, rhs)
-        // against a to_string()-based reversed-string comparison with self and
-        // rhs swapped. That construction computes the array-of-bool relation
-        // (bit 0 compared first), not the std::set<int>-style relation
-        // fn_compare_three_way actually implements - it only ever agreed by
-        // coincidence, because every caller until now only ever compared
-        // equal-cardinality operands, where the two relations happen to
-        // coincide (see xstd::ranges::set_compare's comments). It
-        // fails for genuinely mixed-cardinality pairs (e.g. empty vs.
-        // singleton), which isn't a bug in the type being tested - the
-        // construction itself doesn't generalize. The view-based check below
-        // is the general, always-valid one: it re-derives the same order
-        // from each type's own ascending iteration, for any cardinality.
+        // The view-based check re-derives the order from each type's own ascending iteration, so it holds at any cardinality.
         template<class X>
         auto operator()(const X& self, const X& rhs) const noexcept
         {
@@ -453,10 +437,7 @@ struct mem_is_proper_subset_of
         }
 };
 
-// is_proper_subset_of stops at the first block that is not a subset, and its
-// multi-block paths only reach the last block when every earlier one compares
-// equal. Neither shape occurs among the singleton and doubleton pairs the
-// exhaustive tests build, so the four edges are named here.
+// The four edges is_proper_subset_of's multi-block paths need, which singleton and doubleton pairs never reach.
 struct mem_is_proper_subset_of_edges
 {
         template<class X>
@@ -550,9 +531,7 @@ struct op_iostream
         }
 };
 
-// The extractor stores nothing when the first character is neither zero nor
-// one, and nothing is exactly what an empty stream offers too. Both leave
-// failbit set for a non-empty bitset, and both leave a zero-size one alone.
+// A first character that is neither zero nor one stores nothing, exactly as an empty stream does: failbit unless N is zero.
 template<class X>
 struct op_istream_failure
 {
@@ -568,8 +547,7 @@ struct op_istream_failure
                                 BOOST_CHECK_EQUAL(is.fail(), N > 0);            // [bitset.operators]/6
                         }
 
-                        // Fewer digits than N: the loop stops on eof rather
-                        // than on N, and what was read lands at the front.
+                        // Fewer digits than N: the loop stops on eof rather than on N, and what was read lands at the front.
                         if constexpr (N > 1) {
                                 auto is = std::istringstream("1");
                                 auto x = X();

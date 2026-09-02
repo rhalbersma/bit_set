@@ -3,16 +3,16 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <opt/bitset/sieve.hpp>         // filter_twins, sift_primes0, sift_primes1
+#include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
+#include <fmt/format.h>                           // format
+#include <fmt/ranges.h>
+#include <opt/bitset/sieve.hpp>                   // filter_twins, sift_primes0, sift_primes1
+#include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
-#include <xstd/bits/ranges/set_view.hpp> // view
-#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
-#include <fmt/format.h>                 // format
-#include <fmt/ranges.h>
-#include <tuple>                        // tuple
+#include <xstd/bits/ranges/set_view.hpp>          // view
+#include <tuple>                                  // tuple
 
 BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(Sieve)
@@ -49,10 +49,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheSiftedPrimesAndTwinsFormatAsExpected, T, Types)
 
 BOOST_AUTO_TEST_CASE(ATwoBitSieveSiftsToNothing)
 {
-        // Sifting 0 and 1 out of a two-bit sieve leaves nothing, so
-        // sift_primes1 runs its loop to exhaustion rather than breaking on the
-        // first p whose square is out of range. Only dynamic_bitset can be
-        // that small; the fixed-size types above are all sized N.
+        // A two-bit sieve leaves nothing, so sift_primes1 runs its loop to exhaustion; only dynamic_bitset can be that small.
         BOOST_CHECK(xstd::sift_primes1<boost::dynamic_bitset<>>(2).none());
 }
 

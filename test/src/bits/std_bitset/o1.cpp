@@ -3,17 +3,14 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
-#include <xstd/bits/ext/std/bitset.hpp>           // bitset
-#include <xstd/bits/bitset.hpp>              // bitset
+#include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <test/bitset/exhaustive.hpp>             // all_cardinality_sets, all_singleton_sets, all_valid, any_value, empty_set, full_set
 #include <test/bitset/primitives.hpp>             // mem_set, mem_reset, mem_bit_not, mem_flip,
-                                        // mem_at,
-                                        // mem_count, mem_size, mem_test, mem_all, mem_any, mem_none, mem_compare_three_way,
-                                        // op_iostream
-#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
-#include <tuple>                        // tuple
+#include <xstd/bits/bitset.hpp>                   // bitset
+#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
+#include <xstd/bits/ext/std/bitset.hpp>           // bitset
+#include <cstdint>                                // uint8_t, uint16_t, uint32_t, uint64_t
+#include <tuple>                                  // tuple
 
 BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(O1)
@@ -130,10 +127,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheObserversHoldOverEveryCardinalityAndSingleton, 
         on1::all_cardinality_sets<T>(mem_any());
         on1::all_cardinality_sets<T>(mem_none());
 
-        // empty/full set vs. every singleton, at matching N (so a
-        // boost::dynamic_bitset<> operand pair is same-length - the only
-        // thing under test here is the cardinality mismatch, not a length
-        // mismatch too).
+        // empty/full set vs. every singleton at matching N, so a dynamic_bitset pair is same-length and only cardinality differs.
         on1::all_singleton_sets<T>([](auto const& bs1) {
                 on0::empty_set<T, limit_v<T, L1>>([&](auto const& bs0) {
                         mem_compare_three_way()(bs0, bs1);

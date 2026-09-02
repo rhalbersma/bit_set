@@ -6,9 +6,9 @@
 #ifndef TEST_SEQUENCE_ORDERING_HPP
 #define TEST_SEQUENCE_ORDERING_HPP
 
-#include <xstd/bits/ranges/array_view.hpp> // array_view
-#include <test/bitset/factory.hpp>         // make_bitset
 #include <boost/test/unit_test.hpp>        // BOOST_CHECK_EQUAL
+#include <test/bitset/factory.hpp>         // make_bitset
+#include <xstd/bits/ranges/array_view.hpp> // array_view
 #include <algorithm>                       // lexicographical_compare
 #include <compare>                         // strong_ordering
 #include <cstddef>                         // size_t
@@ -16,14 +16,7 @@
 
 namespace test::sequence {
 
-// What the sequence reading of a bitset must order like, checked against the
-// standard container that defines the relation rather than against a restatement
-// of it. The set counterpart is test/set/ordering.hpp, and this exists for
-// the same reason plus one more: array_view reaches its ordering by two routes
-// now -- a word at a time where the viewed type says where its blocks are, and
-// element by element where it does not -- and both have to give this answer.
-//
-// The universe is tiny on purpose: every ordered pair is 4^universe comparisons.
+// What the sequence reading must order like, against the container defining the relation; both of array_view's routes must agree.
 template<class Bits>
 auto ordering_agrees_with_vector_bool(std::size_t universe = 4) -> void
 {
@@ -33,12 +26,7 @@ auto ordering_agrees_with_vector_bool(std::size_t universe = 4) -> void
                         auto x = test::bitset::make_bitset<Bits>(universe);
                         auto y = test::bitset::make_bitset<Bits>(universe);
 
-                        // Written through the view, in the sequence vocabulary,
-                        // which is the interface under test rather than the
-                        // bitset's own.
-                        // Named rather than written as xstd::array_view(x)[k]:
-                        // class template argument deduction followed by [k]
-                        // parses as an array declaration, not a subscript.
+                        // Written through the view; named rather than inlined, because CTAD followed by [k] parses as an array declaration.
                         auto xw = xstd::array_view(x);
                         auto yw = xstd::array_view(y);
                         for (auto k = 0UZ; k < universe; ++k) {
@@ -49,8 +37,7 @@ auto ordering_agrees_with_vector_bool(std::size_t universe = 4) -> void
                         auto const xv = xstd::array_view(x);
                         auto const yv = xstd::array_view(y);
 
-                        // The reference holds the same bools at the same
-                        // positions, over the whole width the view reports.
+                        // The reference holds the same bools at the same positions, over the whole width the view reports.
                         auto vx = std::vector<bool>(xv.size());
                         auto vy = std::vector<bool>(yv.size());
                         for (auto k = 0UZ; k < xv.size(); ++k) { vx[k] = static_cast<bool>(xv[k]); }

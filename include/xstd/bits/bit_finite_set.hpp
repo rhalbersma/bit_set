@@ -8,14 +8,14 @@
 
 // Header <set> synopsis                                   [associative.set.syn]
 
-#include <compare>              // strong_ordering
-#include <initializer_list>     // initializer_list
+#include <compare>          // strong_ordering
+#include <initializer_list> // initializer_list
 
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
-#include <xstd/ints/memory.hpp> // align_up
-#include <concepts>             // constructible_from
-#include <cstddef>              // size_t
-#include <limits>               // digits
+#include <xstd/ints/memory.hpp>                    // align_up
+#include <concepts>                                // constructible_from
+#include <cstddef>                                 // size_t
+#include <limits>                                  // digits
 
 namespace xstd {
 
@@ -39,31 +39,27 @@ using bit_finite_set = xstd::bit_finite_set<xstd::align_up(N, static_cast<std::s
 }       // namespace aligned
 }       // namespace xstd
 
-// The synopsis above and the implementation below each list the headers that
-// section needs, mirroring the layout of the standard itself. The overlap
-// between the two lists is deliberate: neither is complete without it.
-// NOLINTBEGIN(readability-duplicate-include): deliberate, see above
-#include <xstd/bits/detail/array.hpp>           // array
-#include <xstd/bits/ranges.hpp>               // const_iterator, const_reference
-#include <boost/hash2/fnv1a.hpp>        // fnv1a_64
-#include <boost/hash2/hash_append.hpp>  // hash_append
-#include <cassert>                      // assert
-#include <compare>                      // strong_ordering
-#include <concepts>                     // constructible_from
-#include <cstddef>                      // ptrdiff_t, size_t
-#include <functional>                   // less
-#include <initializer_list>             // initializer_list
-#include <iterator>                     // make_reverse_iterator, reverse_iterator, 
+// NOLINTBEGIN(readability-duplicate-include): synopsis and implementation each list what that section needs.
+#include <boost/hash2/fnv1a.hpp>       // fnv1a_64
+#include <boost/hash2/hash_append.hpp> // hash_append
+#include <xstd/bits/detail/array.hpp>  // array
+#include <xstd/bits/ranges.hpp>        // const_iterator, const_reference
+#include <cassert>                     // assert
+#include <compare>                     // strong_ordering
+#include <concepts>                    // constructible_from
+#include <cstddef>                     // ptrdiff_t, size_t
+#include <functional>                  // less
+#include <initializer_list>            // initializer_list
+#include <iterator>                    // make_reverse_iterator, reverse_iterator,
                                         // input_iterator, sentinel_for
-#include <limits>                       // digits
-#include <ranges>                       // begin, empty, end, from_range_t, next, rbegin, rend
+#include <limits> // digits
+#include <ranges> // begin, empty, end, from_range_t, next, rbegin, rend
                                         // input_range
-#include <type_traits>                  // conditional_t
-#include <utility>                      // forward, move, pair
+#include <type_traits> // conditional_t
+#include <utility>     // forward, move, pair
 // NOLINTEND(readability-duplicate-include)
 
-// Class template set                                                      [set]
-// Overview                                                       [set.overview]
+// Class template set [set], Overview [set.overview]
 
 namespace xstd {
 
@@ -72,9 +68,7 @@ class bit_finite_set
 {
         detail::bits::array<N, Block> m_bits{};
 
-        // xstd::ranges::block_access, so the two orderings can compare a word at a
-        // time instead of an element at a time. ADL rather than a specialization
-        // because this type is ours to add hidden friends to.
+        // ADL rather than a specialization, because this type is ours to add hidden friends to.
         [[nodiscard]] friend constexpr std::size_t block_count(const bit_finite_set&) noexcept { return detail::bits::array<N, Block>::num_blocks; }
         [[nodiscard]] friend constexpr Block block_at(const bit_finite_set& c, std::size_t i) noexcept { return c.m_bits.block(i); }
 
@@ -285,10 +279,7 @@ private:
 
 template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bool operator== (const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
 
-// detail::bits::array is a pure storage vehicle with no <=> of its own (see its
-// comments) - bit_finite_set's own ordering is std::set<int>-equivalent: the
-// lexicographic order of its own ascending sequence of set-bit indices,
-// exactly what std::set<int> would compute for the same elements.
+// bit_finite_set orders as std::set<int> does: lexicographically over its ascending sequence of set-bit indices.
 template<std::size_t N, xstd::unsigned_integer Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept
         -> std::strong_ordering

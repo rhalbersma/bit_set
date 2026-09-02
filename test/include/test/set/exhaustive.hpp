@@ -6,13 +6,13 @@
 #ifndef TEST_SET_EXHAUSTIVE_HPP
 #define TEST_SET_EXHAUSTIVE_HPP
 
-#include <algorithm>            // max
-#include <array>                // array
-#include <cassert>              // assert
-#include <concepts>             // integral
-#include <initializer_list>     // initializer_list
-#include <ranges>               // iota, to
-#include <utility>              // declval
+#include <algorithm>        // max
+#include <array>            // array
+#include <cassert>          // assert
+#include <concepts>         // integral
+#include <initializer_list> // initializer_list
+#include <ranges>           // iota, to
+#include <utility>          // declval
 
 #if defined(_MSC_VER)
         // xstd::bit_finite_set<0> gives bogus "unreachable code" warnings

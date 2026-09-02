@@ -3,23 +3,21 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
+#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <test/block_types.hpp>         // graded_extents
 #include <test/set/concepts.hpp>        // bit_set
 #include <test/value_reference.hpp>     // value_reference
-#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <concepts>                     // regular, totally_ordered
 #include <iterator>                     // bidirectional_iterator
 #include <ranges>                       // bidirectional_range
 
 BOOST_AUTO_TEST_SUITE(BitFiniteSet)
 
-// Every Block model within one block, and the narrow ones across block
-// boundaries too; the grading is in test/block_types.hpp.
+// Every Block model within one block and the narrow ones across boundaries; the grading is in test/block_types.hpp.
 using Types = test::graded_extents<xstd::bit_finite_set>;
 
-// The clauses one at a time, so a failure names which one. The umbrella asserts
-// the composite over this and over the std::set it packs.
+// The clauses one at a time, so a failure names which one; the umbrella asserts the composite.
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, Types)
 {
         static_assert(std::regular<T>);

@@ -23,32 +23,9 @@ jobs:
   clang_tidy:
     uses: rhalbersma/cpp-ci/.github/workflows/clang-tidy.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
     with:
-      # The generated per-header units alone, as run-clang-tidy matches them
-      # against the compile database's absolute paths. No sources_regex: the
-      # Boost.Test macros drown the signal in noise, which is the same reason
-      # the workflow this replaces passed only this pattern. Every public
-      # header is a primary input either way, and .clang-tidy sets
-      # WarningsAsErrors, so any finding fails the job.
+      # The generated per-header units alone: the Boost.Test macros drown the signal in noise.
       self_sufficiency_regex: ${{ github.workspace }}/build/test/header_self_sufficiency/.*
-      # The per-header pass compiles each header standalone with
-      # -I<header_dir> alone, not from the compile database, so anything a
-      # header includes from outside this repository is not found and
-      # clang-tidy reports a clang-diagnostic-error rather than a finding.
-      # Two libraries are needed:
-      #
-      #   xstd, which bit/array.hpp and others include directly, and which
-      #   CMakeLists.txt fetches with FetchContent when it is not already
-      #   installed. FetchContent puts it at ${CMAKE_BINARY_DIR}/_deps/<name>-src,
-      #   the same shape xstd's own stub names for the libraries its ext/
-      #   headers adapt.
-      #
-      #   Boost, for ext/boost/dynamic_bitset.hpp and the hash2 headers, which
-      #   vcpkg installs. Both candidate directories are named because the
-      #   vcpkg-install action installs to the workspace root while vcpkg's
-      #   CMake toolchain defaults to the build tree.
-      #
-      # The workflow adds -isystem only for a directory that exists, so naming
-      # a candidate that turns out not to be used costs nothing.
+      # The per-header pass compiles standalone, so xstd (FetchContent) and Boost (vcpkg) must be named; an absent candidate costs nothing.
       adapted_dirs: >-
         build/_deps/xstd-src/include
         vcpkg_installed/x64-linux/include

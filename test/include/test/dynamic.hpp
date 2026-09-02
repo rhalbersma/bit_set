@@ -6,7 +6,7 @@
 #ifndef TEST_DYNAMIC_HPP
 #define TEST_DYNAMIC_HPP
 
-#include <utility>      // declval
+#include <utility> // declval
 
 namespace test {
 

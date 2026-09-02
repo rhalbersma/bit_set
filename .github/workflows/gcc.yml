@@ -20,11 +20,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # No inputs: this library builds on every rung of the ladder, which is what
-  # the shared workflow defaults to. The rungs it names move with cpp-ci, so
-  # the local matrix's hardcoded 15/16/17-SVN is gone along with the two
-  # install paths (apt for stable, kayari.org's .deb for trunk) and the
-  # x64-linux-gcc-trunk overlay triplet that rebuilt the dependencies with
-  # the trunk snapshot's own libstdc++.
+  # No inputs: every rung, and the rungs move with cpp-ci rather than with a local matrix.
   gcc:
     uses: rhalbersma/cpp-ci/.github/workflows/gcc.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1

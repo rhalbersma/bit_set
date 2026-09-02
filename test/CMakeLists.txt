@@ -11,8 +11,7 @@ find_package(
 find_package(fmt REQUIRED)
 find_package(range-v3 CONFIG REQUIRED)
 
-# clang-cl reports CXX_COMPILER_ID Clang but only understands its MSVC-style
-# driver flags, not GNU-style ones like -pedantic-errors.
+# clang-cl reports CXX_COMPILER_ID Clang but understands only MSVC-style driver flags.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
     set(bit_set_is_clang_cl ON)
 else()
@@ -82,42 +81,20 @@ set(cxx_compile_options_optimization
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
         -march=native
     >
-    # MinGW emits 32-byte aligned stores to a 16-byte aligned stack; the assembler rewrites
-    # them unaligned, keeping 256-bit vectors (#54, GCC PR target/54412, binutils 2.38+).
+    # MinGW emits 32-byte stores to a 16-byte aligned stack; the assembler rewrites them unaligned (#54, GCC PR target/54412).
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
         -Wa$<COMMA>-muse-unaligned-vector-move
     >
 )
 
-# Required in every configuration, Debug included. #47 withheld it from Debug
-# to test whether -Wa,-mbig-obj combined with -g was what makes the MinGW
-# Debug legs segfault. Both halves of that experiment answered at once, and
-# the answer is no:
-#
-#   GCC 15 Debug    assembler: 'file too big' on test/src/bits/std_set/o0.cpp.obj
-#   GCC 17-SVN Debug  same, on std_set/o0, std_set/o2 and
-#                     std_bitset/o0
-#   GCC 16 Debug    assembles, then segfaults in exactly the four tests the
-#                   flag was suspected of breaking - test.bits.std_bitset.o1,
-#                   test.bits.std_set.o0, test.bits.std_set.o2,
-#                   test.bits.std_set.sieve
-#
-# Two rungs out of three cannot even assemble these objects without the flag,
-# so it is load-bearing. The third assembles without it and crashes anyway,
-# so the flag is not what causes the crash. -g1 and split DWARF were the
-# remedies for the interaction hypothesis; there is no interaction to remedy.
-# The MinGW Debug segfaults remain open and are unrelated to this line.
+# Load-bearing in every configuration: without it two of three MinGW rungs cannot assemble these objects at all (#47).
 set(cxx_compile_options_mbig_obj
     $<$<AND:$<CXX_COMPILER_ID:GNU>,$<PLATFORM_ID:Windows>>:
 	    -Wa,-mbig-obj
     >
 )
 
-# Each public header is compiled as its own translation unit (linked against
-# the same warning flags as the unit tests), proving it is self-sufficient.
-# This is what the Clang-Tidy workflow analyzes - the Boost.Test sources
-# below are left out of that analysis on purpose: the test macros drown the
-# signal in noise.
+# Each public header compiled as its own translation unit, proving it self-sufficient; this is what Clang-Tidy analyzes.
 set(public_header_dir ${PROJECT_SOURCE_DIR}/include)
 file(
     GLOB_RECURSE public_headers
@@ -138,9 +115,7 @@ foreach(h ${public_headers})
 
     add_executable(header.${header_test_id} ${header_test_source})
 
-    # Boost::headers because xstd/bits/ext/boost/dynamic_bitset.hpp adapts a
-    # header-only Boost library, and the self-sufficiency units under ext/ have
-    # to see it. The bit_set target itself carries only Boost::hash2.
+    # Boost::headers because the ext/ self-sufficiency units adapt a header-only Boost library; the target carries only hash2.
     target_link_libraries(
         header.${header_test_id} PRIVATE
         ${CMAKE_PROJECT_NAME}
@@ -162,15 +137,7 @@ foreach(h ${public_headers})
     add_test(NAME header.${header_test_id} COMMAND header.${header_test_id})
 endforeach()
 
-# The test tree mirrors the header tree: every public header is answered by
-# exactly one test source at the same path, so a reviewer reading
-# include/xstd/bits/ranges/set_view.hpp knows where its tests are without
-# looking. Enforced here so it cannot drift.
-#
-# detail/ is excluded. It is machinery rather than interface -- the storage
-# vehicles the containers are built from -- and it is tested through the
-# containers that carry it, not directly. It still gets a header
-# self-sufficiency target above; what it does not get is a mirrored source.
+# Every public header is answered by one test source at the same path, detail/ excepted; enforced here so it cannot drift.
 file(
     GLOB_RECURSE mirrored_headers
     CONFIGURE_DEPENDS
@@ -201,22 +168,14 @@ endif()
 
 set(current_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(current_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
-# The pattern is anchored to current_src_dir. RELATIVE only controls how
-# the results are reported, not where the search runs: an unanchored
-# *.cpp resolves against CMAKE_CURRENT_SOURCE_DIR, i.e. test/ rather than
-# test/src/, and so swept up every .cpp anywhere under test/ -- including
-# test/consumer/main.cpp, which then compiled with BOOST_TEST_MAIN and
-# collided with the main Boost.Test generates.
+# Anchored to current_src_dir: an unanchored *.cpp resolves against test/ and swept up consumer/main.cpp.
 file(GLOB_RECURSE targets RELATIVE ${current_src_dir} ${current_src_dir}/*.cpp)
 
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR FILENAME target_source_dir)
 foreach(t ${targets})
     cmake_path(GET t PARENT_PATH target_parent_path)
     cmake_path(GET t STEM        target_stem       )
-    # A source directly under src/ has an empty parent path, which used to
-    # leave an empty component in the middle -- test/src/bits.cpp came out as
-    # test..bits. Collapse runs of separators before splitting on them, so the
-    # id is the path and nothing else.
+    # A source directly under src/ has an empty parent path, which used to leave test/src/bits.cpp as test..bits.
     string(REPLACE "/" "." target_id ${target_source_dir}/${target_parent_path}/${target_stem})
     string(REGEX REPLACE "[.]+" "." target_id ${target_id})
     string(REGEX REPLACE "^[.]" "" target_id ${target_id})

@@ -6,16 +6,14 @@
 #ifndef TEST_SEQUENCE_CONCEPTS_HPP
 #define TEST_SEQUENCE_CONCEPTS_HPP
 
-#include <test/value_reference.hpp>      // value_reference
-#include <concepts>                      // regular, totally_ordered
-#include <iterator>                      // random_access_iterator
-#include <ranges>                        // random_access_range
+#include <test/value_reference.hpp> // value_reference
+#include <concepts>                 // regular, totally_ordered
+#include <iterator>                 // random_access_iterator
+#include <ranges>                   // random_access_range
 
 namespace test::sequence {
 
-// The interface a bit-packed sequence shares with the sequence it packs. Named
-// here rather than restated per container, so the umbrella can say the two
-// satisfy the same one instead of comparing two lists and hoping they stay equal.
+// The interface a bit-packed sequence shares with the sequence it packs, named once rather than restated per container.
 template<class C>
 concept bit_sequence =
         std::regular<C>

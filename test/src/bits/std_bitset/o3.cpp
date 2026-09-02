@@ -3,14 +3,14 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <test/bitset/exhaustive.hpp>             // all_singleton_sets, all_doubleton_sets, all_triplet_sets, empty_set, full_set
+#include <test/bitset/primitives.hpp>             // mem_compare_three_way
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <test/bitset/exhaustive.hpp>             // all_singleton_sets, all_doubleton_sets, all_triplet_sets, empty_set, full_set
-#include <test/bitset/primitives.hpp>             // mem_compare_three_way
-#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
-#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
-#include <tuple>                        // tuple
+#include <cstdint>                                // uint8_t, uint16_t, uint32_t, uint64_t
+#include <tuple>                                  // tuple
 
 BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(O3)
@@ -35,8 +35,7 @@ using Types = std::tuple
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWayHoldsOverEveryTripletAndDoubleton, T, Types)
 {
-        // empty/full set vs. every triplet, at matching N - see o1.cpp's
-        // identical singleton case for why N is pinned explicitly.
+        // empty/full set vs. every triplet at matching N -- see o1.cpp for why N is pinned.
         on3::all_triplet_sets<T>([](auto const& bs3) {
                 on0::empty_set<T, limit_v<T, L3>>([&](auto const& bs0) {
                         mem_compare_three_way()(bs0, bs3);

@@ -23,7 +23,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # No inputs: c-cpp with security-extended is what the local job ran and
-  # what the shared workflow defaults to.
+  # No inputs: c-cpp with security-extended is the shared workflow's default.
   codeql:
     uses: rhalbersma/cpp-ci/.github/workflows/codeql.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1

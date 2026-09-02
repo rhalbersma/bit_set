@@ -6,29 +6,23 @@
 #ifndef XSTD_BITS_EXT_STD_BITSET_HPP
 #define XSTD_BITS_EXT_STD_BITSET_HPP
 
+#include <xstd/bits/ranges/array_view.hpp>   // find, view
 #include <xstd/bits/ranges/block_access.hpp> // block_access
-#include <xstd/bits/ranges/set_view.hpp> // find, view
-#include <xstd/bits/ranges/array_view.hpp> // find, view
-#include <algorithm>                    // find_if
-#include <bitset>                       // bitset
-#include <cassert>                      // assert
-#include <compare>                      // strong_ordering
-#include <cstddef>                      // size_t
-#include <limits>                       // numeric_limits
-#include <utility>                      // declval
-#include <ranges>                       // find_if
+#include <xstd/bits/ranges/set_view.hpp>     // find, view
+#include <algorithm>                         // find_if
+#include <bitset>                            // bitset
+#include <cassert>                           // assert
+#include <compare>                           // strong_ordering
+#include <cstddef>                           // size_t
+#include <limits>                            // numeric_limits
+#include <ranges>                            // find_if
+#include <utility>                           // declval
                                         // iota
 
-// std::bitset<N>'s only associated namespace is std, where a program may
-// not add declarations [namespace.std] - so its find_first/find_last/
-// find_next/find_prev customizations can't legally live where ADL would
-// find them. Specializing xstd::ranges::set_find here instead
-// works regardless: unlike ADL, template specialization matching considers
-// specializations visible before the point of use, wherever declared.
+// std::bitset's only associated namespace is std, where [namespace.std] forbids adding ADL hooks, so specialize set_find instead.
 namespace xstd::ranges {
 
-// The width is in the type, so set_view's max_size() and array_view's size() are
-// constant expressions over a std::bitset<N>.
+// The width is in the type, so set_view's max_size() and array_view's size() are constant expressions.
 template<std::size_t N>
 inline constexpr std::size_t bit_extent<std::bitset<N>> = N;
 
@@ -73,11 +67,7 @@ struct set_find<std::bitset<N>>
         }
 };
 
-// std::bitset<N> has no <=> of its own, so xstd::ranges::set_set_compare<Bits>'s
-// default (trust Bits' own <=>) doesn't apply - it must opt
-// in to the safe, iteration-based ordering explicitly. This is what
-// set_view<std::bitset<N>>::operator<=> uses; there is no infix x <=> y for
-// std::bitset<N> itself (see the comment below on why that isn't added).
+// std::bitset has no <=> of its own, so opt in to the iteration-based ordering explicitly.
 template<std::size_t N>
 struct set_compare<std::bitset<N>>
 {
@@ -89,26 +79,10 @@ struct set_compare<std::bitset<N>>
 
 }       // namespace xstd::ranges
 
-// Same [namespace.std] situation as set_find above, for the
-// array-of-bool interpretation instead of the set-of-indices one:
-// std::bitset<N> already has operator[] for every index (unlike find_first/
-// find_next, which need real bit-scanning), so this specialization is
-// trivial - the whole point is just making it reachable without adding
-// declarations to namespace std.
+// Same [namespace.std] situation as set_find, for the array-of-bool reading; trivial, since operator[] answers every index.
 namespace xstd::ranges {
 
-// The Microsoft STL publishes its words through a nonstandard but public
-// _Getword, so a std::bitset there can be ordered a word at a time like our own
-// types. libstdc++ keeps its words in _Base_bitset, which std::bitset inherits
-// privately, and exposes only _Find_first/_Find_next; libc++ exposes neither. So
-// this is a specialization guarded on the member rather than on the platform:
-// where it is absent the primary template leaves block_range unsatisfied and the
-// element-wise path stands.
-//
-// The layout matches what block_access documents -- ascending words, and the
-// least significant bit of a word is its lowest position -- and std::bitset must
-// keep the padding above N zero for count() and all() to work, which is the
-// other thing comparing whole words relies on.
+// Guarded on _Getword rather than on the platform: where it is absent, block_range goes unsatisfied and the element-wise path stands.
 template<std::size_t N>
         requires requires (std::bitset<N> const& c) { { c._Getword(0UZ) } -> xstd::unsigned_integer; }
 struct block_access<std::bitset<N>>
@@ -139,22 +113,7 @@ struct array_find<std::bitset<N>>
 
 }       // namespace xstd::ranges
 
-// is_subset_of, is_proper_subset_of, intersects, and now <=> used to live
-// here too, with the same [namespace.std] problem set_find<std::bitset<N>>
-// above solves. None of them need to any more: xstd::set_view provides all
-// four directly (preferring a Bits type's own member/<=>
-// when it has one, falling back to computing them from iteration otherwise
-// - see compare<std::bitset<N>> above for <=> specifically), so
-// `set_view(x).is_subset_of(set_view(y))`, `set_view(x) <=> set_view(y)`, etc. work for
-// std::bitset<N> without adding anything to namespace std at all. There is
-// deliberately no infix x <=> y for std::bitset<N> itself: unlike ==,
-// ordering isn't unambiguous enough to be worth resurrecting a [namespace.
-// std] exception for - use set_view(x) <=> set_view(y).
-//
-// operator-=, and operator- remain here: natural infix syntax for them is
-// only reachable via ADL or membership in std::bitset<N>'s own namespace
-// (std), and there is no legal way to provide that from outside namespace
-// std.
+// is_subset_of, is_proper_subset_of, intersects and <=> now come from set_view; operator-= and operator- stay, reachable only from std.
 namespace std {
 
 // NOLINTBEGIN(bugprone-std-namespace-modification)

@@ -7,7 +7,7 @@
 #define TEST_SET_PRIMITIVES_HPP
 
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
+#include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <algorithm>                    // equal_range, lexicographical_compare_three_way
 #include <compare>                      // strong_ordering
 #include <concepts>                     // convertible_to, default_initializable, equality_comparable, integral, same_as, unsigned_integral

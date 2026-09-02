@@ -20,12 +20,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # The same Visual Studio ladder as msvc.yml, with clang-cl in front of the
-  # MSVC STL instead of cl. Its own cache prefix, since the two callers build
-  # the dependencies with different compilers.
-  #
-  # All three rungs. The stable one was dropped while the tests included
-  # <flat_set> unconditionally; they probe for __cpp_lib_flat_set now.
+  # The msvc.yml ladder with clang-cl in front of the MSVC STL, on its own cache prefix; all three rungs.
   clang_cl:
     uses: rhalbersma/cpp-ci/.github/workflows/visual-studio.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1
     with:

@@ -6,11 +6,11 @@
 #ifndef XSTD_BITS_EXT_XSTD_BITSET_HPP
 #define XSTD_BITS_EXT_XSTD_BITSET_HPP
 
+#include <xstd/bits/bitset.hpp>                    // bitset
+#include <xstd/bits/ranges/set_view.hpp>           // begin, end
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
-#include <xstd/bits/ranges/set_view.hpp> // begin, end
-#include <xstd/bits/bitset.hpp>              // bitset
-#include <iterator>                     // make_reverse_iterator
-#include <ranges>                       // begin, end, rbegin, rend
+#include <iterator>                                // make_reverse_iterator
+#include <ranges>                                  // begin, end, rbegin, rend
 
 namespace xstd {
 

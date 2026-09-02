@@ -9,12 +9,7 @@ updates:
     directory: /
     schedule:
       interval: monthly
-    # One PR per month for the whole ecosystem, not one per action. Without
-    # this, a codeql-action bump arrives as three separate PRs (init, analyze
-    # and upload-sarif are three actions from one repository at one version),
-    # none of which can merge on its own without leaving the other two behind
-    # - which is exactly how #38-#41 ended up stale. Grouping also keeps the
-    # cpp-ci pin in the stubs moving as a single change.
+    # One PR per month for the whole ecosystem: a codeql-action bump is three actions from one repository, none mergeable alone.
     groups:
       actions:
         patterns:

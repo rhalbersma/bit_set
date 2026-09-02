@@ -3,16 +3,14 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <test/set/composable.hpp>                // includes, set_difference, set_intersection, set_symmetric_difference, set_union,
+#include <test/set/composable.hpp> // includes, set_difference, set_intersection, set_symmetric_difference, set_union,
                                         // decrement, increment
-#include <test/set/exhaustive.hpp>                // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
+#include <test/set/exhaustive.hpp> // all_doubleton_arrays, all_doubleton_ilists, all_doubleton_sets,
                                         // all_singleton_sets, all_singleton_set_pairs, all_valid
-#include <test/flat_set.hpp>                  // TEST_HAS_FLAT_SET, is_flat_set
-#include <test/set/primitives.hpp>                // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
-                                        // mem_lower_bound, mem_upper_bound, mem_equal_range, op_equal, op_not_equal_to,
-                                        // op_compare_three_way op_less, op_greater, op_less_equal, op_greater_equal, fn_swap
-#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <test/flat_set.hpp>            // TEST_HAS_FLAT_SET, is_flat_set
+#include <test/set/primitives.hpp>      // constructor, op_assign, mem_insert, mem_erase, mem_swap, mem_find, mem_count,
+#include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <set>                          // set

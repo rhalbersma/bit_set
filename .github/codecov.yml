@@ -3,11 +3,7 @@
 #    (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
 
-# Mirrors the --fail-under-line 100 and --fail-under-branch 100 gates the
-# Coverage workflow enforces (see .github/workflows/coverage.yml), the same
-# bar xstd meets. Both statuses were informational while the test suite was
-# being built up; it now reaches every line and branch of the library that a
-# test can reach, so they block like the workflow does.
+# Mirrors the coverage workflow's 100% line and branch gates; both statuses block rather than inform.
 coverage:
   status:
     project:

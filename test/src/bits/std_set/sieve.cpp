@@ -3,12 +3,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <opt/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
-#include <test/flat_set.hpp>                  // TEST_HAS_FLAT_SET
-#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <fmt/format.h>                 // format
 #include <fmt/ranges.h>
+#include <opt/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
+#include <test/flat_set.hpp>            // TEST_HAS_FLAT_SET
+#include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <cstddef>                      // size_t
 #include <set>                          // set
 #include <tuple>                        // tuple
@@ -49,9 +49,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheSiftedPrimesAndTwinsFormatAsExpected, T, Types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(SievesTooSmallForTheSquareBreakStillSiftCorrectly, T, Types)
 {
-        // Below three candidates sift_primes1 runs its loop to exhaustion
-        // rather than breaking on the first p whose square is out of range,
-        // and filter_twins returns before it has a triple to compare.
+        // Below three candidates sift_primes1 runs to exhaustion, and filter_twins returns before it has a triple.
         auto const none = xstd::sift_primes1<T>(2);
         BOOST_CHECK(none.empty());
         BOOST_CHECK(xstd::filter_twins(none).empty());

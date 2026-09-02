@@ -3,14 +3,14 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/ranges/array_view.hpp>        // array_view, array_range
+#include <boost/test/unit_test.hpp>               // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <test/sequence/ordering.hpp>             // ordering_agrees_with_vector_bool
 #include <xstd/bits/bit_array.hpp>                // bit_array
 #include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
 #include <xstd/bits/bitset.hpp>                   // array_find over xstd::bitset
-#include <xstd/bits/ext/std/bitset.hpp>           // array_find over std::bitset
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // array_find over boost::dynamic_bitset
-#include <boost/test/unit_test.hpp>               // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <xstd/bits/ext/std/bitset.hpp>           // array_find over std::bitset
+#include <xstd/bits/ranges/array_view.hpp>        // array_view, array_range
 #include <algorithm>                              // equal
 #include <array>                                  // array
 #include <bitset>                                 // bitset
@@ -33,8 +33,7 @@ BOOST_AUTO_TEST_CASE(TheViewedTypesAreTheOnesHoldingBoolsWithoutOfferingThem)
         static_assert(not xstd::ranges::array_range<xstd::bit_finite_set<8>>);
 }
 
-// The sequence reading is the bools at every position, in position order,
-// checked against the std::array<bool, N> holding the same bits.
+// The sequence reading is the bools at every position, checked against the std::array<bool, N> holding the same bits.
 BOOST_AUTO_TEST_CASE(TheSequenceReadingIsTheArrayOfBools)
 {
         constexpr auto N = 8UZ;
@@ -51,8 +50,7 @@ BOOST_AUTO_TEST_CASE(TheSequenceReadingIsTheArrayOfBools)
         }
 }
 
-// A view is mutable through: writing a position through the view writes the bit,
-// which is what separates it from the read-only adaptor it replaced.
+// A view is mutable through: writing a position through the view writes the bit.
 BOOST_AUTO_TEST_CASE(WritingThroughTheViewWritesTheBits)
 {
         auto packed = xstd::bitset<8>();
@@ -67,9 +65,7 @@ BOOST_AUTO_TEST_CASE(WritingThroughTheViewWritesTheBits)
         BOOST_CHECK(packed.none());
 }
 
-// The same reading over the type this library packs, so the view is not merely
-// self-consistent: bit_array's own operator[] and the view agree position by
-// position.
+// The same reading over the type this library packs, so bit_array's own operator[] and the view agree position by position.
 BOOST_AUTO_TEST_CASE(APackedArrayAgreesWithItsOwnView)
 {
         auto packed = xstd::bit_array<8, unsigned char>{};
@@ -81,10 +77,7 @@ BOOST_AUTO_TEST_CASE(APackedArrayAgreesWithItsOwnView)
                 BOOST_CHECK_EQUAL(static_cast<bool>(view[k]), static_cast<bool>(packed[k]));
         }
 
-        // Both directions, through both the container's own proxy and the view's.
-        // Only the setting direction was exercised at first, which left the
-        // clearing half of bit_array's assign_at hook unreached -- the write hook
-        // is a single line, so the branch it holds is the container's to cover.
+        // Both directions, through both proxies: only setting was exercised at first, leaving the clearing half of assign_at unreached.
         packed[1] = false;
         BOOST_CHECK(not static_cast<bool>(packed[1]));
         BOOST_CHECK(not static_cast<bool>(view[1]));
@@ -96,13 +89,7 @@ BOOST_AUTO_TEST_CASE(APackedArrayAgreesWithItsOwnView)
         BOOST_CHECK(static_cast<bool>(packed[0]));
 }
 
-// The ordering the view supplies is the sequence ordering, checked against
-// std::vector<bool> rather than against a restatement of it -- for every viewed
-// type, and so over both routes the view now has to it. xstd::bitset and
-// std::bitset say where their blocks are (on a standard library that lets them),
-// so they are compared a word at a time; boost::dynamic_bitset does not, so it
-// is compared element by element. Both must give the same answer, and only the
-// dynamic one exercises the element-wise route at all now.
+// The sequence ordering against std::vector<bool>, over both routes: block-streaming where the type says where its blocks are, element-wise where not.
 BOOST_AUTO_TEST_CASE(EveryViewedTypeOrdersLikeAVectorBool)
 {
         test::sequence::ordering_agrees_with_vector_bool<xstd::bitset<8>>();

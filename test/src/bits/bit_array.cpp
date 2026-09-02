@@ -3,24 +3,21 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/bit_array.hpp>            // bit_array
-#include <test/block_types.hpp>               // graded_extents
-#include <test/sequence/concepts.hpp>         // bit_sequence
-#include <test/value_reference.hpp>           // value_reference
-#include <boost/test/unit_test.hpp>           // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
-#include <concepts>                           // regular, totally_ordered
-#include <iterator>                           // random_access_iterator
-#include <ranges>                             // random_access_range
+#include <boost/test/unit_test.hpp>   // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <test/block_types.hpp>       // graded_extents
+#include <test/sequence/concepts.hpp> // bit_sequence
+#include <test/value_reference.hpp>   // value_reference
+#include <xstd/bits/bit_array.hpp>    // bit_array
+#include <concepts>                   // regular, totally_ordered
+#include <iterator>                   // random_access_iterator
+#include <ranges>                     // random_access_range
 
 BOOST_AUTO_TEST_SUITE(BitArray)
 
-// Every Block model within one block, and the narrow ones across block
-// boundaries too. The grading is in test/block_types.hpp, shared with the
-// other two containers taking <size_t N, class Block>.
+// Every Block model within one block and the narrow ones across boundaries; the grading is in test/block_types.hpp.
 using Types = test::graded_extents<xstd::bit_array>;
 
-// The clauses one at a time, so a failure names which one. The umbrella asserts
-// the composite over this and over the std::array it packs.
+// The clauses one at a time, so a failure names which one; the umbrella asserts the composite.
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsRegular, T, Types)
 {
         static_assert(std::regular<T>);
