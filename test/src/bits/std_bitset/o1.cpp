@@ -15,7 +15,7 @@
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Bitset)
+BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(O1)
 
 using Types = std::tuple

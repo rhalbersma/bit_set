@@ -6,14 +6,14 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/test/bitset/exhaustive.hpp>        // all_singleton_sets, all_doubleton_sets, all_triplet_sets, empty_set, full_set
-#include <xstd/test/bitset/primitives.hpp>        // mem_compare_three_way
+#include <xstd/test/bitset/exhaustive.hpp>        // all_doubleton_set_pairs
+#include <xstd/test/bitset/primitives.hpp>        // mem_compare_three_way, mem_is_subset_of, mem_is_proper_subset_of
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
-BOOST_AUTO_TEST_SUITE(Bitset)
-BOOST_AUTO_TEST_SUITE(O3)
+BOOST_AUTO_TEST_SUITE(StdBitset)
+BOOST_AUTO_TEST_SUITE(O4)
 
 using namespace xstd;
 using namespace xstd::test::bitset;
@@ -34,25 +34,11 @@ using Types = std::tuple
 #endif
 >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(CompareThreeWayHoldsOverEveryTripletAndDoubleton, T, Types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheOrderingAndSubsetTestsHoldOverEveryDoubletonPair, T, Types)
 {
-        // empty/full set vs. every triplet, at matching N - see o1.cpp's
-        // identical singleton case for why N is pinned explicitly.
-        on3::all_triplet_sets<T>([](auto const& bs3) {
-                on0::empty_set<T, limit_v<T, L3>>([&](auto const& bs0) {
-                        mem_compare_three_way()(bs0, bs3);
-                });
-                on0::full_set<T, limit_v<T, L3>>([&](auto const& bsN) {
-                        mem_compare_three_way()(bsN, bs3);
-                });
-        });
-
-        // every singleton vs. every doubleton, at matching N.
-        on2::all_doubleton_sets<T, limit_v<T, L3>>([](auto const& bs2) {
-                on1::all_singleton_sets<T, limit_v<T, L3>>([&](auto const& bs1) {
-                        mem_compare_three_way()(bs1, bs2);
-                });
-        });
+        on4::all_doubleton_set_pairs<T>(mem_compare_three_way());
+        on4::all_doubleton_set_pairs<T>(mem_is_subset_of());
+        on4::all_doubleton_set_pairs<T>(mem_is_proper_subset_of());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

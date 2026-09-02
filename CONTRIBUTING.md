@@ -24,7 +24,13 @@ This repository enforces its quality bar through CI rather than through review d
 
 ## Test layout and naming
 
-The test tree mirrors the header tree, and `test/CMakeLists.txt` fails configuration if it ever stops doing so: `include/xstd/bits/ranges/set_view.hpp` is answered by `test/src/bits/ranges/set_view.cpp`. The rule runs one way — every public header needs a source, `detail/` excepted, being machinery rather than interface. It does not forbid a source that answers no header, and three directories are exactly that: `bits/bitset/`, `bits/set/` and `bits/block/` hold the exhaustive behavioural sweeps, which belong to a container rather than to a header. They live under `bits/` with everything else and follow the same naming rules.
+The test tree mirrors the header tree, and `test/CMakeLists.txt` fails configuration if it ever stops doing so: `include/xstd/bits/ranges/set_view.hpp` is answered by `test/src/bits/ranges/set_view.cpp`. The rule runs one way — every public header needs a source, `detail/` excepted, being machinery rather than interface. It does not forbid a source that answers no header, and some directories are exactly that.
+
+**A directory whose name is a header's is that header's tests. A `std_`-prefixed one is a contract's.** The sweeps in `bits/std_set/` and `bits/std_bitset/` are not tests of `std::set` or `std::bitset`, and not tests of ours either: each runs one Standard clause's requirements — `[set]`, `[bitset]` — over every type claiming to meet it, ours and the standard library's and Boost's alike, so the claim is checked against the same primitives on all of them. `std_` names which clause; it does not name a type. `bits/std_array/` follows for the sequence contract.
+
+That prefix is also what keeps `bits/std_bitset/` from being read as more tests of `xstd::bits::bitset` — those are in `bits/bitset.cpp`, one mirrored source, sitting right beside it. Note the near-neighbour it does *not* mean either: `bits/ext/std/bitset.cpp` (`Ext` / `Std` / `Bitset`) tests the adaptor that teaches `std::bitset` to be viewed, one header, and is mirrored like any other.
+
+`bits/block/` carries no prefix on purpose. Block is this library's own named requirement rather than a Standard clause, so there is no `std_` to claim.
 
 **Suites nest directory-wise.** One `BOOST_AUTO_TEST_SUITE` per path component under `test/src/`, the file stem included, each component PascalCased. That makes the suite path the CTest target id, spelled the other way round, so a failing target says where to look:
 
@@ -32,7 +38,7 @@ The test tree mirrors the header tree, and `test/CMakeLists.txt` fails configura
 | :--- | :--- | :--- |
 | `test/src/bits/ranges/set_view.cpp` | `test.bits.ranges.set_view` | `Ranges` / `SetView` |
 | `test/src/bits/ext/std/bitset.cpp` | `test.bits.ext.std.bitset` | `Ext` / `Std` / `Bitset` |
-| `test/src/bits/set/o2.cpp` | `test.bits.set.o2` | `Set` / `O2` |
+| `test/src/bits/std_set/o2.cpp` | `test.bits.std_set.o2` | `StdSet` / `O2` |
 
 With one subtraction: `bits` is every source's first component, so as a suite it distinguishes nothing and is left out. `test/src/bits.cpp` is what remains — the umbrella over the whole library, and the one source whose cases sit in the master suite. Should this library ever grow a second top-level directory, `Bits` comes back at the front of every row above.
 
