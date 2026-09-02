@@ -3,14 +3,14 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_BITS_IMPL_INTRIN_HPP
-#define XSTD_BITS_IMPL_INTRIN_HPP
+#ifndef XSTD_BITS_DETAIL_INTRIN_HPP
+#define XSTD_BITS_DETAIL_INTRIN_HPP
 
 #include <bit>          // countl_zero, countr_zero, popcount
 #include <concepts>     // unsigned_integral
 #include <cstddef>      // size_t
 
-namespace xstd::bit {
+namespace xstd::detail::bits {
 
 [[nodiscard]] constexpr std::size_t countl_zero(std::unsigned_integral auto block) noexcept
 {
@@ -27,6 +27,6 @@ namespace xstd::bit {
         return static_cast<std::size_t>(std::popcount(block));
 }
 
-}       // namespace xstd::bit
+}       // namespace xstd::detail::bits
 
-#endif // XSTD_BITS_IMPL_INTRIN_HPP
+#endif // XSTD_BITS_DETAIL_INTRIN_HPP

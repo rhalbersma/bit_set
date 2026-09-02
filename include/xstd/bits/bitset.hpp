@@ -29,7 +29,7 @@ template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
 
 }       // namespace xstd
 
-#include <xstd/bits/impl/array.hpp>           // array
+#include <xstd/bits/detail/array.hpp>           // array
 #include <xstd/bits/ranges/set_view.hpp> // find
 #include <boost/hash2/fnv1a.hpp>        // fnv1a_64
 #include <boost/hash2/hash_append.hpp>  // hash_append
@@ -63,7 +63,7 @@ class bitset
         // indices that are set) or xstd::array_view
         // (fixed-length sequence of bools) - xstd::bitset itself takes no
         // side on which one is "the" ordering.
-        bit::array<N, Block> m_bits{};
+        detail::bits::array<N, Block> m_bits{};
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bitset const* v) noexcept
@@ -303,9 +303,9 @@ private:
 // ext/std/bitset.hpp's set_find<std::bitset<N>> has to (it has no choice - it
 // can't reach std::bitset's internals at all) - not through m_bits
 // directly, even though this header could grant itself friend access to
-// bit::array's already-O(1) find_first/find_last/find_next/find_prev.
+// detail::bits::array's already-O(1) find_first/find_last/find_next/find_prev.
 // xstd::bitset is meant to be nothing more than std::bitset reimplemented
-// in terms of bit::array: it shouldn't get a privileged, faster set_find<> that
+// in terms of detail::bits::array: it shouldn't get a privileged, faster set_find<> that
 // std::bitset itself has no way of also getting.
 namespace xstd::ranges {
 

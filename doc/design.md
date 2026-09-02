@@ -6,14 +6,30 @@ The whole library is two storage vehicles carrying the same three interfaces.
 
 |                     | array vehicle              | vector vehicle                |
 | ------------------- | -------------------------- | ----------------------------- |
-| storage             | `bit::array<N, Block>`     | `bit::vector<Block, Alloc>`   |
+| storage             | `detail::bits::array<N, Block>`     | `detail::bits::vector<Block, Alloc>`   |
 | `<array>`/`<vector>`| `bit_array<N, Block>`      | `bit_vector<Block, Alloc>`    |
-| `<set>`             | `finite_bit_set<N, Block>` | `bit_set<Block, Alloc>`       |
+| `<set>`             | `bit_finite_set<N, Block>` | `bit_set<Block, Alloc>`       |
 | `<bitset>`          | `bitset<N, Block>`         | `dynamic_bitset<Block, Alloc>`|
 
-Rows are Standard sections, columns are vehicles. The unqualified name goes to the
-dynamic member of each pair, as `std::vector` has it against `std::array`, so the
-fixed-size set is `finite_bit_set` and the dynamic one is `bit_set`.
+Rows are Standard sections, columns are vehicles. The four containers are named by
+one rule: `bit_` and the container it packs, for `container` in {`array`, `vector`,
+`finite_set`, `set`}.
+
+`bit_` is a storage-strategy prefix, and the Standard already has the other one.
+`std::flat_set` and `std::flat_map` keep a sorted sequence of the elements that are
+there, so they are sparse in the universe of possible keys; `bit_set` keeps one bit
+per position in that universe, so it is dense but packed. Same container, same
+interface, different representation, and the prefix is what says which -- which is
+why it has to lead. `finite_bit_set` reads as a qualified `bit_set` and breaks the
+parallel with `flat_set`; `bit_finite_set` is `bit_` applied to a `finite_set`, the
+way `flat_set` is `flat_` applied to a `set`.
+
+Within the rule the unqualified name goes to the dynamic member of each pair, as
+`std::vector` has it against `std::array`, so the fixed-size set is `bit_finite_set`
+and the dynamic one is `bit_set`.
+
+`bitset` and `dynamic_bitset` are outside the rule on purpose: they are not `bit_`
+anything, they are the legacy types reproduced under their own names.
 
 The bottom row is not a third interface. It exists to show that the same two
 vehicles reproduce the legacy types at no cost -- `xstd::bitset` against
@@ -22,7 +38,7 @@ interface over the array implementation throws nothing away.
 
 Every container the library provides is one header named after the type it
 declares, directly under `xstd/bits`. A directory per Standard section was tried
-and dropped: with one entity behind each, `xstd/bits/set/finite_bit_set.hpp` and
+and dropped: with one entity behind each, `xstd/bits/set/bit_finite_set.hpp` and
 `xstd/bits/bitset/bitset.hpp` spent a path component to say what the filename
 already said, and the section umbrellas above them re-exported a single header
 apiece. The Standard's own sections are still the organizing idea -- they are the
@@ -32,18 +48,38 @@ rows of the table above -- they are just not directories.
 xstd/bits.hpp                 the front door, over every container and the views
 xstd/bits/bit_array.hpp       one header per container, named for the type
 xstd/bits/bitset.hpp
-xstd/bits/finite_bit_set.hpp
-xstd/bits/impl/               the vehicles and the block operations, namespace xstd::bit
+xstd/bits/bit_finite_set.hpp
+xstd/bits/detail/             the vehicles and the block operations, namespace xstd::detail::bits
 xstd/bits/ranges/             set_view, array_view, bit_extent
 xstd/bits/ext/                the adaptors, asked for by name
 ```
 
-`impl` rather than `bit` for the vehicles' directory, because flattening made
-`bits/bit/array.hpp` and `bits/bit_array.hpp` derive the same include guard, and
-the way out of that is not the `XSTD_SUBDIR_BIT_SUBDIR_ARRAY_HPP` spelling this
-tree just got rid of. The namespace stays `xstd::bit`: the directory says these
-headers are implementation, and that is a separate question from what to call the
-bit-level operations, which do not need a namespace layer to hide behind.
+`detail` for the vehicles, directory and namespace both. That is Boost's
+convention, and it is the only one available to a library outside `namespace std`.
+The three standard libraries cannot spell it that way, because inside `std` an
+ordinary identifier is the user's to collide with, so each hides behind reserved
+names instead: libstdc++ in `std::__detail` and `__gnu_cxx`, libc++ in `__cpo`,
+`__detail` and a `__`-prefixed directory per domain, and the MSVC STL in `_Ugly`
+names with no such namespace at all. Boost is in its own namespace, as this
+library is, and uses `detail` some eight thousand times across 272 directories.
+
+The nesting is Boost's, inverted. xstd is a federation of repositories -- xstd-misc,
+xstd-ints, xstd-bits -- sharing one uniform `xstd` namespace, so unlike
+`boost::json::detail` there is no library namespace to nest `detail` inside. The
+library name takes the other position instead, `xstd::detail::bits`, partitioning
+the shared namespace the same way round the other way. Without it
+`xstd::detail::array` would reserve the name `array` across the whole federation,
+alongside the `xstd::detail::delegates_to_std` that xstd-ints already declares.
+
+It also reserves `impl/` for something else, which is why that name was wrong here:
+`boost/json/impl/array.hpp` opens `boost::json` and holds out-of-line definitions
+of the public interface, where `boost/json/detail/array.hpp` opens
+`boost::json::detail`. What lives under this directory is machinery, not deferred
+definitions.
+
+The rename away from `bit/` was forced anyway: flattening made `bits/bit/array.hpp`
+and `bits/bit_array.hpp` derive the same include guard, and the way out of that is
+not the `XSTD_SUBDIR_BIT_SUBDIR_ARRAY_HPP` spelling this tree just got rid of.
 
 ## There is no bitset-like concept
 
@@ -196,7 +232,7 @@ directory, named for the cost they carry (`constant`, `linear`, `quadratic`,
 The type lists live in one header per contract rather than being copy-pasted per
 source, the way `exact_width_types.hpp` does it in xstd:
 
-- set-like: `std::set<size_t>`, `std::flat_set<size_t>`, `finite_bit_set<N, Block>`,
+- set-like: `std::set<size_t>`, `std::flat_set<size_t>`, `bit_finite_set<N, Block>`,
   `bit_set<Block, Alloc>`, and `set_view` over each legacy bitset.
 - sequence-like: `std::array<bool, N>`, `bit_array<N, Block>`, `std::vector<bool>`,
   `bit_vector<Block, Alloc>`, and `array_view` over each legacy bitset.
@@ -208,5 +244,5 @@ they need rather than per type: nothing has to be carved out for a type whose vi
 lacks a member.
 
 The prime sieve is a benchmark of dynamic containers only, so that it compares
-like with like. A fixed-size `finite_bit_set<N>` sifting a universe it was sized
+like with like. A fixed-size `bit_finite_set<N>` sifting a universe it was sized
 for is not measuring the same thing as a `std::set` growing and shrinking.

@@ -6,7 +6,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/test/unit_test.hpp>     // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE
-#include <xstd/bits/finite_bit_set.hpp>             // finite_bit_set
+#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <algorithm>                    // equal_range, lexicographical_compare_three_way
 #include <compare>                      // strong_ordering
 #include <concepts>                     // convertible_to, default_initializable, equality_comparable, integral, same_as, unsigned_integral
@@ -29,7 +29,7 @@ struct ref_same_as_pred
 };
 
 template<std::size_t N, std::unsigned_integral Block>
-struct ref_same_as_pred<xstd::finite_bit_set<N, Block>>
+struct ref_same_as_pred<xstd::bit_finite_set<N, Block>>
 {
         template<class R, class T>
         static constexpr auto value = std::convertible_to<R, std::add_const_t<std::remove_reference_t<T>>&>;

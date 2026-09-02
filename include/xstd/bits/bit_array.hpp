@@ -39,7 +39,7 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 // section needs, mirroring the layout of the standard itself. The overlap
 // between the two lists is deliberate: neither is complete without it.
 // NOLINTBEGIN(readability-duplicate-include): deliberate, see above
-#include <xstd/bits/impl/array.hpp>   // array
+#include <xstd/bits/detail/array.hpp>   // array
 #include <xstd/bits/ranges.hpp>       // begin, end, iterator, reference
 #include <xstd/ints/memory.hpp> // align_up
 #include <algorithm>            // lexicographical_compare_three_way
@@ -65,7 +65,7 @@ namespace xstd {
 template<std::size_t N, std::unsigned_integral Block = std::size_t>
 struct bit_array
 {
-        bit::array<N, Block> m_bits;
+        detail::bits::array<N, Block> m_bits;
 
         [[nodiscard]] friend constexpr std::size_t find_first(const bit_array&)                  noexcept { return 0UZ;         }
         [[nodiscard]] friend constexpr std::size_t find_last (const bit_array&)                  noexcept { return N;           }
@@ -156,11 +156,11 @@ private:
 
 template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
 
-// bit::array is a pure storage vehicle with no <=> of its own (see its
+// detail::bits::array is a pure storage vehicle with no <=> of its own (see its
 // comments) - bit_array's own ordering is the fixed-length sequence-of-bool
 // order (index 0 first), exactly what std::array<bool, N>'s <=> would
 // compute, via its own random_access iteration over every index (not just
-// the set ones - that's finite_bit_set's contract, a different relation).
+// the set ones - that's bit_finite_set's contract, a different relation).
 template<std::size_t N, std::unsigned_integral Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept
         -> std::strong_ordering

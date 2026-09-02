@@ -3,7 +3,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <xstd/bits/finite_bit_set.hpp>             // finite_bit_set
+#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_CHECK_EQUAL_COLLECTIONS
 #include <compare>                      // strong_ordering
 #include <tuple>                        // tuple
@@ -13,43 +13,43 @@ BOOST_AUTO_TEST_SUITE(Constexpr)
 using namespace xstd;
 
 using Types = std::tuple
-<       finite_bit_set<  0, uint8_t>
-,       finite_bit_set<  1, uint8_t>
-,       finite_bit_set<  7, uint8_t>
-,       finite_bit_set<  8, uint8_t>
-,       finite_bit_set<  9, uint8_t>
-,       finite_bit_set< 15, uint8_t>
-,       finite_bit_set< 16, uint8_t>
-,       finite_bit_set< 17, uint8_t>
-,       finite_bit_set< 24, uint8_t>
-,       finite_bit_set<  0, uint16_t>
-,       finite_bit_set<  1, uint16_t>
-,       finite_bit_set< 15, uint16_t>
-,       finite_bit_set< 16, uint16_t>
-,       finite_bit_set< 17, uint16_t>
-,       finite_bit_set< 31, uint16_t>
-,       finite_bit_set< 32, uint16_t>
-,       finite_bit_set< 33, uint16_t>
-,       finite_bit_set< 48, uint16_t>
-,       finite_bit_set<  0, uint32_t>
-,       finite_bit_set<  1, uint32_t>
-,       finite_bit_set< 31, uint32_t>
-,       finite_bit_set< 32, uint32_t>
-,       finite_bit_set< 33, uint32_t>
-,       finite_bit_set< 63, uint32_t>
-,       finite_bit_set< 64, uint32_t>
-,       finite_bit_set< 65, uint32_t>
-,       finite_bit_set<  0, uint64_t>
-,       finite_bit_set<  1, uint64_t>
-,       finite_bit_set< 63, uint64_t>
-,       finite_bit_set< 64, uint64_t>
-,       finite_bit_set< 65, uint64_t>
+<       bit_finite_set<  0, uint8_t>
+,       bit_finite_set<  1, uint8_t>
+,       bit_finite_set<  7, uint8_t>
+,       bit_finite_set<  8, uint8_t>
+,       bit_finite_set<  9, uint8_t>
+,       bit_finite_set< 15, uint8_t>
+,       bit_finite_set< 16, uint8_t>
+,       bit_finite_set< 17, uint8_t>
+,       bit_finite_set< 24, uint8_t>
+,       bit_finite_set<  0, uint16_t>
+,       bit_finite_set<  1, uint16_t>
+,       bit_finite_set< 15, uint16_t>
+,       bit_finite_set< 16, uint16_t>
+,       bit_finite_set< 17, uint16_t>
+,       bit_finite_set< 31, uint16_t>
+,       bit_finite_set< 32, uint16_t>
+,       bit_finite_set< 33, uint16_t>
+,       bit_finite_set< 48, uint16_t>
+,       bit_finite_set<  0, uint32_t>
+,       bit_finite_set<  1, uint32_t>
+,       bit_finite_set< 31, uint32_t>
+,       bit_finite_set< 32, uint32_t>
+,       bit_finite_set< 33, uint32_t>
+,       bit_finite_set< 63, uint32_t>
+,       bit_finite_set< 64, uint32_t>
+,       bit_finite_set< 65, uint32_t>
+,       bit_finite_set<  0, uint64_t>
+,       bit_finite_set<  1, uint64_t>
+,       bit_finite_set< 63, uint64_t>
+,       bit_finite_set< 64, uint64_t>
+,       bit_finite_set< 65, uint64_t>
 #if defined(__GNUG__)
-,       finite_bit_set<  0, __uint128_t>
-,       finite_bit_set<  1, __uint128_t>
-,       finite_bit_set<127, __uint128_t>
-,       finite_bit_set<128, __uint128_t>
-,       finite_bit_set<129, __uint128_t>
+,       bit_finite_set<  0, __uint128_t>
+,       bit_finite_set<  1, __uint128_t>
+,       bit_finite_set<127, __uint128_t>
+,       bit_finite_set<128, __uint128_t>
+,       bit_finite_set<129, __uint128_t>
 #endif
 >;
 

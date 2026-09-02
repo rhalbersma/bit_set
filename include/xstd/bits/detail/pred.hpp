@@ -3,12 +3,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_BITS_IMPL_PRED_HPP
-#define XSTD_BITS_IMPL_PRED_HPP
+#ifndef XSTD_BITS_DETAIL_PRED_HPP
+#define XSTD_BITS_DETAIL_PRED_HPP
 
 #include <concepts>     // unsigned_integral
 
-namespace xstd::bit {
+namespace xstd::detail::bits {
 
 template<std::unsigned_integral Block>
 [[nodiscard]] constexpr bool intersects(Block lhs, Block rhs) noexcept
@@ -28,6 +28,6 @@ template<std::unsigned_integral Block>
         return lhs != rhs;
 }
 
-}       // namespace xstd::bit
+}       // namespace xstd::detail::bits
 
-#endif // XSTD_BITS_IMPL_PRED_HPP
+#endif // XSTD_BITS_DETAIL_PRED_HPP

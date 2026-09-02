@@ -326,7 +326,7 @@ template<set_range Bits>
 }
 
 // set_compare<Bits>::lexicographical_three_way defaults to trusting Bits' own
-// <=>: xstd's own finite_bit_set/bitset (bit::array's operator<=>) is meant to
+// <=>: xstd's own bit_finite_set/bitset (detail::bits::array's operator<=>) is meant to
 // already compute std::set<int>-equivalent ordering, word-parallel, for every
 // cardinality - so the default here is just to call it directly rather than pay
 // for iterating through the view.
@@ -368,7 +368,7 @@ struct set_compare
 // assignment working while the constructor still takes Bits& so construction
 // reads like any other reference-taking adaptor.
 //
-// key_type mirrors finite_bit_set's own: fmt's range formatter (fmt/ranges.h)
+// key_type mirrors bit_finite_set's own: fmt's range formatter (fmt/ranges.h)
 // detects "format like a set" purely by checking for a nested key_type, so a
 // set_view formats with {} delimiters on its own.
 template<set_range Bits>
@@ -398,7 +398,7 @@ public:
         // begin()/cbegin() (and end()/cend()) coincide: this proxy iteration is
         // inherently read-only - set_reference only converts to std::size_t,
         // there is no assignment through an iterator here - the same way
-        // finite_bit_set's own cbegin()/cend() are plain aliases rather than a
+        // bit_finite_set's own cbegin()/cend() are plain aliases rather than a
         // distinct const-iteration path. Mutation goes through insert and erase.
         [[nodiscard]] constexpr const_iterator begin() const noexcept { return set_begin(*m_ptr); }
         [[nodiscard]] constexpr const_iterator end()   const noexcept { return set_end  (*m_ptr); }
@@ -536,7 +536,7 @@ public:
         // viewed here have them natively, and routing through std::ranges::
         // includes would make the view slower than the thing it views.
         // Three paths, cheapest first. A Bits with the relation as a member has
-        // already done the work word-at-a-time -- ours through bit::array,
+        // already done the work word-at-a-time -- ours through detail::bits::array,
         // boost::dynamic_bitset through its own. A Bits with only the bitwise
         // operators can still answer a whole word at a time: std::bitset<N> has
         // no is_subset_of, but (a & ~b).none() is the same question and does not

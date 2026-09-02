@@ -7,7 +7,7 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/bits/finite_bit_set.hpp>             // finite_bit_set
+#include <xstd/bits/bit_finite_set.hpp>             // bit_finite_set
 #include <xstd/bits/ranges/set_view.hpp> // view
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
 #include <fmt/format.h>                 // format
@@ -22,7 +22,7 @@ using Types = std::tuple
 <       boost::dynamic_bitset<>
 ,         std::bitset<N>
 ,        xstd::bitset<N>
-,        xstd::finite_bit_set<N>
+,        xstd::bit_finite_set<N>
 >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(Format, T, Types)

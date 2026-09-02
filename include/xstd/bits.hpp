@@ -13,7 +13,7 @@
 // naming them would put Boost on every consumer path. Ask for those by name.
 #include <xstd/bits/bit_array.hpp>      // IWYU pragma: export; bit_array
 #include <xstd/bits/bitset.hpp>         // IWYU pragma: export; bitset
-#include <xstd/bits/finite_bit_set.hpp> // IWYU pragma: export; finite_bit_set
+#include <xstd/bits/bit_finite_set.hpp> // IWYU pragma: export; bit_finite_set
 #include <xstd/bits/ranges.hpp>         // IWYU pragma: export; set_view, array_view
 
 #endif // XSTD_BITS_HPP
