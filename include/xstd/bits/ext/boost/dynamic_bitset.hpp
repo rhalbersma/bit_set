@@ -6,13 +6,13 @@
 #ifndef XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
 #define XSTD_BITS_EXT_BOOST_DYNAMIC_BITSET_HPP
 
+#include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <xstd/bits/ranges/set_view.hpp> // find, view
 #include <xstd/bits/ranges/array_view.hpp> // find, view
 #include <boost/dynamic_bitset.hpp>     // dynamic_bitset
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
-#include <concepts>                     // unsigned_integral
 #include <cstddef>                      // std::size_t
 #include <ranges>                       // find_if, min
                                         // iota, reverse
@@ -30,7 +30,7 @@
 // shadow it.
 namespace xstd::ranges {
 
-template<std::unsigned_integral Block, class Allocator>
+template<xstd::unsigned_integer Block, class Allocator>
 struct set_find<boost::dynamic_bitset<Block, Allocator>>
 {
         [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const& c) noexcept
@@ -68,7 +68,7 @@ struct set_find<boost::dynamic_bitset<Block, Allocator>>
 // (non-std) namespace so an ADL operator<=> here would be legal, but
 // ordering isn't unambiguous enough to be worth adding one - use
 // set_view(x) <=> set_view(y).
-template<std::unsigned_integral Block, class Allocator>
+template<xstd::unsigned_integer Block, class Allocator>
 struct set_compare<boost::dynamic_bitset<Block, Allocator>>
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(boost::dynamic_bitset<Block, Allocator> const& x, boost::dynamic_bitset<Block, Allocator> const& y) noexcept
@@ -91,7 +91,7 @@ struct set_compare<boost::dynamic_bitset<Block, Allocator>>
 // above.
 namespace xstd::ranges {
 
-template<std::unsigned_integral Block, class Allocator>
+template<xstd::unsigned_integer Block, class Allocator>
 struct array_find<boost::dynamic_bitset<Block, Allocator>>
 {
         [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const&) noexcept { return 0UZ; }

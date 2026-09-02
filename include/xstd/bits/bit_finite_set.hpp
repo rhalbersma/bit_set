@@ -11,28 +11,29 @@
 #include <compare>              // strong_ordering
 #include <initializer_list>     // initializer_list
 
+#include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <xstd/ints/memory.hpp> // align_up
-#include <concepts>             // unsigned_integral
+#include <concepts>             // constructible_from
 #include <cstddef>              // size_t
 #include <limits>               // digits
 
 namespace xstd {
 
 // 23.4.6, class template set
-template<std::size_t N, std::unsigned_integral Block = std::size_t> 
+template<std::size_t N, xstd::unsigned_integer Block = std::size_t> 
 class bit_finite_set;
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept;
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto operator<=>(const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept -> std::strong_ordering;
-template<std::size_t N, std::unsigned_integral Block>               constexpr void swap       (      bit_finite_set<N, Block>& x,       bit_finite_set<N, Block>& y) noexcept(noexcept(x.swap(y)));
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bool operator== (const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept;
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr auto operator<=>(const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept -> std::strong_ordering;
+template<std::size_t N, xstd::unsigned_integer Block>               constexpr void swap       (      bit_finite_set<N, Block>& x,       bit_finite_set<N, Block>& y) noexcept(noexcept(x.swap(y)));
 
 // 23.4.6.3, erasure for set
-template<std::size_t N, std::unsigned_integral Block, class Predicate>
+template<std::size_t N, xstd::unsigned_integer Block, class Predicate>
 constexpr bit_finite_set<N, Block>::size_type erase_if(bit_finite_set<N, Block>& c, Predicate pred);
 
 namespace aligned {
 
-template<std::size_t N, std::unsigned_integral Block = std::size_t>
+template<std::size_t N, xstd::unsigned_integer Block = std::size_t>
 using bit_finite_set = xstd::bit_finite_set<xstd::align_up(N, static_cast<std::size_t>(std::numeric_limits<Block>::digits)), Block>;
 
 }       // namespace aligned
@@ -49,7 +50,7 @@ using bit_finite_set = xstd::bit_finite_set<xstd::align_up(N, static_cast<std::s
 #include <algorithm>                    // lexicographical_compare_three_way
 #include <cassert>                      // assert
 #include <compare>                      // strong_ordering
-#include <concepts>                     // constructible_from, unsigned_integral
+#include <concepts>                     // constructible_from
 #include <cstddef>                      // ptrdiff_t, size_t
 #include <functional>                   // less
 #include <initializer_list>             // initializer_list
@@ -67,7 +68,7 @@ using bit_finite_set = xstd::bit_finite_set<xstd::align_up(N, static_cast<std::s
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, xstd::unsigned_integer Block>
 class bit_finite_set
 {
         detail::bits::array<N, Block> m_bits{};
@@ -277,22 +278,22 @@ private:
         constexpr auto do_insert(const_iterator, value_type x) noexcept ->           iterator        { m_bits.set(x); return   { this, x };                     }
 };
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bool operator== (const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
 
 // detail::bits::array is a pure storage vehicle with no <=> of its own (see its
 // comments) - bit_finite_set's own ordering is std::set<int>-equivalent: the
 // lexicographic order of its own ascending sequence of set-bit indices,
 // exactly what std::set<int> would compute for the same elements.
-template<std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, xstd::unsigned_integer Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_finite_set<N, Block>& x, const bit_finite_set<N, Block>& y) noexcept
         -> std::strong_ordering
 {
         return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
 }
-template<std::size_t N, std::unsigned_integral Block>               constexpr void swap       (      bit_finite_set<N, Block>& x,       bit_finite_set<N, Block>& y) noexcept(noexcept(x.swap(y)))    { x.swap(y);                    }
+template<std::size_t N, xstd::unsigned_integer Block>               constexpr void swap       (      bit_finite_set<N, Block>& x,       bit_finite_set<N, Block>& y) noexcept(noexcept(x.swap(y)))    { x.swap(y);                    }
 
 // 23.4.6.3 Erasure                                                [set.erasure]
-template<std::size_t N, std::unsigned_integral Block, class Predicate>
+template<std::size_t N, xstd::unsigned_integer Block, class Predicate>
 constexpr bit_finite_set<N, Block>::size_type erase_if(bit_finite_set<N, Block>& c, Predicate pred)
 {
         auto original_size = c.size();
@@ -307,15 +308,15 @@ constexpr bit_finite_set<N, Block>::size_type erase_if(bit_finite_set<N, Block>&
 }
 
 // bitwise operators
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator~(const bit_finite_set<N, Block>& lhs) noexcept { auto nrv = lhs; nrv.complement(); return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator~(const bit_finite_set<N, Block>& lhs) noexcept { auto nrv = lhs; nrv.complement(); return nrv; }
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator&(const bit_finite_set<N, Block>& lhs, const bit_finite_set<N, Block>& rhs) noexcept { auto nrv = lhs; nrv &= rhs; return nrv; }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator|(const bit_finite_set<N, Block>& lhs, const bit_finite_set<N, Block>& rhs) noexcept { auto nrv = lhs; nrv |= rhs; return nrv; }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator^(const bit_finite_set<N, Block>& lhs, const bit_finite_set<N, Block>& rhs) noexcept { auto nrv = lhs; nrv ^= rhs; return nrv; }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator-(const bit_finite_set<N, Block>& lhs, const bit_finite_set<N, Block>& rhs) noexcept { auto nrv = lhs; nrv -= rhs; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator&(const bit_finite_set<N, Block>& lhs, const bit_finite_set<N, Block>& rhs) noexcept { auto nrv = lhs; nrv &= rhs; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator|(const bit_finite_set<N, Block>& lhs, const bit_finite_set<N, Block>& rhs) noexcept { auto nrv = lhs; nrv |= rhs; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator^(const bit_finite_set<N, Block>& lhs, const bit_finite_set<N, Block>& rhs) noexcept { auto nrv = lhs; nrv ^= rhs; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator-(const bit_finite_set<N, Block>& lhs, const bit_finite_set<N, Block>& rhs) noexcept { auto nrv = lhs; nrv -= rhs; return nrv; }
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator<<(const bit_finite_set<N, Block>& lhs, std::size_t n) noexcept { auto nrv = lhs; nrv <<= n; return nrv; }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator>>(const bit_finite_set<N, Block>& lhs, std::size_t n) noexcept { auto nrv = lhs; nrv >>= n; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator<<(const bit_finite_set<N, Block>& lhs, std::size_t n) noexcept { auto nrv = lhs; nrv <<= n; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bit_finite_set<N, Block> operator>>(const bit_finite_set<N, Block>& lhs, std::size_t n) noexcept { auto nrv = lhs; nrv >>= n; return nrv; }
 
 }       // namespace xstd
 

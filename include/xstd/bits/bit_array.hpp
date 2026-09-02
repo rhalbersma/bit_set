@@ -11,25 +11,25 @@
 #include <compare>              // strong_ordering
 #include <initializer_list>     // initializer_list
 
+#include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <xstd/ints/memory.hpp> // align_up
-#include <concepts>             // unsigned_integral
 #include <cstddef>              // size_t
 #include <limits>               // digits
 
 namespace xstd {
 
 // 23.3.3, class template bit_array
-template<std::size_t N, std::unsigned_integral Block> struct bit_array;
+template<std::size_t N, xstd::unsigned_integer Block> struct bit_array;
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept;
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept -> std::strong_ordering;
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept;
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept -> std::strong_ordering;
 
 // 23.3.4, specialized algorithms
-template<std::size_t N, std::unsigned_integral Block>               constexpr void swap       (      bit_array<N, Block>& x,       bit_array<N, Block>& y) noexcept(noexcept(x.swap(y)));
+template<std::size_t N, xstd::unsigned_integer Block>               constexpr void swap       (      bit_array<N, Block>& x,       bit_array<N, Block>& y) noexcept(noexcept(x.swap(y)));
 
 namespace aligned {
 
-template<std::size_t N, std::unsigned_integral Block = std::size_t>
+template<std::size_t N, xstd::unsigned_integer Block = std::size_t>
 using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std::numeric_limits<Block>::digits)), Block>;
 
 }       // namespace aligned
@@ -45,7 +45,6 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 #include <algorithm>            // lexicographical_compare_three_way
 #include <cassert>              // assert
 #include <compare>              // strong_ordering
-#include <concepts>             // unsigned_integral
 #include <cstddef>              // ptrdiff_t, size_t
 #include <format>               // format
 #include <initializer_list>     // initializer_list
@@ -62,7 +61,7 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block = std::size_t>
+template<std::size_t N, xstd::unsigned_integer Block = std::size_t>
 struct bit_array
 {
         detail::bits::array<N, Block> m_bits;
@@ -154,21 +153,21 @@ private:
         }        
 };
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
 
 // detail::bits::array is a pure storage vehicle with no <=> of its own (see its
 // comments) - bit_array's own ordering is the fixed-length sequence-of-bool
 // order (index 0 first), exactly what std::array<bool, N>'s <=> would
 // compute, via its own random_access iteration over every index (not just
 // the set ones - that's bit_finite_set's contract, a different relation).
-template<std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, xstd::unsigned_integer Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept
         -> std::strong_ordering
 {
         return std::lexicographical_compare_three_way(x.begin(), x.end(), y.begin(), y.end());
 }
 
-template<std::size_t N, std::unsigned_integral Block> constexpr void swap(bit_array<N, Block>& x, bit_array<N, Block>& y) noexcept(noexcept(x.swap(y))) { x.swap(y); }
+template<std::size_t N, xstd::unsigned_integer Block> constexpr void swap(bit_array<N, Block>& x, bit_array<N, Block>& y) noexcept(noexcept(x.swap(y))) { x.swap(y); }
 
 }       // namespace xstd
 

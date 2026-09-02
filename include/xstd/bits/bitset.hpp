@@ -12,20 +12,20 @@
 #include <string>       // basic_string, char_traits
 #include <iosfwd>       // basic_istream, basic_ostream
 
-#include <concepts>     // unsigned_integral
+#include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <cstddef>      // size_t
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block = std::size_t> class bitset;
+template<std::size_t N, xstd::unsigned_integer Block = std::size_t> class bitset;
 
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator|(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator^(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator-(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bitset<N, Block> operator|(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bitset<N, Block> operator^(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bitset<N, Block> operator-(const bitset<N, Block>&, const bitset<N, Block>&) noexcept;
 
-template<class charT, class traits, std::size_t N, std::unsigned_integral Block> std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>& is,       bitset<N, Block>& x);
-template<class charT, class traits, std::size_t N, std::unsigned_integral Block> std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>& os, const bitset<N, Block>& x);
+template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block> std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>& is,       bitset<N, Block>& x);
+template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block> std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>& os, const bitset<N, Block>& x);
 
 }       // namespace xstd
 
@@ -51,7 +51,7 @@ template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
 
 namespace xstd {
 
-template<std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, xstd::unsigned_integer Block>
 class bitset
 {
         // No iteration, no <=> here, by design: xstd::bitset mirrors
@@ -310,10 +310,10 @@ private:
 namespace xstd::ranges {
 
 // As for std::bitset<N>: the width is in the type.
-template<std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, xstd::unsigned_integer Block>
 inline constexpr std::size_t bit_extent<xstd::bitset<N, Block>> = N;
 
-template<std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, xstd::unsigned_integer Block>
 struct set_find<xstd::bitset<N, Block>>
 {
         [[nodiscard]] static constexpr std::size_t first(xstd::bitset<N, Block> const& c) noexcept
@@ -352,7 +352,7 @@ struct set_find<xstd::bitset<N, Block>>
 // set_set_compare<Bits>'s default (trust Bits' own <=>) doesn't apply - opt in to
 // the safe, iteration-based ordering explicitly, same as std::bitset<N> and
 // boost::dynamic_bitset<> do in their own headers.
-template<std::size_t N, std::unsigned_integral Block>
+template<std::size_t N, xstd::unsigned_integer Block>
 struct set_compare<xstd::bitset<N, Block>>
 {
         [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(xstd::bitset<N, Block> const& x, xstd::bitset<N, Block> const& y) noexcept
@@ -403,12 +403,12 @@ struct hash<xstd::bitset<N, Block>>
 namespace xstd {
 
 // bitset operators                                           [bitset.operators]
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv &= rhs; return nrv; }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator|(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv |= rhs; return nrv; }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator^(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv ^= rhs; return nrv; }
-template<std::size_t N, std::unsigned_integral Block> [[nodiscard]] constexpr bitset<N, Block> operator-(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv -= rhs; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bitset<N, Block> operator&(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv &= rhs; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bitset<N, Block> operator|(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv |= rhs; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bitset<N, Block> operator^(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv ^= rhs; return nrv; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bitset<N, Block> operator-(const bitset<N, Block>& lhs, const bitset<N, Block>& rhs) noexcept { auto nrv = lhs; nrv -= rhs; return nrv; }
 
-template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
+template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>& is, bitset<N, Block>& x)
 {
         auto str = std::basic_string<charT, traits>(N, is.widen('0'));
@@ -441,7 +441,7 @@ std::basic_istream<charT, traits>& operator>>(std::basic_istream<charT, traits>&
         return is;
 }
 
-template<class charT, class traits, std::size_t N, std::unsigned_integral Block>
+template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 std::basic_ostream<charT, traits>& operator<<(std::basic_ostream<charT, traits>& os, const bitset<N, Block>& x)
 {
         return os << x.template to_string<charT, traits, std::allocator<charT>>(
