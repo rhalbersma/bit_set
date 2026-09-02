@@ -160,6 +160,43 @@ foreach(h ${public_headers})
     add_test(NAME header.${header_test_id} COMMAND header.${header_test_id})
 endforeach()
 
+# The test tree mirrors the header tree: every public header is answered by
+# exactly one test source at the same path, so a reviewer reading
+# include/xstd/bits/ranges/set_view.hpp knows where its tests are without
+# looking. Enforced here so it cannot drift.
+#
+# detail/ is excluded. It is machinery rather than interface -- the storage
+# vehicles the containers are built from -- and it is tested through the
+# containers that carry it, not directly. It still gets a header
+# self-sufficiency target above; what it does not get is a mirrored source.
+file(
+    GLOB_RECURSE mirrored_headers
+    CONFIGURE_DEPENDS
+    RELATIVE ${public_header_dir}
+    ${public_header_dir}/xstd/*.hpp
+)
+list(FILTER mirrored_headers EXCLUDE REGEX "/detail/")
+
+set(unmirrored_headers)
+foreach(h ${mirrored_headers})
+    # xstd/bits/ranges/set_view.hpp is answered by test/src/bits/ranges/set_view.cpp.
+    string(REGEX REPLACE "^xstd/" "" mirrored ${h})
+    string(REGEX REPLACE "[.]hpp$" ".cpp" mirrored ${mirrored})
+    if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/${mirrored})
+        list(APPEND unmirrored_headers "    include/${h}\n      -> expected test/src/${mirrored}")
+    endif()
+endforeach()
+
+if(unmirrored_headers)
+    list(JOIN unmirrored_headers "\n" unmirrored_report)
+    message(
+        FATAL_ERROR
+        "These headers have no mirrored test source:\n${unmirrored_report}\n"
+        "Every public header is mirrored by exactly one test source; add it, "
+        "or the mirror is no longer a rule."
+    )
+endif()
+
 set(current_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(current_src_dir ${CMAKE_CURRENT_SOURCE_DIR}/src)
 # The pattern is anchored to current_src_dir. RELATIVE only controls how
