@@ -60,8 +60,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(AnEmptySetIsUsableInAConstantExpression, T, Types)
         static_assert(b.empty());
         static_assert(b.size() == 0);
         static_assert(b.begin() == b.end());
-        static_assert(b == b);
-        static_assert((b <=> b) == std::strong_ordering::equal);
+        // Reflexivity is the property under test, and there is no writing it without naming the
+        // object twice; misc-redundant-expression sees only that the two operands match.
+        static_assert(b == b);                                   // NOLINT(misc-redundant-expression)
+        static_assert((b <=> b) == std::strong_ordering::equal); // NOLINT(misc-redundant-expression)
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(AFullSetIsUsableInAConstantExpression, T, Types)
@@ -71,8 +73,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(AFullSetIsUsableInAConstantExpression, T, Types)
         static_assert(b.size() == b.max_size());
         static_assert(b.empty() or b.front() == *b.cbegin());
         static_assert(b.empty() or b.back()  == *b.crbegin());
-        static_assert(b == b);
-        static_assert((b <=> b) == std::strong_ordering::equal);
+        // Reflexivity is the property under test, and there is no writing it without naming the
+        // object twice; misc-redundant-expression sees only that the two operands match.
+        static_assert(b == b);                                   // NOLINT(misc-redundant-expression)
+        static_assert((b <=> b) == std::strong_ordering::equal); // NOLINT(misc-redundant-expression)
 }
 
 BOOST_AUTO_TEST_SUITE_END()

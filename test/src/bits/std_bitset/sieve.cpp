@@ -19,7 +19,7 @@
 BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(Sieve)
 
-inline constexpr auto N = 100uz;
+inline constexpr auto N = 100UZ;
 
 using Types = std::tuple
 <       boost::dynamic_bitset<>

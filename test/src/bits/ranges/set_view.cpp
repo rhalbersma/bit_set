@@ -43,13 +43,15 @@ BOOST_AUTO_TEST_CASE(ADynamicExtentAnswersForPositionsBeyondItsCurrentSize)
         // Both ways round, so that find and lower_bound are each seen taking either arm.
         BOOST_CHECK(v.contains(3));
         BOOST_CHECK_EQUAL(v.count(3), 1);
-        BOOST_CHECK(v.find(3) != v.end());
+        // contains is checked just above; find is the subject here, so readability-container-contains
+        // is asking for the one call this case exists to make.
+        BOOST_CHECK(v.find(3) != v.end());  // NOLINT(readability-container-contains)
         BOOST_CHECK(v.lower_bound(3) == v.find(3));
 
         BOOST_CHECK(not v.contains(8));
         BOOST_CHECK(not v.contains(99));
         BOOST_CHECK_EQUAL(v.count(99), 0);
-        BOOST_CHECK(v.find(99) == v.end());
+        BOOST_CHECK(v.find(99) == v.end());  // NOLINT(readability-container-contains)
         BOOST_CHECK(v.lower_bound(99) == v.end());
 }
 

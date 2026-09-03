@@ -49,8 +49,8 @@ auto sweep() -> void
                                 if (j >> k & 1UZ) { sy.insert(k); ay[k] = true; ky.insert(k); vy[k] = true; }
                         }
 
-                        set_disagreements   += ((sx <=> sy) < 0) != std::lexicographical_compare(kx.begin(), kx.end(), ky.begin(), ky.end());
-                        array_disagreements += ((ax <=> ay) < 0) != std::lexicographical_compare(vx.begin(), vx.end(), vy.begin(), vy.end());
+                        set_disagreements   += ((sx <=> sy) < 0) != std::ranges::lexicographical_compare(kx, ky);
+                        array_disagreements += ((ax <=> ay) < 0) != std::ranges::lexicographical_compare(vx, vy);
 
                         // The invariant proper: these two stream blocks and never iterate, and must still mean what iterating would.
                         opaque_disagreements += (sx <=> sy) != std::lexicographical_compare_three_way(sx.begin(), sx.end(), sy.begin(), sy.end());

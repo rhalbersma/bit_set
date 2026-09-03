@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(TheSequenceReadingIsTheArrayOfBools)
                 auto packed = xstd::bitset<N>();
                 auto plain  = std::array<bool, N>{};
                 for (auto k = 0UZ; k < N; ++k) {
-                        if (i >> k & 1UZ) { packed.set(k); plain[k] = true; }
+                        if ((i >> k & 1UZ) != 0UZ) { packed.set(k); plain[k] = true; }
                 }
 
                 auto const view = xstd::array_view(packed);

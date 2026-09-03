@@ -16,7 +16,7 @@
 BOOST_AUTO_TEST_SUITE(StdSet)
 BOOST_AUTO_TEST_SUITE(Sieve)
 
-inline constexpr auto N = 100uz;
+inline constexpr auto N = 100UZ;
 
 using Types = std::tuple
 <       std::set<std::size_t>
