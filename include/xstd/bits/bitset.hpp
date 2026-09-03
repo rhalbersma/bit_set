@@ -175,7 +175,7 @@ public:
                 }
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
-                for (auto i : std::views::iota(0UZ, M)) {
+                for (auto const i : std::views::iota(0UZ, M)) {
                         auto const ch = str[pos + M - 1 - i];
                         if (traits::eq(ch, zero)) {
                                 continue;
@@ -293,8 +293,10 @@ public:
         [[nodiscard]] constexpr auto to_string(charT zero = charT('0'), charT one = charT('1')) const
                 -> std::basic_string<charT, traits, Allocator>
         {
-                auto str = std::basic_string<charT, traits, Allocator>(N, zero);
-                for (auto i : std::views::iota(0UZ, N)) {
+                // bugprone-string-constructor sees the N == 0 instantiation, where this is empty --
+                // which is what bitset<0>::to_string() returns.
+                auto str = std::basic_string<charT, traits, Allocator>(N, zero);  // NOLINT(bugprone-string-constructor)
+                for (auto const i : std::views::iota(0UZ, N)) {
                         if (m_bits[N - 1 - i]) {
                                 str[i] = one;
                         }
@@ -454,8 +456,11 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 auto operator>>(std::basic_istream<charT, traits>& is, bitset<N, Block>& x)
         -> std::basic_istream<charT, traits>&
 {
-        auto str = std::basic_string<charT, traits>(N, is.widen('0'));
-        auto state = std::ios_base::goodbit;
+        auto str = std::basic_string<charT, traits>(N, is.widen('0'));  // NOLINT(bugprone-string-constructor)
+        // state is assigned below, inside an if constexpr (N > 0) that the N == 0 instantiation
+        // discards; misc-const-correctness sees only that one and asks for a const that would
+        // stop every other instantiation from compiling.
+        auto state = std::ios_base::goodbit;  // NOLINT(misc-const-correctness)
         charT ch;
         auto i = 0UZ;
         // One peek per character: peeking twice sets eofbit then failbit, failing a short but valid extraction ([bitset.operators]/6).
