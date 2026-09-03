@@ -1,0 +1,19 @@
+#          Copyright Rein Halbersma 2014-2026.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+---
+# Static analysis for the Boost.Test sources, extending the root config rather than replacing it.
+# The generated header self-sufficiency units live under the build directory and resolve to the root.
+# Two checks are dropped, neither saying anything true about a fixture:
+# - misc-use-internal-linkage: BOOST_AUTO_TEST_CASE and BOOST_AUTO_TEST_CASE_TEMPLATE expand to a
+#   struct at namespace scope, which the framework registers by external linkage; an anonymous
+#   namespace would unregister the case. All 89 reports are those structs.
+# - readability-magic-numbers: an exhaustive ladder is nothing but literals -- the widths a bitset
+#   is instantiated over, the positions set in it, and the cardinalities expected back. All 247
+#   reports are those. Naming each would say the same thing twice and hide the ladder.
+InheritParentConfig: true
+Checks: >
+  -misc-use-internal-linkage,
+  -readability-magic-numbers
