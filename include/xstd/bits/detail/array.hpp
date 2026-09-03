@@ -139,7 +139,12 @@ struct array
                                 n += bits_per_block - offset;
                         }
                         auto const rg = m_bits | std::views::drop(index);
-                        if (auto const next = std::ranges::find_if(rg, [](auto block) { return block != zero; }); next != rg.end()) {
+                        // next is an iterator. That std::array's is a pointer is
+                        // implementation-defined -- [array.overview] requires only that it model
+                        // contiguous_iterator -- so readability-qualified-auto's auto const *const
+                        // would encode a detail this code never relies on: next is dereferenced and
+                        // passed to distance, both pure iterator operations.
+                        if (auto const next = std::ranges::find_if(rg, [](auto block) { return block != zero; }); next != rg.end()) {  // NOLINT(readability-qualified-auto)
                                 return n + detail::bits::countr_zero(*next) + (bits_per_block * distance(rg.begin(), next));
                         }
                 }
