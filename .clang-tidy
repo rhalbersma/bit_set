@@ -1,3 +1,9 @@
+#          Copyright Rein Halbersma 2014-2026.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+---
 # Static analysis for the public headers, run by the Clang-Tidy workflow
 # over the generated header self-sufficiency translation units (the
 # Boost.Test sources are excluded: test macros drown the signal in noise).
@@ -29,3 +35,6 @@ Checks: >
 WarningsAsErrors: '*'
 HeaderFilterRegex: 'include/xstd/.*'
 FormatStyle: none
+CheckOptions:
+  # Prefer alternative tokens for logical operators.
+  readability-operators-representation.BinaryOperators: 'not;and;or'
