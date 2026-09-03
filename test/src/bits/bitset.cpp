@@ -48,4 +48,44 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsTrivial, T, Types)
         static_assert(    std::is_trivially_move_assignable_v<T>);
 }
 
+// The proxy operator[] hands out, ported from array_view: assignment either way round, the
+// flipped reading, flip itself, and the three swaps. b[i] = b[j] is checked to move the bit
+// rather than the proxy, which is also what makes swap work.
+BOOST_AUTO_TEST_CASE(TheMutableSubscriptHandsOutAnAssignableProxy)
+{
+        auto b = xstd::bitset<8>{};
+
+        b[3] = true;
+        BOOST_CHECK(b[3]);
+        BOOST_CHECK(b.test(3));
+        BOOST_CHECK_EQUAL(b.count(), 1);
+
+        b[3] = false;
+        BOOST_CHECK(not b[3]);
+
+        b[1] = true;
+        b[2] = b[1];
+        BOOST_CHECK(b[1]);
+        BOOST_CHECK(b[2]);
+
+        BOOST_CHECK_EQUAL(~b[2], false);
+        b[2].flip();
+        BOOST_CHECK(not b[2]);
+
+        auto x = b[1];
+        auto y = b[2];
+        swap(x, y);
+        BOOST_CHECK(not b[1]);
+        BOOST_CHECK(b[2]);
+
+        auto z = false;
+        swap(b[2], z);
+        BOOST_CHECK(not b[2]);
+        BOOST_CHECK(z);
+
+        swap(z, b[2]);
+        BOOST_CHECK(b[2]);
+        BOOST_CHECK(not z);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

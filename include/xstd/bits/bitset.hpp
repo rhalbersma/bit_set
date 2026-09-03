@@ -47,6 +47,7 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 #include <source_location>                 // source_location
 #include <stdexcept>                       // invalid_argument, out_of_range, overflow_error
 #include <string_view>                     // basic_string_view
+#include <utility>                                 // as_const
 
 // Class template bitset [template.bitset], General [template.bitset.general]
 
@@ -71,23 +72,76 @@ class bitset
 public:
         using block_type = Block;
 
+        // array_view's proxy, ported to the member [bitset.refs] asks for: the bits and a position,
+        // handed out by operator[] and reaching them only when read or written. Every such reach
+        // goes through detail::bits::array, whose set, reset, flip and operator[] are noexcept and
+        // asserted, so the proxy never takes the checked set(pos, val) beside it that throws.
         class reference
         {
+                // A pointer, not the reference array_view's proxy holds, so that the copy
+                // constructor below can stay defaulted as [bitset.refs] declares it.
+                bitset* m_ptr{};
+                std::size_t m_idx{};
+
+                friend bitset;
+
+                [[nodiscard]] constexpr reference(bitset& c, std::size_t idx) noexcept
+                :
+                        m_ptr(&c),
+                        m_idx(idx)
+                {}
+
         public:
                 constexpr reference(const reference& x) noexcept = default;
                 constexpr ~reference() = default;
-                constexpr auto operator=(bool x) noexcept -> reference&;
-                constexpr auto operator=(const reference& x) noexcept -> reference& = default;
+
+                constexpr auto operator=(bool x) noexcept -> reference&
+                {
+                        std::as_const(*this) = x;
+                        return *this;
+                }
+
+                // Assigns the bit and not the proxy: b[i] = b[j] is what [bitset.refs] gives this
+                // signature, and the swap below reads b[i] = b[j] too, so rebinding would leave
+                // both positions holding whatever the second one did.
+                //
+                // bugprone-unhandled-self-assignment wants the &other == this guard a class owning
+                // storage needs. This one owns none: b[i] = b[i] reads the bit and writes it back.
+                constexpr auto operator=(const reference& x) noexcept -> reference&  // NOLINT(bugprone-unhandled-self-assignment)
+                {
+                        return *this = static_cast<bool>(x);
+                }
+
                 // A proxy reference assigns through a const proxy, the shape the standard gives vector<bool>::reference.
-                constexpr auto operator=(bool x) const noexcept -> const reference&;  // NOLINT(misc-unconventional-assign-operator)
-                constexpr explicit(false) operator bool() const noexcept;  // NOLINT(misc-explicit-constructor)
-                constexpr auto operator~() const noexcept -> bool;
+                constexpr auto operator=(bool x) const noexcept -> const reference&  // NOLINT(misc-unconventional-assign-operator)
+                {
+                        if (x) {
+                                m_ptr->m_bits.set(m_idx);
+                        } else {
+                                m_ptr->m_bits.reset(m_idx);
+                        }
+                        return *this;
+                }
 
-                friend constexpr void swap(reference x, reference y) noexcept { bool t = x; x = y; y = t; }
-                friend constexpr void swap(reference x,     bool& y) noexcept { bool t = x; x = y; y = t; }
-                friend constexpr void swap(    bool& x, reference y) noexcept { bool t = x; x = y; y = t; }
+                [[nodiscard]] constexpr explicit(false) operator bool() const noexcept  // NOLINT(misc-explicit-constructor)
+                {
+                        return m_ptr->m_bits[m_idx];
+                }
 
-                constexpr auto flip() noexcept -> reference&;
+                [[nodiscard]] constexpr auto operator~() const noexcept -> bool
+                {
+                        return not m_ptr->m_bits[m_idx];
+                }
+
+                friend constexpr void swap(reference x, reference y) noexcept { bool const t = x; x = y; y = t; }
+                friend constexpr void swap(reference x,     bool& y) noexcept { bool const t = x; x = y; y = t; }
+                friend constexpr void swap(    bool& x, reference y) noexcept { bool const t = x; x = y; y = t; }
+
+                constexpr auto flip() noexcept -> reference&
+                {
+                        m_ptr->m_bits.flip(m_idx);
+                        return *this;
+                }
         };
 
         // Constructors                                            [bitset.cons]
@@ -222,7 +276,11 @@ public:
                 return m_bits[pos];
         }
 
-        [[nodiscard]] constexpr auto operator[](std::size_t pos) -> reference = delete; // TODO
+        [[nodiscard]] constexpr auto operator[](std::size_t pos) noexcept
+                -> reference
+        {
+                return { *this, pos };
+        }
 
         [[nodiscard]] constexpr auto to_ulong()  const -> unsigned long      = delete;  // TODO
         [[nodiscard]] constexpr auto to_ullong() const -> unsigned long long = delete;  // TODO
