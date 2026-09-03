@@ -11,19 +11,22 @@
 namespace xstd::detail::bits {
 
 template<xstd::unsigned_integer Block>
-[[nodiscard]] constexpr bool intersects(Block lhs, Block rhs) noexcept
+[[nodiscard]] constexpr auto intersects(Block lhs, Block rhs) noexcept
+        -> bool
 {
         return lhs & rhs;
 }   
 
 template<xstd::unsigned_integer Block>
-[[nodiscard]] constexpr bool is_subset_of(Block lhs, Block rhs) noexcept
+[[nodiscard]] constexpr auto is_subset_of(Block lhs, Block rhs) noexcept
+        -> bool
 {
         return not (lhs & static_cast<Block>(~rhs));
 }  
 
 template<xstd::unsigned_integer Block>
-[[nodiscard]] constexpr bool not_equal_to(Block lhs, Block rhs) noexcept
+[[nodiscard]] constexpr auto not_equal_to(Block lhs, Block rhs) noexcept
+        -> bool
 {
         return lhs != rhs;
 }

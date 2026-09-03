@@ -6,7 +6,6 @@
 #ifndef XSTD_BITS_RANGES_BLOCK_ACCESS_HPP
 #define XSTD_BITS_RANGES_BLOCK_ACCESS_HPP
 
-#include <xstd/bits/detail/intrin.hpp>             // countr_zero
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <cassert>                                 // assert
 #include <concepts>                                // convertible_to
@@ -21,7 +20,8 @@ namespace xstd::ranges {
 template<class Bits>
 struct block_access
 {
-        [[nodiscard]] static constexpr std::size_t num_blocks(Bits const& c) noexcept
+        [[nodiscard]] static constexpr auto num_blocks(Bits const& c) noexcept
+                -> std::size_t
                 requires requires { { block_count(c) } -> std::convertible_to<std::size_t>; }
         {
                 return block_count(c);
@@ -64,7 +64,8 @@ template<block_range Bits>
 
 // Whether x holds any position strictly above the given one, which is the whole of what separates the two orderings.
 template<block_range Bits>
-[[nodiscard]] constexpr bool any_above(Bits const& x, std::size_t index, std::size_t offset) noexcept
+[[nodiscard]] constexpr auto any_above(Bits const& x, std::size_t index, std::size_t offset) noexcept
+        -> bool
 {
         using access = block_access<Bits>;
         using block_type = decltype(access::block(x, 0UZ));

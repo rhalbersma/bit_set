@@ -13,17 +13,20 @@
 // The seam: constrained on xstd::unsigned_integer but forwarding to <bit>, so an xstd::popcount lands as a change of body, not interface.
 namespace xstd::detail::bits {
 
-[[nodiscard]] constexpr std::size_t countl_zero(xstd::unsigned_integer auto block) noexcept
+[[nodiscard]] constexpr auto countl_zero(xstd::unsigned_integer auto block) noexcept
+        -> std::size_t
 {
         return static_cast<std::size_t>(std::countl_zero(block));
 } 
 
-[[nodiscard]] constexpr std::size_t countr_zero(xstd::unsigned_integer auto block) noexcept
+[[nodiscard]] constexpr auto countr_zero(xstd::unsigned_integer auto block) noexcept
+        -> std::size_t
 {
         return static_cast<std::size_t>(std::countr_zero(block));
 }   
 
-[[nodiscard]] constexpr std::size_t popcount(xstd::unsigned_integer auto block) noexcept
+[[nodiscard]] constexpr auto popcount(xstd::unsigned_integer auto block) noexcept
+        -> std::size_t
 {
         return static_cast<std::size_t>(std::popcount(block));
 }

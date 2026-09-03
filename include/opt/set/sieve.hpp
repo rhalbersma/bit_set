@@ -6,10 +6,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <concepts> // integral
-#include <cstddef>  // size_t
-#include <ranges>   // to
-                        // begin, end, iota, range_value_t, take_while
+#include <cstddef> // size_t
+#include <ranges>  // to
+                   // begin, end, iota, range_value_t, take_while
 
 namespace xstd {
 
