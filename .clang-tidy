@@ -38,3 +38,10 @@ CheckOptions:
   readability-operators-representation.BinaryOperators: 'not;and;or'
   # No Boost library ships IWYU pragmas, so nothing there is attributable to a header a consumer names.
   misc-include-cleaner.IgnoreHeaders: 'boost/.*'
+  # A lambda already writes its return type after the parameter list, which is
+  # the whole of what this check is for, so for a generic one its suggestion is
+  # the vacuous "-> auto". A lambda whose deduced type is concrete is still
+  # required to name it. clang-tidy 21 began transforming lambdas; 20 silently
+  # accepts the option and does nothing with it, having said nothing about
+  # lambdas in the first place.
+  modernize-use-trailing-return-type.TransformLambdas: all_except_auto
