@@ -5,9 +5,9 @@
 
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <fmt/format.h>                 // format
-#include <fmt/ranges.h>
+#include <fmt/ranges.h>                 // IWYU pragma: keep; the range formatters
 #include <opt/set/sieve.hpp>            // filter_twins, sift_primes0, sift_primes1
-#include <test/flat_set.hpp>            // TEST_HAS_FLAT_SET
+#include <test/flat_set.hpp>            // IWYU pragma: keep; TEST_HAS_FLAT_SET
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <cstddef>                      // size_t
 #include <set>                          // set

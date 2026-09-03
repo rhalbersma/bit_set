@@ -5,7 +5,7 @@
 
 #include <boost/test/unit_test.hpp>   // BOOST_AUTO_TEST_CASE
 #include <test/block_types.hpp>       // graded_extents
-#include <test/flat_set.hpp>          // TEST_HAS_FLAT_SET
+#include <test/flat_set.hpp>          // IWYU pragma: keep; TEST_HAS_FLAT_SET
 #include <test/sequence/concepts.hpp> // bit_sequence
 #include <test/set/concepts.hpp>      // bit_set
 #include <xstd/bits.hpp>              // the whole bits surface
