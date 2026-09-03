@@ -283,7 +283,7 @@ public:
                 return *this = static_cast<bool>(other);
         }
 
-        constexpr auto flip() const noexcept
+        constexpr auto flip() const noexcept  // NOLINT(modernize-use-nodiscard)
                 -> array_reference const&
                 requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {

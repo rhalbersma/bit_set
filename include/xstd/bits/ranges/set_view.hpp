@@ -375,7 +375,7 @@ public:
         [[nodiscard]] constexpr auto max_size() const noexcept -> size_type { return ops::max_size(*m_ptr); }
 
         // Modifiers, present only where Bits is not const, returning what [set] says they return.
-        constexpr auto insert(key_type x) const noexcept
+        constexpr auto insert(key_type x) const noexcept  // NOLINT(modernize-use-nodiscard)
                 -> std::pair<const_iterator, bool>
                 requires (not std::is_const_v<Bits>)
         {
@@ -384,7 +384,7 @@ public:
                 return { const_iterator{ m_ptr, x }, inserted };
         }
 
-        constexpr auto insert(const_iterator, key_type x) const noexcept
+        constexpr auto insert(const_iterator, key_type x) const noexcept  // NOLINT(modernize-use-nodiscard)
                 -> const_iterator
                 requires (not std::is_const_v<Bits>)
         {
@@ -417,7 +417,7 @@ public:
                 return erased;
         }
 
-        constexpr auto erase(const_iterator pos) const noexcept
+        constexpr auto erase(const_iterator pos) const noexcept  // NOLINT(modernize-use-nodiscard)
                 -> const_iterator
                 requires (not std::is_const_v<Bits>)
         {
