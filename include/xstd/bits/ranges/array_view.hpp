@@ -97,7 +97,7 @@ template<std::ranges::input_range X, std::ranges::input_range Y>
         return std::lexicographical_compare_three_way(
                 std::ranges::begin(x), std::ranges::end(x),
                 std::ranges::begin(y), std::ranges::end(y),
-                [](bool a, bool b) static noexcept { return static_cast<int>(a) <=> static_cast<int>(b); }
+                [](bool a, bool b) static noexcept -> std::strong_ordering { return static_cast<int>(a) <=> static_cast<int>(b); }
         );
 }
 
