@@ -6,6 +6,7 @@
 #ifndef XSTD_BITS_RANGES_ARRAY_VIEW_HPP
 #define XSTD_BITS_RANGES_ARRAY_VIEW_HPP
 
+#include <xstd/bits/detail/intrin.hpp>       // countr_zero
 #include <xstd/bits/ranges/bit_extent.hpp>   // bit_extent, static_bit_extent
 #include <xstd/bits/ranges/block_access.hpp> // block_access, block_range, first_difference
 #include <algorithm>                         // equal, lexicographical_compare_three_way
@@ -27,19 +28,22 @@ namespace xstd::ranges {
 template<class Bits>
 struct array_find
 {
-        [[nodiscard]] static constexpr std::size_t first(Bits const& c) noexcept
+        [[nodiscard]] static constexpr auto first(Bits const& c) noexcept
+                -> std::size_t
                 requires requires { { find_first(c) } -> std::convertible_to<std::size_t>; }
         {
                 return find_first(c);
         }
 
-        [[nodiscard]] static constexpr std::size_t last(Bits const& c) noexcept
+        [[nodiscard]] static constexpr auto last(Bits const& c) noexcept
+                -> std::size_t
                 requires requires { { find_last(c) } -> std::convertible_to<std::size_t>; }
         {
                 return find_last(c);
         }
 
-        [[nodiscard]] static constexpr bool at(Bits const& c, std::size_t n) noexcept
+        [[nodiscard]] static constexpr auto at(Bits const& c, std::size_t n) noexcept
+                -> bool
                 requires requires { { find_at(c, n) } -> std::convertible_to<bool>; }
         {
                 return find_at(c, n);
@@ -50,7 +54,8 @@ struct array_find
 template<class Bits>
 struct array_ops
 {
-        [[nodiscard]] static constexpr std::size_t size(Bits const& c) noexcept
+        [[nodiscard]] static constexpr auto size(Bits const& c) noexcept
+                -> std::size_t
         {
                 if constexpr (static_bit_extent<Bits>) {
                         return bit_extent<Bits>;
@@ -86,7 +91,8 @@ struct array_ops
 
 // The sequence ordering, defined once: the bools in position order, compared lexicographically through value_type.
 template<std::ranges::input_range X, std::ranges::input_range Y>
-[[nodiscard]] constexpr std::strong_ordering array_three_way(X const& x, Y const& y) noexcept
+[[nodiscard]] constexpr auto array_three_way(X const& x, Y const& y) noexcept
+        -> std::strong_ordering
 {
         return std::lexicographical_compare_three_way(
                 std::ranges::begin(x), std::ranges::end(x),
@@ -97,7 +103,8 @@ template<std::ranges::input_range X, std::ranges::input_range Y>
 
 // The same ordering a word at a time; at the lowest differing bit the sequence LACKING it is smaller, with no prefix clause.
 template<block_range Bits>
-[[nodiscard]] constexpr std::strong_ordering array_three_way(Bits const& x, Bits const& y) noexcept
+[[nodiscard]] constexpr auto array_three_way(Bits const& x, Bits const& y) noexcept
+        -> std::strong_ordering
 {
         using access = block_access<Bits>;
         using block_type = decltype(access::block(x, 0UZ));
@@ -130,10 +137,10 @@ template<class, bool> class array_iterator;
 template<class, bool> class array_reference;
 
 // Forward-declared so array_iterator's dependent friend template-ids have a template to name; Clang requires it, GCC does not.
-template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, false> array_begin(      Bits& c) noexcept;
-template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > array_begin(Bits const& c) noexcept;
-template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, false> array_end  (      Bits& c) noexcept;
-template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > array_end  (Bits const& c) noexcept;
+template<array_range Bits> [[nodiscard]] constexpr auto array_begin(      Bits& c) noexcept -> array_iterator<Bits, false>;
+template<array_range Bits> [[nodiscard]] constexpr auto array_begin(Bits const& c) noexcept -> array_iterator<Bits, true >;
+template<array_range Bits> [[nodiscard]] constexpr auto array_end  (      Bits& c) noexcept -> array_iterator<Bits, false>;
+template<array_range Bits> [[nodiscard]] constexpr auto array_end  (Bits const& c) noexcept -> array_iterator<Bits, true >;
 
 template<class Bits, bool IsConst>
 class array_iterator
@@ -167,7 +174,8 @@ public:
 
         [[nodiscard]] constexpr array_iterator() noexcept = default;
 
-        [[nodiscard]] friend constexpr bool operator==(array_iterator lhs, array_iterator rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator==(array_iterator lhs, array_iterator rhs) noexcept
+                -> bool
         {
                 assert(lhs.m_ptr == rhs.m_ptr);
                 return lhs.m_idx == rhs.m_idx;
@@ -180,41 +188,44 @@ public:
                 return lhs.m_idx <=> rhs.m_idx;
         }
 
-        [[nodiscard]] constexpr reference operator*() const noexcept
+        [[nodiscard]] constexpr auto operator*() const noexcept
+                -> reference
         {
                 assert(m_ptr != nullptr);
                 return { *m_ptr, m_idx };
         }
 
-        constexpr array_iterator& operator++() noexcept { ++m_idx; return *this; }
-        constexpr array_iterator& operator--() noexcept { --m_idx; return *this; }
+        constexpr auto operator++() noexcept -> array_iterator& { ++m_idx; return *this; }
+        constexpr auto operator--() noexcept -> array_iterator& { --m_idx; return *this; }
 
-        constexpr array_iterator operator++(int) noexcept { auto nrv = *this; ++*this; return nrv; }
-        constexpr array_iterator operator--(int) noexcept { auto nrv = *this; --*this; return nrv; }
+        constexpr auto operator++(int) noexcept -> array_iterator { auto nrv = *this; ++*this; return nrv; }
+        constexpr auto operator--(int) noexcept -> array_iterator { auto nrv = *this; --*this; return nrv; }
 
-        constexpr array_iterator& operator+=(difference_type n) noexcept { m_idx = static_cast<std::size_t>(static_cast<difference_type>(m_idx) + n); return *this; }
-        constexpr array_iterator& operator-=(difference_type n) noexcept { m_idx = static_cast<std::size_t>(static_cast<difference_type>(m_idx) - n); return *this; }
+        constexpr auto operator+=(difference_type n) noexcept -> array_iterator& { m_idx = static_cast<std::size_t>(static_cast<difference_type>(m_idx) + n); return *this; }
+        constexpr auto operator-=(difference_type n) noexcept -> array_iterator& { m_idx = static_cast<std::size_t>(static_cast<difference_type>(m_idx) - n); return *this; }
 
-        [[nodiscard]] friend constexpr difference_type operator-(array_iterator lhs, array_iterator rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator-(array_iterator lhs, array_iterator rhs) noexcept
+                -> difference_type
         {
                 return static_cast<difference_type>(lhs.m_idx) - static_cast<difference_type>(rhs.m_idx);
         }
 
-        [[nodiscard]] constexpr reference operator[](difference_type n) const noexcept
+        [[nodiscard]] constexpr auto operator[](difference_type n) const noexcept
+                -> reference
         {
                 assert(m_ptr != nullptr);
                 return { *m_ptr, static_cast<std::size_t>(static_cast<difference_type>(m_idx) + n) };
         }
 };
 
-template<array_range Bits, bool IsConst> [[nodiscard]] constexpr array_iterator<Bits, IsConst> operator+(array_iterator<Bits, IsConst> lhs, std::ptrdiff_t n) noexcept { auto nrv = lhs; nrv += n; return nrv; }
-template<array_range Bits, bool IsConst> [[nodiscard]] constexpr array_iterator<Bits, IsConst> operator+(std::ptrdiff_t n, array_iterator<Bits, IsConst> rhs) noexcept { auto nrv = rhs; nrv += n; return nrv; }
-template<array_range Bits, bool IsConst> [[nodiscard]] constexpr array_iterator<Bits, IsConst> operator-(array_iterator<Bits, IsConst> lhs, std::ptrdiff_t n) noexcept { auto nrv = lhs; nrv -= n; return nrv; }
+template<array_range Bits, bool IsConst> [[nodiscard]] constexpr auto operator+(array_iterator<Bits, IsConst> lhs, std::ptrdiff_t n) noexcept -> array_iterator<Bits, IsConst> { auto nrv = lhs; nrv += n; return nrv; }
+template<array_range Bits, bool IsConst> [[nodiscard]] constexpr auto operator+(std::ptrdiff_t n, array_iterator<Bits, IsConst> rhs) noexcept -> array_iterator<Bits, IsConst> { auto nrv = rhs; nrv += n; return nrv; }
+template<array_range Bits, bool IsConst> [[nodiscard]] constexpr auto operator-(array_iterator<Bits, IsConst> lhs, std::ptrdiff_t n) noexcept -> array_iterator<Bits, IsConst> { auto nrv = lhs; nrv -= n; return nrv; }
 
-template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, false> array_begin(      Bits& c) noexcept { return { &c, array_find<Bits>::first(c) }; }
-template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > array_begin(Bits const& c) noexcept { return { &c, array_find<Bits>::first(c) }; }
-template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, false> array_end  (      Bits& c) noexcept { return { &c, array_find<Bits>::last (c) }; }
-template<array_range Bits> [[nodiscard]] constexpr array_iterator<Bits, true > array_end  (Bits const& c) noexcept { return { &c, array_find<Bits>::last (c) }; }
+template<array_range Bits> [[nodiscard]] constexpr auto array_begin(      Bits& c) noexcept -> array_iterator<Bits, false> { return { &c, array_find<Bits>::first(c) }; }
+template<array_range Bits> [[nodiscard]] constexpr auto array_begin(Bits const& c) noexcept -> array_iterator<Bits, true > { return { &c, array_find<Bits>::first(c) }; }
+template<array_range Bits> [[nodiscard]] constexpr auto array_end  (      Bits& c) noexcept -> array_iterator<Bits, false> { return { &c, array_find<Bits>::last (c) }; }
+template<array_range Bits> [[nodiscard]] constexpr auto array_end  (Bits const& c) noexcept -> array_iterator<Bits, true > { return { &c, array_find<Bits>::last (c) }; }
 
 // A proxy bool assigning back into the bits, with std::vector<bool>::reference the precedent, const-qualified assignment included.
 template<class Bits, bool IsConst>
@@ -238,7 +249,8 @@ public:
         using value_type = bool;
         using iterator   = array_iterator<Bits, IsConst>;
 
-        [[nodiscard]] constexpr iterator operator&() const noexcept
+        [[nodiscard]] constexpr auto operator&() const noexcept
+                -> iterator
         {
                 return { &m_ref, m_idx };
         }
@@ -256,20 +268,23 @@ public:
         }
 
         // const-qualified and returning a const reference, the proxy shape P2321R2 gave std::vector<bool>::reference.
-        constexpr array_reference const& operator=(bool value) const noexcept  // NOLINT(misc-unconventional-assign-operator)
+        constexpr auto operator=(bool value) const noexcept  // NOLINT(misc-unconventional-assign-operator)
+                -> array_reference const&
                 requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
                 array_ops<Bits>::assign(m_ref, m_idx, value);
                 return *this;
         }
 
-        constexpr array_reference const& operator=(array_reference const& other) const noexcept  // NOLINT(misc-unconventional-assign-operator)
+        constexpr auto operator=(array_reference const& other) const noexcept  // NOLINT(misc-unconventional-assign-operator)
+                -> array_reference const&
                 requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
                 return *this = static_cast<bool>(other);
         }
 
-        constexpr array_reference const& flip() const noexcept
+        constexpr auto flip() const noexcept
+                -> array_reference const&
                 requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {
                 return *this = not static_cast<bool>(*this);
@@ -295,7 +310,8 @@ class array_view : public std::ranges::view_base
         Bits_cv* m_ptr;
 
         // A view is as block-accessible as the thing it views; constrained, so one over an opaque type keeps the element-wise path.
-        [[nodiscard]] friend constexpr std::size_t block_count(array_view v) noexcept
+        [[nodiscard]] friend constexpr auto block_count(array_view v) noexcept
+                -> std::size_t
                 requires block_range<bits_type>
         {
                 return block_access<bits_type>::num_blocks(*v.m_ptr);
@@ -323,19 +339,20 @@ public:
 
         [[nodiscard]] constexpr explicit array_view(Bits_cv& c) noexcept : m_ptr(&c) {}
 
-        [[nodiscard]] constexpr iterator begin() const noexcept { return array_begin(*m_ptr); }
-        [[nodiscard]] constexpr iterator end()   const noexcept { return array_end  (*m_ptr); }
+        [[nodiscard]] constexpr auto begin() const noexcept -> iterator { return array_begin(*m_ptr); }
+        [[nodiscard]] constexpr auto end()   const noexcept -> iterator { return array_end  (*m_ptr); }
 
-        [[nodiscard]] constexpr reverse_iterator rbegin() const noexcept { return std::make_reverse_iterator(end());   }
-        [[nodiscard]] constexpr reverse_iterator rend()   const noexcept { return std::make_reverse_iterator(begin()); }
+        [[nodiscard]] constexpr auto rbegin() const noexcept -> reverse_iterator { return std::make_reverse_iterator(end());   }
+        [[nodiscard]] constexpr auto rend()   const noexcept -> reverse_iterator { return std::make_reverse_iterator(begin()); }
 
-        [[nodiscard]] constexpr const_iterator         cbegin()  const noexcept { return array_begin(std::as_const(*m_ptr)); }
-        [[nodiscard]] constexpr const_iterator         cend()    const noexcept { return array_end  (std::as_const(*m_ptr)); }
-        [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept { return std::make_reverse_iterator(cend());   }
-        [[nodiscard]] constexpr const_reverse_iterator crend()   const noexcept { return std::make_reverse_iterator(cbegin()); }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept -> const_iterator         { return array_begin(std::as_const(*m_ptr)); }
+        [[nodiscard]] constexpr auto cend()    const noexcept -> const_iterator         { return array_end  (std::as_const(*m_ptr)); }
+        [[nodiscard]] constexpr auto crbegin() const noexcept -> const_reverse_iterator { return std::make_reverse_iterator(cend());   }
+        [[nodiscard]] constexpr auto crend()   const noexcept -> const_reverse_iterator { return std::make_reverse_iterator(cbegin()); }
 
         // A constant expression wherever the Bits knows its own width, which is why Extent is a parameter at all.
-        [[nodiscard]] constexpr size_type size() const noexcept
+        [[nodiscard]] constexpr auto size() const noexcept
+                -> size_type
         {
                 if constexpr (extent != std::dynamic_extent) {
                         return extent;
@@ -344,15 +361,17 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr bool empty() const noexcept { return size() == 0UZ; }
+        [[nodiscard]] constexpr auto empty() const noexcept -> bool { return size() == 0UZ; }
 
-        [[nodiscard]] constexpr reference operator[](size_type n) const noexcept
+        [[nodiscard]] constexpr auto operator[](size_type n) const noexcept
+                -> reference
         {
                 assert(n < size());
                 return *(begin() + static_cast<difference_type>(n));
         }
 
-        [[nodiscard]] constexpr reference at(size_type n) const
+        [[nodiscard]] constexpr auto at(size_type n) const
+                -> reference
         {
                 if (n >= size()) {
                         throw std::out_of_range("xstd::array_view::at");
@@ -360,8 +379,8 @@ public:
                 return (*this)[n];
         }
 
-        [[nodiscard]] constexpr reference front() const noexcept { return (*this)[0UZ]; }
-        [[nodiscard]] constexpr reference back()  const noexcept { return (*this)[size() - 1UZ]; }
+        [[nodiscard]] constexpr auto front() const noexcept -> reference { return (*this)[0UZ]; }
+        [[nodiscard]] constexpr auto back()  const noexcept -> reference { return (*this)[size() - 1UZ]; }
 
         constexpr void fill(bool value) const noexcept
                 requires (not is_const)
@@ -369,7 +388,8 @@ public:
                 ops::fill(*m_ptr, value);
         }
 
-        [[nodiscard]] friend constexpr bool operator==(array_view lhs, array_view rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator==(array_view lhs, array_view rhs) noexcept
+                -> bool
         {
                 if constexpr (requires { *lhs.m_ptr == *rhs.m_ptr; }) {
                         return *lhs.m_ptr == *rhs.m_ptr;
@@ -379,7 +399,8 @@ public:
         }
 
         // Sequence order, index 0 first, always computed from the sequence: nothing to trust, and no set_compare analogue.
-        [[nodiscard]] friend constexpr std::strong_ordering operator<=>(array_view lhs, array_view rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(array_view lhs, array_view rhs) noexcept
+                -> std::strong_ordering
         {
                 return array_three_way(lhs, rhs);
         }

@@ -24,9 +24,7 @@ Checks: >
   performance-*,
   portability-*,
   readability-*,
-  -misc-include-cleaner,
   -misc-non-private-member-variables-in-classes,
-  -modernize-use-trailing-return-type,
   -readability-avoid-nested-conditional-operator,
   -readability-identifier-length,
   -readability-named-parameter,
@@ -38,3 +36,5 @@ FormatStyle: none
 CheckOptions:
   # Prefer alternative tokens for logical operators.
   readability-operators-representation.BinaryOperators: 'not;and;or'
+  # No Boost library ships IWYU pragmas, so nothing there is attributable to a header a consumer names.
+  misc-include-cleaner.IgnoreHeaders: 'boost/.*'
