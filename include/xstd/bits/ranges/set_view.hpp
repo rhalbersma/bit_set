@@ -116,12 +116,16 @@ struct set_ops
                 }
         }
 
+        // Written through the subscript, not through set(n) and reset(n): those check the
+        // position a second time and throw out of these noexcept functions, where the position
+        // is a precondition asserted here. Every type in the vocabulary hands out a proxy that
+        // writes without checking -- xstd::bitset's since its operator[] stopped being a TODO.
         static constexpr void insert(Bits& c, std::size_t n) noexcept
         {
                 // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
                 assert(n < max_size(c));
                 if constexpr (bitset_vocabulary<Bits>) {
-                        c.set(n);
+                        c[n] = true;
                 } else {
                         c.insert(n);
                 }
@@ -129,8 +133,10 @@ struct set_ops
 
         static constexpr void erase(Bits& c, std::size_t n) noexcept
         {
+                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
+                assert(n < max_size(c));
                 if constexpr (bitset_vocabulary<Bits>) {
-                        c.reset(n);
+                        c[n] = false;
                 } else {
                         c.erase(n);
                 }
