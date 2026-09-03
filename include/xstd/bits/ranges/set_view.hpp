@@ -118,6 +118,8 @@ struct set_ops
 
         static constexpr void insert(Bits& c, std::size_t n) noexcept
         {
+                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
+                assert(n < max_size(c));
                 if constexpr (bitset_vocabulary<Bits>) {
                         c.set(n);
                 } else {

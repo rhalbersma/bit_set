@@ -68,6 +68,8 @@ struct array_ops
         static constexpr void assign(Bits& c, std::size_t n, bool value) noexcept
                 requires requires { c.set(n, value); }
         {
+                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
+                assert(n < size(c));
                 c.set(n, value);
         }
 
