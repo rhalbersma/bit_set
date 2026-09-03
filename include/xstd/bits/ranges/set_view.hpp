@@ -92,11 +92,25 @@ struct set_ops
                 }
         }
 
+        // Two models meet here. A static extent is a fixed-capacity set that cannot grow, so -- as with
+        // std::array -- a position outside it is a precondition violation and not a question worth an
+        // answer. A dynamic extent can still grow, so it is a std::set: any key may be asked about, and one
+        // past the current size is simply absent, which is what lets set_view::find(x) return end().
+        //
+        // Either way the position is in range by the time the bitset is read, so the read goes through
+        // operator[] and not test(): the latter is the checked accessor whose throw would escape this
+        // noexcept, and bugprone-exception-escape is right to say so.
         [[nodiscard]] static constexpr auto contains(Bits const& c, std::size_t n) noexcept
                 -> bool
         {
                 if constexpr (bitset_vocabulary<Bits>) {
-                        return c.test(n);
+                        if constexpr (static_bit_extent<Bits>) {
+                                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
+                                assert(n < max_size(c));
+                        } else if (n >= max_size(c)) {
+                                return false;
+                        }
+                        return c[n];
                 } else {
                         return c.contains(n);
                 }
