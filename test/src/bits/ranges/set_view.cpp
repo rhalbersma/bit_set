@@ -31,6 +31,23 @@ BOOST_AUTO_TEST_CASE(TheViewedTypesAreTheOnesHoldingASetWithoutOfferingIt)
         static_assert(std::ranges::bidirectional_range<xstd::set_view<boost::dynamic_bitset<>>>);
 }
 
+// A dynamic extent is a std::set: it can still grow, so a position past its current size is absent rather than a
+// precondition violation, and the query answers instead of asserting. A static extent asserts, which is why only
+// this half is testable.
+BOOST_AUTO_TEST_CASE(ADynamicExtentAnswersForPositionsBeyondItsCurrentSize)
+{
+        auto bits = boost::dynamic_bitset<>(8);
+        bits.set(3);
+        auto const v = xstd::set_view(bits);
+
+        BOOST_CHECK(v.contains(3));
+        BOOST_CHECK(not v.contains(8));
+        BOOST_CHECK(not v.contains(99));
+        BOOST_CHECK_EQUAL(v.count(99), 0);
+        BOOST_CHECK(v.find(99) == v.end());
+        BOOST_CHECK(v.lower_bound(99) == v.end());
+}
+
 // The set ordering against std::set rather than a restatement of it, for every viewed type including the one whose own <=> disagrees.
 BOOST_AUTO_TEST_CASE(EveryViewedTypeOrdersLikeAStdSet)
 {
