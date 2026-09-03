@@ -27,7 +27,7 @@ on:
 jobs:
   coverage:
     # Ahead of v0.8.1, for the unwind-resume exclusion on a bare closing brace, without which 100 can never be met.
-    uses: rhalbersma/cpp-ci/.github/workflows/coverage.yml@3d88e0781e1be9e82d414d263f03b9534a11828d # main
+    uses: rhalbersma/cpp-ci/.github/workflows/coverage.yml@01ed3761196d7e019c6e0ed876d80974ee653ead # main
     with:
       # benchmark/ as well: it measures the library rather than being part of it.
       exclude: "test/.* benchmark/.* build/.*"
