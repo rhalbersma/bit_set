@@ -569,8 +569,22 @@ private:
                 }
         }
 
+        // Iterators are taken by value, as std::ranges::distance itself takes them.
+        //
+        // performance-unnecessary-value-param flags both parameters, and only for the
+        // reverse_iterator instantiations. libstdc++ hand-writes that class's copy
+        // constructor -- a pre-"= default" idiom; the copy assignment beside it is
+        // defaulted -- so it is not trivially copyable, where libc++'s is and the check
+        // stays silent. The verdict is a property of the standard library rather than of
+        // this signature.
+        //
+        // Nor is the cost it names paid here. Not trivially copyable means non-trivial
+        // for the purposes of calls under the Itanium ABI, so an out-of-line callee takes
+        // a pointer to a caller-built temporary where a trivially copyable type of the
+        // same eight bytes arrives in a register. This is a static constexpr one-liner:
+        // at -O2 it inlines and both iterators fold away to a pointer subtraction.
         template<std::random_access_iterator I, std::sized_sentinel_for<I> S>
-        [[nodiscard]] static constexpr auto distance(I first, S last) noexcept
+        [[nodiscard]] static constexpr auto distance(I first, S last) noexcept  // NOLINT(performance-unnecessary-value-param)
         {
                 return static_cast<std::size_t>(std::ranges::distance(first, last));
         }
