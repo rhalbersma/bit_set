@@ -10,6 +10,7 @@
 #include <xstd/bits/detail/intrin.hpp>             // countl_zero, countr_zero, popcount
 #include <xstd/bits/detail/pred.hpp>               // intersects, is_subset_of, not_equal_to
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
+#include <xstd/ints/cstdlib/div.hpp>               // div, div_result
 #include <xstd/ints/memory.hpp>                    // align_up
 #include <algorithm>                               // all_of, any_of, fill_n, find_if, fold_left, max, shift_left, shift_right
 #include <array>                                   // array
@@ -222,7 +223,7 @@ struct array
                         // m_bits[0] <<= n narrows the promoted int back to a Block implicitly, which -fsanitize=implicit-conversion aborts on once a bit shifts out.
                         m_bits[0] = static_cast<Block>(m_bits[0] << n);
                 } else if constexpr (num_blocks >= 2) {
-                        auto const [ n_blocks, L_shift ] = div_mod(n, bits_per_block);
+                        auto const [ n_blocks, L_shift ] = xstd::div(n, bits_per_block);
                         if (L_shift == 0) {
                                 std::shift_right(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
@@ -244,7 +245,7 @@ struct array
                         // m_bits[0] >>= n narrows the promoted int back to a Block implicitly, which -fsanitize=implicit-conversion instruments.
                         m_bits[0] = static_cast<Block>(m_bits[0] >> n);
                 } else if constexpr (num_blocks >= 2) {
-                        auto const [ n_blocks, R_shift ] = div_mod(n, bits_per_block);
+                        auto const [ n_blocks, R_shift ] = xstd::div(n, bits_per_block);
                         if (R_shift == 0) {
                                 std::shift_left(m_bits.begin(), m_bits.end(), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
@@ -517,19 +518,13 @@ private:
                 }
         }
 
-        [[nodiscard]] static constexpr auto div_mod(std::size_t numer, std::size_t denom) noexcept
-                -> std::pair<std::size_t, std::size_t>
-        {
-                return { numer / denom, numer % denom };
-        }
-
         [[nodiscard]] static constexpr auto index_offset(std::size_t n) noexcept
-                -> std::pair<std::size_t, std::size_t>
+                -> xstd::div_result<std::size_t>
         {
                 if constexpr (num_blocks == 1) {
-                        return { 0UZ, n };
+                        return { .quotient = 0UZ, .remainder = n };
                 } else {
-                        return div_mod(n, bits_per_block);
+                        return xstd::div(n, bits_per_block);
                 }
         }
 
