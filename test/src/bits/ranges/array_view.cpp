@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(TheSequenceReadingIsTheArrayOfBools)
 BOOST_AUTO_TEST_CASE(WritingThroughTheViewWritesTheBits)
 {
         auto packed = xstd::bitset<8>();
-        auto view = xstd::array_view(packed);
+        auto const view = xstd::array_view(packed);
 
         view[3] = true;
         BOOST_CHECK(packed.test(3));

@@ -27,10 +27,10 @@ BOOST_AUTO_TEST_CASE(EveryContainerArrivesThroughTheOneDoor)
         // xstd::bitset is deliberately not a range, reproducing std::bitset, so the door has to deliver a working view over it.
         static_assert(not std::ranges::range<xstd::bitset<8>>);
 
-        auto legacy = xstd::bitset<8>();
+        auto const legacy = xstd::bitset<8>();
         static_assert(std::ranges::bidirectional_range<decltype(xstd::set_view(legacy))>);
 
-        auto packed = xstd::bit_array<8>();
+        auto const packed = xstd::bit_array<8>();
         static_assert(std::ranges::random_access_range<decltype(xstd::array_view(packed))>);
 }
 

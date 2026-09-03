@@ -68,7 +68,7 @@ using Types = std::tuple
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(TheSetOperationsHoldOnAnEmptyPair, T, Types)
 {
-        [[maybe_unused]] auto _ = nested_types<T>();
+        [[maybe_unused]] auto const _ = nested_types<T>();
         constructor<T>()();
 
         on0::empty_set_pair<T>(mem_swap());

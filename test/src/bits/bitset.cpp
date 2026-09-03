@@ -72,8 +72,8 @@ BOOST_AUTO_TEST_CASE(TheMutableSubscriptHandsOutAnAssignableProxy)
         b[2].flip();
         BOOST_CHECK(not b[2]);
 
-        auto x = b[1];
-        auto y = b[2];
+        auto const x = b[1];
+        auto const y = b[2];
         swap(x, y);
         BOOST_CHECK(not b[1]);
         BOOST_CHECK(b[2]);

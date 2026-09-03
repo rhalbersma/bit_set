@@ -51,12 +51,14 @@ class Implicit
 
 public:
         [[nodiscard]] constexpr explicit(false) Implicit(std::size_t v) noexcept : m_value(v) {}
-        [[nodiscard]] constexpr explicit(false) operator std::size_t() const noexcept { return m_value; }
+        // Implicit is the point: this class exists to be converted from and to without a cast,
+        // which is what the case below checks.
+        [[nodiscard]] constexpr explicit(false) operator std::size_t() const noexcept { return m_value; }  // NOLINT(misc-explicit-constructor)
 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(TheKeysCopyIntoASetOfAnImplicitlyConstructibleType, T, Types)
 {
-        auto src = T({ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 });
+        auto const src = T({ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 });
         std::set<Implicit> dst;
         std::ranges::copy(src, std::inserter(dst, dst.end()));
         BOOST_CHECK_EQUAL_COLLECTIONS(src.begin(), src.end(), dst.begin(), dst.end());
