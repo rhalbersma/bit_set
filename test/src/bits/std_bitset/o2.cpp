@@ -26,7 +26,7 @@ using Types = std::tuple
 ,        xstd::bitset< 8, uint16_t>
 ,        xstd::bitset< 8, uint32_t>
 ,        xstd::bitset< 8, uint64_t>
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,        xstd::bitset< 8, __uint128_t>
 #endif
 >;

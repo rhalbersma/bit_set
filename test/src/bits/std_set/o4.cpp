@@ -32,7 +32,7 @@ using Types = std::tuple
 ,       xstd::bit_finite_set<17, uint16_t>
 ,       xstd::bit_finite_set<17, uint32_t>
 ,       xstd::bit_finite_set<17, uint64_t>
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,       xstd::bit_finite_set<17, __uint128_t>
 #endif
 >;

@@ -44,7 +44,7 @@ using Types = std::tuple
 ,       xstd::bit_finite_set< 63, uint64_t>
 ,       xstd::bit_finite_set< 64, uint64_t>
 ,       xstd::bit_finite_set< 65, uint64_t>
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,       xstd::bit_finite_set<  0, __uint128_t>
 ,       xstd::bit_finite_set<  1, __uint128_t>
 ,       xstd::bit_finite_set<127, __uint128_t>

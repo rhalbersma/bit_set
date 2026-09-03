@@ -19,7 +19,7 @@ using Types = std::tuple
 ,       uint16_t
 ,       uint32_t
 ,       uint64_t
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,       __uint128_t
 #endif
 >;

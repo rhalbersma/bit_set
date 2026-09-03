@@ -320,7 +320,7 @@ struct mem_equal_to
                 );                                                              // [bitset.members]/45
                 auto const lhs_view = xstd::set_view(self);
                 auto const rhs_view = xstd::set_view(rhs);
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
                 BOOST_CHECK_EQUAL(
                         self == rhs,
                         std::ranges::equal(

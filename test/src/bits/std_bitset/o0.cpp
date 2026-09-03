@@ -56,7 +56,7 @@ using Types = std::tuple
 ,        xstd::bitset< 63, uint64_t>
 ,        xstd::bitset< 64, uint64_t>
 ,        xstd::bitset< 65, uint64_t>
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,        xstd::bitset<  0, __uint128_t>
 ,        xstd::bitset<  1, __uint128_t>
 ,        xstd::bitset<127, __uint128_t>

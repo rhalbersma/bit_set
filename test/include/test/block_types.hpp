@@ -24,7 +24,7 @@ using word_types = std::tuple
 ,       std::uint16_t
 ,       std::uint32_t
 ,       std::uint64_t
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,       __uint128_t
 #endif
 >;
