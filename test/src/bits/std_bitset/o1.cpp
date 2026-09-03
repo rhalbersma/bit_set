@@ -9,6 +9,7 @@
 #include <xstd/bits/bitset.hpp>                   // bitset
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
+#include <bitset>                                 // bitset
 #include <cstdint>                                // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                                  // tuple
 

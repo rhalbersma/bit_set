@@ -11,6 +11,7 @@
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <ranges>                       // from_range
 #include <set>                          // set
 #include <tuple>                        // tuple
 

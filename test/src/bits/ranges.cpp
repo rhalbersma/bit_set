@@ -10,6 +10,7 @@
 #include <concepts>                     // same_as
 #include <cstddef>                      // size_t
 #include <type_traits>                  // is_convertible_v
+#include <utility>                      // declval
 
 BOOST_AUTO_TEST_SUITE(Ranges)
 

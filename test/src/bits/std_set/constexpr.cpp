@@ -6,6 +6,7 @@
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_CHECK_EQUAL_COLLECTIONS
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <compare>                      // strong_ordering
+#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
 BOOST_AUTO_TEST_SUITE(StdSet)

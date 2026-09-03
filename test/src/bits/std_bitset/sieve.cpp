@@ -8,10 +8,12 @@
 #include <fmt/ranges.h>
 #include <opt/bitset/sieve.hpp>                   // filter_twins, sift_primes0, sift_primes1
 #include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
+#include <xstd/bits/bitset.hpp>                   // bitset
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
 #include <xstd/bits/ranges/set_view.hpp>          // view
+#include <bitset>                                 // bitset
 #include <tuple>                                  // tuple
 
 BOOST_AUTO_TEST_SUITE(StdBitset)
