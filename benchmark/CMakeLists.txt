@@ -28,10 +28,6 @@ set(cxx_compile_options_warnings
     $<$<CXX_COMPILER_ID:MSVC>:
         /W4
         /permissive-
-        /WX
-    >
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>:
-        -Werror
     >
     $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>,$<NOT:$<BOOL:${bit_set_is_clang_cl}>>>:
         -pedantic-errors
@@ -68,6 +64,8 @@ set(cxx_compile_options_warnings
         -Wno-array-bounds                   # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
         -Wno-stringop-overflow              # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
     >
+    $<$<AND:$<BOOL:${BIT_SET_WARNINGS_AS_ERRORS}>,$<CXX_COMPILER_ID:MSVC>>:/WX>
+    $<$<AND:$<BOOL:${BIT_SET_WARNINGS_AS_ERRORS}>,$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>>:-Werror>
 )
 
 set(cxx_compile_options_optimization

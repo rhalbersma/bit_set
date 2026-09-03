@@ -7,7 +7,6 @@ name: CodeQL
 
 permissions:
   contents: read
-  security-events: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,6 +22,15 @@ on:
   workflow_dispatch:
 
 jobs:
+  # security-events on the job rather than at workflow level. Scorecard's
+  # Token-Permissions check subtracts a full point for a top-level
+  # security-events write and nothing for the same grant on a job, as long as
+  # the workflow still declares a top-level block -- which the contents: read
+  # above does. The called workflow cannot exceed what this job grants, so the
+  # grant has to live somewhere here either way.
   # No inputs: c-cpp with security-extended is the shared workflow's default.
   codeql:
+    permissions:
+      contents: read
+      security-events: write
     uses: rhalbersma/cpp-ci/.github/workflows/codeql.yml@e2886b13f6fcd1eceb231652f816b016de41be1d # v0.8.1

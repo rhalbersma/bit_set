@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow_ref }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
@@ -18,6 +18,8 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  # canary.yml calls this weekly, so the stub stays callable itself.
+  workflow_call:
 
 jobs:
   # All three rungs; VS 2022's STL has no <flat_set>, which the tests probe for rather than assume.

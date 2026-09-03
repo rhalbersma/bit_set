@@ -1,0 +1,36 @@
+#          Copyright Rein Halbersma 2014-2026.
+# Distributed under the Boost Software License, Version 1.0.
+#    (See accompanying file LICENSE_1_0.txt or copy at
+#          http://www.boost.org/LICENSE_1_0.txt)
+
+name: Toolchain Canary
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  schedule:
+    - cron: '30 5 * * 1'
+  workflow_dispatch:
+
+jobs:
+  # Run the complete compiler workflows weekly so dynamic development
+  # toolchains and mutable runner images are checked even without a push.
+  gcc:
+    uses: ./.github/workflows/gcc.yml
+  clang:
+    uses: ./.github/workflows/clang.yml
+  clang_libcxx:
+    uses: ./.github/workflows/clang-libc++.yml
+  mingw:
+    uses: ./.github/workflows/mingw.yml
+  apple_clang:
+    uses: ./.github/workflows/apple-clang.yml
+  msvc:
+    uses: ./.github/workflows/msvc.yml
+  clang_cl:
+    uses: ./.github/workflows/clang-cl.yml

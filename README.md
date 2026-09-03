@@ -7,7 +7,7 @@
 [![MinGW](https://github.com/rhalbersma/bit_set/actions/workflows/mingw.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/mingw.yml)
 [![Clang](https://github.com/rhalbersma/bit_set/actions/workflows/clang.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/clang.yml)
 [![Clang-libc++](https://github.com/rhalbersma/bit_set/actions/workflows/clang-libc%2B%2B.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/clang-libc%2B%2B.yml)
-[![AppleClang](https://github.com/rhalbersma/bit_set/actions/workflows/apple-clang.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/apple-clang.yml)
+[![Apple Clang](https://github.com/rhalbersma/bit_set/actions/workflows/apple-clang.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/apple-clang.yml)
 [![Clang-CL](https://github.com/rhalbersma/bit_set/actions/workflows/clang-cl.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/clang-cl.yml)
 [![MSVC](https://github.com/rhalbersma/bit_set/actions/workflows/msvc.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/msvc.yml)
 [![Coverage](https://codecov.io/gh/rhalbersma/bit_set/branch/main/graph/badge.svg)](https://codecov.io/gh/rhalbersma/bit_set)
@@ -433,13 +433,13 @@ This library depends on the C++ Standard Library and [xstd](https://github.com/r
 | Windows | MinGW | libstdc++ | 15 | 16 | — | [![MinGW](https://github.com/rhalbersma/bit_set/actions/workflows/mingw.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/mingw.yml) |
 | Linux | Clang | libstdc++ | 22 (libstdc++ 15) | 23 (libstdc++ 16) | 24-SVN (libstdc++ 17-SVN) | [![Clang](https://github.com/rhalbersma/bit_set/actions/workflows/clang.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/clang.yml) |
 | Linux | Clang | libc++ | 22 | 23 | 24-SVN | [![Clang-libc++](https://github.com/rhalbersma/bit_set/actions/workflows/clang-libc%2B%2B.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/clang-libc%2B%2B.yml) |
-| macOS | AppleClang | libc++ | 17.0.0 (Xcode 16.4) | 21.0.0 (Xcode 26.6) | — | [![AppleClang](https://github.com/rhalbersma/bit_set/actions/workflows/apple-clang.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/apple-clang.yml) |
+| macOS | Apple Clang | libc++ | 17.0.0 (Xcode 16.4) | 21.0.0 (Xcode 26.6) | — | [![Apple Clang](https://github.com/rhalbersma/bit_set/actions/workflows/apple-clang.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/apple-clang.yml) |
 | Windows | Clang-CL | MSVC | 19.1.5 (VS 2022) | 20.1.8 (VS 2026) | 20.1.8 (VS 2026-Preview) | [![Clang-CL](https://github.com/rhalbersma/bit_set/actions/workflows/clang-cl.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/clang-cl.yml) |
 | Windows | MSVC | MSVC | 2022 (17.11+) | 2026 | 2026-Preview | [![MSVC](https://github.com/rhalbersma/bit_set/actions/workflows/msvc.yml/badge.svg)](https://github.com/rhalbersma/bit_set/actions/workflows/msvc.yml) |
 
-`AppleClang` has no `Development` entry because Apple doesn't publish Apple Clang dev snapshots the way LLVM does; that leg tests the latest stable Xcode release from each of the two supported series. `MinGW` has none either: WinLibs publishes no GCC trunk build between stable branches, and the shared workflow drops that rung with a notice rather than failing, so the row names the two that actually run. The `Linux | GCC` row keeps its `17-SVN` — that ladder is unaffected.
+`Apple Clang` has no `Development` entry because Apple doesn't publish Apple Clang dev snapshots the way LLVM does; that leg tests the latest stable Xcode release from each of the two supported series. `MinGW` has none either: WinLibs publishes no GCC trunk build between stable branches, and the shared workflow drops that rung with a notice rather than failing, so the row names the two that actually run. The `Linux | GCC` row keeps its `17-SVN` — that ladder is unaffected.
 
-Every leg above passes. The library no longer uses the C++23 range adaptors libc++ has not implemented (`views::cartesian_product`, `views::adjacent`, `views::pairwise_transform`, `views::stride`), and the tests probe for `<flat_set>` rather than assuming it, so the `Clang | libc++` and `AppleClang` rows and the VS 2022 legs build and run like the rest.
+Every leg above passes. The library no longer uses the C++23 range adaptors libc++ has not implemented (`views::cartesian_product`, `views::adjacent`, `views::pairwise_transform`, `views::stride`), and the tests probe for `<flat_set>` rather than assuming it, so the `Clang | libc++` and `Apple Clang` rows and the VS 2022 legs build and run like the rest.
 
 Note that the benchmarks and unit tests depend on [Boost](https://www.boost.io/), [fmtlib](https://github.com/fmtlib/fmt), [Google Benchmark](https://github.com/google/benchmark) and [range-v3](https://github.com/ericniebler/range-v3). 
 

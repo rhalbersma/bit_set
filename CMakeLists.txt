@@ -14,6 +14,11 @@ project(
 
 include(GNUInstallDirs)
 
+# Warnings are errors while this library is being developed, which is what the presets ask for.
+# Declared here rather than under test/, as xstd and tabula do, because benchmark/ carries its
+# own warning set and has to be gated by the same switch.
+option(BIT_SET_WARNINGS_AS_ERRORS "Treat warnings as errors in bit_set tests and benchmarks" ${PROJECT_IS_TOP_LEVEL})
+
 # Prefer an installed xstd so install(EXPORT) can record it as a dependency; a FetchContent build tree cannot be exported.
 find_package(xstd 0.1.0 CONFIG QUIET)
 if(NOT xstd_FOUND)
