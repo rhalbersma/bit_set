@@ -8,8 +8,7 @@
 
 // Header <array> synopsis                                           [array.syn]
 
-#include <compare>          // strong_ordering
-#include <initializer_list> // initializer_list
+#include <compare> // strong_ordering
 
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <xstd/ints/memory.hpp>                    // align_up
@@ -21,7 +20,7 @@ namespace xstd {
 // 23.3.3, class template bit_array
 template<std::size_t N, xstd::unsigned_integer Block> struct bit_array;
 
-template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept;
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr auto operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept -> bool;
 template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept -> std::strong_ordering;
 
 // 23.3.4, specialized algorithms
@@ -43,13 +42,11 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 #include <compare>                    // strong_ordering
 #include <cstddef>                    // ptrdiff_t, size_t
 #include <format>                     // format
-#include <initializer_list>           // initializer_list
 #include <iterator>                   // make_reverse_iterator, reverse_iterator,
 #include <limits>                     // digits
 #include <source_location>            // source_location
 #include <stdexcept>                  // out_of_range
 #include <type_traits>                // conditional_t
-#include <utility>                    // pair
 // NOLINTEND(readability-duplicate-include)
 
 // Class template array [array], Overview [array.overview]
@@ -62,12 +59,12 @@ struct bit_array
         detail::bits::array<N, Block> m_bits;
 
         // ADL rather than a specialization, because this type is ours to add hidden friends to.
-        [[nodiscard]] friend constexpr std::size_t block_count(const bit_array&) noexcept { return detail::bits::array<N, Block>::num_blocks; }
-        [[nodiscard]] friend constexpr Block block_at(const bit_array& c, std::size_t i) noexcept { return c.m_bits.block(i); }
+        [[nodiscard]] friend constexpr auto block_count(const bit_array&) noexcept -> std::size_t { return detail::bits::array<N, Block>::num_blocks; }
+        [[nodiscard]] friend constexpr auto block_at(const bit_array& c, std::size_t i) noexcept -> Block { return c.m_bits.block(i); }
 
-        [[nodiscard]] friend constexpr std::size_t find_first(const bit_array&)                  noexcept { return 0UZ;         }
-        [[nodiscard]] friend constexpr std::size_t find_last (const bit_array&)                  noexcept { return N;           }
-        [[nodiscard]] friend constexpr std::size_t find_at   (const bit_array& c, std::size_t n) noexcept { return c.m_bits[n]; }
+        [[nodiscard]] friend constexpr auto find_first(const bit_array&)                  noexcept -> std::size_t { return 0UZ;         }
+        [[nodiscard]] friend constexpr auto find_last (const bit_array&)                  noexcept -> std::size_t { return N;           }
+        [[nodiscard]] friend constexpr auto find_at   (const bit_array& c, std::size_t n) noexcept -> std::size_t { return c.m_bits[n]; }
         friend constexpr void assign_at(bit_array& c, std::size_t n, bool value) noexcept { if (value) { c.m_bits.set(n); } else { c.m_bits.reset(n); } }
 
         // types
@@ -112,9 +109,9 @@ struct bit_array
         [[nodiscard]] constexpr auto crend()   const noexcept { return rend();   }
 
         // capacity
-        [[nodiscard]] constexpr bool         empty() const noexcept { return N == 0; }
-        [[nodiscard]] constexpr size_type     size() const noexcept { return N;      }
-        [[nodiscard]] constexpr size_type max_size() const noexcept { return N;      }
+        [[nodiscard]] constexpr auto    empty() const noexcept -> bool      { return N == 0; }
+        [[nodiscard]] constexpr auto     size() const noexcept -> size_type { return N;      }
+        [[nodiscard]] constexpr auto max_size() const noexcept -> size_type { return N;      }
 
         // element access; an explicit trailing return type, because plain auto cannot deduce from a braced-init-list return.
         template<class Self>
@@ -150,7 +147,7 @@ private:
         }        
 };
 
-template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr bool operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept { return x.m_bits == y.m_bits; }
+template<std::size_t N, xstd::unsigned_integer Block> [[nodiscard]] constexpr auto operator== (const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept -> bool { return x.m_bits == y.m_bits; }
 
 // bit_array orders as a sequence of bool over every index, which is what std::array<bool, N>'s <=> would compute.
 template<std::size_t N, xstd::unsigned_integer Block>

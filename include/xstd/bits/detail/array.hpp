@@ -17,11 +17,12 @@
 #include <cassert>                                 // assert
 #include <cstddef>                                 // ptrdiff_t, size_t
 #include <functional>                              // plus
+#include <iterator>                                // distance, prev, random_access_iterator, sized_sentinel_for
 #include <limits>                                  // digits
-#include <ranges>                                  // distance, prev (views::drop_last when P22014R2 is accepted)
-                                                // drop, iota, reverse, take, transform, zip
-#include <type_traits> // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
-#include <utility>     // pair
+#include <ranges>                                  // drop, iota, reverse, take, transform, zip
+                                                   // (views::drop_last when P22014R2 is accepted)
+#include <type_traits>                             // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
+#include <utility>                                 // pair
 
 namespace xstd::detail::bits {
 
@@ -35,12 +36,14 @@ struct array
         std::array<Block, num_blocks> m_bits;
 
         // The block, for xstd::ranges::block_access; padding above N stays zero, which is what makes whole-block comparison mean anything.
-        [[nodiscard]] constexpr Block block(std::size_t i) const noexcept
+        [[nodiscard]] constexpr auto block(std::size_t i) const noexcept
+                -> Block
         {
                 return m_bits[i];
         }
 
-        [[nodiscard]] friend constexpr bool operator==(array const& x [[maybe_unused]], array const& y [[maybe_unused]]) noexcept
+        [[nodiscard]] friend constexpr auto operator==(array const& x [[maybe_unused]], array const& y [[maybe_unused]]) noexcept
+                -> bool
         {
                 if constexpr (N == 0) {
                         return true;
@@ -57,7 +60,8 @@ struct array
                 boost::hash2::hash_append(h, f, v->m_bits);
         }
 
-        [[nodiscard]] constexpr std::size_t find_front() const noexcept
+        [[nodiscard]] constexpr auto find_front() const noexcept
+                -> std::size_t
         {
                 assert(any());
                 if constexpr (num_blocks == 1) {
@@ -71,7 +75,8 @@ struct array
                 }
         }
 
-        [[nodiscard]] constexpr std::size_t find_back() const noexcept
+        [[nodiscard]] constexpr auto find_back() const noexcept
+                -> std::size_t
         {
                 assert(any());
                 if constexpr (num_blocks == 1) {
@@ -85,7 +90,8 @@ struct array
                 }
         }
 
-        [[nodiscard]] constexpr std::size_t find_first() const noexcept
+        [[nodiscard]] constexpr auto find_first() const noexcept
+                -> std::size_t
         {
                 if constexpr (N > 0 and num_blocks == 1) {
                         if (m_bits[0] != zero) {
@@ -106,12 +112,14 @@ struct array
                 return N;
         }
 
-        [[nodiscard]] constexpr std::size_t find_last() const noexcept
+        [[nodiscard]] constexpr auto find_last() const noexcept
+                -> std::size_t
         {
                 return N;
         }
 
-        [[nodiscard]] constexpr std::size_t find_next(std::size_t n) const noexcept
+        [[nodiscard]] constexpr auto find_next(std::size_t n) const noexcept
+                -> std::size_t
         {
                 ++n;
                 if (n == N) {
@@ -138,7 +146,8 @@ struct array
                 return N;
         }
 
-        [[nodiscard]] constexpr std::size_t find_prev(std::size_t n) const noexcept
+        [[nodiscard]] constexpr auto find_prev(std::size_t n) const noexcept
+                -> std::size_t
         {
                 assert(any());
                 --n;
@@ -308,7 +317,8 @@ struct array
                 assert((*this)[n]);
         }
 
-        [[nodiscard]] constexpr bool insert(std::size_t n) noexcept
+        [[nodiscard]] constexpr auto insert(std::size_t n) noexcept
+                -> bool
         {
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
@@ -326,7 +336,8 @@ struct array
                 assert(not (*this)[n]);
         }
 
-        [[nodiscard]] constexpr bool erase(std::size_t n) noexcept
+        [[nodiscard]] constexpr auto erase(std::size_t n) noexcept
+                -> bool
         {
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
@@ -343,14 +354,16 @@ struct array
                 block ^= mask;
         }
 
-        [[nodiscard]] constexpr bool operator[](std::size_t n) const noexcept
+        [[nodiscard]] constexpr auto operator[](std::size_t n) const noexcept
+                -> bool
         {
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
                 return detail::bits::intersects(block, mask);
         }
 
-        [[nodiscard]] constexpr std::size_t count() const noexcept
+        [[nodiscard]] constexpr auto count() const noexcept
+                -> std::size_t
         {
                 if constexpr (N == 0) {
                         return 0UZ;
@@ -366,12 +379,14 @@ struct array
                 }
         }
 
-        [[nodiscard]] static constexpr std::size_t size() noexcept
+        [[nodiscard]] static constexpr auto size() noexcept
+                -> std::size_t
         {
                 return N;
         }
 
-        [[nodiscard]] constexpr bool all() const noexcept
+        [[nodiscard]] constexpr auto all() const noexcept
+                -> bool
         {
                 if constexpr (has_unused_bits) {
                         if constexpr (num_blocks == 1) {
@@ -396,12 +411,14 @@ struct array
                 }
         }
 
-        [[nodiscard]] constexpr bool any() const noexcept
+        [[nodiscard]] constexpr auto any() const noexcept
+                -> bool
         {
                 return not none();
         }
 
-        [[nodiscard]] constexpr bool none() const noexcept
+        [[nodiscard]] constexpr auto none() const noexcept
+                -> bool
         {
                 if constexpr (N == 0) {
                         return true;
@@ -414,7 +431,8 @@ struct array
                 }
         }
 
-        [[nodiscard]] constexpr bool is_subset_of(array const& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr auto is_subset_of(array const& other [[maybe_unused]]) const noexcept
+                -> bool
         {
                 if constexpr (N == 0) {
                         return true;
@@ -433,7 +451,8 @@ struct array
                 }
         }
 
-        [[nodiscard]] constexpr bool is_proper_subset_of(array const& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr auto is_proper_subset_of(array const& other [[maybe_unused]]) const noexcept
+                -> bool
         {
                 if constexpr (N == 0) {
                         return false;
@@ -471,7 +490,8 @@ struct array
                 }
         }
 
-        [[nodiscard]] constexpr bool intersects(array const& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr auto intersects(array const& other [[maybe_unused]]) const noexcept
+                -> bool
         {
                 if constexpr (N == 0) {
                         return false;
@@ -508,7 +528,8 @@ private:
         static constexpr auto used_bits       = static_cast<Block>(ones >> num_unused_bits);
         static constexpr auto unused_bits     = static_cast<Block>(~used_bits);
 
-        [[nodiscard]] static constexpr bool is_valid(std::size_t n [[maybe_unused]]) noexcept
+        [[nodiscard]] static constexpr auto is_valid(std::size_t n [[maybe_unused]]) noexcept
+                -> bool
         {
                 if constexpr (N == 0) {
                         // Unreachable: only an assert calls is_valid, and a bit_array<0> has no member that reaches one. Not removable either - MSVC's /W4 rejects a bare n < N as always false (C4296).

@@ -108,9 +108,13 @@ foreach(h ${public_headers})
     string(REPLACE "/" "." header_test_id ${h})
     string(REGEX REPLACE "[.]hpp$" "" header_test_id ${header_test_id})
     set(header_test_source ${CMAKE_CURRENT_BINARY_DIR}/header_self_sufficiency/${header_test_id}.cpp)
+    # An IWYU pragma because clang-tidy runs misc-include-cleaner over these
+    # generated sources too, and the one include is by construction unused; a
+    # trailing return type because modernize-use-trailing-return-type flags
+    # "int main()".
     file(
         WRITE ${header_test_source}
-        "#include <${h}>\nint main() {}\n"
+        "#include <${h}> // IWYU pragma: keep\nauto main() -> int {}\n"
     )
 
     add_executable(header.${header_test_id} ${header_test_source})

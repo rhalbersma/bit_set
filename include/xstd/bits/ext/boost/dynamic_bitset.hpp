@@ -23,22 +23,26 @@ namespace xstd::ranges {
 template<xstd::unsigned_integer Block, class Allocator>
 struct set_find<boost::dynamic_bitset<Block, Allocator>>
 {
-        [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const& c) noexcept
+        [[nodiscard]] static constexpr auto first(boost::dynamic_bitset<Block, Allocator> const& c) noexcept
+                -> std::size_t
         {
                 return c.find_first();
         }
 
-        [[nodiscard]] static constexpr std::size_t last(boost::dynamic_bitset<Block, Allocator> const& c) noexcept
+        [[nodiscard]] static constexpr auto last(boost::dynamic_bitset<Block, Allocator> const& c) noexcept
+                -> std::size_t
         {
                 return c.npos;
         }
 
-        [[nodiscard]] static constexpr std::size_t next(boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept
+        [[nodiscard]] static constexpr auto next(boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept
+                -> std::size_t
         {
                 return c.find_next(n);
         }
 
-        [[nodiscard]] static constexpr std::size_t prev(boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept
+        [[nodiscard]] static constexpr auto prev(boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept
+                -> std::size_t
         {
                 assert(c.any());
                 return *std::ranges::find_if(std::views::iota(0UZ, std::ranges::min(n, c.size())) | std::views::reverse, [&](auto i) {
@@ -51,7 +55,8 @@ struct set_find<boost::dynamic_bitset<Block, Allocator>>
 template<xstd::unsigned_integer Block, class Allocator>
 struct set_compare<boost::dynamic_bitset<Block, Allocator>>
 {
-        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(boost::dynamic_bitset<Block, Allocator> const& x, boost::dynamic_bitset<Block, Allocator> const& y) noexcept
+        [[nodiscard]] static constexpr auto lexicographical_three_way(boost::dynamic_bitset<Block, Allocator> const& x, boost::dynamic_bitset<Block, Allocator> const& y) noexcept
+                -> std::strong_ordering
         {
                 return set_three_way(set_view(x), set_view(y));
         }
@@ -65,9 +70,9 @@ namespace xstd::ranges {
 template<xstd::unsigned_integer Block, class Allocator>
 struct array_find<boost::dynamic_bitset<Block, Allocator>>
 {
-        [[nodiscard]] static constexpr std::size_t first(boost::dynamic_bitset<Block, Allocator> const&) noexcept { return 0UZ; }
-        [[nodiscard]] static constexpr std::size_t last (boost::dynamic_bitset<Block, Allocator> const& c) noexcept { return c.size(); }
-        [[nodiscard]] static constexpr bool         at  (boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept { return c[n]; }
+        [[nodiscard]] static constexpr auto first(boost::dynamic_bitset<Block, Allocator> const&) noexcept -> std::size_t { return 0UZ; }
+        [[nodiscard]] static constexpr auto last (boost::dynamic_bitset<Block, Allocator> const& c) noexcept -> std::size_t { return c.size(); }
+        [[nodiscard]] static constexpr auto at   (boost::dynamic_bitset<Block, Allocator> const& c, std::size_t n) noexcept -> bool { return c[n]; }
 };
 
 

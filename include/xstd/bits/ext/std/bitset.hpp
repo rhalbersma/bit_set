@@ -6,18 +6,20 @@
 #ifndef XSTD_BITS_EXT_STD_BITSET_HPP
 #define XSTD_BITS_EXT_STD_BITSET_HPP
 
-#include <xstd/bits/ranges/array_view.hpp>   // find, view
-#include <xstd/bits/ranges/block_access.hpp> // block_access
-#include <xstd/bits/ranges/set_view.hpp>     // find, view
-#include <algorithm>                         // find_if
-#include <bitset>                            // bitset
-#include <cassert>                           // assert
-#include <compare>                           // strong_ordering
-#include <cstddef>                           // size_t
-#include <limits>                            // numeric_limits
-#include <ranges>                            // find_if
-#include <utility>                           // declval
-                                        // iota
+#include <xstd/bits/ranges/array_view.hpp>         // find, view
+#include <xstd/bits/ranges/bit_extent.hpp>         // bit_extent
+#include <xstd/bits/ranges/block_access.hpp>       // block_access
+#include <xstd/bits/ranges/set_view.hpp>           // find, view
+#include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
+#include <algorithm>                               // find_if
+#include <bitset>                                  // bitset
+#include <cassert>                                 // assert
+#include <compare>                                 // strong_ordering
+#include <cstddef>                                 // size_t
+#include <limits>                                  // numeric_limits
+#include <ranges>                                  // find_if
+#include <utility>                                 // declval
+                                                   // iota
 
 // std::bitset's only associated namespace is std, where [namespace.std] forbids adding ADL hooks, so specialize set_find instead.
 namespace xstd::ranges {
@@ -29,7 +31,8 @@ inline constexpr std::size_t bit_extent<std::bitset<N>> = N;
 template<std::size_t N>
 struct set_find<std::bitset<N>>
 {
-        [[nodiscard]] static constexpr std::size_t first(const std::bitset<N>& c) noexcept
+        [[nodiscard]] static constexpr auto first(const std::bitset<N>& c) noexcept
+                -> std::size_t
         {
                 if constexpr (N == 0) {
                         return N;
@@ -42,12 +45,14 @@ struct set_find<std::bitset<N>>
                 }
         }
 
-        [[nodiscard]] static constexpr std::size_t last(const std::bitset<N>&) noexcept
+        [[nodiscard]] static constexpr auto last(const std::bitset<N>&) noexcept
+                -> std::size_t
         {
                 return N;
         }
 
-        [[nodiscard]] static constexpr std::size_t next(const std::bitset<N>& c, std::size_t n) noexcept
+        [[nodiscard]] static constexpr auto next(const std::bitset<N>& c, std::size_t n) noexcept
+                -> std::size_t
         {
                 if constexpr (requires { c._Find_next(n); }) {
                         return c._Find_next(n);
@@ -58,7 +63,8 @@ struct set_find<std::bitset<N>>
                 }
         }
 
-        [[nodiscard]] static std::size_t prev(const std::bitset<N>& c, std::size_t n) noexcept
+        [[nodiscard]] static auto prev(const std::bitset<N>& c, std::size_t n) noexcept
+                -> std::size_t
         {
                 assert(c.any());
                 return *std::ranges::find_if(std::views::iota(0UZ, n) | std::views::reverse, [&](auto i) {
@@ -71,7 +77,8 @@ struct set_find<std::bitset<N>>
 template<std::size_t N>
 struct set_compare<std::bitset<N>>
 {
-        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(std::bitset<N> const& x, std::bitset<N> const& y) noexcept
+        [[nodiscard]] static constexpr auto lexicographical_three_way(std::bitset<N> const& x, std::bitset<N> const& y) noexcept
+                -> std::strong_ordering
         {
                 return set_three_way(set_view(x), set_view(y));
         }
@@ -91,12 +98,14 @@ struct block_access<std::bitset<N>>
 
         static constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
 
-        [[nodiscard]] static constexpr std::size_t num_blocks(std::bitset<N> const&) noexcept
+        [[nodiscard]] static constexpr auto num_blocks(std::bitset<N> const&) noexcept
+                -> std::size_t
         {
                 return N == 0UZ ? 1UZ : (N + digits - 1UZ) / digits;
         }
 
-        [[nodiscard]] static constexpr block_type block(std::bitset<N> const& c, std::size_t i) noexcept
+        [[nodiscard]] static constexpr auto block(std::bitset<N> const& c, std::size_t i) noexcept
+                -> block_type
         {
                 return c._Getword(i);
         }
@@ -105,9 +114,9 @@ struct block_access<std::bitset<N>>
 template<std::size_t N>
 struct array_find<std::bitset<N>>
 {
-        [[nodiscard]] static constexpr std::size_t first(const std::bitset<N>&) noexcept { return 0UZ; }
-        [[nodiscard]] static constexpr std::size_t last (const std::bitset<N>&) noexcept { return N;   }
-        [[nodiscard]] static constexpr bool         at  (const std::bitset<N>& c, std::size_t n) noexcept { return c[n]; }
+        [[nodiscard]] static constexpr auto first(const std::bitset<N>&) noexcept -> std::size_t { return 0UZ; }
+        [[nodiscard]] static constexpr auto last (const std::bitset<N>&) noexcept -> std::size_t { return N;   }
+        [[nodiscard]] static constexpr auto at   (const std::bitset<N>& c, std::size_t n) noexcept -> bool { return c[n]; }
 };
 
 
@@ -119,13 +128,15 @@ namespace std {
 // NOLINTBEGIN(bugprone-std-namespace-modification)
 
 template<std::size_t N>
-bitset<N>& operator-=(bitset<N>& lhs, const bitset<N>& rhs) noexcept
+auto operator-=(bitset<N>& lhs, const bitset<N>& rhs) noexcept
+        -> bitset<N>&
 {
         return lhs &= ~rhs;
 }
 
 template<std::size_t N>
-bitset<N> operator-(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
+auto operator-(const bitset<N>& lhs, const bitset<N>& rhs) noexcept
+        -> bitset<N>
 {
         auto nrv = lhs; nrv -= rhs; return nrv;
 }

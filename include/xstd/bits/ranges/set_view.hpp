@@ -6,6 +6,7 @@
 #ifndef XSTD_BITS_RANGES_SET_VIEW_HPP
 #define XSTD_BITS_RANGES_SET_VIEW_HPP
 
+#include <xstd/bits/detail/intrin.hpp>       // countr_zero
 #include <xstd/bits/ranges/bit_extent.hpp>   // bit_extent, static_bit_extent
 #include <xstd/bits/ranges/block_access.hpp> // block_access, block_range, first_difference, any_above
 #include <algorithm>                         // includes
@@ -27,25 +28,29 @@ namespace xstd::ranges {
 template<class Bits>
 struct set_find
 {
-        [[nodiscard]] static constexpr std::size_t first(Bits const& c) noexcept
+        [[nodiscard]] static constexpr auto first(Bits const& c) noexcept
+                -> std::size_t
                 requires requires { { find_first(c) } -> std::convertible_to<std::size_t>; }
         {
                 return find_first(c);
         }
 
-        [[nodiscard]] static constexpr std::size_t last(Bits const& c) noexcept
+        [[nodiscard]] static constexpr auto last(Bits const& c) noexcept
+                -> std::size_t
                 requires requires { { find_last(c) } -> std::convertible_to<std::size_t>; }
         {
                 return find_last(c);
         }
 
-        [[nodiscard]] static constexpr std::size_t next(Bits const& c, std::size_t n) noexcept
+        [[nodiscard]] static constexpr auto next(Bits const& c, std::size_t n) noexcept
+                -> std::size_t
                 requires requires { { find_next(c, n) } -> std::convertible_to<std::size_t>; }
         {
                 return find_next(c, n);
         }
 
-        [[nodiscard]] static constexpr std::size_t prev(Bits const& c, std::size_t n) noexcept
+        [[nodiscard]] static constexpr auto prev(Bits const& c, std::size_t n) noexcept
+                -> std::size_t
                 requires requires { { find_prev(c, n) } -> std::convertible_to<std::size_t>; }
         {
                 return find_prev(c, n);
@@ -64,7 +69,8 @@ template<class Bits>
 struct set_ops
 {
         // A bitset's count() is a set's size().
-        [[nodiscard]] static constexpr std::size_t size(Bits const& c) noexcept
+        [[nodiscard]] static constexpr auto size(Bits const& c) noexcept
+                -> std::size_t
         {
                 if constexpr (bitset_vocabulary<Bits>) {
                         return c.count();
@@ -74,7 +80,8 @@ struct set_ops
         }
 
         // and a bitset's size() is a set's max_size(), constant where the type declares its width.
-        [[nodiscard]] static constexpr std::size_t max_size(Bits const& c) noexcept
+        [[nodiscard]] static constexpr auto max_size(Bits const& c) noexcept
+                -> std::size_t
         {
                 if constexpr (static_bit_extent<Bits>) {
                         return bit_extent<Bits>;
@@ -85,7 +92,8 @@ struct set_ops
                 }
         }
 
-        [[nodiscard]] static constexpr bool contains(Bits const& c, std::size_t n) noexcept
+        [[nodiscard]] static constexpr auto contains(Bits const& c, std::size_t n) noexcept
+                -> bool
         {
                 if constexpr (bitset_vocabulary<Bits>) {
                         return c.test(n);
@@ -125,7 +133,8 @@ struct set_ops
 
 // The set ordering, defined once: the keys in increasing order, lexicographically, over ranges so a block path can replace it.
 template<std::ranges::input_range X, std::ranges::input_range Y>
-[[nodiscard]] constexpr std::strong_ordering set_three_way(X const& x, Y const& y) noexcept
+[[nodiscard]] constexpr auto set_three_way(X const& x, Y const& y) noexcept
+        -> std::strong_ordering
 {
         return std::lexicographical_compare_three_way(
                 std::ranges::begin(x), std::ranges::end(x),
@@ -135,7 +144,8 @@ template<std::ranges::input_range X, std::ranges::input_range Y>
 
 // The same ordering a word at a time; the set HAVING the lowest differing bit is smaller, unless the other is a prefix.
 template<block_range Bits>
-[[nodiscard]] constexpr std::strong_ordering set_three_way(Bits const& x, Bits const& y) noexcept
+[[nodiscard]] constexpr auto set_three_way(Bits const& x, Bits const& y) noexcept
+        -> std::strong_ordering
 {
         using access = block_access<Bits>;
         using block_type = decltype(access::block(x, 0UZ));
@@ -176,8 +186,8 @@ template<class> class set_reference;
 template<set_range> struct set_compare;
 
 // Forward-declared so set_iterator's dependent friend template-ids have a template to name; Clang requires it, GCC does not.
-template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_begin(Bits const& c) noexcept;
-template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_end  (Bits const& c) noexcept;
+template<set_range Bits> [[nodiscard]] constexpr auto set_begin(Bits const& c) noexcept -> set_iterator<Bits>;
+template<set_range Bits> [[nodiscard]] constexpr auto set_end  (Bits const& c) noexcept -> set_iterator<Bits>;
 
 template<class Bits>
 class set_iterator
@@ -209,20 +219,23 @@ public:
 
         [[nodiscard]] constexpr set_iterator() noexcept = default;
 
-        [[nodiscard]] friend constexpr bool operator==(set_iterator lhs, set_iterator rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator==(set_iterator lhs, set_iterator rhs) noexcept
+                -> bool
         {
                 assert(lhs.m_ptr == rhs.m_ptr);
                 return lhs.m_idx == rhs.m_idx;
         }
 
-        [[nodiscard]] constexpr reference operator*() const noexcept
+        [[nodiscard]] constexpr auto operator*() const noexcept
+                -> reference
         {
                 assert(m_ptr != nullptr);
                 return { *m_ptr, m_idx };
         }
 
         // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
-        constexpr set_iterator& operator++() noexcept
+        constexpr auto operator++() noexcept
+                -> set_iterator&
                 requires requires (Bits const& c, std::size_t n) { set_find<Bits>::next(c, n); }
         {
                 assert(m_ptr != nullptr);
@@ -230,7 +243,8 @@ public:
                 return *this;
         }
 
-        constexpr set_iterator& operator--() noexcept
+        constexpr auto operator--() noexcept
+                -> set_iterator&
                 requires requires (Bits const& c, std::size_t n) { set_find<Bits>::prev(c, n); }
         {
                 assert(m_ptr != nullptr);
@@ -238,12 +252,12 @@ public:
                 return *this;
         }
 
-        constexpr set_iterator operator++(int) noexcept { auto nrv = *this; ++*this; return nrv; }
-        constexpr set_iterator operator--(int) noexcept { auto nrv = *this; --*this; return nrv; }
+        constexpr auto operator++(int) noexcept -> set_iterator { auto nrv = *this; ++*this; return nrv; }
+        constexpr auto operator--(int) noexcept -> set_iterator { auto nrv = *this; --*this; return nrv; }
 };
 
-template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_begin(Bits const& c) noexcept { return { &c, set_find<Bits>::first(c) }; }
-template<set_range Bits> [[nodiscard]] constexpr set_iterator<Bits> set_end  (Bits const& c) noexcept { return { &c, set_find<Bits>::last (c) }; }
+template<set_range Bits> [[nodiscard]] constexpr auto set_begin(Bits const& c) noexcept -> set_iterator<Bits> { return { &c, set_find<Bits>::first(c) }; }
+template<set_range Bits> [[nodiscard]] constexpr auto set_end  (Bits const& c) noexcept -> set_iterator<Bits> { return { &c, set_find<Bits>::last (c) }; }
 
 template<class Bits>
 class set_reference
@@ -264,7 +278,8 @@ public:
         using value_type = std::size_t;
         using iterator   = set_iterator<Bits>;
 
-        [[nodiscard]] constexpr iterator operator&() const noexcept
+        [[nodiscard]] constexpr auto operator&() const noexcept
+                -> iterator
         {
                 return { &m_ref, m_idx };
         }
@@ -293,7 +308,8 @@ template<class Bits>
 template<set_range Bits>
 struct set_compare
 {
-        [[nodiscard]] static constexpr std::strong_ordering lexicographical_three_way(Bits const& x, Bits const& y) noexcept
+        [[nodiscard]] static constexpr auto lexicographical_three_way(Bits const& x, Bits const& y) noexcept
+                -> std::strong_ordering
         {
                 return x <=> y;
         }
@@ -309,7 +325,8 @@ class set_view : public std::ranges::view_base
         Bits* m_ptr;
 
         // A view is as block-accessible as the thing it views; constrained, so one over an opaque type keeps the element-wise path.
-        [[nodiscard]] friend constexpr std::size_t block_count(set_view v) noexcept
+        [[nodiscard]] friend constexpr auto block_count(set_view v) noexcept
+                -> std::size_t
                 requires block_range<bits_type>
         {
                 return block_access<bits_type>::num_blocks(*v.m_ptr);
@@ -338,27 +355,28 @@ public:
         [[nodiscard]] constexpr explicit set_view(Bits& c) noexcept : m_ptr(&c) {}
 
         // begin() and cbegin() coincide, this proxy iteration being read-only; mutation goes through insert and erase.
-        [[nodiscard]] constexpr const_iterator begin() const noexcept { return set_begin(*m_ptr); }
-        [[nodiscard]] constexpr const_iterator end()   const noexcept { return set_end  (*m_ptr); }
+        [[nodiscard]] constexpr auto begin() const noexcept -> const_iterator { return set_begin(*m_ptr); }
+        [[nodiscard]] constexpr auto end()   const noexcept -> const_iterator { return set_end  (*m_ptr); }
 
-        [[nodiscard]] constexpr const_reverse_iterator rbegin() const noexcept { return std::make_reverse_iterator(end());   }
-        [[nodiscard]] constexpr const_reverse_iterator rend()   const noexcept { return std::make_reverse_iterator(begin()); }
+        [[nodiscard]] constexpr auto rbegin() const noexcept -> const_reverse_iterator { return std::make_reverse_iterator(end());   }
+        [[nodiscard]] constexpr auto rend()   const noexcept -> const_reverse_iterator { return std::make_reverse_iterator(begin()); }
 
-        [[nodiscard]] constexpr const_iterator         cbegin()  const noexcept { return begin();  }
-        [[nodiscard]] constexpr const_iterator         cend()    const noexcept { return end();    }
-        [[nodiscard]] constexpr const_reverse_iterator crbegin() const noexcept { return rbegin(); }
-        [[nodiscard]] constexpr const_reverse_iterator crend()   const noexcept { return rend();   }
+        [[nodiscard]] constexpr auto cbegin()  const noexcept -> const_iterator         { return begin();  }
+        [[nodiscard]] constexpr auto cend()    const noexcept -> const_iterator         { return end();    }
+        [[nodiscard]] constexpr auto crbegin() const noexcept -> const_reverse_iterator { return rbegin(); }
+        [[nodiscard]] constexpr auto crend()   const noexcept -> const_reverse_iterator { return rend();   }
 
         // A bitset's none() is a set's empty(), and its count() a set's size().
-        [[nodiscard]] constexpr bool empty() const noexcept { return size() == 0UZ; }
+        [[nodiscard]] constexpr auto empty() const noexcept -> bool { return size() == 0UZ; }
 
-        [[nodiscard]] constexpr size_type size() const noexcept { return ops::size(*m_ptr); }
+        [[nodiscard]] constexpr auto size() const noexcept -> size_type { return ops::size(*m_ptr); }
 
         // Constant where the Bits knows its own width, per bit_extent.
-        [[nodiscard]] constexpr size_type max_size() const noexcept { return ops::max_size(*m_ptr); }
+        [[nodiscard]] constexpr auto max_size() const noexcept -> size_type { return ops::max_size(*m_ptr); }
 
         // Modifiers, present only where Bits is not const, returning what [set] says they return.
-        constexpr std::pair<const_iterator, bool> insert(key_type x) const noexcept
+        constexpr auto insert(key_type x) const noexcept
+                -> std::pair<const_iterator, bool>
                 requires (not std::is_const_v<Bits>)
         {
                 auto const inserted = not contains(x);
@@ -366,7 +384,8 @@ public:
                 return { const_iterator{ m_ptr, x }, inserted };
         }
 
-        constexpr const_iterator insert(const_iterator, key_type x) const noexcept
+        constexpr auto insert(const_iterator, key_type x) const noexcept
+                -> const_iterator
                 requires (not std::is_const_v<Bits>)
         {
                 ops::insert(*m_ptr, x);
@@ -389,7 +408,8 @@ public:
         }
 
         // Not [[nodiscard]], for the reason std::set::erase is not: the count is there for callers who want it.
-        constexpr size_type erase(key_type x) const noexcept  // NOLINT(modernize-use-nodiscard)
+        constexpr auto erase(key_type x) const noexcept  // NOLINT(modernize-use-nodiscard)
+                -> size_type
                 requires (not std::is_const_v<Bits>)
         {
                 auto const erased = contains(x);
@@ -397,7 +417,8 @@ public:
                 return erased;
         }
 
-        constexpr const_iterator erase(const_iterator pos) const noexcept
+        constexpr auto erase(const_iterator pos) const noexcept
+                -> const_iterator
                 requires (not std::is_const_v<Bits>)
         {
                 auto nrv = pos;
@@ -413,33 +434,38 @@ public:
         }
 
         // Lookup, all of it falling out of set_find's four operations, with no further hook.
-        [[nodiscard]] constexpr bool contains(key_type x) const noexcept { return ops::contains(*m_ptr, x); }
+        [[nodiscard]] constexpr auto contains(key_type x) const noexcept -> bool { return ops::contains(*m_ptr, x); }
 
-        [[nodiscard]] constexpr size_type count(key_type x) const noexcept { return contains(x); }
+        [[nodiscard]] constexpr auto count(key_type x) const noexcept -> size_type { return contains(x); }
 
-        [[nodiscard]] constexpr const_iterator find(key_type x) const noexcept
+        [[nodiscard]] constexpr auto find(key_type x) const noexcept
+                -> const_iterator
         {
                 return contains(x) ? const_iterator{ m_ptr, x } : end();
         }
 
         // The first element not less than x, asked about directly because stepping from x - 1 would underflow at zero.
-        [[nodiscard]] constexpr const_iterator lower_bound(key_type x) const noexcept
+        [[nodiscard]] constexpr auto lower_bound(key_type x) const noexcept
+                -> const_iterator
         {
                 return contains(x) ? const_iterator{ m_ptr, x } : upper_bound(x);
         }
 
-        [[nodiscard]] constexpr const_iterator upper_bound(key_type x) const noexcept
+        [[nodiscard]] constexpr auto upper_bound(key_type x) const noexcept
+                -> const_iterator
         {
                 return const_iterator{ m_ptr, set_find<bits_type>::next(*m_ptr, x) };
         }
 
-        [[nodiscard]] constexpr std::pair<const_iterator, const_iterator> equal_range(key_type x) const noexcept
+        [[nodiscard]] constexpr auto equal_range(key_type x) const noexcept
+                -> std::pair<const_iterator, const_iterator>
         {
                 return { lower_bound(x), upper_bound(x) };
         }
 
         // Prefer Bits' own == when it has one; equality is unambiguous either way, so this is purely an optimization.
-        [[nodiscard]] friend constexpr bool operator==(set_view lhs, set_view rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator==(set_view lhs, set_view rhs) noexcept
+                -> bool
         {
                 if constexpr (requires { *lhs.m_ptr == *rhs.m_ptr; }) {
                         return *lhs.m_ptr == *rhs.m_ptr;
@@ -449,13 +475,15 @@ public:
         }
 
         // Always through set_compare, so specializing that trait changes how any set_view over the Bits orders too.
-        [[nodiscard]] friend constexpr std::strong_ordering operator<=>(set_view lhs, set_view rhs) noexcept
+        [[nodiscard]] friend constexpr auto operator<=>(set_view lhs, set_view rhs) noexcept
+                -> std::strong_ordering
         {
                 return set_compare<bits_type>::lexicographical_three_way(*lhs.m_ptr, *rhs.m_ptr);
         }
 
         // Not [set] and under review; three paths, cheapest first: the member, then the bitwise operators, then the element-wise scan.
-        [[nodiscard]] constexpr bool is_subset_of(set_view other) const noexcept
+        [[nodiscard]] constexpr auto is_subset_of(set_view other) const noexcept
+                -> bool
         {
                 if constexpr (requires { m_ptr->is_subset_of(*other.m_ptr); }) {
                         return m_ptr->is_subset_of(*other.m_ptr);
@@ -466,7 +494,8 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr bool is_proper_subset_of(set_view other) const noexcept
+        [[nodiscard]] constexpr auto is_proper_subset_of(set_view other) const noexcept
+                -> bool
         {
                 if constexpr (requires { m_ptr->is_proper_subset_of(*other.m_ptr); }) {
                         return m_ptr->is_proper_subset_of(*other.m_ptr);
@@ -475,7 +504,8 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr bool intersects(set_view other) const noexcept
+        [[nodiscard]] constexpr auto intersects(set_view other) const noexcept
+                -> bool
         {
                 if constexpr (requires { m_ptr->intersects(*other.m_ptr); }) {
                         return m_ptr->intersects(*other.m_ptr);
