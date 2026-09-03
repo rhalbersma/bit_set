@@ -7,7 +7,6 @@
 #include <test/flat_set.hpp>            // TEST_HAS_FLAT_SET
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <algorithm>                    // copy
-#include <concepts>                     // integral
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <iterator>                     // inserter

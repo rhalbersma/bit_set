@@ -9,7 +9,6 @@
 #include <xstd/bits/ext/std/bitset.hpp>           // bit_extent over std::bitset
 #include <xstd/bits/ranges/bit_extent.hpp>        // bit_extent, static_bit_extent
 #include <bitset>                                 // bitset
-#include <cstddef>                                // size_t
 #include <span>                                   // dynamic_extent
 
 BOOST_AUTO_TEST_SUITE(Ranges)

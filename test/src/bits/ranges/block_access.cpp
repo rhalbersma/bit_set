@@ -15,7 +15,6 @@
 #include <xstd/bits/ranges/set_view.hpp>          // set_view
 #include <algorithm>                              // lexicographical_compare, lexicographical_compare_three_way
 #include <bitset>                                 // bitset
-#include <compare>                                // strong_ordering
 #include <cstddef>                                // size_t
 #include <cstdint>                                // uint8_t
 #include <set>                                    // set

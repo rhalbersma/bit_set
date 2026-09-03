@@ -10,8 +10,6 @@
 #include <xstd/bits/ext/std/bitset.hpp>           // set_find, set_compare over std::bitset
 #include <xstd/bits/ranges/set_view.hpp>          // set_view, set_range
 #include <bitset>                                 // bitset
-#include <concepts>                               // totally_ordered
-#include <cstddef>                                // size_t
 #include <ranges>                                 // bidirectional_range
 
 BOOST_AUTO_TEST_SUITE(Ranges)

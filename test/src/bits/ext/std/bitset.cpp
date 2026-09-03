@@ -8,7 +8,6 @@
 #include <xstd/bits/ext/std/bitset.hpp> // bit_extent, set_find, set_compare, array_find
 #include <bitset>                       // bitset
 #include <concepts>                     // regular, totally_ordered
-#include <cstddef>                      // size_t
 #include <ranges>                       // range
 #include <tuple>                        // tuple
 #include <type_traits>                  // is_nothrow_*, is_trivially_*

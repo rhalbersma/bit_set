@@ -10,7 +10,6 @@
 #include <compare>                                // strong_ordering
 #include <concepts>                               // regular, totally_ordered
 #include <cstddef>                                // size_t
-#include <ranges>                                 // range
 #include <set>                                    // set
 #include <type_traits>                            // is_trivially_copyable_v
 

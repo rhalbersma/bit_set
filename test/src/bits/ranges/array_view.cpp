@@ -14,7 +14,6 @@
 #include <algorithm>                              // equal
 #include <array>                                  // array
 #include <bitset>                                 // bitset
-#include <cstddef>                                // size_t
 #include <ranges>                                 // random_access_range
 
 BOOST_AUTO_TEST_SUITE(Ranges)
