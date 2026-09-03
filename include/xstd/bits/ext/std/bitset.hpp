@@ -6,13 +6,15 @@
 #ifndef XSTD_BITS_EXT_STD_BITSET_HPP
 #define XSTD_BITS_EXT_STD_BITSET_HPP
 
+// IWYU pragma: always_keep
+
 #include <xstd/bits/ranges/array_view.hpp>         // find, view
 #include <xstd/bits/ranges/bit_extent.hpp>         // bit_extent
 #include <xstd/bits/ranges/block_access.hpp>       // block_access
 #include <xstd/bits/ranges/set_view.hpp>           // find, view
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <algorithm>                               // find_if
-#include <bitset>                                  // bitset
+#include <bitset>                                  // IWYU pragma: export; bitset
 #include <cassert>                                 // assert
 #include <compare>                                 // strong_ordering
 #include <cstddef>                                 // size_t
