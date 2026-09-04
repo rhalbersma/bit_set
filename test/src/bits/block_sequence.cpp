@@ -124,7 +124,7 @@ public:
                         while (not m_mx[back]) { --back; }
                         unequal(m_x.find_front(), front);
                         unequal(m_x.find_back(),  back);
-                        unequal(m_x.find_prev(m_n), back);
+                        unequal(m_x.find_prev_exclusive(m_n), back);
                 }
 
                 auto first = 0UZ;
@@ -135,13 +135,22 @@ public:
                 for (auto i = 0UZ; i < m_n; ++i) {
                         auto next = i + 1;
                         while (next < m_n and not m_mx[next]) { ++next; }
-                        unequal(m_x.find_next(i), next);
+                        unequal(m_x.find_next_exclusive(i), next);
+                }
+
+                // find_next_inclusive is the primitive; find_first is its 0 and find_next_exclusive its n + 1. Check
+                // it directly over its whole precondition domain -- n == size() included, which is
+                // the one value the scan cannot start from and the reason the guard is == at all.
+                for (auto i = 0UZ; i <= m_n; ++i) {
+                        auto bound = i;
+                        while (bound < m_n and not m_mx[bound]) { ++bound; }
+                        unequal(m_x.find_next_inclusive(i), bound);
                 }
                 for (auto i = 1UZ; i <= m_n and m_cardinality != 0; ++i) {
                         auto j = i;
                         while (j-- > 0) {
                                 if (m_mx[j]) {
-                                        unequal(m_x.find_prev(i), j);
+                                        unequal(m_x.find_prev_exclusive(i), j);
                                         break;
                                 }
                         }

@@ -14,15 +14,15 @@
 #include <xstd/ints/limits.hpp>                                // numeric_limits
 #include <xstd/ints/memory.hpp>                                // align_up
 #include <xstd/misc/type_traits/conditional_data_member.hpp>   // XSTD_NO_UNIQUE_ADDRESS, conditional_data_member_t
-#include <algorithm>                                           // all_of, any_of, equal, fill, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <algorithm>                                           // all_of, any_of, equal, fill, fill_n, fold_left, max, shift_left, shift_right
 #include <array>                                               // array
 #include <cassert>                                             // assert
 #include <concepts>                                            // swap
 #include <cstddef>                                             // ptrdiff_t, size_t
 #include <functional>                                          // plus
-#include <iterator>                                            // distance, prev, random_access_iterator, sized_sentinel_for
+#include <iterator>                                            // prev
 #include <memory>                                              // allocator
-#include <ranges>                                              // begin, drop, iota, reverse, size, swap, transform, zip
+#include <ranges>                                              // begin, drop, iota, size, swap, transform, zip
                                                                // (views::drop_last when P22014R2 is accepted)
 #include <span>                                                // dynamic_extent
 #include <type_traits>                                         // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
@@ -196,9 +196,17 @@ public:
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
                         return m_blocks[0] != zero ? detail::bits::countr_zero(m_blocks[0]) : detail::bits::countr_zero(m_blocks[1]) + bits_per_block;
                 } else {
-                        auto const front = std::ranges::find_if(m_blocks, [](auto block) { return block != zero; });
-                        assert(front != std::ranges::end(m_blocks));
-                        return detail::bits::countr_zero(*front) + (bits_per_block * distance(std::ranges::begin(m_blocks), front));
+                        // A while rather than a for: any() guarantees a non-empty block exists, so
+                        // a loop that could run out would carry an exit branch no test can take.
+                        // Both branches of this condition are exercised instead -- empty blocks are
+                        // skipped, a non-empty one ends it -- and the index is the block's position
+                        // rather than something distance() has to recover.
+                        auto i = 0UZ;
+                        while (m_blocks[i] == zero) {
+                                assert(i != last_block());
+                                ++i;
+                        }
+                        return (bits_per_block * i) + detail::bits::countr_zero(m_blocks[i]);
                 }
         }
 
@@ -211,33 +219,29 @@ public:
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
                         return m_blocks[1] != zero ? last_bit() - detail::bits::countl_zero(m_blocks[1]) : left_bit - detail::bits::countl_zero(m_blocks[0]);
                 } else {
-                        auto const rg = m_blocks | std::views::reverse;
-                        auto const back = std::ranges::find_if(rg, [](auto block) { return block != zero; });
-                        assert(back != std::ranges::end(rg));
-                        return last_bit() - detail::bits::countl_zero(*back) - (bits_per_block * distance(std::ranges::begin(rg), back));
+                        // The mirror of find_front, and the last reverse view in the file. Counting
+                        // up from block i's own base rather than down from last_bit() drops the
+                        // last_block() - i term the reversed range needed.
+                        auto i = last_block();
+                        while (m_blocks[i] == zero) {
+                                assert(i != 0);
+                                --i;
+                        }
+                        return (bits_per_block * i) + left_bit - detail::bits::countl_zero(m_blocks[i]);
                 }
         }
 
+        // Its own 0. Now that find_next_inclusive carries the 2-block case too, this emits the same
+        // instruction sequence the hand-written version did -- verified, not assumed -- so the
+        // duplication goes without costing the unrolling. libstdc++ writes both scans out and
+        // repeats the word loop and the ctz-plus-index arithmetic between them; boost factors
+        // the shared tail into m_do_find_from, but only at block granularity, so find_next_exclusive still
+        // needs its own prologue for a mid-block start. Factoring at bit granularity subsumes
+        // both: a block-aligned start is just offset == 0.
         [[nodiscard]] constexpr auto find_first() const noexcept
                 -> std::size_t
         {
-                if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
-                        if (m_blocks[0] != zero) {
-                                return detail::bits::countr_zero(m_blocks[0]);
-                        }
-                } else if constexpr (has_static_size and static_num_blocks == 2) {
-                        if (m_blocks[0] != zero) {
-                                return detail::bits::countr_zero(m_blocks[0]);
-                        }
-                        if (m_blocks[1] != zero) {
-                                return detail::bits::countr_zero(m_blocks[1]) + bits_per_block;
-                        }
-                } else if constexpr (not (has_static_size and N == 0)) {
-                        if (auto const first = std::ranges::find_if(m_blocks, [](auto block) { return block != zero; }); first != std::ranges::end(m_blocks)) {
-                                return detail::bits::countr_zero(*first) + (bits_per_block * distance(std::ranges::begin(m_blocks), first));
-                        }
-                }
-                return size();
+                return find_next_inclusive(0UZ);
         }
 
         [[nodiscard]] constexpr auto find_last() const noexcept
@@ -246,10 +250,33 @@ public:
                 return size();
         }
 
-        [[nodiscard]] constexpr auto find_next(std::size_t n) const noexcept
+        // The first set position at or above n, or size() if there is none.
+        //
+        // Inclusive and exclusive name the only thing that separates the two scans: whether n
+        // itself is a candidate. That is a property of the scan, not of a reading, which is why
+        // this is not called lower_bound -- that is the set reading's word for it, and this layer
+        // serves the sequence reading equally. bit_finite_set::lower_bound is where the set name
+        // belongs, and it maps here one for one.
+        //
+        // The inclusive form is the primitive and the exclusive one is derived, because the
+        // reverse does not close:
+        //
+        //     find_next_exclusive(n) == find_next_inclusive(n + 1)     for every n
+        //     find_first()           == find_next_inclusive(0)
+        //
+        // Exclusive-first would need find_first() == find_next_exclusive(-1), and size_t has no
+        // such value -- which is exactly why the container used to branch on x == 0. boost's
+        // find_next and libstdc++'s _M_do_find_next are both the exclusive form, correctly: their
+        // iteration idiom is find_first() then find_next(i), which never needs the inclusive one.
+        //
+        // n == size() rather than n >= size(): the precondition is n <= size(), asserted just
+        // below, so size() is the only value the scan cannot start from. is_valid does not say
+        // this -- it is n < size() -- and size() is a legitimate argument here, meaning "no such
+        // position", exactly as it is for find_prev_exclusive.
+        [[nodiscard]] constexpr auto find_next_inclusive(std::size_t n) const noexcept
                 -> std::size_t
         {
-                ++n;
+                assert(n <= size());
                 if (n == size()) {
                         return size();
                 }
@@ -257,35 +284,100 @@ public:
                         if (auto const block = static_cast<block_type>(m_blocks[0] >> n); block != zero) {
                                 return n + detail::bits::countr_zero(block);
                         }
-                } else {
-                        auto [ index, offset ] = index_offset(n);
-                        if (offset != 0) {
-                                if (auto const block = static_cast<block_type>(m_blocks[index] >> offset); block != zero) {
-                                        return n + detail::bits::countr_zero(block);
-                                }
-                                ++index;
-                                n += bits_per_block - offset;
+                } else if constexpr (has_static_size and static_num_blocks == 2) {
+                        // Two blocks, so the tail is one named block rather than a range: the walk
+                        // below costs more than the whole scan is worth at this width. index is a
+                        // run-time value -- n is -- but the block count is not, so the second half
+                        // is a test and not a loop.
+                        //
+                        // Indexed rather than branched: m_blocks[index], not an if on index, so the
+                        // common path is one computed load. Only when the starting block comes up
+                        // empty does it matter which block we started in, and then only to decide
+                        // whether block 1 is still ahead of us. Writing this as a branch instead
+                        // cost 10 instructions at -O3 -march=native.
+                        auto const [ index, offset ] = index_offset(n);
+                        if (auto const block = static_cast<block_type>(m_blocks[index] >> offset); block != zero) {
+                                return n + detail::bits::countr_zero(block);
                         }
-                        auto const rg = m_blocks | std::views::drop(index);
-                        // next is an iterator. That std::array's is a pointer is
-                        // implementation-defined -- [array.overview] requires only that it model
-                        // contiguous_iterator -- so readability-qualified-auto's auto const *const
-                        // would encode a detail this code never relies on: next is dereferenced and
-                        // passed to distance, both pure iterator operations.
-                        if (auto const next = std::ranges::find_if(rg, [](auto block) { return block != zero; }); next != std::ranges::end(rg)) {  // NOLINT(readability-qualified-auto)
-                                return n + detail::bits::countr_zero(*next) + (bits_per_block * distance(std::ranges::begin(rg), next));
+                        if (index == 0 and m_blocks[1] != zero) {
+                                return bits_per_block + detail::bits::countr_zero(m_blocks[1]);
+                        }
+                } else {
+                        // No offset != 0 guard: >> 0 is the identity, so the masked test is correct
+                        // at a block boundary too, and advancing past that block afterwards is
+                        // right either way. Neither reference implementation guards it -- boost
+                        // shifts by ind then falls to m_do_find_from(blk + 1), libstdc++ masks by
+                        // ~0 << whichbit then does __i++ -- and the guard skips no work: at offset
+                        // 0 it merely moves the same test into the loop's first iteration.
+                        auto [ index, offset ] = index_offset(n);
+                        if (auto const block = static_cast<block_type>(m_blocks[index] >> offset); block != zero) {
+                                return n + detail::bits::countr_zero(block);
+                        }
+                        ++index;
+                        n += bits_per_block - offset;
+                        // A plain index walk rather than drop + find_if. The iterator form had to
+                        // recover the block's position with distance(); the index is that position,
+                        // so it never needed recovering. Both exits are exercised: falling out is
+                        // how "nothing at or above n" reaches the return below.
+                        for (auto i = index; i < num_blocks(); ++i) {
+                                if (auto const block = m_blocks[i]; block != zero) {
+                                        return n + detail::bits::countr_zero(block) + (bits_per_block * (i - index));
+                                }
                         }
                 }
                 return size();
         }
 
-        [[nodiscard]] constexpr auto find_prev(std::size_t n) const noexcept
+        [[nodiscard]] constexpr auto find_next_exclusive(std::size_t n) const noexcept
                 -> std::size_t
         {
+                assert(is_valid(n));
+                return find_next_inclusive(n + 1);
+        }
+
+        // The last set position below n. Deliberately NOT total: where find_next_inclusive
+        // answers size() for "nothing at or above", this one has a precondition instead, and
+        // that is the whole of why it is three instructions cheaper at every width -- it never
+        // materializes a not-found value.
+        //
+        // Safe because reverse iteration supplies the guard the function does not.
+        // rend() is make_reverse_iterator(begin()), and std::reverse_iterator stops there, so
+        // operator-- is never applied at begin(). A hand-written loop gets no such help:
+        // the forward idiom terminates itself against size(), the reverse one runs off the
+        // bottom. Totality is the container's contract to keep, per #86 -- not this layer's to
+        // absorb.
+        [[nodiscard]] constexpr auto find_prev_exclusive(std::size_t n) const noexcept
+                -> std::size_t
+        {
+                // The mirror of find_next_exclusive's assert(is_valid(n)): each says the position actually
+                // scanned from is one this container has. n - 1 is that position here, and the
+                // wraparound does the work at the bottom -- 0 - 1 is SIZE_MAX, which no width
+                // admits -- so this states 1 <= n <= size() without a second predicate. is_valid
+                // alone would be wrong: size() is a legitimate argument, meaning "from the end".
+                assert(is_valid(n - 1));
                 assert(any());
                 --n;
                 if constexpr (has_static_size and static_num_blocks == 1) {
                         return n - detail::bits::countl_zero(static_cast<block_type>(m_blocks[0] << (left_bit - n)));
+                } else if constexpr (has_static_size and static_num_blocks == 2) {
+                        // The mirror of find_next_inclusive's two-block case, and simpler than the general
+                        // path below because the fallback is one named block rather than a scan.
+                        //
+                        // No reverse_offset != 0 guard is needed here. Below, that guard is not
+                        // about the shift -- left_bit - offset is in [0, left_bit], so shifting is
+                        // always in range and by zero is the identity -- it is about which block
+                        // the range scan must start at: at index when the whole block is in range,
+                        // below it when the masked block came up empty. Naming the fallback block
+                        // outright makes that distinction disappear.
+                        auto const [ index, offset ] = index_offset(n);
+                        if (auto const block = static_cast<block_type>(m_blocks[index] << (left_bit - offset)); block != zero) {
+                                return n - detail::bits::countl_zero(block);
+                        }
+                        // Reaching here with index 0 means no set bit at or below the caller's n,
+                        // which is the precondition the general path asserts as prev != end(rg).
+                        assert(index == 1);
+                        assert(m_blocks[0] != zero);
+                        return left_bit - detail::bits::countl_zero(m_blocks[0]);
                 } else {
                         auto [ index, offset ] = index_offset(n);
                         if (auto const reverse_offset = left_bit - offset; reverse_offset != 0) {
@@ -295,10 +387,21 @@ public:
                                 --index;
                                 n -= bits_per_block - reverse_offset;
                         }
-                        auto const rg = m_blocks | std::views::reverse | std::views::drop(last_block() - index);
-                        auto const prev = std::ranges::find_if(rg, [](auto block) { return block != zero; });
-                        assert(prev != std::ranges::end(rg));
-                        return n - detail::bits::countl_zero(*prev) - (bits_per_block * distance(std::ranges::begin(rg), prev));
+                        // A descending index walk rather than reverse + drop + find_if, which
+                        // composed two adaptors only to have distance() undo them.
+                        //
+                        // Shaped as a while rather than a for with a fall-through, deliberately.
+                        // The precondition guarantees a set bit at or below, so a loop that could
+                        // run out would carry an exit branch no test can take -- which is exactly
+                        // what the coverage gate would catch, and what find_if hid by keeping that
+                        // branch inside the standard library. Here both branches of the condition
+                        // are exercised: empty blocks are skipped, a non-empty one ends it.
+                        auto i = index;
+                        while (m_blocks[i] == zero) {
+                                assert(i != 0);
+                                --i;
+                        }
+                        return n - detail::bits::countl_zero(m_blocks[i]) - (bits_per_block * (index - i));
                 }
         }
 
@@ -683,7 +786,7 @@ private:
                 return std::ranges::all_of(first, first + static_cast<std::ptrdiff_t>(last_block()), [](auto block) { return block == ones; });
         }
 
-        // The top bit of the last block, padding included. find_back and find_prev count
+        // The top bit of the last block, padding included. find_back and find_prev_exclusive count
         // down from it and both assert any(), so the zero-width case never reaches here.
         [[nodiscard]] constexpr auto last_bit() const noexcept
                 -> std::size_t
@@ -742,26 +845,6 @@ private:
                 } else if constexpr (not has_static_size) {
                         m_blocks[last_block()] &= used_bits();
                 }
-        }
-
-        // Iterators are taken by value, as std::ranges::distance itself takes them.
-        //
-        // performance-unnecessary-value-param flags both parameters, and only for the
-        // reverse_iterator instantiations. libstdc++ hand-writes that class's copy
-        // constructor -- a pre-"= default" idiom; the copy assignment beside it is
-        // defaulted -- so it is not trivially copyable, where libc++'s is and the check
-        // stays silent. The verdict is a property of the standard library rather than of
-        // this signature.
-        //
-        // Nor is the cost it names paid here. Not trivially copyable means non-trivial
-        // for the purposes of calls under the Itanium ABI, so an out-of-line callee takes
-        // a pointer to a caller-built temporary where a trivially copyable type of the
-        // same eight bytes arrives in a register. This is a static constexpr one-liner:
-        // at -O2 it inlines and both iterators fold away to a pointer subtraction.
-        template<std::random_access_iterator I, std::sized_sentinel_for<I> S>
-        [[nodiscard]] static constexpr auto distance(I first, S last) noexcept  // NOLINT(performance-unnecessary-value-param)
-        {
-                return static_cast<std::size_t>(std::ranges::distance(first, last));
         }
 };
 

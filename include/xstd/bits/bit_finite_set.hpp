@@ -72,8 +72,8 @@ class bit_finite_set
 
         [[nodiscard]] friend constexpr auto find_first(const bit_finite_set& c)                noexcept -> std::size_t { return c.m_bits.find_first(); }
         [[nodiscard]] friend constexpr auto find_last (const bit_finite_set& c)                noexcept -> std::size_t { return c.m_bits.find_last();  }
-        [[nodiscard]] friend constexpr auto find_next (const bit_finite_set& c, std::size_t n) noexcept -> std::size_t { return c.m_bits.find_next(n); }
-        [[nodiscard]] friend constexpr auto find_prev (const bit_finite_set& c, std::size_t n) noexcept -> std::size_t { return c.m_bits.find_prev(n); }
+        [[nodiscard]] friend constexpr auto find_next (const bit_finite_set& c, std::size_t n) noexcept -> std::size_t { return c.m_bits.find_next_exclusive(n); }
+        [[nodiscard]] friend constexpr auto find_prev (const bit_finite_set& c, std::size_t n) noexcept -> std::size_t { return c.m_bits.find_prev_exclusive(n); }
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bit_finite_set const* v) noexcept
