@@ -1,4 +1,4 @@
-# Contributing to bit_set
+# Contributing to xstd-bits
 
 ## What a PR must satisfy before it can merge
 
@@ -54,7 +54,7 @@ An umbrella source takes the stem like any other, so `test/src/bits/ranges.cpp` 
 
 **Cases are declarative.** A case name is a sentence about what holds, with the thing under test as the implied subject — `TheOrderingsAgreeInsideASingleBlock`, `AWidthInTheTypeIsAStaticExtent`, `DefaultConstructionYieldsAnEmptySet`. A name that only says which members were exercised (`Observers`, `Operators`, `Constructors`) names where the test looked rather than what it claims, and reads as nothing at all in a failure log. A conformance check may be the predicate itself, since that already is the claim: `IsRegular`, `IsTrivial`, `IsABitSequence`.
 
-This is [xstd](https://github.com/rhalbersma/xstd)'s convention as well, including the subtraction: `Ints` goes the same way once xstd splits into xstd-ints and xstd-core and `ints/` stops distinguishing anything. The two libraries' test trees are meant to read the same way.
+This is [xstd](https://github.com/rhalbersma/xstd-ints)'s convention as well, including the subtraction: `Ints` goes the same way once xstd splits into xstd-ints and xstd-core and `ints/` stops distinguishing anything. The two libraries' test trees are meant to read the same way.
 
 One check runs without being required:
 

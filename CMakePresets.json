@@ -18,7 +18,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "BUILD_TESTING": "ON",
-        "BIT_SET_WARNINGS_AS_ERRORS": "ON"
+        "XSTD_BITS_WARNINGS_AS_ERRORS": "ON"
       }
     },
     {
@@ -28,7 +28,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "BUILD_TESTING": "ON",
-        "BIT_SET_WARNINGS_AS_ERRORS": "ON"
+        "XSTD_BITS_WARNINGS_AS_ERRORS": "ON"
       }
     },
     {

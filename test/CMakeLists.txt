@@ -13,9 +13,9 @@ find_package(range-v3 CONFIG REQUIRED)
 
 # clang-cl reports CXX_COMPILER_ID Clang but understands only MSVC-style driver flags.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set(bit_set_is_clang_cl ON)
+    set(xstd_bits_is_clang_cl ON)
 else()
-    set(bit_set_is_clang_cl OFF)
+    set(xstd_bits_is_clang_cl OFF)
 endif()
 
 set(cxx_compile_definitions
@@ -33,7 +33,7 @@ set(cxx_compile_options_warnings
         /permissive-
         /bigobj
     >
-    $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>,$<NOT:$<BOOL:${bit_set_is_clang_cl}>>>:
+    $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>,$<NOT:$<BOOL:${xstd_bits_is_clang_cl}>>>:
         -pedantic-errors
     >
     $<$<CXX_COMPILER_ID:Clang>:
@@ -71,8 +71,8 @@ set(cxx_compile_options_warnings
         -Wno-stringop-overflow              # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
         -Wno-maybe-uninitialized            # false positive on detail::array's std::array member (WinLibs gcc 15.3.0, Release mode)
     >
-    $<$<AND:$<BOOL:${BIT_SET_WARNINGS_AS_ERRORS}>,$<CXX_COMPILER_ID:MSVC>>:/WX>
-    $<$<AND:$<BOOL:${BIT_SET_WARNINGS_AS_ERRORS}>,$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>>:-Werror>
+    $<$<AND:$<BOOL:${XSTD_BITS_WARNINGS_AS_ERRORS}>,$<CXX_COMPILER_ID:MSVC>>:/WX>
+    $<$<AND:$<BOOL:${XSTD_BITS_WARNINGS_AS_ERRORS}>,$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>>:-Werror>
 )
 
 set(cxx_compile_options_optimization

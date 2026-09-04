@@ -5,10 +5,11 @@
 
 cmake_minimum_required(VERSION 3.28)
 project(
-    bit_set
+    xstd-bits
     VERSION 0.1.0
-    DESCRIPTION "A fixed-size ordered set of integers, reimagining std::bitset"
-    HOMEPAGE_URL https://github.com/rhalbersma/${PROJECT_NAME}
+    DESCRIPTION "Rebooting the bits franchise"
+    # Spelled out: project()'s own arguments expand before it sets PROJECT_NAME, so ${PROJECT_NAME} here is empty.
+    HOMEPAGE_URL https://github.com/rhalbersma/xstd-bits
     LANGUAGES CXX
 )
 
@@ -17,19 +18,19 @@ include(GNUInstallDirs)
 # Warnings are errors while this library is being developed, which is what the presets ask for.
 # Declared here rather than under test/, as xstd and tabula do, because benchmark/ carries its
 # own warning set and has to be gated by the same switch.
-option(BIT_SET_WARNINGS_AS_ERRORS "Treat warnings as errors in bit_set tests and benchmarks" ${PROJECT_IS_TOP_LEVEL})
+option(XSTD_BITS_WARNINGS_AS_ERRORS "Treat warnings as errors in xstd-bits tests and benchmarks" ${PROJECT_IS_TOP_LEVEL})
 
-# Prefer an installed xstd so install(EXPORT) can record it as a dependency; a FetchContent build tree cannot be exported.
-find_package(xstd 0.1.0 CONFIG QUIET)
-if(NOT xstd_FOUND)
+# Prefer an installed xstd-ints so install(EXPORT) can record it as a dependency; a FetchContent build tree cannot be exported.
+find_package(xstd-ints 0.1.0 CONFIG QUIET)
+if(NOT xstd-ints_FOUND)
     include(FetchContent)
     FetchContent_Declare(
-        xstd
-        GIT_REPOSITORY https://github.com/rhalbersma/xstd.git
-        # Pinned to a commit on xstd's main, not a branch head; move consumption.yml's dependency_repos with it.
-        GIT_TAG 42ab0d409fc9118ea0dc8846508ea62e97b90c7e
+        xstd-ints
+        GIT_REPOSITORY https://github.com/rhalbersma/xstd-ints.git
+        # Pinned to a commit on xstd-ints' main, not a branch head; move consumption.yml's dependency_repos with it.
+        GIT_TAG fc7acd230d7cf9f6e9cb72e687554e9b6506d7bd
     )
-    FetchContent_MakeAvailable(xstd)
+    FetchContent_MakeAvailable(xstd-ints)
 endif()
 
 # Boost.Hash2 is a public dependency of this library's headers, not just of the tests, so it is declared explicitly.
@@ -38,7 +39,15 @@ find_package(boost_hash2 CONFIG REQUIRED)
 add_library(
     ${PROJECT_NAME} INTERFACE
 )
-add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+# Consumed as xstd::bits, following Boost: the package keeps the repository's name
+# (find_package(xstd-bits)) while the target is a component of one umbrella namespace,
+# so xstd::bits sits beside xstd::ints the way Boost::hash2 sits beside Boost::mp11.
+# EXPORT_NAME is what lets the exported name differ from the target name; the alias
+# below must spell the same thing, or an add_subdirectory consumer and a find_package
+# consumer would end up with two different names for one library.
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME bits)
+add_library(xstd::bits ALIAS ${PROJECT_NAME})
 
 # No target_include_directories: the HEADERS file set supplies both the build and the install interface.
 target_sources(
@@ -68,7 +77,7 @@ target_sources(
 
 target_link_libraries(
     ${PROJECT_NAME} INTERFACE
-    xstd::xstd
+    xstd::ints
     Boost::hash2
 )
 
@@ -77,7 +86,7 @@ target_compile_features(
     cxx_std_23
 )
 
-# Tests and benchmarks exist only when bit_set itself is being developed; consumers get the header-only target.
+# Tests and benchmarks exist only when xstd-bits itself is being developed; consumers get the header-only target.
 if(PROJECT_IS_TOP_LEVEL)
     include(CTest)
     if(BUILD_TESTING)
@@ -93,7 +102,7 @@ install(
 )
 install(
     EXPORT ${PROJECT_NAME}Targets
-    NAMESPACE ${PROJECT_NAME}::
+    NAMESPACE xstd::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
