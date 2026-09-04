@@ -283,14 +283,14 @@ public:
                                 ++index;
                                 n += bits_per_block - offset;
                         }
-                        auto const rg = m_blocks | std::views::drop(index);
-                        // next is an iterator. That std::array's is a pointer is
-                        // implementation-defined -- [array.overview] requires only that it model
-                        // contiguous_iterator -- so readability-qualified-auto's auto const *const
-                        // would encode a detail this code never relies on: next is dereferenced and
-                        // passed to distance, both pure iterator operations.
-                        if (auto const next = std::ranges::find_if(rg, [](auto block) { return block != zero; }); next != std::ranges::end(rg)) {  // NOLINT(readability-qualified-auto)
-                                return n + detail::bits::countr_zero(*next) + (bits_per_block * distance(std::ranges::begin(rg), next));
+                        // A plain index walk rather than drop + find_if. The iterator form had to
+                        // recover the block's position with distance(); the index is that position,
+                        // so it never needed recovering. Both exits are exercised: falling out is
+                        // how "nothing at or above n" reaches the return below.
+                        for (auto i = index; i < num_blocks(); ++i) {
+                                if (auto const block = m_blocks[i]; block != zero) {
+                                        return n + detail::bits::countr_zero(block) + (bits_per_block * (i - index));
+                                }
                         }
                 }
                 return size();
@@ -306,10 +306,35 @@ public:
         [[nodiscard]] constexpr auto find_prev(std::size_t n) const noexcept
                 -> std::size_t
         {
+                // The mirror of find_next's assert(is_valid(n)): each says the position actually
+                // scanned from is one this container has. n - 1 is that position here, and the
+                // wraparound does the work at the bottom -- 0 - 1 is SIZE_MAX, which no width
+                // admits -- so this states 1 <= n <= size() without a second predicate. is_valid
+                // alone would be wrong: size() is a legitimate argument, meaning "from the end".
+                assert(is_valid(n - 1));
                 assert(any());
                 --n;
                 if constexpr (has_static_size and static_num_blocks == 1) {
                         return n - detail::bits::countl_zero(static_cast<block_type>(m_blocks[0] << (left_bit - n)));
+                } else if constexpr (has_static_size and static_num_blocks == 2) {
+                        // The mirror of lower_bound's two-block case, and simpler than the general
+                        // path below because the fallback is one named block rather than a scan.
+                        //
+                        // No reverse_offset != 0 guard is needed here. Below, that guard is not
+                        // about the shift -- left_bit - offset is in [0, left_bit], so shifting is
+                        // always in range and by zero is the identity -- it is about which block
+                        // the range scan must start at: at index when the whole block is in range,
+                        // below it when the masked block came up empty. Naming the fallback block
+                        // outright makes that distinction disappear.
+                        auto const [ index, offset ] = index_offset(n);
+                        if (auto const block = static_cast<block_type>(m_blocks[index] << (left_bit - offset)); block != zero) {
+                                return n - detail::bits::countl_zero(block);
+                        }
+                        // Reaching here with index 0 means no set bit at or below the caller's n,
+                        // which is the precondition the general path asserts as prev != end(rg).
+                        assert(index == 1);
+                        assert(m_blocks[0] != zero);
+                        return left_bit - detail::bits::countl_zero(m_blocks[0]);
                 } else {
                         auto [ index, offset ] = index_offset(n);
                         if (auto const reverse_offset = left_bit - offset; reverse_offset != 0) {
@@ -319,10 +344,21 @@ public:
                                 --index;
                                 n -= bits_per_block - reverse_offset;
                         }
-                        auto const rg = m_blocks | std::views::reverse | std::views::drop(last_block() - index);
-                        auto const prev = std::ranges::find_if(rg, [](auto block) { return block != zero; });
-                        assert(prev != std::ranges::end(rg));
-                        return n - detail::bits::countl_zero(*prev) - (bits_per_block * distance(std::ranges::begin(rg), prev));
+                        // A descending index walk rather than reverse + drop + find_if, which
+                        // composed two adaptors only to have distance() undo them.
+                        //
+                        // Shaped as a while rather than a for with a fall-through, deliberately.
+                        // The precondition guarantees a set bit at or below, so a loop that could
+                        // run out would carry an exit branch no test can take -- which is exactly
+                        // what the coverage gate would catch, and what find_if hid by keeping that
+                        // branch inside the standard library. Here both branches of the condition
+                        // are exercised: empty blocks are skipped, a non-empty one ends it.
+                        auto i = index;
+                        while (m_blocks[i] == zero) {
+                                assert(i != 0);
+                                --i;
+                        }
+                        return n - detail::bits::countl_zero(m_blocks[i]) - (bits_per_block * (index - i));
                 }
         }
 
