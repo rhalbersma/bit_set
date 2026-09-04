@@ -10,6 +10,7 @@
 #include <array>                       // array
 #include <cstddef>                     // size_t
 #include <cstdint>                     // uint8_t, uint64_t
+#include <ranges>                      // iota
 #include <vector>                      // vector
 
 BOOST_AUTO_TEST_SUITE(BitBlocks)
@@ -189,7 +190,7 @@ public:
 
                 auto b = m_x;
                 for (auto i = 0UZ; i < m_x.num_blocks(); ++i) {
-                        b.set_block(i, static_cast<typename BB::block_type>(-1));
+                        b.set_block(i, static_cast<BB::block_type>(-1));
                 }
                 disagree(b.all(), true);
                 unequal(b.count(), m_n);
@@ -215,31 +216,35 @@ auto check_ops(BB const& x, BB const& y, int& disagreements) -> void
 // blocks, and the endpoint ones for the first and last block specifically. The last one
 // fills every block but the last, which is the only way to reach the right operand of
 // all()'s short circuit with a false: every other pattern either fails a block below the
-// last, or fills the last one too.
-template<class BB, class Make>
-auto sweep(std::size_t n, Make make) -> int
+// last, or fills the last one too. It compares block indices rather than a precomputed
+// bit count, so that a single-block width -- for which it selects nothing -- does not fold
+// into an unsigned comparison against zero, which -Wtype-limits reports.
+template<class BB>
+auto sweep(BB const& empty) -> int
 {
-        // Every bit below the last block, which is where the whole-container shortcuts split.
-        auto const below_last = (make().num_blocks() - 1UZ) * BB::bits_per_block;
+        auto const n = empty.size();
 
         auto values = std::vector<BB>();
+        // views::iota rather than i < n: n is empty.size(), which folds to a constant, and
+        // at a width of zero that leaves an unsigned comparison against zero -- -Wtype-limits
+        // on GCC, and the same C4296 the header's is_valid() carries a comment about.
         auto const push = [&](auto fill) -> void {
-                auto b = make();
-                for (auto i = 0UZ; i < n; ++i) {
+                auto b = empty;
+                for (auto const i : std::views::iota(0UZ, n)) {
                         if (fill(i)) { b.set(i); }
                 }
                 values.push_back(b);
         };
         // Captured by reference throughout rather than by name: under a static width the
-        // compiler folds below_last to a constant, and naming something usable in a
-        // constant expression is exactly what -Wunused-lambda-capture reports.
+        // compiler folds these to constants, and naming something usable in a constant
+        // expression is exactly what -Wunused-lambda-capture reports.
         push([&](std::size_t  ) -> bool { return false;                });
         push([&](std::size_t  ) -> bool { return true;                 });
         push([&](std::size_t i) -> bool { return i % 2 == 0;           });
         push([&](std::size_t i) -> bool { return i % 3 == 0;           });
         push([&](std::size_t i) -> bool { return i == 0 or i + 1 == n; });
         push([&](std::size_t i) -> bool { return i + 1 == n;           });
-        push([&](std::size_t i) -> bool { return i < below_last;       });
+        push([&](std::size_t i) -> bool { return (i / BB::bits_per_block) + 1UZ < empty.num_blocks(); });
 
         auto disagreements = 0;
         for (auto const& x : values) {
@@ -248,6 +253,22 @@ auto sweep(std::size_t n, Make make) -> int
                 }
         }
         return disagreements;
+}
+
+// Named rather than immediately-invoked lambdas: an empty parameter list before a trailing
+// return type is redundant, and dropping it would lean on P1102 for no reason.
+constexpr auto a_static_width_is_constexpr() -> bool
+{
+        auto b = xstd::static_bits<9, std::uint8_t>();
+        b.set(8);
+        return b.count() == 1 and b.find_first() == 8;
+}
+
+constexpr auto a_run_time_width_is_constexpr() -> bool
+{
+        auto b = xstd::dynamic_bits<std::uint8_t>(9);
+        b.set(8);
+        return b.count() == 1 and b.find_first() == 8;
 }
 
 } // namespace
@@ -275,18 +296,18 @@ BOOST_AUTO_TEST_CASE(AStaticWidthAddsNothingToItsBlocks)
         static_assert(not xstd::dynamic_bits<  >::has_static_size);
 }
 
-// Both widths in a constant expression; a std::vector one needs C++20 constexpr allocation.
+// Both widths in a constant expression; the run-time one needs C++20 constexpr allocation.
 BOOST_AUTO_TEST_CASE(BothWidthsAreUsableAtCompileTime)
 {
-        static_assert([]() -> bool { auto b = xstd::static_bits<9, std::uint8_t>(); b.set(8); return b.count() == 1 and b.find_first() == 8; }());
-        static_assert([]() -> bool { auto b = xstd::dynamic_bits<std::uint8_t>(9); b.set(8); return b.count() == 1 and b.find_first() == 8; }());
+        static_assert(a_static_width_is_constexpr());
+        static_assert(a_run_time_width_is_constexpr());
 }
 
 // The static width, at every extent the library instantiates. This is the same storage the
 // three owners hold, so a disagreement here is a disagreement in all of them.
 BOOST_AUTO_TEST_CASE_TEMPLATE(AStaticWidthAgreesWithTheModel, T, test::graded_extents<xstd::static_bits>)
 {
-        BOOST_CHECK_EQUAL(sweep<T>(T().size(), []() -> T { return T(); }), 0);
+        BOOST_CHECK_EQUAL(sweep(T()), 0);
 }
 
 // The run-time width, at the same grading: within one block, and across boundaries either side.
@@ -296,8 +317,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ARunTimeWidthAgreesWithTheModel, Block, test::word
         constexpr auto D = test::digits_v<Block>;
 
         auto disagreements = 0;
-        for (auto const n : { 0UZ, 1UZ, D - 1, D, D + 1, 2 * D - 1, 2 * D, 2 * D + 1, 3 * D, 3 * D + 1 }) {
-                disagreements += sweep<T>(n, [n]() -> T { return T(n); });
+        for (auto const n : { 0UZ, 1UZ, D - 1, D, D + 1, (2 * D) - 1, 2 * D, (2 * D) + 1, 3 * D, (3 * D) + 1 }) {
+                disagreements += sweep(T(n));
         }
         BOOST_CHECK_EQUAL(disagreements, 0);
 }
