@@ -8,6 +8,7 @@
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <test/flat_set.hpp>            // TEST_HAS_FLAT_SET, is_flat_set
 #include <test/set/primitives.hpp>      // constructor, mem_const_reference, mem_const_iterator, mem_front, mem_back,
+#include <test/uint128.hpp>             // TEST_HAS_UINT128, uint128
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
@@ -36,8 +37,8 @@ using Types = std::tuple
 ,       xstd::bit_finite_set<24, uint16_t>
 ,       xstd::bit_finite_set<24, uint32_t>
 ,       xstd::bit_finite_set<24, uint64_t>
-#ifdef __GNUG__
-,       xstd::bit_finite_set<24, __uint128_t>
+#ifdef TEST_HAS_UINT128
+,       xstd::bit_finite_set<24, xstd::uint128>
 #endif
 >;
 

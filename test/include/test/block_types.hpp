@@ -6,6 +6,7 @@
 #ifndef TEST_BLOCK_TYPES_HPP
 #define TEST_BLOCK_TYPES_HPP
 
+#include <test/uint128.hpp>     // TEST_HAS_UINT128, uint128
 #include <xstd/ints/limits.hpp> // numeric_limits
 #include <cstddef>              // size_t
 #include <cstdint>              // uint8_t, uint16_t, uint32_t, uint64_t
@@ -18,14 +19,14 @@ namespace test {
 template<class Block>
 inline constexpr auto digits_v = static_cast<std::size_t>(xstd::numeric_limits<Block>::digits);
 
-// Every Block the library is instantiated over; __uint128_t needs GNU extensions, <bit> rejecting it under -std=c++23.
+// Every Block the library is instantiated over; xstd::uint128 rides on <bit>, so it comes and goes with test/uint128.hpp.
 using word_types = std::tuple
 <       std::uint8_t
 ,       std::uint16_t
 ,       std::uint32_t
 ,       std::uint64_t
-#ifdef __GNUG__
-,       __uint128_t
+#ifdef TEST_HAS_UINT128
+,       xstd::uint128
 #endif
 >;
 

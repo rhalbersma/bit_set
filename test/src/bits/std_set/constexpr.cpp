@@ -4,6 +4,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
+#include <test/uint128.hpp>             // TEST_HAS_UINT128, uint128
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <compare>                      // strong_ordering
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
@@ -45,12 +46,12 @@ using Types = std::tuple
 ,       xstd::bit_finite_set< 63, uint64_t>
 ,       xstd::bit_finite_set< 64, uint64_t>
 ,       xstd::bit_finite_set< 65, uint64_t>
-#ifdef __GNUG__
-,       xstd::bit_finite_set<  0, __uint128_t>
-,       xstd::bit_finite_set<  1, __uint128_t>
-,       xstd::bit_finite_set<127, __uint128_t>
-,       xstd::bit_finite_set<128, __uint128_t>
-,       xstd::bit_finite_set<129, __uint128_t>
+#ifdef TEST_HAS_UINT128
+,       xstd::bit_finite_set<  0, xstd::uint128>
+,       xstd::bit_finite_set<  1, xstd::uint128>
+,       xstd::bit_finite_set<127, xstd::uint128>
+,       xstd::bit_finite_set<128, xstd::uint128>
+,       xstd::bit_finite_set<129, xstd::uint128>
 #endif
 >;
 
