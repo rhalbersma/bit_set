@@ -8,6 +8,7 @@
 
 // The front door over every container; not the ext adaptors, which would put Boost on every consumer path.
 #include <xstd/bits/bit_array.hpp>      // IWYU pragma: export; bit_array
+#include <xstd/bits/bit_blocks.hpp>     // IWYU pragma: export; bit_blocks, static_bits, dynamic_bits
 #include <xstd/bits/bit_finite_set.hpp> // IWYU pragma: export; bit_finite_set
 #include <xstd/bits/bitset.hpp>         // IWYU pragma: export; bitset
 #include <xstd/bits/ranges.hpp>         // IWYU pragma: export; set_view, array_view

@@ -6,10 +6,14 @@ The whole library is two storage vehicles carrying the same three interfaces.
 
 |                     | array vehicle              | vector vehicle                |
 | ------------------- | -------------------------- | ----------------------------- |
-| storage             | `detail::bits::array<N, Block>`     | `detail::bits::vector<Block, Alloc>`   |
+| storage             | `static_bits<N, Block>`    | `dynamic_bits<Block, Alloc>`  |
 | `<array>`/`<vector>`| `bit_array<N, Block>`      | `bit_vector<Block, Alloc>`    |
 | `<set>`             | `bit_finite_set<N, Block>` | `bit_set<Block, Alloc>`       |
 | `<bitset>`          | `bitset<N, Block>`         | `dynamic_bitset<Block, Alloc>`|
+
+Both storage rows are `xstd::bit_blocks<Blocks, N>`, which is public rather than a
+detail: it is one class parameterized on what it packs into, with the width as a
+template argument when that is a constant and as a data member when it is not.
 
 Rows are Standard sections, columns are vehicles. The four containers are named by
 one rule: `bit_` and the container it packs, for `container` in {`array`, `vector`,

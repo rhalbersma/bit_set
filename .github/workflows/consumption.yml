@@ -26,6 +26,7 @@ jobs:
     with:
       # CMakeLists.txt find_package()s boost_hash2 unconditionally, so every configure here needs vcpkg.
       vcpkg: true
-      # The revision CMakeLists.txt pins; install(EXPORT) cannot export a FetchContent build tree, so an installed xstd is required.
+      # The revisions CMakeLists.txt pins; install(EXPORT) cannot export a FetchContent build tree, so installed dependencies are required.
       dependency_repos: |
         https://github.com/rhalbersma/xstd-ints.git 4f53008bec1c56535c839ba2ef8bec2b4985de63
+        https://github.com/rhalbersma/xstd-misc.git 4ef4886c093afdb41f1979eda2a5cff51acf076b
