@@ -218,26 +218,17 @@ public:
                 }
         }
 
+        // Its own 0. Now that lower_bound carries the 2-block case too, this emits the same
+        // instruction sequence the hand-written version did -- verified, not assumed -- so the
+        // duplication goes without costing the unrolling. libstdc++ writes both scans out and
+        // repeats the word loop and the ctz-plus-index arithmetic between them; boost factors
+        // the shared tail into m_do_find_from, but only at block granularity, so find_next still
+        // needs its own prologue for a mid-block start. Factoring at bit granularity subsumes
+        // both: a block-aligned start is just offset == 0.
         [[nodiscard]] constexpr auto find_first() const noexcept
                 -> std::size_t
         {
-                if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
-                        if (m_blocks[0] != zero) {
-                                return detail::bits::countr_zero(m_blocks[0]);
-                        }
-                } else if constexpr (has_static_size and static_num_blocks == 2) {
-                        if (m_blocks[0] != zero) {
-                                return detail::bits::countr_zero(m_blocks[0]);
-                        }
-                        if (m_blocks[1] != zero) {
-                                return detail::bits::countr_zero(m_blocks[1]) + bits_per_block;
-                        }
-                } else if constexpr (not (has_static_size and N == 0)) {
-                        if (auto const first = std::ranges::find_if(m_blocks, [](auto block) { return block != zero; }); first != std::ranges::end(m_blocks)) {
-                                return detail::bits::countr_zero(*first) + (bits_per_block * distance(std::ranges::begin(m_blocks), first));
-                        }
-                }
-                return size();
+                return lower_bound(0UZ);
         }
 
         [[nodiscard]] constexpr auto find_last() const noexcept
@@ -265,6 +256,22 @@ public:
                 }
                 if constexpr (has_static_size and static_num_blocks == 1) {
                         if (auto const block = static_cast<block_type>(m_blocks[0] >> n); block != zero) {
+                                return n + detail::bits::countr_zero(block);
+                        }
+                } else if constexpr (has_static_size and static_num_blocks == 2) {
+                        // Two blocks, so the tail is one named block rather than a range: the drop
+                        // and find_if below cost more than the whole scan is worth at this width.
+                        // index is a run-time value here -- n is -- but the block count is not, so
+                        // the second half is a test and not a loop.
+                        auto const [ index, offset ] = index_offset(n);
+                        if (index == 0) {
+                                if (auto const block = static_cast<block_type>(m_blocks[0] >> offset); block != zero) {
+                                        return n + detail::bits::countr_zero(block);
+                                }
+                                if (m_blocks[1] != zero) {
+                                        return bits_per_block + detail::bits::countr_zero(m_blocks[1]);
+                                }
+                        } else if (auto const block = static_cast<block_type>(m_blocks[1] >> offset); block != zero) {
                                 return n + detail::bits::countr_zero(block);
                         }
                 } else {
