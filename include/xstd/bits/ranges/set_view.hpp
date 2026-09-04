@@ -92,22 +92,20 @@ struct set_ops
                 }
         }
 
-        // Two models meet here. A static extent is a fixed-capacity set that cannot grow, so -- as with
-        // std::array -- a position outside it is a precondition violation and not a question worth an
-        // answer. A dynamic extent can still grow, so it is a std::set: any key may be asked about, and one
-        // past the current size is simply absent, which is what lets set_view::find(x) return end().
+        // Asking is total, whatever the extent: a position past the width is a key the set does not
+        // hold, which is an answer and not a precondition violation. That is what [set] gives
+        // contains and find -- s.find(k) returns end() for any k it does not hold, never refuses the
+        // question -- and it is the difference between the set reading and the sequence reading,
+        // where array_view's operator[] indexes and out of range is out of bounds.
         //
-        // Either way the position is in range by the time the bitset is read, so the read goes through
+        // The position is in range by the time the bitset is read, so the read goes through
         // operator[] and not test(): the latter is the checked accessor whose throw would escape this
         // noexcept, and bugprone-exception-escape is right to say so.
         [[nodiscard]] static constexpr auto contains(Bits const& c, std::size_t n) noexcept
                 -> bool
         {
                 if constexpr (bitset_vocabulary<Bits>) {
-                        if constexpr (static_bit_extent<Bits>) {
-                                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
-                                assert(n < max_size(c));
-                        } else if (n >= max_size(c)) {
+                        if (n >= max_size(c)) {
                                 return false;
                         }
                         return c[n];
@@ -116,15 +114,26 @@ struct set_ops
                 }
         }
 
-        // Written through the subscript, not through set(n) and reset(n): those check the
-        // position a second time and throw out of these noexcept functions, where the position
-        // is a precondition asserted here. Every type in the vocabulary hands out a proxy that
+        // insert carries no noexcept, for the reason std::set::insert carries none: growing a
+        // dynamic extent allocates. It is the one operation a set can be unable to satisfy, and
+        // only a static extent ever is: a fixed capacity cannot come to hold a position outside it, so that is the
+        // precondition violation. A dynamic extent grows to hold it, [set] giving insert no way
+        // to fail. Erasing stays total like contains -- a position past the width is a key the
+        // set does not hold, and removing what is not there is the no-op returning zero that
+        // std::set::erase is.
+        //
+        // The write goes through the subscript rather than set(n) and reset(n), which check the
+        // position a second time and throw. Every type in the vocabulary hands out a proxy that
         // writes without checking -- xstd::bitset's since its operator[] stopped being a TODO.
-        static constexpr void insert(Bits& c, std::size_t n) noexcept
+        static constexpr void insert(Bits& c, std::size_t n)
         {
-                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
-                assert(n < max_size(c));
                 if constexpr (bitset_vocabulary<Bits>) {
+                        if constexpr (static_bit_extent<Bits>) {
+                                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
+                                assert(n < max_size(c));
+                        } else if (n >= max_size(c)) {
+                                c.resize(n + 1UZ);
+                        }
                         c[n] = true;
                 } else {
                         c.insert(n);
@@ -133,9 +142,10 @@ struct set_ops
 
         static constexpr void erase(Bits& c, std::size_t n) noexcept
         {
-                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
-                assert(n < max_size(c));
                 if constexpr (bitset_vocabulary<Bits>) {
+                        if (n >= max_size(c)) {
+                                return;
+                        }
                         c[n] = false;
                 } else {
                         c.erase(n);
@@ -397,7 +407,7 @@ public:
         [[nodiscard]] constexpr auto max_size() const noexcept -> size_type { return ops::max_size(*m_ptr); }
 
         // Modifiers, present only where Bits is not const, returning what [set] says they return.
-        constexpr auto insert(key_type x) const noexcept  // NOLINT(modernize-use-nodiscard)
+        constexpr auto insert(key_type x) const  // NOLINT(modernize-use-nodiscard)
                 -> std::pair<const_iterator, bool>
                 requires (not std::is_const_v<Bits>)
         {
@@ -406,7 +416,7 @@ public:
                 return { const_iterator{ m_ptr, x }, inserted };
         }
 
-        constexpr auto insert(const_iterator, key_type x) const noexcept  // NOLINT(modernize-use-nodiscard)
+        constexpr auto insert(const_iterator, key_type x) const  // NOLINT(modernize-use-nodiscard)
                 -> const_iterator
                 requires (not std::is_const_v<Bits>)
         {
@@ -415,7 +425,7 @@ public:
         }
 
         template<std::input_iterator I, std::sentinel_for<I> S>
-        constexpr void insert(I first, S last) const noexcept
+        constexpr void insert(I first, S last) const
                 requires (not std::is_const_v<Bits>)
         {
                 for (; first != last; ++first) {
@@ -423,7 +433,7 @@ public:
                 }
         }
 
-        constexpr void insert(std::initializer_list<key_type> ilist) const noexcept
+        constexpr void insert(std::initializer_list<key_type> ilist) const
                 requires (not std::is_const_v<Bits>)
         {
                 insert(ilist.begin(), ilist.end());
@@ -476,6 +486,12 @@ public:
         [[nodiscard]] constexpr auto upper_bound(key_type x) const noexcept
                 -> const_iterator
         {
+                // Total like the rest of the asking: past the width there is nothing above x
+                // either. set_find::next is the primitive that scans from a position the set
+                // has, and x + 1 is not one of those once x reaches the width.
+                if (x >= max_size()) {
+                        return end();
+                }
                 return const_iterator{ m_ptr, set_find<bits_type>::next(*m_ptr, x) };
         }
 
