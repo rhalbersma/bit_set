@@ -246,10 +246,20 @@ public:
                 return size();
         }
 
-        [[nodiscard]] constexpr auto find_next(std::size_t n) const noexcept
+        // The first set position at or above n, or size() if there is none. This is the whole
+        // scan: find_first is lower_bound(0) and find_next is lower_bound(n + 1). Expressed the
+        // other way round -- as a strictly-greater scan, which is what boost::dynamic_bitset and
+        // libstdc++'s _M_do_find_next expose -- find_first would have to be find_next(-1), and
+        // size_t has no such value. That is why the container had to branch on x == 0.
+        //
+        // n == size() rather than n >= size(): the precondition is n <= size(), asserted just
+        // below, so size() is the only value the scan cannot start from. is_valid does not say
+        // this -- it is n < size() -- and size() is a legitimate argument here, meaning "no such
+        // position", exactly as it is for find_prev.
+        [[nodiscard]] constexpr auto lower_bound(std::size_t n) const noexcept
                 -> std::size_t
         {
-                ++n;
+                assert(n <= size());
                 if (n == size()) {
                         return size();
                 }
@@ -277,6 +287,13 @@ public:
                         }
                 }
                 return size();
+        }
+
+        [[nodiscard]] constexpr auto find_next(std::size_t n) const noexcept
+                -> std::size_t
+        {
+                assert(is_valid(n));
+                return lower_bound(n + 1);
         }
 
         [[nodiscard]] constexpr auto find_prev(std::size_t n) const noexcept
