@@ -28,9 +28,23 @@ if(NOT xstd-ints_FOUND)
         xstd-ints
         GIT_REPOSITORY https://github.com/rhalbersma/xstd-ints.git
         # Pinned to a commit on xstd-ints' main, not a branch head; move consumption.yml's dependency_repos with it.
-        GIT_TAG fc7acd230d7cf9f6e9cb72e687554e9b6506d7bd
+        GIT_TAG 4f53008bec1c56535c839ba2ef8bec2b4985de63
     )
     FetchContent_MakeAvailable(xstd-ints)
+endif()
+
+# xstd-misc supplies conditional_data_member_t and XSTD_NO_UNIQUE_ADDRESS, which
+# block_sequence uses to carry a run-time width without paying for it under a compile-time one.
+find_package(xstd-misc 0.1.0 CONFIG QUIET)
+if(NOT xstd-misc_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        xstd-misc
+        GIT_REPOSITORY https://github.com/rhalbersma/xstd-misc.git
+        # Pinned to a commit on xstd-misc's main, not a branch head; move consumption.yml's dependency_repos with it.
+        GIT_TAG 4ef4886c093afdb41f1979eda2a5cff51acf076b
+    )
+    FetchContent_MakeAvailable(xstd-misc)
 endif()
 
 # Boost.Hash2 is a public dependency of this library's headers, not just of the tests, so it is declared explicitly.
@@ -59,7 +73,7 @@ target_sources(
         include/xstd/bits/bit_array.hpp
         include/xstd/bits/bitset.hpp
         include/xstd/bits/bit_finite_set.hpp
-        include/xstd/bits/detail/array.hpp
+        include/xstd/bits/block_sequence.hpp
         include/xstd/bits/detail/intrin.hpp
         include/xstd/bits/detail/pred.hpp
         include/xstd/bits/ext/boost.hpp
@@ -78,6 +92,7 @@ target_sources(
 target_link_libraries(
     ${PROJECT_NAME} INTERFACE
     xstd::ints
+    xstd::misc
     Boost::hash2
 )
 

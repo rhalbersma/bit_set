@@ -41,7 +41,7 @@ using bit_finite_set = xstd::bit_finite_set<xstd::align_up(N, static_cast<std::s
 
 // NOLINTBEGIN(readability-duplicate-include): synopsis and implementation each list what that section needs.
 #include <boost/hash2/hash_append.hpp>             // hash_append
-#include <xstd/bits/detail/array.hpp>              // array
+#include <xstd/bits/block_sequence.hpp>            // block_array
 #include <xstd/bits/ranges.hpp>                    // const_iterator, const_reference
 #include <cassert>                                 // assert
 #include <compare>                                 // strong_ordering
@@ -64,10 +64,10 @@ namespace xstd {
 template<std::size_t N, xstd::unsigned_integer Block>
 class bit_finite_set
 {
-        detail::bits::array<N, Block> m_bits{};
+        block_array<Block, N> m_bits{};
 
         // ADL rather than a specialization, because this type is ours to add hidden friends to.
-        [[nodiscard]] friend constexpr auto block_count(const bit_finite_set&) noexcept -> std::size_t { return detail::bits::array<N, Block>::num_blocks; }
+        [[nodiscard]] friend constexpr auto block_count(const bit_finite_set& c) noexcept -> std::size_t { return c.m_bits.num_blocks(); }
         [[nodiscard]] friend constexpr auto block_at(const bit_finite_set& c, std::size_t i) noexcept -> Block { return c.m_bits.block(i); }
 
         [[nodiscard]] friend constexpr auto find_first(const bit_finite_set& c)                noexcept -> std::size_t { return c.m_bits.find_first(); }
@@ -148,7 +148,7 @@ public:
         [[nodiscard]] constexpr auto full()  const noexcept -> bool { return m_bits.all();  }
 
         [[nodiscard]]        constexpr auto     size() const noexcept -> size_type { return m_bits.count();           }
-        [[nodiscard]] static constexpr auto max_size()       noexcept -> size_type { return decltype(m_bits)::size(); }
+        [[nodiscard]] static constexpr auto max_size()       noexcept -> size_type { return N; }
 
         // element access
         [[nodiscard]] constexpr auto front() const noexcept -> reference { return { *this, m_bits.find_front() }; }
