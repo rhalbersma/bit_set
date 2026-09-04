@@ -3,14 +3,15 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef XSTD_BITS_BIT_BLOCKS_HPP
-#define XSTD_BITS_BIT_BLOCKS_HPP
+#ifndef XSTD_BITS_BLOCK_SEQUENCE_HPP
+#define XSTD_BITS_BLOCK_SEQUENCE_HPP
 
 #include <boost/hash2/hash_append_fwd.hpp>                     // hash_append, hash_append_tag
 #include <xstd/bits/detail/intrin.hpp>                         // countl_zero, countr_zero, popcount
 #include <xstd/bits/detail/pred.hpp>                           // intersects, is_subset_of, not_equal_to
 #include <xstd/ints/concepts/unsigned_integer.hpp>             // unsigned_integer
 #include <xstd/ints/cstdlib/div.hpp>                           // div, div_result
+#include <xstd/ints/limits.hpp>                                // numeric_limits
 #include <xstd/ints/memory.hpp>                                // align_up
 #include <xstd/misc/type_traits/conditional_data_member.hpp>   // XSTD_NO_UNIQUE_ADDRESS, conditional_data_member_t
 #include <algorithm>                                           // all_of, any_of, equal, fill, fill_n, find_if, fold_left, max, shift_left, shift_right
@@ -20,7 +21,6 @@
 #include <cstddef>                                             // ptrdiff_t, size_t
 #include <functional>                                          // plus
 #include <iterator>                                            // distance, prev, random_access_iterator, sized_sentinel_for
-#include <limits>                                              // digits
 #include <memory>                                              // allocator
 #include <ranges>                                              // begin, drop, iota, reverse, size, swap, transform, zip
                                                                // (views::drop_last when P22014R2 is accepted)
@@ -31,7 +31,7 @@
 
 namespace xstd {
 
-// What bit_blocks packs bits into: a contiguous, sized range of unsigned integers.
+// What block_sequence packs bits into: a contiguous, sized range of unsigned integers.
 // std::array and std::vector both qualify, and so does std::inplace_vector -- runtime
 // width over static capacity, for free.
 //
@@ -46,12 +46,12 @@ concept block_storage =
 ;
 
 // The block count a width of N bits needs, floored at one so that even a zero-width
-// bit_blocks has a block to name. Free rather than a member, because static_bits below
-// has to spell it inside bit_blocks' own template argument list.
-template<std::size_t N, xstd::unsigned_integer Block>
+// block_sequence has a block to name. Free rather than a member, because block_array below
+// has to spell it inside block_sequence's own template argument list.
+template<xstd::unsigned_integer Block, std::size_t N>
 inline constexpr auto num_blocks_v = std::ranges::max(
-        align_up(N, static_cast<std::size_t>(std::numeric_limits<Block>::digits)) /
-                    static_cast<std::size_t>(std::numeric_limits<Block>::digits),
+        align_up(N, static_cast<std::size_t>(xstd::numeric_limits<Block>::digits)) /
+                    static_cast<std::size_t>(xstd::numeric_limits<Block>::digits),
         1UZ
 );
 
@@ -69,12 +69,12 @@ inline constexpr auto num_blocks_v = std::ranges::max(
 // lives, so they stay compile-time branches; the general path they fall through to is
 // written over m_blocks as a range and therefore serves the dynamic width unchanged.
 template<block_storage Blocks, std::size_t N = std::dynamic_extent>
-class bit_blocks
+class block_sequence
 {
 public:
         using block_type = std::ranges::range_value_t<Blocks>;
 
-        static constexpr auto bits_per_block  = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
+        static constexpr auto bits_per_block  = static_cast<std::size_t>(xstd::numeric_limits<block_type>::digits);
         static constexpr auto has_static_size = N != std::dynamic_extent;
 
 private:
@@ -120,10 +120,10 @@ private:
         conditional_data_member_t<not has_static_size, std::size_t, struct size_tag> m_size{};
 
 public:
-        bit_blocks() = default;
+        block_sequence() = default;
 
         // The width is a constructor argument exactly when it is not a template argument.
-        [[nodiscard]] constexpr explicit bit_blocks(std::size_t n)
+        [[nodiscard]] constexpr explicit block_sequence(std::size_t n)
                 requires (not has_static_size)
         :
                 m_blocks(make_blocks(n)),
@@ -167,7 +167,7 @@ public:
                 erase_unused();
         }
 
-        [[nodiscard]] friend constexpr auto operator==(bit_blocks const& x [[maybe_unused]], bit_blocks const& y [[maybe_unused]]) noexcept
+        [[nodiscard]] friend constexpr auto operator==(block_sequence const& x [[maybe_unused]], block_sequence const& y [[maybe_unused]]) noexcept
                 -> bool
         {
                 if constexpr (has_static_size and N == 0) {
@@ -179,10 +179,10 @@ public:
                 }
         }
 
-        // No operator<=>: bit_blocks is pure storage with no opinion on set-of-indices versus sequence-of-bools order; == is unaffected.
+        // No operator<=>: block_sequence is pure storage with no opinion on set-of-indices versus sequence-of-bools order; == is unaffected.
 
         template<class Provider, class Hash, class Flavor>
-        friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bit_blocks const* v) noexcept
+        friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, block_sequence const* v) noexcept
         {
                 boost::hash2::hash_append(h, f, v->m_blocks);
         }
@@ -302,7 +302,7 @@ public:
                 }
         }
 
-        constexpr void operator&=(bit_blocks const& other [[maybe_unused]]) noexcept
+        constexpr void operator&=(block_sequence const& other [[maybe_unused]]) noexcept
         {
                 assert(this->size() == other.size());
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
@@ -317,7 +317,7 @@ public:
                 }
         }
 
-        constexpr void operator|=(bit_blocks const& other [[maybe_unused]]) noexcept
+        constexpr void operator|=(block_sequence const& other [[maybe_unused]]) noexcept
         {
                 assert(this->size() == other.size());
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
@@ -332,7 +332,7 @@ public:
                 }
         }
 
-        constexpr void operator^=(bit_blocks const& other [[maybe_unused]]) noexcept
+        constexpr void operator^=(block_sequence const& other [[maybe_unused]]) noexcept
         {
                 assert(this->size() == other.size());
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
@@ -347,7 +347,7 @@ public:
                 }
         }
 
-        constexpr void operator-=(bit_blocks const& other [[maybe_unused]]) noexcept
+        constexpr void operator-=(block_sequence const& other [[maybe_unused]]) noexcept
         {
                 assert(this->size() == other.size());
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
@@ -451,7 +451,7 @@ public:
                 erase_unused();
         }
 
-        constexpr void swap(bit_blocks& other) noexcept(std::is_nothrow_swappable_v<Blocks>)
+        constexpr void swap(block_sequence& other) noexcept(std::is_nothrow_swappable_v<Blocks>)
         {
                 // m_size is empty_type under a static width, and swapping that is a no-op.
                 std::ranges::swap(this->m_blocks, other.m_blocks);
@@ -577,7 +577,7 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr auto is_subset_of(bit_blocks const& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr auto is_subset_of(block_sequence const& other [[maybe_unused]]) const noexcept
                 -> bool
         {
                 assert(this->size() == other.size());
@@ -598,7 +598,7 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr auto is_proper_subset_of(bit_blocks const& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr auto is_proper_subset_of(block_sequence const& other [[maybe_unused]]) const noexcept
                 -> bool
         {
                 assert(this->size() == other.size());
@@ -638,7 +638,7 @@ public:
                 }
         }
 
-        [[nodiscard]] constexpr auto intersects(bit_blocks const& other [[maybe_unused]]) const noexcept
+        [[nodiscard]] constexpr auto intersects(block_sequence const& other [[maybe_unused]]) const noexcept
                 -> bool
         {
                 assert(this->size() == other.size());
@@ -671,8 +671,8 @@ private:
         // An iterator pair rather than views::take: libc++ 18 -- Xcode 16.4 on the matrix --
         // writes the return type of views::take's iota_view fast path as
         // decltype(iota_view(*begin(rng), ...)), so forming the adaptor's operator| over a
-        // range of 128-bit blocks instantiates iota_view<unsigned __int128> however unlike an
-        // iota_view a std::vector is. That trips libc++'s "bigger than largest integer like
+        // range of 128-bit blocks instantiates an iota_view over that block type, however
+        // unlike an iota_view a std::vector is. That trips libc++'s "bigger than integer-like
         // type" static_assert, which is a hard error rather than a substitution failure.
         // views::drop, views::reverse, views::transform and views::zip are all clear; only
         // take carries it, and only until Xcode 16.4 leaves the matrix.
@@ -705,7 +705,7 @@ private:
                 -> bool
         {
                 if constexpr (has_static_size and N == 0) {
-                        // Unreachable: only an assert calls is_valid, and a zero-width bit_blocks has no member that reaches one. Not removable either - MSVC's /W4 rejects a bare n < N as always false (C4296).
+                        // Unreachable: only an assert calls is_valid, and a zero-width block_sequence has no member that reaches one. Not removable either - MSVC's /W4 rejects a bare n < N as always false (C4296).
                         return false;                   // GCOVR_EXCL_LINE
                 } else {
                         return n < size();
@@ -765,15 +765,19 @@ private:
         }
 };
 
-// The two storage vehicles the library ships. std::inplace_vector needs no alias of its
-// own: it satisfies block_storage, so bit_blocks<std::inplace_vector<Block, K>> already
-// gives a runtime width over static capacity.
-template<std::size_t N, xstd::unsigned_integer Block = std::size_t>
-using static_bits = bit_blocks<std::array<Block, num_blocks_v<N, Block>>, N>;
+// The two storage vehicles the library ships, each named and ordered after what it holds.
+// std::inplace_vector needs no alias of its own: it satisfies block_storage, so
+// block_sequence<std::inplace_vector<Block, K>> already gives a runtime width over static
+// capacity.
+//
+// Block leads in both, as it does in std::array and std::vector. N cannot be defaulted
+// behind it, but nothing wants to: the three containers pass their own N and Block on.
+template<xstd::unsigned_integer Block, std::size_t N>
+using block_array = block_sequence<std::array<Block, num_blocks_v<Block, N>>, N>;
 
 template<xstd::unsigned_integer Block = std::size_t, class Allocator = std::allocator<Block>>
-using dynamic_bits = bit_blocks<std::vector<Block, Allocator>>;
+using block_vector = block_sequence<std::vector<Block, Allocator>>;
 
 }       // namespace xstd
 
-#endif  // XSTD_BITS_BIT_BLOCKS_HPP
+#endif  // XSTD_BITS_BLOCK_SEQUENCE_HPP

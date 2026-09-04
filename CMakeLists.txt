@@ -33,8 +33,8 @@ if(NOT xstd-ints_FOUND)
     FetchContent_MakeAvailable(xstd-ints)
 endif()
 
-# xstd-misc supplies conditional_data_member_t and XSTD_NO_UNIQUE_ADDRESS, which bit_blocks
-# uses to carry a run-time width without paying for it under a compile-time one.
+# xstd-misc supplies conditional_data_member_t and XSTD_NO_UNIQUE_ADDRESS, which
+# block_sequence uses to carry a run-time width without paying for it under a compile-time one.
 find_package(xstd-misc 0.1.0 CONFIG QUIET)
 if(NOT xstd-misc_FOUND)
     include(FetchContent)
@@ -71,9 +71,9 @@ target_sources(
     FILES
         include/xstd/bits.hpp
         include/xstd/bits/bit_array.hpp
-        include/xstd/bits/bit_blocks.hpp
         include/xstd/bits/bitset.hpp
         include/xstd/bits/bit_finite_set.hpp
+        include/xstd/bits/block_sequence.hpp
         include/xstd/bits/detail/intrin.hpp
         include/xstd/bits/detail/pred.hpp
         include/xstd/bits/ext/boost.hpp

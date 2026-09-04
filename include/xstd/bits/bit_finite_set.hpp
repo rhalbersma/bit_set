@@ -41,7 +41,7 @@ using bit_finite_set = xstd::bit_finite_set<xstd::align_up(N, static_cast<std::s
 
 // NOLINTBEGIN(readability-duplicate-include): synopsis and implementation each list what that section needs.
 #include <boost/hash2/hash_append.hpp>             // hash_append
-#include <xstd/bits/bit_blocks.hpp>                // static_bits
+#include <xstd/bits/block_sequence.hpp>            // block_array
 #include <xstd/bits/ranges.hpp>                    // const_iterator, const_reference
 #include <cassert>                                 // assert
 #include <compare>                                 // strong_ordering
@@ -64,7 +64,7 @@ namespace xstd {
 template<std::size_t N, xstd::unsigned_integer Block>
 class bit_finite_set
 {
-        static_bits<N, Block> m_bits{};
+        block_array<Block, N> m_bits{};
 
         // ADL rather than a specialization, because this type is ours to add hidden friends to.
         [[nodiscard]] friend constexpr auto block_count(const bit_finite_set& c) noexcept -> std::size_t { return c.m_bits.num_blocks(); }

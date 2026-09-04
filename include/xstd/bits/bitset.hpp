@@ -30,7 +30,7 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 
 #include <boost/hash2/fnv1a.hpp>                   // fnv1a_64
 #include <boost/hash2/hash_append.hpp>             // hash_append
-#include <xstd/bits/bit_blocks.hpp>                // static_bits
+#include <xstd/bits/block_sequence.hpp>            // block_array
 #include <xstd/bits/ranges/array_view.hpp>         // array_find
 #include <xstd/bits/ranges/bit_extent.hpp>         // bit_extent
 #include <xstd/bits/ranges/set_view.hpp>           // set_find, set_compare
@@ -57,7 +57,7 @@ template<std::size_t N, xstd::unsigned_integer Block>
 class bitset
 {
         // No iteration and no <=> here by design, because std::bitset has neither: choose set_view or array_view.
-        static_bits<N, Block> m_bits{};
+        block_array<Block, N> m_bits{};
 
         // ADL rather than a specialization, because this type is ours to add hidden friends to.
         [[nodiscard]] friend constexpr auto block_count(const bitset& c) noexcept -> std::size_t { return c.m_bits.num_blocks(); }
@@ -74,7 +74,7 @@ public:
 
         // array_view's proxy, ported to the member [bitset.refs] asks for: the bits and a position,
         // handed out by operator[] and reaching them only when read or written. Every such reach
-        // goes through xstd::bit_blocks, whose set, reset, flip and operator[] are noexcept and
+        // goes through xstd::block_sequence, whose set, reset, flip and operator[] are noexcept and
         // asserted, so the proxy never takes the checked set(pos, val) beside it that throws.
         class reference
         {

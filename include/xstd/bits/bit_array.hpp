@@ -35,18 +35,18 @@ using bit_array = xstd::bit_array<xstd::align_up(N, static_cast<std::size_t>(std
 }       // namespace xstd
 
 // NOLINTBEGIN(readability-duplicate-include): synopsis and implementation each list what that section needs.
-#include <xstd/bits/bit_blocks.hpp>   // static_bits
-#include <xstd/bits/ranges.hpp>       // begin, end, iterator, reference
-#include <xstd/ints/memory.hpp>       // align_up
-#include <cassert>                    // assert
-#include <compare>                    // strong_ordering
-#include <cstddef>                    // ptrdiff_t, size_t
-#include <format>                     // format
-#include <iterator>                   // make_reverse_iterator, reverse_iterator,
-#include <limits>                     // digits
-#include <source_location>            // source_location
-#include <stdexcept>                  // out_of_range
-#include <type_traits>                // conditional_t
+#include <xstd/bits/block_sequence.hpp> // block_array
+#include <xstd/bits/ranges.hpp>         // begin, end, iterator, reference
+#include <xstd/ints/memory.hpp>         // align_up
+#include <cassert>                      // assert
+#include <compare>                      // strong_ordering
+#include <cstddef>                      // ptrdiff_t, size_t
+#include <format>                       // format
+#include <iterator>                     // make_reverse_iterator, reverse_iterator,
+#include <limits>                       // digits
+#include <source_location>              // source_location
+#include <stdexcept>                    // out_of_range
+#include <type_traits>                  // conditional_t
 // NOLINTEND(readability-duplicate-include)
 
 // Class template array [array], Overview [array.overview]
@@ -56,7 +56,7 @@ namespace xstd {
 template<std::size_t N, xstd::unsigned_integer Block = std::size_t>
 struct bit_array
 {
-        static_bits<N, Block> m_bits;
+        block_array<Block, N> m_bits;
 
         // ADL rather than a specialization, because this type is ours to add hidden friends to.
         [[nodiscard]] friend constexpr auto block_count(const bit_array& c) noexcept -> std::size_t { return c.m_bits.num_blocks(); }

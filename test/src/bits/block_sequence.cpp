@@ -5,7 +5,7 @@
 
 #include <boost/test/unit_test.hpp>    // BOOST_CHECK_EQUAL, BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <test/block_types.hpp>        // graded_extents, word_types
-#include <xstd/bits/bit_blocks.hpp>    // bit_blocks, block_storage, dynamic_bits, static_bits
+#include <xstd/bits/block_sequence.hpp> // block_array, block_sequence, block_storage, block_vector
 #include <algorithm>                   // count
 #include <array>                       // array
 #include <cstddef>                     // size_t
@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_SUITE(BitBlocks)
 namespace {
 
 // std::vector<bool> is the reference reading: one bool per bit, no packing, no invariant
-// to get wrong. Every answer bit_blocks gives is checked against what it says.
+// to get wrong. Every answer block_sequence gives is checked against what it says.
 using model = std::vector<bool>;
 
 template<class BB>
@@ -284,6 +284,11 @@ auto check_ops(BB const& x, BB const& y, int& disagreements) -> void
 // last, or fills the last one too. It compares block indices rather than a precomputed
 // bit count, so that a single-block width -- for which it selects nothing -- does not fold
 // into an unsigned comparison against zero, which -Wtype-limits reports.
+// graded_extents parameterizes on <N, Block>, as the three containers do; block_array is
+// <Block, N>, after std::array. Adapting here keeps the alias ordered by what it holds.
+template<std::size_t N, class Block>
+using graded_block_array = xstd::block_array<Block, N>;
+
 template<class BB>
 auto sweep(BB const& empty) -> int
 {
@@ -324,21 +329,21 @@ auto sweep(BB const& empty) -> int
 // return type is redundant, and dropping it would lean on P1102 for no reason.
 constexpr auto a_static_width_is_constexpr() -> bool
 {
-        auto b = xstd::static_bits<9, std::uint8_t>();
+        auto b = xstd::block_array<std::uint8_t, 9>();
         b.set(8);
         return b.count() == 1 and b.find_first() == 8;
 }
 
 constexpr auto a_run_time_width_is_constexpr() -> bool
 {
-        auto b = xstd::dynamic_bits<std::uint8_t>(9);
+        auto b = xstd::block_vector<std::uint8_t>(9);
         b.set(8);
         return b.count() == 1 and b.find_first() == 8;
 }
 
 } // namespace
 
-// Both vehicles the library ships satisfy what bit_blocks asks of its storage; growth is
+// Both vehicles the library ships satisfy what block_sequence asks of its storage; growth is
 // detected where it exists rather than required, so a fixed one qualifies just as well.
 BOOST_AUTO_TEST_CASE(ItsStorageIsAContiguousSizedRangeOfUnsignedIntegers)
 {
@@ -353,12 +358,12 @@ BOOST_AUTO_TEST_CASE(ItsStorageIsAContiguousSizedRangeOfUnsignedIntegers)
 // the whole point of conditional_data_member_t over a plain size_t.
 BOOST_AUTO_TEST_CASE(AStaticWidthAddsNothingToItsBlocks)
 {
-        static_assert(sizeof(xstd::static_bits< 64, std::uint64_t>) == sizeof(std::array<std::uint64_t,  1>));
-        static_assert(sizeof(xstd::static_bits<129, std::uint8_t >) == sizeof(std::array<std::uint8_t,  17>));
-        static_assert(sizeof(xstd::static_bits<  0, std::uint8_t >) == sizeof(std::array<std::uint8_t,   1>));
+        static_assert(sizeof(xstd::block_array<std::uint64_t,  64>) == sizeof(std::array<std::uint64_t,  1>));
+        static_assert(sizeof(xstd::block_array<std::uint8_t,  129>) == sizeof(std::array<std::uint8_t,  17>));
+        static_assert(sizeof(xstd::block_array<std::uint8_t,    0>) == sizeof(std::array<std::uint8_t,   1>));
 
-        static_assert(    xstd::static_bits<64>::has_static_size);
-        static_assert(not xstd::dynamic_bits<  >::has_static_size);
+        static_assert(    xstd::block_array<std::size_t, 64>::has_static_size);
+        static_assert(not xstd::block_vector<>::has_static_size);
 }
 
 // Both widths in a constant expression; the run-time one needs C++20 constexpr allocation.
@@ -370,7 +375,7 @@ BOOST_AUTO_TEST_CASE(BothWidthsAreUsableAtCompileTime)
 
 // The static width, at every extent the library instantiates. This is the same storage the
 // three owners hold, so a disagreement here is a disagreement in all of them.
-BOOST_AUTO_TEST_CASE_TEMPLATE(AStaticWidthAgreesWithTheModel, T, test::graded_extents<xstd::static_bits>)
+BOOST_AUTO_TEST_CASE_TEMPLATE(AStaticWidthAgreesWithTheModel, T, test::graded_extents<graded_block_array>)
 {
         BOOST_CHECK_EQUAL(sweep(T()), 0);
 }
@@ -378,7 +383,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(AStaticWidthAgreesWithTheModel, T, test::graded_ex
 // The run-time width, at the same grading: within one block, and across boundaries either side.
 BOOST_AUTO_TEST_CASE_TEMPLATE(ARunTimeWidthAgreesWithTheModel, Block, test::word_types)
 {
-        using T = xstd::dynamic_bits<Block>;
+        using T = xstd::block_vector<Block>;
         constexpr auto D = test::digits_v<Block>;
 
         auto disagreements = 0;
@@ -392,7 +397,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ARunTimeWidthAgreesWithTheModel, Block, test::word
 // width can never form. The widths decide it before the blocks are looked at.
 BOOST_AUTO_TEST_CASE(RunTimeWidthsOfDifferentSizeAreNotEqual)
 {
-        using T = xstd::dynamic_bits<std::uint8_t>;
+        using T = xstd::block_vector<std::uint8_t>;
 
         BOOST_CHECK(T(8) != T(9));
         BOOST_CHECK(T(8) == T(8));
@@ -409,7 +414,7 @@ BOOST_AUTO_TEST_CASE(RunTimeWidthsOfDifferentSizeAreNotEqual)
 // operation on it has to see through that block to the width, which is what says empty.
 BOOST_AUTO_TEST_CASE(AZeroWidthOwnsOneBlockAndReadsEmpty)
 {
-        auto const b = xstd::dynamic_bits<std::uint8_t>(0);
+        auto const b = xstd::block_vector<std::uint8_t>(0);
 
         BOOST_CHECK_EQUAL(b.size(), 0UZ);
         BOOST_CHECK_EQUAL(b.num_blocks(), 1UZ);
@@ -423,7 +428,7 @@ BOOST_AUTO_TEST_CASE(AZeroWidthOwnsOneBlockAndReadsEmpty)
 // mutators must not reach into it. This is what the last-block mask exists to say.
 BOOST_AUTO_TEST_CASE(AZeroWidthsOneBlockIsAllPaddingAndStaysZero)
 {
-        auto b = xstd::dynamic_bits<std::uint8_t>(0);
+        auto b = xstd::block_vector<std::uint8_t>(0);
 
         b.set();
         BOOST_CHECK(b.none());
@@ -436,11 +441,11 @@ BOOST_AUTO_TEST_CASE(AZeroWidthsOneBlockIsAllPaddingAndStaysZero)
 // at-least-one-block invariant has to hold before any constructor of ours runs.
 BOOST_AUTO_TEST_CASE(ADefaultConstructedRunTimeWidthIsZeroWidthWithOneBlock)
 {
-        auto const b = xstd::dynamic_bits<std::uint8_t>();
+        auto const b = xstd::block_vector<std::uint8_t>();
 
         BOOST_CHECK_EQUAL(b.size(), 0UZ);
         BOOST_CHECK_EQUAL(b.num_blocks(), 1UZ);
-        BOOST_CHECK(b == xstd::dynamic_bits<std::uint8_t>(0));
+        BOOST_CHECK(b == xstd::block_vector<std::uint8_t>(0));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
