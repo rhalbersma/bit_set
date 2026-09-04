@@ -14,15 +14,14 @@
 #include <xstd/ints/limits.hpp>                                // numeric_limits
 #include <xstd/ints/memory.hpp>                                // align_up
 #include <xstd/misc/type_traits/conditional_data_member.hpp>   // XSTD_NO_UNIQUE_ADDRESS, conditional_data_member_t
-#include <algorithm>                                           // all_of, any_of, equal, fill, fill_n, find_if, fold_left, max, shift_left, shift_right
+#include <algorithm>                                           // all_of, any_of, equal, fill, fill_n, fold_left, max, shift_left, shift_right
 #include <array>                                               // array
 #include <cassert>                                             // assert
 #include <concepts>                                            // swap
 #include <cstddef>                                             // ptrdiff_t, size_t
 #include <functional>                                          // plus
-#include <iterator>                                            // distance, prev, random_access_iterator, sized_sentinel_for
 #include <memory>                                              // allocator
-#include <ranges>                                              // begin, drop, iota, reverse, size, swap, transform, zip
+#include <ranges>                                              // begin, drop, iota, size, swap, transform, zip
                                                                // (views::drop_last when P22014R2 is accepted)
 #include <span>                                                // dynamic_extent
 #include <type_traits>                                         // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
@@ -196,9 +195,17 @@ public:
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
                         return m_blocks[0] != zero ? detail::bits::countr_zero(m_blocks[0]) : detail::bits::countr_zero(m_blocks[1]) + bits_per_block;
                 } else {
-                        auto const front = std::ranges::find_if(m_blocks, [](auto block) { return block != zero; });
-                        assert(front != std::ranges::end(m_blocks));
-                        return detail::bits::countr_zero(*front) + (bits_per_block * distance(std::ranges::begin(m_blocks), front));
+                        // A while rather than a for: any() guarantees a non-empty block exists, so
+                        // a loop that could run out would carry an exit branch no test can take.
+                        // Both branches of this condition are exercised instead -- empty blocks are
+                        // skipped, a non-empty one ends it -- and the index is the block's position
+                        // rather than something distance() has to recover.
+                        auto i = 0UZ;
+                        while (m_blocks[i] == zero) {
+                                assert(i != last_block());
+                                ++i;
+                        }
+                        return (bits_per_block * i) + detail::bits::countr_zero(m_blocks[i]);
                 }
         }
 
@@ -211,10 +218,15 @@ public:
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
                         return m_blocks[1] != zero ? last_bit() - detail::bits::countl_zero(m_blocks[1]) : left_bit - detail::bits::countl_zero(m_blocks[0]);
                 } else {
-                        auto const rg = m_blocks | std::views::reverse;
-                        auto const back = std::ranges::find_if(rg, [](auto block) { return block != zero; });
-                        assert(back != std::ranges::end(rg));
-                        return last_bit() - detail::bits::countl_zero(*back) - (bits_per_block * distance(std::ranges::begin(rg), back));
+                        // The mirror of find_front, and the last reverse view in the file. Counting
+                        // up from block i's own base rather than down from last_bit() drops the
+                        // last_block() - i term the reversed range needed.
+                        auto i = last_block();
+                        while (m_blocks[i] == zero) {
+                                assert(i != 0);
+                                --i;
+                        }
+                        return (bits_per_block * i) + left_bit - detail::bits::countl_zero(m_blocks[i]);
                 }
         }
 
@@ -259,20 +271,22 @@ public:
                                 return n + detail::bits::countr_zero(block);
                         }
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
-                        // Two blocks, so the tail is one named block rather than a range: the drop
-                        // and find_if below cost more than the whole scan is worth at this width.
-                        // index is a run-time value here -- n is -- but the block count is not, so
-                        // the second half is a test and not a loop.
+                        // Two blocks, so the tail is one named block rather than a range: the walk
+                        // below costs more than the whole scan is worth at this width. index is a
+                        // run-time value -- n is -- but the block count is not, so the second half
+                        // is a test and not a loop.
+                        //
+                        // Indexed rather than branched: m_blocks[index], not an if on index, so the
+                        // common path is one computed load. Only when the starting block comes up
+                        // empty does it matter which block we started in, and then only to decide
+                        // whether block 1 is still ahead of us. Writing this as a branch instead
+                        // cost 10 instructions at -O3 -march=native.
                         auto const [ index, offset ] = index_offset(n);
-                        if (index == 0) {
-                                if (auto const block = static_cast<block_type>(m_blocks[0] >> offset); block != zero) {
-                                        return n + detail::bits::countr_zero(block);
-                                }
-                                if (m_blocks[1] != zero) {
-                                        return bits_per_block + detail::bits::countr_zero(m_blocks[1]);
-                                }
-                        } else if (auto const block = static_cast<block_type>(m_blocks[1] >> offset); block != zero) {
+                        if (auto const block = static_cast<block_type>(m_blocks[index] >> offset); block != zero) {
                                 return n + detail::bits::countr_zero(block);
+                        }
+                        if (index == 0 and m_blocks[1] != zero) {
+                                return bits_per_block + detail::bits::countr_zero(m_blocks[1]);
                         }
                 } else {
                         auto [ index, offset ] = index_offset(n);
@@ -802,26 +816,6 @@ private:
                 } else if constexpr (not has_static_size) {
                         m_blocks[last_block()] &= used_bits();
                 }
-        }
-
-        // Iterators are taken by value, as std::ranges::distance itself takes them.
-        //
-        // performance-unnecessary-value-param flags both parameters, and only for the
-        // reverse_iterator instantiations. libstdc++ hand-writes that class's copy
-        // constructor -- a pre-"= default" idiom; the copy assignment beside it is
-        // defaulted -- so it is not trivially copyable, where libc++'s is and the check
-        // stays silent. The verdict is a property of the standard library rather than of
-        // this signature.
-        //
-        // Nor is the cost it names paid here. Not trivially copyable means non-trivial
-        // for the purposes of calls under the Itanium ABI, so an out-of-line callee takes
-        // a pointer to a caller-built temporary where a trivially copyable type of the
-        // same eight bytes arrives in a register. This is a static constexpr one-liner:
-        // at -O2 it inlines and both iterators fold away to a pointer subtraction.
-        template<std::random_access_iterator I, std::sized_sentinel_for<I> S>
-        [[nodiscard]] static constexpr auto distance(I first, S last) noexcept  // NOLINT(performance-unnecessary-value-param)
-        {
-                return static_cast<std::size_t>(std::ranges::distance(first, last));
         }
 };
 
