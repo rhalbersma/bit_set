@@ -20,17 +20,17 @@ include(GNUInstallDirs)
 # own warning set and has to be gated by the same switch.
 option(XSTD_BITS_WARNINGS_AS_ERRORS "Treat warnings as errors in xstd-bits tests and benchmarks" ${PROJECT_IS_TOP_LEVEL})
 
-# Prefer an installed xstd so install(EXPORT) can record it as a dependency; a FetchContent build tree cannot be exported.
-find_package(xstd 0.1.0 CONFIG QUIET)
-if(NOT xstd_FOUND)
+# Prefer an installed xstd-ints so install(EXPORT) can record it as a dependency; a FetchContent build tree cannot be exported.
+find_package(xstd-ints 0.1.0 CONFIG QUIET)
+if(NOT xstd-ints_FOUND)
     include(FetchContent)
     FetchContent_Declare(
-        xstd
+        xstd-ints
         GIT_REPOSITORY https://github.com/rhalbersma/xstd-ints.git
-        # Pinned to a commit on xstd's main, not a branch head; move consumption.yml's dependency_repos with it.
-        GIT_TAG 42ab0d409fc9118ea0dc8846508ea62e97b90c7e
+        # Pinned to a commit on xstd-ints' main, not a branch head; move consumption.yml's dependency_repos with it.
+        GIT_TAG fc7acd230d7cf9f6e9cb72e687554e9b6506d7bd
     )
-    FetchContent_MakeAvailable(xstd)
+    FetchContent_MakeAvailable(xstd-ints)
 endif()
 
 # Boost.Hash2 is a public dependency of this library's headers, not just of the tests, so it is declared explicitly.
@@ -77,7 +77,7 @@ target_sources(
 
 target_link_libraries(
     ${PROJECT_NAME} INTERFACE
-    xstd::xstd
+    xstd::ints
     Boost::hash2
 )
 
