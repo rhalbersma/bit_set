@@ -8,6 +8,7 @@
 #include <test/set/composable.hpp>      // includes
 #include <test/set/exhaustive.hpp>      // all_doubleton_set_pairs
 #include <test/set/primitives.hpp>      // op_compare_three_way
+#include <test/uint128.hpp>             // TEST_HAS_UINT128, uint128
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <cstddef>                      // size_t
 #include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
@@ -32,8 +33,8 @@ using Types = std::tuple
 ,       xstd::bit_finite_set<17, uint16_t>
 ,       xstd::bit_finite_set<17, uint32_t>
 ,       xstd::bit_finite_set<17, uint64_t>
-#ifdef __GNUG__
-,       xstd::bit_finite_set<17, __uint128_t>
+#ifdef TEST_HAS_UINT128
+,       xstd::bit_finite_set<17, xstd::uint128>
 #endif
 >;
 

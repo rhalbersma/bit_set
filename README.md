@@ -418,7 +418,7 @@ auto b = a
 **A**: Yes, the full class template signature is `template<int N, std::unsigned_integral Block = std::size_t> xstd::bit_set`.
 
 **Q**: What other storage types can be used as template argument for `Block`?  
-**A**: Any type modelling the Standard Library `unsigned_integral` concept, which includes (for GCC and Clang) the non-Standard `__uint128_t`.
+**A**: Any type modelling the Standard Library `unsigned_integral` concept, which includes (for GCC and Clang) `xstd::uint128`.
 
 **Q**: Does the `xstd::bit_set` implementation optimize for the case of a small number of words of storage?  
 **A**: Yes, there are three special cases for 0, 1 and 2 words of storage, as well as the general case of 3 or more words.
