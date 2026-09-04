@@ -155,13 +155,43 @@ public:
                 }
         }
 
-        // Each of these has to leave the unused tail zero.
-        auto whole() -> void
+        // Each of these has to leave the unused tail zero. One method apiece rather than
+        // four scopes in one: at -O3 GCC 15 inlines the whole sweep into a single function
+        // and then reports -Wfree-nonheap-object on the vector copies, which ASan, LSan and
+        // UBSan all say is not there.
+        auto whole_set() -> void
         {
-                { auto a = m_x; a.set();   disagree(a.all(),  true); unequal(a.count(), m_n); }
-                { auto a = m_x; a.reset(); disagree(a.none(), true); unequal(a.count(), 0UZ); }
-                { auto a = m_x; a.flip();  unequal(a.count(), m_n - m_cardinality); for (auto i = 0UZ; i < m_n; ++i) { disagree(a[i], not m_mx[i]); } }
-                { auto a = m_x; auto b = m_y; a.swap(b); disagree(a == m_y, true); disagree(b == m_x, true); }
+                auto a = m_x;
+                a.set();
+                disagree(a.all(), true);
+                unequal(a.count(), m_n);
+        }
+
+        auto whole_reset() -> void
+        {
+                auto a = m_x;
+                a.reset();
+                disagree(a.none(), true);
+                unequal(a.count(), 0UZ);
+        }
+
+        auto whole_flip() -> void
+        {
+                auto a = m_x;
+                a.flip();
+                unequal(a.count(), m_n - m_cardinality);
+                for (auto const i : std::views::iota(0UZ, m_n)) {
+                        disagree(a[i], not m_mx[i]);
+                }
+        }
+
+        auto whole_swap() -> void
+        {
+                auto a = m_x;
+                auto b = m_y;
+                a.swap(b);
+                disagree(a == m_y, true);
+                disagree(b == m_x, true);
         }
 
         // Per bit, including the two that report whether the bit was already there.
@@ -206,7 +236,10 @@ auto check_ops(BB const& x, BB const& y, int& disagreements) -> void
         c.relational();
         c.bitwise();
         c.shifts();
-        c.whole();
+        c.whole_set();
+        c.whole_reset();
+        c.whole_flip();
+        c.whole_swap();
         c.positions();
         c.blocks();
 }
