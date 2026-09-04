@@ -1,7 +1,7 @@
 {
   "name": "xstd-bits",
   "version-string": "0.1.0",
-  "description": "A fixed-size ordered set of integers, reimagining std::bitset",
+  "description": "Rebooting the bits franchise",
   "homepage": "https://github.com/rhalbersma/xstd-bits",
   "license": "BSL-1.0",
   "dependencies": [
