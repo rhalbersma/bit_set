@@ -26,7 +26,7 @@ if(NOT xstd_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         xstd
-        GIT_REPOSITORY https://github.com/rhalbersma/xstd.git
+        GIT_REPOSITORY https://github.com/rhalbersma/xstd-ints.git
         # Pinned to a commit on xstd's main, not a branch head; move consumption.yml's dependency_repos with it.
         GIT_TAG 42ab0d409fc9118ea0dc8846508ea62e97b90c7e
     )

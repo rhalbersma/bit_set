@@ -425,7 +425,7 @@ auto b = a
 
 ## Requirements
 
-This library depends on the C++ Standard Library and [xstd](https://github.com/rhalbersma/xstd) (fetched automatically via CMake `FetchContent`, for `xstd::align_up`), and is continuously being tested with the following conforming [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) compilers, against all three mainstream standard libraries (libstdc++, the MSVC STL, and libc++). Following the model of [apt.llvm.org](https://apt.llvm.org/), we support the latest two stable releases of each compiler, plus its current development branch.
+This library depends on the C++ Standard Library and [xstd](https://github.com/rhalbersma/xstd-ints) (fetched automatically via CMake `FetchContent`, for `xstd::align_up`), and is continuously being tested with the following conforming [C++23](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) compilers, against all three mainstream standard libraries (libstdc++, the MSVC STL, and libc++). Following the model of [apt.llvm.org](https://apt.llvm.org/), we support the latest two stable releases of each compiler, plus its current development branch.
 
 | Platform | Compiler | Standard Library | Stable | Qualification | Development | CI |
 | :------- | :------- | :--------------- | :----- | :------------ | :---------- | :- |
