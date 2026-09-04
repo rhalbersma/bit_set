@@ -289,14 +289,18 @@ public:
                                 return bits_per_block + detail::bits::countr_zero(m_blocks[1]);
                         }
                 } else {
+                        // No offset != 0 guard: >> 0 is the identity, so the masked test is correct
+                        // at a block boundary too, and advancing past that block afterwards is
+                        // right either way. Neither reference implementation guards it -- boost
+                        // shifts by ind then falls to m_do_find_from(blk + 1), libstdc++ masks by
+                        // ~0 << whichbit then does __i++ -- and the guard skips no work: at offset
+                        // 0 it merely moves the same test into the loop's first iteration.
                         auto [ index, offset ] = index_offset(n);
-                        if (offset != 0) {
-                                if (auto const block = static_cast<block_type>(m_blocks[index] >> offset); block != zero) {
-                                        return n + detail::bits::countr_zero(block);
-                                }
-                                ++index;
-                                n += bits_per_block - offset;
+                        if (auto const block = static_cast<block_type>(m_blocks[index] >> offset); block != zero) {
+                                return n + detail::bits::countr_zero(block);
                         }
+                        ++index;
+                        n += bits_per_block - offset;
                         // A plain index walk rather than drop + find_if. The iterator form had to
                         // recover the block's position with distance(); the index is that position,
                         // so it never needed recovering. Both exits are exercised: falling out is
