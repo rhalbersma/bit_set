@@ -8,8 +8,8 @@
 
 // Header <set> synopsis                                   [associative.set.syn]
 
-#include <compare>          // strong_ordering
-#include <initializer_list> // initializer_list
+#include <compare>                                 // strong_ordering
+#include <initializer_list>                        // initializer_list
 
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <xstd/ints/memory.hpp>                    // align_up
@@ -40,22 +40,21 @@ using bit_finite_set = xstd::bit_finite_set<xstd::align_up(N, static_cast<std::s
 }       // namespace xstd
 
 // NOLINTBEGIN(readability-duplicate-include): synopsis and implementation each list what that section needs.
-#include <boost/hash2/fnv1a.hpp>       // fnv1a_64
-#include <boost/hash2/hash_append.hpp> // hash_append
-#include <xstd/bits/detail/array.hpp>  // array
-#include <xstd/bits/ranges.hpp>        // const_iterator, const_reference
-#include <cassert>                     // assert
-#include <compare>                     // strong_ordering
-#include <concepts>                    // constructible_from
-#include <cstddef>                     // ptrdiff_t, size_t
-#include <functional>                  // less
-#include <initializer_list>            // initializer_list
-#include <iterator>                    // make_reverse_iterator, reverse_iterator,
+#include <boost/hash2/hash_append.hpp>             // hash_append
+#include <xstd/bits/detail/array.hpp>              // array
+#include <xstd/bits/ranges.hpp>                    // const_iterator, const_reference
+#include <cassert>                                 // assert
+#include <compare>                                 // strong_ordering
+#include <concepts>                                // constructible_from
+#include <cstddef>                                 // ptrdiff_t, size_t
+#include <functional>                              // less
+#include <initializer_list>                        // initializer_list
+#include <iterator>                                // make_reverse_iterator, reverse_iterator,
                                        // input_iterator, sentinel_for
-#include <limits>                      // digits
-#include <ranges>                      // begin, empty, end, from_range_t, next, rbegin, rend
+#include <limits>                                  // digits
+#include <ranges>                                  // begin, empty, end, from_range_t, rbegin, rend
                                        // input_range
-#include <utility>                     // forward, move, pair
+#include <utility>                                 // forward, move, pair
 // NOLINTEND(readability-duplicate-include)
 
 // Class template set [set], Overview [set.overview]

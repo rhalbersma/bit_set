@@ -5,7 +5,7 @@
 
 #include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <test/dynamic.hpp>                       // dynamic
-#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // bit_extent, set_find, set_compare, array_find
+#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // the hooks that make dynamic_bitset a bit range
 #include <xstd/bits/ranges/array_view.hpp>        // array_range
 #include <xstd/bits/ranges/set_view.hpp>          // set_range, set_view
 #include <algorithm>                              // lexicographical_compare

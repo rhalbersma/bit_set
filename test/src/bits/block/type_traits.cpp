@@ -8,7 +8,7 @@
 #include <cstdint>                  // uint8_t, uint16_t, uint32_t, uint64_t
 #include <limits>                   // digits
 #include <tuple>                    // tuple
-#include <type_traits>              // is_integral, is_unsigned
+#include <type_traits>              // is_integral_v, is_unsigned_v
 
 BOOST_AUTO_TEST_SUITE(Block)
 BOOST_AUTO_TEST_SUITE(TypeTraits)

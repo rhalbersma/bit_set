@@ -10,7 +10,6 @@
 #include <test/dynamic.hpp>        // dynamic
 #include <algorithm>               // max
 #include <cassert>                 // assert
-#include <cstddef>                 // size_t
 #include <ranges>                  // iota
 
 #ifdef _MSC_VER

@@ -12,7 +12,7 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/bits/ranges/set_view.hpp>          // view
+#include <xstd/bits/ranges/set_view.hpp>          // set_view
 #include <bitset>                                 // bitset
 #include <tuple>                                  // tuple
 

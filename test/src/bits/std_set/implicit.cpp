@@ -8,7 +8,7 @@
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <algorithm>                    // copy
 #include <cstddef>                      // size_t
-#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
+#include <cstdint>                      // uint16_t, uint32_t, uint64_t
 #include <iterator>                     // inserter
 #include <set>                          // set
 #include <tuple>                        // tuple

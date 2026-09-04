@@ -9,8 +9,8 @@
 // IWYU pragma: always_keep
 
 #include <boost/dynamic_bitset.hpp>                // IWYU pragma: export; dynamic_bitset
-#include <xstd/bits/ranges/array_view.hpp>         // find, view
-#include <xstd/bits/ranges/set_view.hpp>           // find, view
+#include <xstd/bits/ranges/array_view.hpp>         // array_find
+#include <xstd/bits/ranges/set_view.hpp>           // set_find, set_view
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <algorithm>                               // find_if, min
 #include <cassert>                                 // assert

@@ -8,10 +8,10 @@
 
 // IWYU pragma: always_keep
 
-#include <xstd/bits/ranges/array_view.hpp>         // find, view
+#include <xstd/bits/ranges/array_view.hpp>         // array_find, array_view
 #include <xstd/bits/ranges/bit_extent.hpp>         // bit_extent
 #include <xstd/bits/ranges/block_access.hpp>       // block_access
-#include <xstd/bits/ranges/set_view.hpp>           // find, view
+#include <xstd/bits/ranges/set_view.hpp>           // set_find, set_view
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <algorithm>                               // find_if
 #include <bitset>                                  // IWYU pragma: export; bitset

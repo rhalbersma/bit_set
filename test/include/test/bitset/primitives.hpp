@@ -6,18 +6,16 @@
 #ifndef TEST_BITSET_PRIMITIVES_HPP
 #define TEST_BITSET_PRIMITIVES_HPP
 
-#include <boost/test/unit_test.hpp>      // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_EQUAL_COLLECTIONS, BOOST_CHECK_NE, BOOST_CHECK_THROW
+#include <boost/test/unit_test.hpp>      // BOOST_CHECK, BOOST_CHECK_EQUAL, BOOST_CHECK_NE, BOOST_CHECK_THROW
 #include <test/dynamic.hpp>              // dynamic
 #include <xstd/bits/ranges/set_view.hpp> // view
-#include <cstddef>                       // ptrdiff_t, size_t
-#include <iterator>                      // distance, inserter
+#include <cstddef>                       // size_t
 #include <memory>                        // addressof
 #include <set>                           // set
 #include <sstream>                       // istringstream, stringstream
 #include <stdexcept>                     // invalid_argument, out_of_range
 #include <string>                        // string
 #include <string_view>                   // string_view
-#include <type_traits>                   // remove_cvref_t
 
 namespace test::bitset {
 

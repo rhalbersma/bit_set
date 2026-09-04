@@ -17,7 +17,7 @@
 #include <functional>                        // less
 #include <initializer_list>                  // initializer_list
 #include <iterator>                          // bidirectional_iterator_tag, make_reverse_iterator, reverse_iterator
-#include <ranges>                            // distance, equal, view_base
+#include <ranges>                            // equal, view_base
 #include <type_traits>                       // is_class_v, is_const_v, is_convertible_v, is_nothrow_constructible_v, remove_const_t
 #include <utility>                           // pair
 

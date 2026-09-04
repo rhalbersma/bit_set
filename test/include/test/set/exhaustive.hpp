@@ -9,10 +9,8 @@
 #include <algorithm>        // max
 #include <array>            // array
 #include <cassert>          // assert
-#include <concepts>         // integral
 #include <initializer_list> // initializer_list
 #include <ranges>           // iota, to
-#include <utility>          // declval
 
 #ifdef _MSC_VER
         // xstd::bit_finite_set<0> gives bogus "unreachable code" warnings

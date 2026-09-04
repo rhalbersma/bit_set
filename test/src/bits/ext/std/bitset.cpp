@@ -5,7 +5,7 @@
 
 #include <boost/test/unit_test.hpp>        // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <xstd/bits/bitset.hpp>            // bitset
-#include <xstd/bits/ext/std/bitset.hpp>    // bit_extent, set_find, set_compare, array_find
+#include <xstd/bits/ext/std/bitset.hpp>    // bit_extent, set_find, array_find
 #include <xstd/bits/ranges/array_view.hpp> // array_range
 #include <xstd/bits/ranges/set_view.hpp>   // set_range, set_view
 #include <bitset>                          // bitset

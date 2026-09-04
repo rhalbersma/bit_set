@@ -11,7 +11,7 @@
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // the one that stays element-wise
 #include <xstd/bits/ext/std/bitset.hpp>           // block_access over std::bitset, where the words are reachable
 #include <xstd/bits/ranges/array_view.hpp>        // array_view
-#include <xstd/bits/ranges/block_access.hpp>      // block_access, block_range
+#include <xstd/bits/ranges/block_access.hpp>      // block_range
 #include <xstd/bits/ranges/set_view.hpp>          // set_view
 #include <algorithm>                              // lexicographical_compare, lexicographical_compare_three_way
 #include <bitset>                                 // bitset

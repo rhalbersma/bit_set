@@ -8,8 +8,8 @@
 
 // Bitsets [bitset], Header <bitset> synopsis [bitset.syn]
 
-#include <iosfwd> // basic_istream, basic_ostream
-#include <string> // basic_string, char_traits
+#include <iosfwd>                                  // basic_istream, basic_ostream
+#include <string>                                  // basic_string, char_traits
 
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <cstddef>                                 // size_t
@@ -28,25 +28,25 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 
 }       // namespace xstd
 
-#include <boost/hash2/fnv1a.hpp>           // fnv1a_64
-#include <boost/hash2/hash_append.hpp>     // hash_append
-#include <xstd/bits/detail/array.hpp>      // array
-#include <xstd/bits/ranges/array_view.hpp> // array_find
-#include <xstd/bits/ranges/bit_extent.hpp> // bit_extent
-#include <xstd/bits/ranges/set_view.hpp>   // set_find, set_compare
-#include <algorithm>                       // find_if, min
-#include <cassert>                         // assert
-#include <compare>                         // strong_ordering
-#include <concepts>                        // unsigned_integral
-#include <format>                          // format
-#include <functional>                      // hash
-#include <ios>                             // ios_base
-#include <locale>                          // ctype, use_facet
-#include <memory>                          // allocator
-#include <ranges>                          // find_if, iota, reverse
-#include <source_location>                 // source_location
-#include <stdexcept>                       // invalid_argument, out_of_range, overflow_error
-#include <string_view>                     // basic_string_view
+#include <boost/hash2/fnv1a.hpp>                   // fnv1a_64
+#include <boost/hash2/hash_append.hpp>             // hash_append
+#include <xstd/bits/detail/array.hpp>              // array
+#include <xstd/bits/ranges/array_view.hpp>         // array_find
+#include <xstd/bits/ranges/bit_extent.hpp>         // bit_extent
+#include <xstd/bits/ranges/set_view.hpp>           // set_find, set_compare
+#include <algorithm>                               // find_if, min
+#include <cassert>                                 // assert
+#include <compare>                                 // strong_ordering
+#include <concepts>                                // unsigned_integral
+#include <format>                                  // format
+#include <functional>                              // hash
+#include <ios>                                     // ios_base
+#include <locale>                                  // ctype, use_facet
+#include <memory>                                  // allocator
+#include <ranges>                                  // find_if, iota, reverse
+#include <source_location>                         // source_location
+#include <stdexcept>                               // invalid_argument, out_of_range
+#include <string_view>                             // basic_string_view
 #include <utility>                                 // as_const
 
 // Class template bitset [template.bitset], General [template.bitset.general]

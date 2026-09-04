@@ -14,7 +14,7 @@
 #include <ranges>                     // bidirectional_range, random_access_range
 #include <set>                        // set
 #include <tuple>                      // tuple_element_t, tuple_size_v
-#include <utility>                    // declval, index_sequence, make_index_sequence
+#include <utility>                    // index_sequence, make_index_sequence
 
 
 // Every entity the front door promises, reached through it alone: no leaf test sees the door at all.
