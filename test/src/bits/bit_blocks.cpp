@@ -49,6 +49,31 @@ class checker
         std::size_t m_cardinality = static_cast<std::size_t>(std::ranges::count(m_mx, true));
         int& m_disagreements;
 
+        // Two scratch objects, reset before each mutating check, rather than a fresh copy
+        // per check. Same-width assignment reuses the storage, so this is two allocations
+        // for the whole checker instead of one per operation -- of which positions() alone
+        // did five per bit. It is faster, and it leaves the optimizer one object to follow
+        // rather than thousands of construct/destroy pairs: three GCC versions have each
+        // mis-analysed that shape in a different way (-Wfree-nonheap-object on 15,
+        // -Wrestrict on 17-SVN), and moving the copies around only moved the diagnostic.
+        //
+        // Held by reference, owned by check_ops: by value they would be the only members
+        // narrower than a pointer, and -Wpadded reports the tail padding that leaves.
+        BB& m_a;
+        BB& m_b;
+
+        auto fresh_x() -> BB&
+        {
+                m_a = m_x;
+                return m_a;
+        }
+
+        auto fresh_y() -> BB&
+        {
+                m_b = m_y;
+                return m_b;
+        }
+
         // The two places a comparison becomes a count, so the cast that
         // readability-implicit-bool-conversion asks for has two sites and not thirty.
         auto disagree(bool ours, bool theirs) -> void
@@ -70,11 +95,13 @@ class checker
         }
 
 public:
-        checker(BB const& x, BB const& y, int& disagreements)
+        checker(BB const& x, BB const& y, BB& a, BB& b, int& disagreements)
         :
                 m_x(x),
                 m_y(y),
-                m_disagreements(disagreements)
+                m_disagreements(disagreements),
+                m_a(a),
+                m_b(b)
         {}
 
         auto width() -> void
@@ -141,17 +168,17 @@ public:
         // same instruction, so one model answers for both readings.
         auto bitwise() -> void
         {
-                { auto a = m_x; a &= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] and     m_my[i]; } same(m, a); }
-                { auto a = m_x; a |= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] or      m_my[i]; } same(m, a); }
-                { auto a = m_x; a ^= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] !=      m_my[i]; } same(m, a); }
-                { auto a = m_x; a -= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] and not m_my[i]; } same(m, a); }
+                { auto& a = fresh_x(); a &= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] and     m_my[i]; } same(m, a); }
+                { auto& a = fresh_x(); a |= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] or      m_my[i]; } same(m, a); }
+                { auto& a = fresh_x(); a ^= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] !=      m_my[i]; } same(m, a); }
+                { auto& a = fresh_x(); a -= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] and not m_my[i]; } same(m, a); }
         }
 
         auto shifts() -> void
         {
                 for (auto s = 0UZ; s < m_n; ++s) {
-                        { auto a = m_x; a <<= s; auto m = model(m_n); for (auto i = s;  i < m_n;     ++i) { m[i] = m_mx[i - s]; } same(m, a); }
-                        { auto a = m_x; a >>= s; auto m = model(m_n); for (auto i = 0UZ; i + s < m_n; ++i) { m[i] = m_mx[i + s]; } same(m, a); }
+                        { auto& a = fresh_x(); a <<= s; auto m = model(m_n); for (auto i = s;  i < m_n;     ++i) { m[i] = m_mx[i - s]; } same(m, a); }
+                        { auto& a = fresh_x(); a >>= s; auto m = model(m_n); for (auto i = 0UZ; i + s < m_n; ++i) { m[i] = m_mx[i + s]; } same(m, a); }
                 }
         }
 
@@ -161,7 +188,7 @@ public:
         // UBSan all say is not there.
         auto whole_set() -> void
         {
-                auto a = m_x;
+                auto& a = fresh_x();
                 a.set();
                 disagree(a.all(), true);
                 unequal(a.count(), m_n);
@@ -169,7 +196,7 @@ public:
 
         auto whole_reset() -> void
         {
-                auto a = m_x;
+                auto& a = fresh_x();
                 a.reset();
                 disagree(a.none(), true);
                 unequal(a.count(), 0UZ);
@@ -177,7 +204,7 @@ public:
 
         auto whole_flip() -> void
         {
-                auto a = m_x;
+                auto& a = fresh_x();
                 a.flip();
                 unequal(a.count(), m_n - m_cardinality);
                 for (auto const i : std::views::iota(0UZ, m_n)) {
@@ -187,8 +214,8 @@ public:
 
         auto whole_swap() -> void
         {
-                auto a = m_x;
-                auto b = m_y;
+                auto& a = fresh_x();
+                auto& b = fresh_y();
                 a.swap(b);
                 disagree(a == m_y, true);
                 disagree(b == m_x, true);
@@ -198,11 +225,11 @@ public:
         auto positions() -> void
         {
                 for (auto i = 0UZ; i < m_n; ++i) {
-                        { auto a = m_x; a.set(i);   disagree(a[i], true);  }
-                        { auto a = m_x; a.reset(i); disagree(a[i], false); }
-                        { auto a = m_x; a.flip(i);  disagree(a[i], not m_mx[i]); }
-                        { auto a = m_x; disagree(a.insert(i), not m_mx[i]); disagree(a[i], true);  }
-                        { auto a = m_x; disagree(a.erase(i),      m_mx[i]); disagree(a[i], false); }
+                        { auto& a = fresh_x(); a.set(i);   disagree(a[i], true);  }
+                        { auto& a = fresh_x(); a.reset(i); disagree(a[i], false); }
+                        { auto& a = fresh_x(); a.flip(i);  disagree(a[i], not m_mx[i]); }
+                        { auto& a = fresh_x(); disagree(a.insert(i), not m_mx[i]); disagree(a[i], true);  }
+                        { auto& a = fresh_x(); disagree(a.erase(i),      m_mx[i]); disagree(a[i], false); }
                 }
         }
 
@@ -212,25 +239,30 @@ public:
         {
                 disagree(m_x.num_blocks() * BB::bits_per_block >= m_n, true);
 
-                auto a = m_x;
-                for (auto i = 0UZ; i < m_x.num_blocks(); ++i) {
-                        a.set_block(i, m_x.block(i));
+                {
+                        auto& a = fresh_x();
+                        for (auto i = 0UZ; i < m_x.num_blocks(); ++i) {
+                                a.set_block(i, m_x.block(i));
+                        }
+                        disagree(a == m_x, true);
                 }
-                disagree(a == m_x, true);
-
-                auto b = m_x;
-                for (auto i = 0UZ; i < m_x.num_blocks(); ++i) {
-                        b.set_block(i, static_cast<BB::block_type>(-1));
+                {
+                        auto& a = fresh_x();
+                        for (auto i = 0UZ; i < m_x.num_blocks(); ++i) {
+                                a.set_block(i, static_cast<BB::block_type>(-1));
+                        }
+                        disagree(a.all(), true);
+                        unequal(a.count(), m_n);
                 }
-                disagree(b.all(), true);
-                unequal(b.count(), m_n);
         }
 };
 
 template<class BB>
 auto check_ops(BB const& x, BB const& y, int& disagreements) -> void
 {
-        auto c = checker<BB>(x, y, disagreements);
+        auto a = x;
+        auto b = y;
+        auto c = checker<BB>(x, y, a, b, disagreements);
         c.width();
         c.scans();
         c.relational();
