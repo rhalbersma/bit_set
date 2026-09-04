@@ -22,7 +22,7 @@
 #include <iterator>                                            // distance, prev, random_access_iterator, sized_sentinel_for
 #include <limits>                                              // digits
 #include <memory>                                              // allocator
-#include <ranges>                                              // begin, drop, iota, reverse, size, swap, take, transform, zip
+#include <ranges>                                              // begin, drop, iota, reverse, size, swap, transform, zip
                                                                // (views::drop_last when P22014R2 is accepted)
 #include <span>                                                // dynamic_extent
 #include <type_traits>                                         // conditional_t, is_const_v, is_nothrow_swappable_v, remove_reference_t
@@ -368,6 +368,13 @@ public:
                         m_blocks[0] = static_cast<block_type>(m_blocks[0] << n);
                 } else {
                         auto const [ n_blocks, L_shift ] = xstd::div(n, bits_per_block);
+                        // Implied by is_valid(n) above, and stated again because GCC does not
+                        // carry the range through xstd::div's aggregate return: without it,
+                        // -Warray-bounds reports the memmove inside shift_right at -O1 and -O2
+                        // whenever asserts are live. No CMake build type is that combination --
+                        // Debug is -O0 and the optimized ones carry NDEBUG -- but -O2 -g is one
+                        // command away, and the bound is worth saying in any case.
+                        assert(n_blocks <= last_block());
                         if (L_shift == 0) {
                                 std::shift_right(std::ranges::begin(m_blocks), std::ranges::end(m_blocks), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
@@ -390,6 +397,8 @@ public:
                         m_blocks[0] = static_cast<block_type>(m_blocks[0] >> n);
                 } else {
                         auto const [ n_blocks, R_shift ] = xstd::div(n, bits_per_block);
+                        // See operator<<=: the same bound, for the same reason.
+                        assert(n_blocks <= last_block());
                         if (R_shift == 0) {
                                 std::shift_left(std::ranges::begin(m_blocks), std::ranges::end(m_blocks), static_cast<std::ptrdiff_t>(n_blocks));
                         } else {
@@ -526,9 +535,7 @@ public:
                         } else if constexpr (static_num_blocks == 2) {
                                 return m_blocks[0] == ones and m_blocks[1] == static_used_bits;
                         } else {
-                                return std::ranges::all_of(m_blocks | std::views::take(static_last_block), [](auto block) {
-                                        return block == ones;
-                                }) and m_blocks[static_last_block] == static_used_bits;
+                                return all_but_last_are_ones() and m_blocks[static_last_block] == static_used_bits;
                         }
                 } else if constexpr (has_static_size) {
                         if constexpr (N == 0) {
@@ -544,9 +551,7 @@ public:
                         // One shape for both, because used_bits() names the full block when the
                         // width divides evenly; the static arms keep the split only to stay
                         // compile-time branches.
-                        return std::ranges::all_of(m_blocks | std::views::take(last_block()), [](auto block) {
-                                return block == ones;
-                        }) and m_blocks[last_block()] == used_bits();
+                        return all_but_last_are_ones() and m_blocks[last_block()] == used_bits();
                 }
         }
 
@@ -657,6 +662,23 @@ private:
                 -> std::size_t
         {
                 return num_blocks() - 1UZ;
+        }
+
+        // Every block but the last, which is the half of all() that padding cannot reach.
+        //
+        // An iterator pair rather than views::take: libc++ 18 -- Xcode 16.4 on the matrix --
+        // writes the return type of views::take's iota_view fast path as
+        // decltype(iota_view(*begin(rng), ...)), so forming the adaptor's operator| over a
+        // range of 128-bit blocks instantiates iota_view<unsigned __int128> however unlike an
+        // iota_view a std::vector is. That trips libc++'s "bigger than largest integer like
+        // type" static_assert, which is a hard error rather than a substitution failure.
+        // views::drop, views::reverse, views::transform and views::zip are all clear; only
+        // take carries it, and only until Xcode 16.4 leaves the matrix.
+        [[nodiscard]] constexpr auto all_but_last_are_ones() const noexcept
+                -> bool
+        {
+                auto const first = std::ranges::begin(m_blocks);
+                return std::ranges::all_of(first, first + static_cast<std::ptrdiff_t>(last_block()), [](auto block) { return block == ones; });
         }
 
         // The top bit of the last block, padding included. find_back and find_prev count

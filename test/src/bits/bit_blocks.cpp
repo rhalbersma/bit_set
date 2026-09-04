@@ -167,13 +167,16 @@ auto sweep(std::size_t n, Make make) -> int
                 }
                 values.push_back(b);
         };
-        push([  ](std::size_t  ) -> bool { return false;                });
-        push([  ](std::size_t  ) -> bool { return true;                 });
-        push([  ](std::size_t i) -> bool { return i % 2 == 0;           });
-        push([  ](std::size_t i) -> bool { return i % 3 == 0;           });
-        push([ n](std::size_t i) -> bool { return i == 0 or i + 1 == n; });
-        push([ n](std::size_t i) -> bool { return i + 1 == n;           });
-        push([below_last](std::size_t i) -> bool { return i < below_last; });
+        // Captured by reference throughout rather than by name: under a static width the
+        // compiler folds below_last to a constant, and naming something usable in a
+        // constant expression is exactly what -Wunused-lambda-capture reports.
+        push([&](std::size_t  ) -> bool { return false;                });
+        push([&](std::size_t  ) -> bool { return true;                 });
+        push([&](std::size_t i) -> bool { return i % 2 == 0;           });
+        push([&](std::size_t i) -> bool { return i % 3 == 0;           });
+        push([&](std::size_t i) -> bool { return i == 0 or i + 1 == n; });
+        push([&](std::size_t i) -> bool { return i + 1 == n;           });
+        push([&](std::size_t i) -> bool { return i < below_last;       });
 
         auto disagreements = 0;
         for (auto const& x : values) {
