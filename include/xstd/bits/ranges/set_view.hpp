@@ -96,7 +96,7 @@ struct set_ops
         // hold, which is an answer and not a precondition violation. That is what [set] gives
         // contains and find -- s.find(k) returns end() for any k it does not hold, never refuses the
         // question -- and it is the difference between the set reading and the sequence reading,
-        // where array_view's operator[] indexes and out of range is out of bounds.
+        // where sequence_view's operator[] indexes and out of range is out of bounds.
         //
         // The position is in range by the time the bitset is read, so the read goes through
         // operator[] and not test(): the latter is the checked accessor whose throw would escape this

@@ -5,7 +5,7 @@
 
 #include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
 #include <xstd/bits/ext/std/bitset.hpp> // the hooks that make std::bitset a bit range
-#include <xstd/bits/ranges.hpp>         // array_view, set_view and their proxies
+#include <xstd/bits/ranges.hpp>         // sequence_view, set_view and their proxies
 #include <bitset>                       // bitset
 #include <concepts>                     // same_as
 #include <cstddef>                      // size_t
@@ -20,8 +20,8 @@ using Bits = std::bitset<64>;
 
 using SetIt   = xstd::ranges::set_iterator<Bits>;
 using SetRef  = xstd::ranges::set_reference<Bits>;
-using ArrIt   = xstd::ranges::array_iterator<Bits, false>;
-using ArrRef  = xstd::ranges::array_reference<Bits, false>;
+using ArrIt   = xstd::ranges::sequence_iterator<Bits, false>;
+using ArrRef  = xstd::ranges::sequence_reference<Bits, false>;
 
 // Dependent, so a type without the member is a substitution failure rather than a hard error.
 template<class R>
@@ -54,12 +54,12 @@ BOOST_AUTO_TEST_CASE(AddressOfAProxyYieldsAnIterator)
 // The const path is a proxy too, the same one minus the assignment -- not the plain bool libstdc++ hands back.
 BOOST_AUTO_TEST_CASE(TheConstPathIsAProxyAsWell)
 {
-        using ConstArrRef = xstd::ranges::array_reference<Bits, true>;
+        using ConstArrRef = xstd::ranges::sequence_reference<Bits, true>;
 
         static_assert(std::is_convertible_v<ConstArrRef, bool>);
         static_assert(has_address_of<ConstArrRef>);
         static_assert(std::same_as<decltype(&std::declval<ConstArrRef const&>()),
-                                   xstd::ranges::array_iterator<Bits, true>>);
+                                   xstd::ranges::sequence_iterator<Bits, true>>);
 
         // and it is exactly the assignment that the const one drops.
         static_assert(    std::is_assignable_v<ArrRef const&, bool>);
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(TheValueArrivesByImplicitConversion)
         BOOST_CHECK_EQUAL(key, 3UZ);
         BOOST_CHECK(*v.begin() == 3UZ);
 
-        auto const a = xstd::array_view(b);
+        auto const a = xstd::sequence_view(b);
         bool const bit = a[3];
         BOOST_CHECK(bit);
         BOOST_CHECK(a[5] == true);
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(TheProxyPairRoundTrips)
                 BOOST_CHECK(*&*it == *it);
         }
 
-        auto const a = xstd::array_view(b);
+        auto const a = xstd::sequence_view(b);
         for (auto it = a.begin(); it != a.end(); ++it) {
                 BOOST_CHECK(&*it == it);
                 BOOST_CHECK(static_cast<bool>(*&*it) == static_cast<bool>(*it));

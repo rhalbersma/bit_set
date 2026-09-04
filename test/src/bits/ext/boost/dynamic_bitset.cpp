@@ -6,7 +6,7 @@
 #include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <test/dynamic.hpp>                       // dynamic
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // the hooks that make dynamic_bitset a bit range
-#include <xstd/bits/ranges/array_view.hpp>        // array_range
+#include <xstd/bits/ranges/sequence_view.hpp>     // sequence_range
 #include <xstd/bits/ranges/set_view.hpp>          // set_range, set_view
 #include <algorithm>                              // lexicographical_compare
 #include <compare>                                // strong_ordering
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(TheViewReplacesItsOrderingRatherThanTrustingIt)
 BOOST_AUTO_TEST_CASE(BothReadingsAreReachable)
 {
         static_assert(xstd::ranges::set_range<T>);
-        static_assert(xstd::ranges::array_range<T>);
+        static_assert(xstd::ranges::sequence_range<T>);
 }
 
 // It owns its storage, so the extent is a run-time value and the trivial and nothrow batteries do not apply.

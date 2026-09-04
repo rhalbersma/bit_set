@@ -7,29 +7,29 @@
 #include <test/sequence/ordering.hpp>             // ordering_agrees_with_vector_bool
 #include <xstd/bits/bit_array.hpp>                // bit_array
 #include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
-#include <xstd/bits/bitset.hpp>                   // array_find over xstd::bitset
-#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // array_find over boost::dynamic_bitset
-#include <xstd/bits/ext/std/bitset.hpp>           // array_find over std::bitset
-#include <xstd/bits/ranges/array_view.hpp>        // array_view, array_range
+#include <xstd/bits/bitset.hpp>                   // sequence_find over xstd::bitset
+#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // sequence_find over boost::dynamic_bitset
+#include <xstd/bits/ext/std/bitset.hpp>           // sequence_find over std::bitset
+#include <xstd/bits/ranges/sequence_view.hpp>     // sequence_view, sequence_range
 #include <algorithm>                              // equal
 #include <array>                                  // array
 #include <bitset>                                 // bitset
 #include <ranges>                                 // random_access_range
 
 BOOST_AUTO_TEST_SUITE(Ranges)
-BOOST_AUTO_TEST_SUITE(ArrayView)
+BOOST_AUTO_TEST_SUITE(SequenceView)
 
 BOOST_AUTO_TEST_CASE(TheViewedTypesAreTheOnesHoldingBoolsWithoutOfferingThem)
 {
-        static_assert(xstd::ranges::array_range<std::bitset<8>>);
-        static_assert(xstd::ranges::array_range<xstd::bitset<8>>);
-        static_assert(xstd::ranges::array_range<boost::dynamic_bitset<>>);
+        static_assert(xstd::ranges::sequence_range<std::bitset<8>>);
+        static_assert(xstd::ranges::sequence_range<xstd::bitset<8>>);
+        static_assert(xstd::ranges::sequence_range<boost::dynamic_bitset<>>);
 
-        static_assert(std::ranges::random_access_range<xstd::array_view<std::bitset<8>>>);
-        static_assert(std::ranges::random_access_range<xstd::array_view<xstd::bitset<8>>>);
+        static_assert(std::ranges::random_access_range<xstd::sequence_view<std::bitset<8>>>);
+        static_assert(std::ranges::random_access_range<xstd::sequence_view<xstd::bitset<8>>>);
 
         // bit_finite_set is not a sequence of bools; it is a set of keys.
-        static_assert(not xstd::ranges::array_range<xstd::bit_finite_set<8>>);
+        static_assert(not xstd::ranges::sequence_range<xstd::bit_finite_set<8>>);
 }
 
 // The sequence reading is the bools at every position, checked against the std::array<bool, N> holding the same bits.
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(TheSequenceReadingIsTheArrayOfBools)
                         if ((i >> k & 1UZ) != 0UZ) { packed.set(k); plain[k] = true; }
                 }
 
-                auto const view = xstd::array_view(packed);
+                auto const view = xstd::sequence_view(packed);
                 BOOST_CHECK_EQUAL(view.size(), N);
                 BOOST_CHECK(std::ranges::equal(view, plain));
         }
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(TheSequenceReadingIsTheArrayOfBools)
 BOOST_AUTO_TEST_CASE(WritingThroughTheViewWritesTheBits)
 {
         auto packed = xstd::bitset<8>();
-        auto const view = xstd::array_view(packed);
+        auto const view = xstd::sequence_view(packed);
 
         view[3] = true;
         BOOST_CHECK(packed.test(3));
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(APackedArrayAgreesWithItsOwnView)
         packed[1] = true;
         packed[6] = true;
 
-        auto const view = xstd::array_view(packed);
+        auto const view = xstd::sequence_view(packed);
         for (auto k = 0UZ; k < 8UZ; ++k) {
                 BOOST_CHECK_EQUAL(static_cast<bool>(view[k]), static_cast<bool>(packed[k]));
         }

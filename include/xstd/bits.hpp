@@ -11,6 +11,6 @@
 #include <xstd/bits/bit_finite_set.hpp> // IWYU pragma: export; bit_finite_set
 #include <xstd/bits/bitset.hpp>         // IWYU pragma: export; bitset
 #include <xstd/bits/block_sequence.hpp> // IWYU pragma: export; block_sequence, block_array, block_vector
-#include <xstd/bits/ranges.hpp>         // IWYU pragma: export; set_view, array_view
+#include <xstd/bits/ranges.hpp>         // IWYU pragma: export; set_view, sequence_view
 
 #endif // XSTD_BITS_HPP

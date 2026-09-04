@@ -8,9 +8,9 @@
 
 // IWYU pragma: always_keep
 
-#include <xstd/bits/ranges/array_view.hpp>         // array_find, array_view
 #include <xstd/bits/ranges/bit_extent.hpp>         // bit_extent
 #include <xstd/bits/ranges/block_access.hpp>       // block_access
+#include <xstd/bits/ranges/sequence_view.hpp>      // sequence_find, sequence_view
 #include <xstd/bits/ranges/set_view.hpp>           // set_find, set_view
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <algorithm>                               // find_if
@@ -26,7 +26,7 @@
 // std::bitset's only associated namespace is std, where [namespace.std] forbids adding ADL hooks, so specialize set_find instead.
 namespace xstd::ranges {
 
-// The width is in the type, so set_view's max_size() and array_view's size() are constant expressions.
+// The width is in the type, so set_view's max_size() and sequence_view's size() are constant expressions.
 template<std::size_t N>
 inline constexpr std::size_t bit_extent<std::bitset<N>> = N;
 
@@ -114,7 +114,7 @@ struct block_access<std::bitset<N>>
 };
 
 template<std::size_t N>
-struct array_find<std::bitset<N>>
+struct sequence_find<std::bitset<N>>
 {
         [[nodiscard]] static constexpr auto first(const std::bitset<N>&) noexcept -> std::size_t { return 0UZ; }
         [[nodiscard]] static constexpr auto last (const std::bitset<N>&) noexcept -> std::size_t { return N;   }

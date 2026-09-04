@@ -72,12 +72,12 @@ struct bit_array
         using block_type             = Block;
         using pointer                = void;
         using const_pointer          = pointer;
-        using reference              = xstd::ranges::array_reference<bit_array, false>;
-        using const_reference        = xstd::ranges::array_reference<bit_array, true >;
+        using reference              = xstd::ranges::sequence_reference<bit_array, false>;
+        using const_reference        = xstd::ranges::sequence_reference<bit_array, true >;
         using size_type              = std::size_t;
         using difference_type        = std::ptrdiff_t;
-        using iterator               = xstd::ranges::array_iterator<bit_array, false>;
-        using const_iterator         = xstd::ranges::array_iterator<bit_array, true >;
+        using iterator               = xstd::ranges::sequence_iterator<bit_array, false>;
+        using const_iterator         = xstd::ranges::sequence_iterator<bit_array, true >;
         using reverse_iterator       = std::reverse_iterator<iterator>;
         using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
@@ -98,8 +98,8 @@ struct bit_array
         } 
 
         // iterators
-        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return xstd::ranges::array_begin(self); }
-        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return xstd::ranges::array_end  (self); }
+        [[nodiscard]] constexpr auto begin (this auto&& self) noexcept { return xstd::ranges::sequence_begin(self); }
+        [[nodiscard]] constexpr auto end   (this auto&& self) noexcept { return xstd::ranges::sequence_end  (self); }
         [[nodiscard]] constexpr auto rbegin(this auto&& self) noexcept { return std::make_reverse_iterator(self.end()  ); }
         [[nodiscard]] constexpr auto rend  (this auto&& self) noexcept { return std::make_reverse_iterator(self.begin()); }
 
@@ -154,7 +154,7 @@ template<std::size_t N, xstd::unsigned_integer Block>
 [[nodiscard]] constexpr auto operator<=>(const bit_array<N, Block>& x, const bit_array<N, Block>& y) noexcept
         -> std::strong_ordering
 {
-        return ranges::array_three_way(x, y);
+        return ranges::sequence_three_way(x, y);
 }
 
 template<std::size_t N, xstd::unsigned_integer Block> constexpr void swap(bit_array<N, Block>& x, bit_array<N, Block>& y) noexcept(noexcept(x.swap(y))) { x.swap(y); }
