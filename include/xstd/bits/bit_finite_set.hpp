@@ -213,7 +213,9 @@ public:
         constexpr auto erase(const key_type& x) noexcept
                 -> size_type
         {
-                return m_bits.erase(x);
+                // The one guard here that stops a write rather than a read: without it an
+                // out-of-range key clears a bit in whatever follows the blocks.
+                return x < N and m_bits.erase(x);
         }
 
         constexpr auto erase(const_iterator first, const_iterator last) noexcept
@@ -258,8 +260,13 @@ public:
         [[nodiscard]] constexpr auto value_comp() const noexcept -> value_compare { return {}; }
 
         // set operations
-        [[nodiscard]] constexpr auto contains(const key_type& x) const noexcept -> bool      { return m_bits[x]; }
-        [[nodiscard]] constexpr auto count   (const key_type& x) const noexcept -> size_type { return m_bits[x]; }
+        // Every lookup below is total over key_type, because std::set's is: a key outside
+        // [0, N) names no element, so it answers "absent" rather than reaching the bit.
+        // block_sequence asserts is_valid on every position it accepts and offers no total
+        // spelling of any of these -- that is the layering working, not a gap in it. The
+        // precondition is the sequence's, the guard is the container's.
+        [[nodiscard]] constexpr auto contains(const key_type& x) const noexcept -> bool      { return x < N and m_bits[x]; }
+        [[nodiscard]] constexpr auto count   (const key_type& x) const noexcept -> size_type { return contains(x);         }
 
         [[nodiscard]] constexpr auto find(this auto&& self, const key_type& x) noexcept -> iterator
         {
@@ -268,8 +275,12 @@ public:
                 }
                 return self.end();
         }
-        [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, (x ? find_next(self, x - 1) : find_first(self)) }; }
-        [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, find_next(self, x) };                              }
+        // The bound is find_next_inclusive at x, and its exclusive twin one past it. The x ? :
+        // that used to stand here was find_next's exclusivity showing through: x - 1 wraps at
+        // 0, so the 0 case had to be spelled separately. An inclusive primitive has no such
+        // seam, so the two bounds now differ by the + 1 that actually separates them.
+        [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, x < N ? self.m_bits.find_next_inclusive(x    ) : N }; }
+        [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, x < N ? self.m_bits.find_next_inclusive(x + 1) : N }; }
         [[nodiscard]] constexpr auto equal_range(this auto&& self, const key_type& x) noexcept -> std::pair<iterator, iterator> { return { self.lower_bound(x), self.upper_bound(x) };               }
 
         [[nodiscard]] constexpr auto is_subset_of       (const bit_finite_set& other) const noexcept -> bool { return this->m_bits.is_subset_of       (other.m_bits); }
