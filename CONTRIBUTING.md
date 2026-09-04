@@ -1,4 +1,4 @@
-# Contributing to bit_set
+# Contributing to xstd-bits
 
 ## What a PR must satisfy before it can merge
 

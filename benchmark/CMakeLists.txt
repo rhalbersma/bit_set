@@ -10,9 +10,9 @@ find_package(fmt REQUIRED)
 
 # clang-cl reports CXX_COMPILER_ID Clang but understands only MSVC-style driver flags.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
-    set(bit_set_is_clang_cl ON)
+    set(xstd_bits_is_clang_cl ON)
 else()
-    set(bit_set_is_clang_cl OFF)
+    set(xstd_bits_is_clang_cl OFF)
 endif()
 
 set(cxx_compile_definitions
@@ -29,7 +29,7 @@ set(cxx_compile_options_warnings
         /W4
         /permissive-
     >
-    $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>,$<NOT:$<BOOL:${bit_set_is_clang_cl}>>>:
+    $<$<AND:$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>,$<NOT:$<BOOL:${xstd_bits_is_clang_cl}>>>:
         -pedantic-errors
     >
     $<$<CXX_COMPILER_ID:Clang>:
@@ -64,8 +64,8 @@ set(cxx_compile_options_warnings
         -Wno-array-bounds                   # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
         -Wno-stringop-overflow              # triggered by Boost.DynamicBitset for gcc >= 12 in Release mode
     >
-    $<$<AND:$<BOOL:${BIT_SET_WARNINGS_AS_ERRORS}>,$<CXX_COMPILER_ID:MSVC>>:/WX>
-    $<$<AND:$<BOOL:${BIT_SET_WARNINGS_AS_ERRORS}>,$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>>:-Werror>
+    $<$<AND:$<BOOL:${XSTD_BITS_WARNINGS_AS_ERRORS}>,$<CXX_COMPILER_ID:MSVC>>:/WX>
+    $<$<AND:$<BOOL:${XSTD_BITS_WARNINGS_AS_ERRORS}>,$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:GNU>>>:-Werror>
 )
 
 set(cxx_compile_options_optimization
@@ -78,7 +78,7 @@ set(cxx_compile_options_optimization
     >
 )
 
-get_property(bit_set_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+get_property(xstd_bits_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
 # Load-bearing in every configuration: without it two of three MinGW rungs cannot assemble these objects at all (#47).
 set(cxx_compile_options_mbig_obj
@@ -121,7 +121,7 @@ foreach(t ${targets})
     )
 
     # Release only, and by CONFIGURATIONS rather than if(): neither spelling alone works on both generator kinds (#32).
-    if(bit_set_is_multi_config)
+    if(xstd_bits_is_multi_config)
         add_test(NAME ${target_id} CONFIGURATIONS Release COMMAND ${target_id})
     elseif(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_test(NAME ${target_id} COMMAND ${target_id})

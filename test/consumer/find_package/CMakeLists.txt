@@ -6,8 +6,8 @@
 cmake_minimum_required(VERSION 3.28)
 project(consumer_find_package LANGUAGES CXX)
 
-# Three install trees: bit_set's own, xstd's (find_dependency'd) and vcpkg's, for the Boost.Hash2 the headers use.
-find_package(bit_set 0.1.0 CONFIG REQUIRED)
+# Three install trees: this library's own, xstd's (find_dependency'd) and vcpkg's, for the Boost.Hash2 the headers use.
+find_package(xstd-bits 0.1.0 CONFIG REQUIRED)
 
 add_executable(main ../main.cpp)
-target_link_libraries(main PRIVATE bit_set::bit_set)
+target_link_libraries(main PRIVATE xstd-bits::xstd-bits)

@@ -5,10 +5,11 @@
 
 cmake_minimum_required(VERSION 3.28)
 project(
-    bit_set
+    xstd-bits
     VERSION 0.1.0
     DESCRIPTION "A fixed-size ordered set of integers, reimagining std::bitset"
-    HOMEPAGE_URL https://github.com/rhalbersma/${PROJECT_NAME}
+    # Spelled out: project()'s own arguments expand before it sets PROJECT_NAME, so ${PROJECT_NAME} here is empty.
+    HOMEPAGE_URL https://github.com/rhalbersma/xstd-bits
     LANGUAGES CXX
 )
 
@@ -17,7 +18,7 @@ include(GNUInstallDirs)
 # Warnings are errors while this library is being developed, which is what the presets ask for.
 # Declared here rather than under test/, as xstd and tabula do, because benchmark/ carries its
 # own warning set and has to be gated by the same switch.
-option(BIT_SET_WARNINGS_AS_ERRORS "Treat warnings as errors in bit_set tests and benchmarks" ${PROJECT_IS_TOP_LEVEL})
+option(XSTD_BITS_WARNINGS_AS_ERRORS "Treat warnings as errors in xstd-bits tests and benchmarks" ${PROJECT_IS_TOP_LEVEL})
 
 # Prefer an installed xstd so install(EXPORT) can record it as a dependency; a FetchContent build tree cannot be exported.
 find_package(xstd 0.1.0 CONFIG QUIET)
@@ -77,7 +78,7 @@ target_compile_features(
     cxx_std_23
 )
 
-# Tests and benchmarks exist only when bit_set itself is being developed; consumers get the header-only target.
+# Tests and benchmarks exist only when xstd-bits itself is being developed; consumers get the header-only target.
 if(PROJECT_IS_TOP_LEVEL)
     include(CTest)
     if(BUILD_TESTING)

@@ -9,10 +9,10 @@ project(consumer_fetch_content LANGUAGES CXX)
 include(FetchContent)
 
 # The repository root, found by walking up rather than through the environment, so this configures outside CI too.
-get_filename_component(bit_set_root "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
+get_filename_component(xstd_bits_root "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
 
-FetchContent_Declare(bit_set SOURCE_DIR "${bit_set_root}")
-FetchContent_MakeAvailable(bit_set)
+FetchContent_Declare(xstd-bits SOURCE_DIR "${xstd_bits_root}")
+FetchContent_MakeAvailable(xstd-bits)
 
 add_executable(main ../main.cpp)
-target_link_libraries(main PRIVATE bit_set::bit_set)
+target_link_libraries(main PRIVATE xstd-bits::xstd-bits)
