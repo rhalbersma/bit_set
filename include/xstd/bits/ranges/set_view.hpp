@@ -132,6 +132,12 @@ struct set_ops
                                 // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
                                 assert(n < max_size(c));
                         } else if (n >= max_size(c)) {
+                                // Growing has a limit of its own, and n + 1 must be a width the
+                                // container can address: dynamic_bitset's max_size() is SIZE_MAX,
+                                // so the one position this rules out is the one whose successor
+                                // wraps to zero -- where resize would grow nothing and the write
+                                // below would land SIZE_MAX bits past the end.
+                                assert(n < c.max_size());
                                 c.resize(n + 1UZ);
                         }
                         c[n] = true;
