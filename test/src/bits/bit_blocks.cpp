@@ -6,6 +6,7 @@
 #include <boost/test/unit_test.hpp>    // BOOST_CHECK_EQUAL, BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <test/block_types.hpp>        // graded_extents, word_types
 #include <xstd/bits/bit_blocks.hpp>    // bit_blocks, block_storage, dynamic_bits, static_bits
+#include <algorithm>                   // count
 #include <array>                       // array
 #include <cstddef>                     // size_t
 #include <cstdint>                     // uint8_t, uint64_t
@@ -29,122 +30,184 @@ auto reference(BB const& b) -> model
         return m;
 }
 
-// Every operation against the model, for one ordered pair. Disagreements are counted
-// rather than asserted per bit: a passing assertion per bit says no more than one, and a
-// failing one drowns the log.
+// The pair under test, its model, and the running disagreement count, held together so
+// that each family of checks below reads as what it compares rather than as a parameter
+// list. One family per member, because all of them in one function is a cognitive
+// complexity clang-tidy rightly objects to.
+//
+// Disagreements are counted rather than asserted per bit: a passing assertion per bit
+// says no more than one, and a failing one drowns the log.
 template<class BB>
-auto check_ops(BB const& x, BB const& y, int& disagreements) -> void
+class checker
 {
-        auto const n  = x.size();
-        auto const mx = reference(x);
-        auto const my = reference(y);
-        auto const disagree = [&](bool ours, bool theirs) -> void { disagreements += ours != theirs; };
-        auto const same = [&](model const& m, BB const& got) -> void {
-                for (auto i = 0UZ; i < n; ++i) {
-                        disagreements += got[i] != m[i];
-                }
-        };
+        BB const& m_x;
+        BB const& m_y;
+        model m_mx = reference(m_x);
+        model m_my = reference(m_y);
+        std::size_t m_n = m_x.size();
+        std::size_t m_cardinality = static_cast<std::size_t>(std::ranges::count(m_mx, true));
+        int& m_disagreements;
 
-        auto cardinality = 0UZ;
-        for (auto const b : mx) {
-                cardinality += b ? 1UZ : 0UZ;
-        }
-
-        disagreements += x.count() != cardinality;
-        disagree(x.any(),  cardinality != 0);
-        disagree(x.none(), cardinality == 0);
-        disagree(x.all(),  cardinality == n);
-        disagree(x == y,   mx == my);
-
-        // The scans. find_front and find_back assert any(), so they only answer for a
-        // non-empty x; find_first and find_last are total and answer size() for an empty one.
-        if (cardinality != 0) {
-                auto front = 0UZ;
-                while (not mx[front]) { ++front; }
-                auto back = n - 1;
-                while (not mx[back]) { --back; }
-                disagreements += x.find_front()  != front;
-                disagreements += x.find_back()   != back;
-                disagreements += x.find_prev(n)  != back;
-        }
+        // The two places a comparison becomes a count, so the cast that
+        // readability-implicit-bool-conversion asks for has two sites and not thirty.
+        auto disagree(bool ours, bool theirs) -> void
         {
+                m_disagreements += static_cast<int>(ours != theirs);
+        }
+
+        auto unequal(std::size_t ours, std::size_t theirs) -> void
+        {
+                m_disagreements += static_cast<int>(ours != theirs);
+        }
+
+        // Position by position against a model of what the operation should have left.
+        auto same(model const& m, BB const& got) -> void
+        {
+                for (auto i = 0UZ; i < m_n; ++i) {
+                        disagree(got[i], m[i]);
+                }
+        }
+
+public:
+        checker(BB const& x, BB const& y, int& disagreements)
+        :
+                m_x(x),
+                m_y(y),
+                m_disagreements(disagreements)
+        {}
+
+        auto width() -> void
+        {
+                unequal(m_x.count(), m_cardinality);
+                disagree(m_x.any(),  m_cardinality != 0);
+                disagree(m_x.none(), m_cardinality == 0);
+                disagree(m_x.all(),  m_cardinality == m_n);
+                disagree(m_x == m_y, m_mx == m_my);
+        }
+
+        // find_front and find_back assert any(), so they answer only for a non-empty x;
+        // find_first and find_last are total and answer size() for an empty one.
+        auto scans() -> void
+        {
+                if (m_cardinality != 0) {
+                        auto front = 0UZ;
+                        while (not m_mx[front]) { ++front; }
+                        auto back = m_n - 1;
+                        while (not m_mx[back]) { --back; }
+                        unequal(m_x.find_front(), front);
+                        unequal(m_x.find_back(),  back);
+                        unequal(m_x.find_prev(m_n), back);
+                }
+
                 auto first = 0UZ;
-                while (first < n and not mx[first]) { ++first; }
-                disagreements += x.find_first() != first;
-                disagreements += x.find_last()  != n;
-        }
-        for (auto i = 0UZ; i < n; ++i) {
-                auto next = i + 1;
-                while (next < n and not mx[next]) { ++next; }
-                disagreements += x.find_next(i) != next;
-        }
-        for (auto i = 1UZ; i <= n and cardinality != 0; ++i) {
-                auto j = i;
-                while (j-- > 0) {
-                        if (mx[j]) {
-                                disagreements += x.find_prev(i) != j;
-                                break;
+                while (first < m_n and not m_mx[first]) { ++first; }
+                unequal(m_x.find_first(), first);
+                unequal(m_x.find_last(),  m_n);
+
+                for (auto i = 0UZ; i < m_n; ++i) {
+                        auto next = i + 1;
+                        while (next < m_n and not m_mx[next]) { ++next; }
+                        unequal(m_x.find_next(i), next);
+                }
+                for (auto i = 1UZ; i <= m_n and m_cardinality != 0; ++i) {
+                        auto j = i;
+                        while (j-- > 0) {
+                                if (m_mx[j]) {
+                                        unequal(m_x.find_prev(i), j);
+                                        break;
+                                }
                         }
                 }
         }
 
-        // The set-relational trio, which is where the block-at-a-time shortcuts live.
+        // Where the block-at-a-time shortcuts live.
+        auto relational() -> void
         {
                 auto subset = true;
                 auto differs = false;
                 auto meets = false;
-                for (auto i = 0UZ; i < n; ++i) {
-                        subset  = subset and (not mx[i] or my[i]);
-                        differs = differs or  (mx[i] != my[i]);
-                        meets   = meets   or  (mx[i] and my[i]);
+                for (auto i = 0UZ; i < m_n; ++i) {
+                        subset  = subset and (not m_mx[i] or m_my[i]);
+                        differs = differs or  (m_mx[i] != m_my[i]);
+                        meets   = meets   or  (m_mx[i] and m_my[i]);
                 }
-                disagree(x.is_subset_of(y),        subset);
-                disagree(x.is_proper_subset_of(y), subset and differs);
-                disagree(x.intersects(y),          meets);
+                disagree(m_x.is_subset_of(m_y),        subset);
+                disagree(m_x.is_proper_subset_of(m_y), subset and differs);
+                disagree(m_x.intersects(m_y),          meets);
         }
 
-        // The six compound assignments. On packed bits the set operation and the pointwise
-        // sequence operation are the same instruction, so one model answers for both.
-        { auto a = x; a &= y; auto m = model(n); for (auto i = 0UZ; i < n; ++i) { m[i] = mx[i] and     my[i]; } same(m, a); }
-        { auto a = x; a |= y; auto m = model(n); for (auto i = 0UZ; i < n; ++i) { m[i] = mx[i] or      my[i]; } same(m, a); }
-        { auto a = x; a ^= y; auto m = model(n); for (auto i = 0UZ; i < n; ++i) { m[i] = mx[i] !=      my[i]; } same(m, a); }
-        { auto a = x; a -= y; auto m = model(n); for (auto i = 0UZ; i < n; ++i) { m[i] = mx[i] and not my[i]; } same(m, a); }
-        for (auto s = 0UZ; s < n; ++s) {
-                { auto a = x; a <<= s; auto m = model(n); for (auto i = s;  i < n;     ++i) { m[i] = mx[i - s]; } same(m, a); }
-                { auto a = x; a >>= s; auto m = model(n); for (auto i = 0UZ; i + s < n; ++i) { m[i] = mx[i + s]; } same(m, a); }
-        }
-
-        // Whole-container mutators, each of which has to leave the unused tail zero.
-        { auto a = x; a.set();   disagree(a.all(),  true); disagreements += a.count() != n; }
-        { auto a = x; a.reset(); disagree(a.none(), true); disagreements += a.count() != 0; }
-        { auto a = x; a.flip();  disagreements += a.count() != n - cardinality; for (auto i = 0UZ; i < n; ++i) { disagree(a[i], not mx[i]); } }
-        { auto a = x; auto b = y; a.swap(b); disagree(a == y, true); disagree(b == x, true); }
-
-        // Per-bit mutators, and the two that report whether the bit was already there.
-        for (auto i = 0UZ; i < n; ++i) {
-                { auto a = x; a.set(i);   disagree(a[i], true);  }
-                { auto a = x; a.reset(i); disagree(a[i], false); }
-                { auto a = x; a.flip(i);  disagree(a[i], not mx[i]); }
-                { auto a = x; disagree(a.insert(i), not mx[i]); disagree(a[i], true);  }
-                { auto a = x; disagree(a.erase(i),      mx[i]);  disagree(a[i], false); }
-        }
-
-        // Block access both ways. Writing every block back must be the identity, and
-        // writing all-ones must stop at size(), which is the unused-tail invariant itself.
+        // On packed bits the set operation and the pointwise sequence operation are the
+        // same instruction, so one model answers for both readings.
+        auto bitwise() -> void
         {
-                disagree(x.num_blocks() * BB::bits_per_block >= n, true);
-                auto a = x;
-                for (auto i = 0UZ; i < x.num_blocks(); ++i) {
-                        a.set_block(i, x.block(i));
+                { auto a = m_x; a &= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] and     m_my[i]; } same(m, a); }
+                { auto a = m_x; a |= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] or      m_my[i]; } same(m, a); }
+                { auto a = m_x; a ^= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] !=      m_my[i]; } same(m, a); }
+                { auto a = m_x; a -= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] and not m_my[i]; } same(m, a); }
+        }
+
+        auto shifts() -> void
+        {
+                for (auto s = 0UZ; s < m_n; ++s) {
+                        { auto a = m_x; a <<= s; auto m = model(m_n); for (auto i = s;  i < m_n;     ++i) { m[i] = m_mx[i - s]; } same(m, a); }
+                        { auto a = m_x; a >>= s; auto m = model(m_n); for (auto i = 0UZ; i + s < m_n; ++i) { m[i] = m_mx[i + s]; } same(m, a); }
                 }
-                disagree(a == x, true);
-                auto b = x;
-                for (auto i = 0UZ; i < x.num_blocks(); ++i) {
+        }
+
+        // Each of these has to leave the unused tail zero.
+        auto whole() -> void
+        {
+                { auto a = m_x; a.set();   disagree(a.all(),  true); unequal(a.count(), m_n); }
+                { auto a = m_x; a.reset(); disagree(a.none(), true); unequal(a.count(), 0UZ); }
+                { auto a = m_x; a.flip();  unequal(a.count(), m_n - m_cardinality); for (auto i = 0UZ; i < m_n; ++i) { disagree(a[i], not m_mx[i]); } }
+                { auto a = m_x; auto b = m_y; a.swap(b); disagree(a == m_y, true); disagree(b == m_x, true); }
+        }
+
+        // Per bit, including the two that report whether the bit was already there.
+        auto positions() -> void
+        {
+                for (auto i = 0UZ; i < m_n; ++i) {
+                        { auto a = m_x; a.set(i);   disagree(a[i], true);  }
+                        { auto a = m_x; a.reset(i); disagree(a[i], false); }
+                        { auto a = m_x; a.flip(i);  disagree(a[i], not m_mx[i]); }
+                        { auto a = m_x; disagree(a.insert(i), not m_mx[i]); disagree(a[i], true);  }
+                        { auto a = m_x; disagree(a.erase(i),      m_mx[i]); disagree(a[i], false); }
+                }
+        }
+
+        // Writing every block back must be the identity, and writing all-ones must stop at
+        // size(), which is the unused-tail invariant itself.
+        auto blocks() -> void
+        {
+                disagree(m_x.num_blocks() * BB::bits_per_block >= m_n, true);
+
+                auto a = m_x;
+                for (auto i = 0UZ; i < m_x.num_blocks(); ++i) {
+                        a.set_block(i, m_x.block(i));
+                }
+                disagree(a == m_x, true);
+
+                auto b = m_x;
+                for (auto i = 0UZ; i < m_x.num_blocks(); ++i) {
                         b.set_block(i, static_cast<typename BB::block_type>(-1));
                 }
                 disagree(b.all(), true);
-                disagreements += b.count() != n;
+                unequal(b.count(), m_n);
         }
+};
+
+template<class BB>
+auto check_ops(BB const& x, BB const& y, int& disagreements) -> void
+{
+        auto c = checker<BB>(x, y, disagreements);
+        c.width();
+        c.scans();
+        c.relational();
+        c.bitwise();
+        c.shifts();
+        c.whole();
+        c.positions();
+        c.blocks();
 }
 
 // Seven patterns, chosen so that every pair of them lands on both sides of each branch:
@@ -258,9 +321,9 @@ BOOST_AUTO_TEST_CASE(RunTimeWidthsOfDifferentSizeAreNotEqual)
 
 // A width of zero still owns one block, so that last_block() names something; every
 // operation on it has to see through that block to the width, which is what says empty.
-BOOST_AUTO_TEST_CASE(AZeroWidthOwnsOneBlockAndStillReadsEmpty)
+BOOST_AUTO_TEST_CASE(AZeroWidthOwnsOneBlockAndReadsEmpty)
 {
-        auto b = xstd::dynamic_bits<std::uint8_t>(0);
+        auto const b = xstd::dynamic_bits<std::uint8_t>(0);
 
         BOOST_CHECK_EQUAL(b.size(), 0UZ);
         BOOST_CHECK_EQUAL(b.num_blocks(), 1UZ);
@@ -268,8 +331,14 @@ BOOST_AUTO_TEST_CASE(AZeroWidthOwnsOneBlockAndStillReadsEmpty)
         BOOST_CHECK(b.none());
         BOOST_CHECK(b.all());           // vacuously, as std::bitset<0>::all() is
         BOOST_CHECK(not b.any());
+}
 
-        // set() and flip() must not reach into the block that is entirely padding.
+// The other half of it: that sole block is entirely padding, so the whole-container
+// mutators must not reach into it. This is what the last-block mask exists to say.
+BOOST_AUTO_TEST_CASE(AZeroWidthsOneBlockIsAllPaddingAndStaysZero)
+{
+        auto b = xstd::dynamic_bits<std::uint8_t>(0);
+
         b.set();
         BOOST_CHECK(b.none());
         b.flip();

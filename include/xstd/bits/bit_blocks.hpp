@@ -87,14 +87,16 @@ private:
         static constexpr auto zero     = static_cast<block_type>( 0);
         static constexpr auto ones     = static_cast<block_type>(-1);
 
-        // Bits of the last block the width actually reaches, and the mask of them. Counted
-        // up from the last block rather than down from align_up(N), so that a width of zero
-        // -- whose sole block is entirely padding -- comes out as no used bits rather than
-        // as all of them, and set_block cannot leave that block holding anything.
-        // The full mask is named rather than computed: shifting a block by bits_per_block
-        // would be UB, and only the selected arm of a constant ?: is evaluated.
-        static constexpr auto static_used_last       = has_static_size ? N - (static_last_block * bits_per_block) : 0UZ;
-        static constexpr auto static_used_bits       = static_cast<block_type>(static_used_last == bits_per_block ? ones : static_cast<block_type>(static_cast<block_type>(unit << static_used_last) - unit));
+        // The padding above the width, and the mask of the last block that is not padding.
+        //
+        // num_bits is align_up(N), so num_bits - N is in [0, bits_per_block) and the shift
+        // is always in range. Width zero is the one case that form cannot express -- there
+        // is nothing to align up, so it reports no padding where in truth the sole block is
+        // all of it -- and it gets the selection instead. Naming zero rather than computing
+        // it matters on MSVC, which constant-folds both arms of a ?: and answers C4293,
+        // shift count too big, on the one it discards.
+        static constexpr auto static_num_unused_bits = has_static_size ? static_num_bits - N : 0UZ;
+        static constexpr auto static_used_bits       = has_static_size and N == 0 ? zero : static_cast<block_type>(ones >> static_num_unused_bits);
         static constexpr auto static_unused_bits     = static_cast<block_type>(~static_used_bits);
         static constexpr auto static_has_unused_bits = has_static_size and static_used_bits != ones;
 
@@ -689,15 +691,14 @@ private:
                 return (num_blocks() * bits_per_block) - 1UZ;
         }
 
-        // The mask of used bits in the last block: the whole block when the width divides
-        // evenly by bits_per_block, and none of it at width zero, where the sole block is
-        // entirely padding. Shifting a block by bits_per_block would be UB, so the full
-        // mask is named rather than computed.
+        // static_used_bits at a run-time width, and the same two cases. Above width zero the
+        // padding is num_blocks() * bits_per_block - size(), which is in [0, bits_per_block)
+        // and so always a shift in range; at width zero the sole block is entirely padding,
+        // which that expression would report as none, so the selection answers instead.
         [[nodiscard]] constexpr auto used_bits() const noexcept
                 -> block_type
         {
-                auto const used = size() - (last_block() * bits_per_block);
-                return used == bits_per_block ? ones : static_cast<block_type>(static_cast<block_type>(unit << used) - unit);
+                return size() == 0 ? zero : static_cast<block_type>(ones >> ((num_blocks() * bits_per_block) - size()));
         }
 
         [[nodiscard]] constexpr auto is_valid(std::size_t n [[maybe_unused]]) const noexcept
