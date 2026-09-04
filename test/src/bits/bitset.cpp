@@ -3,11 +3,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/test/unit_test.hpp> // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
-#include <test/block_types.hpp>     // graded_extents
-#include <xstd/bits/bitset.hpp>     // bitset
-#include <concepts>                 // regular, totally_ordered
-#include <type_traits>              // is_nothrow_*, is_trivially_*
+#include <boost/test/unit_test.hpp>      // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <test/block_types.hpp>          // graded_extents
+#include <xstd/bits/bitset.hpp>          // bitset
+#include <xstd/bits/ranges/set_view.hpp> // set_view
+#include <concepts>                      // regular, totally_ordered
+#include <type_traits>                   // is_nothrow_*, is_trivially_*
 
 BOOST_AUTO_TEST_SUITE(Bitset)
 
@@ -45,6 +46,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsTrivial, T, Types)
         static_assert(    std::is_trivially_copy_assignable_v<T>);
         static_assert(    std::is_trivially_move_constructible_v<T>);
         static_assert(    std::is_trivially_move_assignable_v<T>);
+}
+
+// The proxy operator[] hands out, ported from array_view: assignment either way round, the
+// flipped reading, flip itself, and the three swaps. b[i] = b[j] is checked to move the bit
+// rather than the proxy, which is also what makes swap work.
+BOOST_AUTO_TEST_CASE(TheMutableSubscriptHandsOutAnAssignableProxy)
+{
+        auto b = xstd::bitset<8>{};
+
+        b[3] = true;
+        BOOST_CHECK(b[3]);
+        BOOST_CHECK(b.test(3));
+        BOOST_CHECK_EQUAL(b.count(), 1);
+
+        b[3] = false;
+        BOOST_CHECK(not b[3]);
+
+        b[1] = true;
+        b[2] = b[1];
+        BOOST_CHECK(b[1]);
+        BOOST_CHECK(b[2]);
+
+        BOOST_CHECK_EQUAL(~b[2], false);
+        b[2].flip();
+        BOOST_CHECK(not b[2]);
+
+        auto const x = b[1];
+        auto const y = b[2];
+        swap(x, y);
+        BOOST_CHECK(not b[1]);
+        BOOST_CHECK(b[2]);
+
+        auto z = false;
+        swap(b[2], z);
+        BOOST_CHECK(not b[2]);
+        BOOST_CHECK(z);
+
+        swap(z, b[2]);
+        BOOST_CHECK(b[2]);
+        BOOST_CHECK(not z);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

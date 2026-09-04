@@ -5,11 +5,10 @@
 
 #include <boost/test/unit_test.hpp> // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <bit>                      // popcount
-#include <cstddef>                  // size_t
 #include <cstdint>                  // uint8_t, uint16_t, uint32_t, uint64_t
 #include <limits>                   // digits
 #include <tuple>                    // tuple
-#include <type_traits>              // is_integral, is_unsigned
+#include <type_traits>              // is_integral_v, is_unsigned_v
 
 BOOST_AUTO_TEST_SUITE(Block)
 BOOST_AUTO_TEST_SUITE(TypeTraits)
@@ -19,7 +18,7 @@ using Types = std::tuple
 ,       uint16_t
 ,       uint32_t
 ,       uint64_t
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,       __uint128_t
 #endif
 >;

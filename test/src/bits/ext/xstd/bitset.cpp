@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(IteratingVisitsTheOneBitsAsKeys)
         BOOST_CHECK_EQUAL(std::distance(std::ranges::begin(c), std::ranges::end(c)), 3);
 
         auto keys = std::vector<std::size_t>();
-        for (auto k : c) {
+        for (auto const k : c) {
                 keys.push_back(k);
         }
         BOOST_CHECK((keys == std::vector<std::size_t>{1, 7, 15}));

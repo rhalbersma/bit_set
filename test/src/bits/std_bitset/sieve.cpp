@@ -5,19 +5,21 @@
 
 #include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE
 #include <fmt/format.h>                           // format
-#include <fmt/ranges.h>
+#include <fmt/ranges.h>                           // IWYU pragma: keep; the range formatters
 #include <opt/bitset/sieve.hpp>                   // filter_twins, sift_primes0, sift_primes1
 #include <xstd/bits/bit_finite_set.hpp>           // bit_finite_set
+#include <xstd/bits/bitset.hpp>                   // bitset
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
-#include <xstd/bits/ranges/set_view.hpp>          // view
+#include <xstd/bits/ranges/set_view.hpp>          // set_view
+#include <bitset>                                 // bitset
 #include <tuple>                                  // tuple
 
 BOOST_AUTO_TEST_SUITE(StdBitset)
 BOOST_AUTO_TEST_SUITE(Sieve)
 
-inline constexpr auto N = 100uz;
+inline constexpr auto N = 100UZ;
 
 using Types = std::tuple
 <       boost::dynamic_bitset<>

@@ -6,7 +6,9 @@
 #ifndef XSTD_BITS_EXT_XSTD_BITSET_HPP
 #define XSTD_BITS_EXT_XSTD_BITSET_HPP
 
-#include <xstd/bits/bitset.hpp>                    // bitset
+// IWYU pragma: always_keep
+
+#include <xstd/bits/bitset.hpp>                    // IWYU pragma: export; bitset
 #include <xstd/bits/ranges/set_view.hpp>           // begin, end
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <cstddef>                                 // size_t

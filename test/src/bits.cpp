@@ -5,7 +5,7 @@
 
 #include <boost/test/unit_test.hpp>   // BOOST_AUTO_TEST_CASE
 #include <test/block_types.hpp>       // graded_extents
-#include <test/flat_set.hpp>          // TEST_HAS_FLAT_SET
+#include <test/flat_set.hpp>          // IWYU pragma: keep; TEST_HAS_FLAT_SET
 #include <test/sequence/concepts.hpp> // bit_sequence
 #include <test/set/concepts.hpp>      // bit_set
 #include <xstd/bits.hpp>              // the whole bits surface
@@ -14,7 +14,7 @@
 #include <ranges>                     // bidirectional_range, random_access_range
 #include <set>                        // set
 #include <tuple>                      // tuple_element_t, tuple_size_v
-#include <utility>                    // declval, index_sequence, make_index_sequence
+#include <utility>                    // index_sequence, make_index_sequence
 
 
 // Every entity the front door promises, reached through it alone: no leaf test sees the door at all.
@@ -27,10 +27,10 @@ BOOST_AUTO_TEST_CASE(EveryContainerArrivesThroughTheOneDoor)
         // xstd::bitset is deliberately not a range, reproducing std::bitset, so the door has to deliver a working view over it.
         static_assert(not std::ranges::range<xstd::bitset<8>>);
 
-        auto legacy = xstd::bitset<8>();
+        auto const legacy = xstd::bitset<8>();
         static_assert(std::ranges::bidirectional_range<decltype(xstd::set_view(legacy))>);
 
-        auto packed = xstd::bit_array<8>();
+        auto const packed = xstd::bit_array<8>();
         static_assert(std::ranges::random_access_range<decltype(xstd::array_view(packed))>);
 }
 

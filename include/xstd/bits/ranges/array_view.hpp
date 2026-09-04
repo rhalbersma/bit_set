@@ -64,11 +64,23 @@ struct array_ops
                 }
         }
 
-        // No operator[] fallback: a type whose operator[] returns our own proxy would recurse until the stack is gone.
+        // The operator[] fallback this class refuses is the one below, for a type without
+        // set(n, value): were its operator[] to return our own proxy, that proxy's assignment
+        // would land back here and recurse until the stack is gone. Where set(n, value) does
+        // exist the type is a concrete bitset, and its subscript is the unchecked way in --
+        // which is the one to take, the position being a precondition asserted just below,
+        // where std::bitset::set and xstd::bitset::set check it again and throw out of this
+        // noexcept.
         static constexpr void assign(Bits& c, std::size_t n, bool value) noexcept
                 requires requires { c.set(n, value); }
         {
-                c.set(n, value);
+                // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
+                assert(n < size(c));
+                if constexpr (requires { c[n] = value; }) {
+                        c[n] = value;
+                } else {
+                        c.set(n, value);
+                }
         }
 
         static constexpr void assign(Bits& c, std::size_t n, bool value) noexcept
@@ -97,7 +109,7 @@ template<std::ranges::input_range X, std::ranges::input_range Y>
         return std::lexicographical_compare_three_way(
                 std::ranges::begin(x), std::ranges::end(x),
                 std::ranges::begin(y), std::ranges::end(y),
-                [](bool a, bool b) static noexcept { return static_cast<int>(a) <=> static_cast<int>(b); }
+                [](bool a, bool b) static noexcept -> std::strong_ordering { return static_cast<int>(a) <=> static_cast<int>(b); }
         );
 }
 
@@ -283,7 +295,7 @@ public:
                 return *this = static_cast<bool>(other);
         }
 
-        constexpr auto flip() const noexcept
+        constexpr auto flip() const noexcept  // NOLINT(modernize-use-nodiscard)
                 -> array_reference const&
                 requires (not IsConst) and requires(Bits& c) { array_ops<Bits>::assign(c, 0UZ, true); }
         {

@@ -3,9 +3,10 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_CHECK_EQUAL_COLLECTIONS
+#include <boost/test/unit_test.hpp>     // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <compare>                      // strong_ordering
+#include <cstdint>                      // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                        // tuple
 
 BOOST_AUTO_TEST_SUITE(StdSet)
@@ -44,7 +45,7 @@ using Types = std::tuple
 ,       xstd::bit_finite_set< 63, uint64_t>
 ,       xstd::bit_finite_set< 64, uint64_t>
 ,       xstd::bit_finite_set< 65, uint64_t>
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,       xstd::bit_finite_set<  0, __uint128_t>
 ,       xstd::bit_finite_set<  1, __uint128_t>
 ,       xstd::bit_finite_set<127, __uint128_t>
@@ -59,8 +60,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(AnEmptySetIsUsableInAConstantExpression, T, Types)
         static_assert(b.empty());
         static_assert(b.size() == 0);
         static_assert(b.begin() == b.end());
-        static_assert(b == b);
-        static_assert((b <=> b) == std::strong_ordering::equal);
+        // Reflexivity is the property under test, and there is no writing it without naming the
+        // object twice; misc-redundant-expression sees only that the two operands match.
+        static_assert(b == b);                                   // NOLINT(misc-redundant-expression)
+        static_assert((b <=> b) == std::strong_ordering::equal); // NOLINT(misc-redundant-expression)
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(AFullSetIsUsableInAConstantExpression, T, Types)
@@ -70,8 +73,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(AFullSetIsUsableInAConstantExpression, T, Types)
         static_assert(b.size() == b.max_size());
         static_assert(b.empty() or b.front() == *b.cbegin());
         static_assert(b.empty() or b.back()  == *b.crbegin());
-        static_assert(b == b);
-        static_assert((b <=> b) == std::strong_ordering::equal);
+        // Reflexivity is the property under test, and there is no writing it without naming the
+        // object twice; misc-redundant-expression sees only that the two operands match.
+        static_assert(b == b);                                   // NOLINT(misc-redundant-expression)
+        static_assert((b <=> b) == std::strong_ordering::equal); // NOLINT(misc-redundant-expression)
 }
 
 BOOST_AUTO_TEST_SUITE_END()

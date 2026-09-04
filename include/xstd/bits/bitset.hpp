@@ -8,8 +8,8 @@
 
 // Bitsets [bitset], Header <bitset> synopsis [bitset.syn]
 
-#include <iosfwd> // basic_istream, basic_ostream
-#include <string> // basic_string, char_traits
+#include <iosfwd>                                  // basic_istream, basic_ostream
+#include <string>                                  // basic_string, char_traits
 
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <cstddef>                                 // size_t
@@ -28,25 +28,26 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 
 }       // namespace xstd
 
-#include <boost/hash2/fnv1a.hpp>           // fnv1a_64
-#include <boost/hash2/hash_append.hpp>     // hash_append
-#include <xstd/bits/detail/array.hpp>      // array
-#include <xstd/bits/ranges/array_view.hpp> // array_find
-#include <xstd/bits/ranges/bit_extent.hpp> // bit_extent
-#include <xstd/bits/ranges/set_view.hpp>   // set_find, set_compare
-#include <algorithm>                       // find_if, min
-#include <cassert>                         // assert
-#include <compare>                         // strong_ordering
-#include <concepts>                        // unsigned_integral
-#include <format>                          // format
-#include <functional>                      // hash
-#include <ios>                             // ios_base
-#include <locale>                          // ctype, use_facet
-#include <memory>                          // allocator
-#include <ranges>                          // find_if, iota, reverse
-#include <source_location>                 // source_location
-#include <stdexcept>                       // invalid_argument, out_of_range, overflow_error
-#include <string_view>                     // basic_string_view
+#include <boost/hash2/fnv1a.hpp>                   // fnv1a_64
+#include <boost/hash2/hash_append.hpp>             // hash_append
+#include <xstd/bits/detail/array.hpp>              // array
+#include <xstd/bits/ranges/array_view.hpp>         // array_find
+#include <xstd/bits/ranges/bit_extent.hpp>         // bit_extent
+#include <xstd/bits/ranges/set_view.hpp>           // set_find, set_compare
+#include <algorithm>                               // find_if, min
+#include <cassert>                                 // assert
+#include <compare>                                 // strong_ordering
+#include <concepts>                                // unsigned_integral
+#include <format>                                  // format
+#include <functional>                              // hash
+#include <ios>                                     // ios_base
+#include <locale>                                  // ctype, use_facet
+#include <memory>                                  // allocator
+#include <ranges>                                  // find_if, iota, reverse
+#include <source_location>                         // source_location
+#include <stdexcept>                               // invalid_argument, out_of_range
+#include <string_view>                             // basic_string_view
+#include <utility>                                 // as_const
 
 // Class template bitset [template.bitset], General [template.bitset.general]
 
@@ -71,23 +72,76 @@ class bitset
 public:
         using block_type = Block;
 
+        // array_view's proxy, ported to the member [bitset.refs] asks for: the bits and a position,
+        // handed out by operator[] and reaching them only when read or written. Every such reach
+        // goes through detail::bits::array, whose set, reset, flip and operator[] are noexcept and
+        // asserted, so the proxy never takes the checked set(pos, val) beside it that throws.
         class reference
         {
+                // A pointer, not the reference array_view's proxy holds, so that the copy
+                // constructor below can stay defaulted as [bitset.refs] declares it.
+                bitset* m_ptr{};
+                std::size_t m_idx{};
+
+                friend bitset;
+
+                [[nodiscard]] constexpr reference(bitset& c, std::size_t idx) noexcept
+                :
+                        m_ptr(&c),
+                        m_idx(idx)
+                {}
+
         public:
                 constexpr reference(const reference& x) noexcept = default;
                 constexpr ~reference() = default;
-                constexpr auto operator=(bool x) noexcept -> reference&;
-                constexpr auto operator=(const reference& x) noexcept -> reference& = default;
+
+                constexpr auto operator=(bool x) noexcept -> reference&
+                {
+                        std::as_const(*this) = x;
+                        return *this;
+                }
+
+                // Assigns the bit and not the proxy: b[i] = b[j] is what [bitset.refs] gives this
+                // signature, and the swap below reads b[i] = b[j] too, so rebinding would leave
+                // both positions holding whatever the second one did.
+                //
+                // bugprone-unhandled-self-assignment wants the &other == this guard a class owning
+                // storage needs. This one owns none: b[i] = b[i] reads the bit and writes it back.
+                constexpr auto operator=(const reference& x) noexcept -> reference&  // NOLINT(bugprone-unhandled-self-assignment)
+                {
+                        return *this = static_cast<bool>(x);
+                }
+
                 // A proxy reference assigns through a const proxy, the shape the standard gives vector<bool>::reference.
-                constexpr auto operator=(bool x) const noexcept -> const reference&;  // NOLINT(misc-unconventional-assign-operator)
-                constexpr explicit(false) operator bool() const noexcept;  // NOLINT(misc-explicit-constructor)
-                constexpr auto operator~() const noexcept -> bool;
+                constexpr auto operator=(bool x) const noexcept -> const reference&  // NOLINT(misc-unconventional-assign-operator)
+                {
+                        if (x) {
+                                m_ptr->m_bits.set(m_idx);
+                        } else {
+                                m_ptr->m_bits.reset(m_idx);
+                        }
+                        return *this;
+                }
 
-                friend constexpr void swap(reference x, reference y) noexcept { bool t = x; x = y; y = t; }
-                friend constexpr void swap(reference x,     bool& y) noexcept { bool t = x; x = y; y = t; }
-                friend constexpr void swap(    bool& x, reference y) noexcept { bool t = x; x = y; y = t; }
+                [[nodiscard]] constexpr explicit(false) operator bool() const noexcept  // NOLINT(misc-explicit-constructor)
+                {
+                        return m_ptr->m_bits[m_idx];
+                }
 
-                constexpr auto flip() noexcept -> reference&;
+                [[nodiscard]] constexpr auto operator~() const noexcept -> bool
+                {
+                        return not m_ptr->m_bits[m_idx];
+                }
+
+                friend constexpr void swap(reference x, reference y) noexcept { bool const t = x; x = y; y = t; }
+                friend constexpr void swap(reference x,     bool& y) noexcept { bool const t = x; x = y; y = t; }
+                friend constexpr void swap(    bool& x, reference y) noexcept { bool const t = x; x = y; y = t; }
+
+                constexpr auto flip() noexcept -> reference&
+                {
+                        m_ptr->m_bits.flip(m_idx);
+                        return *this;
+                }
         };
 
         // Constructors                                            [bitset.cons]
@@ -121,7 +175,7 @@ public:
                 }
                 auto const rlen = std::ranges::min(n, str.size() - pos);
                 auto const M = std::ranges::min(N, rlen);
-                for (auto i : std::views::iota(0UZ, M)) {
+                for (auto const i : std::views::iota(0UZ, M)) {
                         auto const ch = str[pos + M - 1 - i];
                         if (traits::eq(ch, zero)) {
                                 continue;
@@ -222,7 +276,11 @@ public:
                 return m_bits[pos];
         }
 
-        [[nodiscard]] constexpr auto operator[](std::size_t pos) -> reference = delete; // TODO
+        [[nodiscard]] constexpr auto operator[](std::size_t pos) noexcept
+                -> reference
+        {
+                return { *this, pos };
+        }
 
         [[nodiscard]] constexpr auto to_ulong()  const -> unsigned long      = delete;  // TODO
         [[nodiscard]] constexpr auto to_ullong() const -> unsigned long long = delete;  // TODO
@@ -235,8 +293,10 @@ public:
         [[nodiscard]] constexpr auto to_string(charT zero = charT('0'), charT one = charT('1')) const
                 -> std::basic_string<charT, traits, Allocator>
         {
-                auto str = std::basic_string<charT, traits, Allocator>(N, zero);
-                for (auto i : std::views::iota(0UZ, N)) {
+                // bugprone-string-constructor sees the N == 0 instantiation, where this is empty --
+                // which is what bitset<0>::to_string() returns.
+                auto str = std::basic_string<charT, traits, Allocator>(N, zero);  // NOLINT(bugprone-string-constructor)
+                for (auto const i : std::views::iota(0UZ, N)) {
                         if (m_bits[N - 1 - i]) {
                                 str[i] = one;
                         }
@@ -396,8 +456,11 @@ template<class charT, class traits, std::size_t N, xstd::unsigned_integer Block>
 auto operator>>(std::basic_istream<charT, traits>& is, bitset<N, Block>& x)
         -> std::basic_istream<charT, traits>&
 {
-        auto str = std::basic_string<charT, traits>(N, is.widen('0'));
-        auto state = std::ios_base::goodbit;
+        auto str = std::basic_string<charT, traits>(N, is.widen('0'));  // NOLINT(bugprone-string-constructor)
+        // state is assigned below, inside an if constexpr (N > 0) that the N == 0 instantiation
+        // discards; misc-const-correctness sees only that one and asks for a const that would
+        // stop every other instantiation from compiling.
+        auto state = std::ios_base::goodbit;  // NOLINT(misc-const-correctness)
         charT ch;
         auto i = 0UZ;
         // One peek per character: peeking twice sets eofbit then failbit, failing a short but valid extraction ([bitset.operators]/6).

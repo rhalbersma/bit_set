@@ -6,9 +6,11 @@
 #include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_AUTO_TEST_CASE_TEMPLATE
 #include <test/bitset/exhaustive.hpp>             // all_singleton_sets, all_doubleton_sets, all_triplet_sets, empty_set, full_set
 #include <test/bitset/primitives.hpp>             // mem_compare_three_way
+#include <xstd/bits/bitset.hpp>                   // bitset
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // dynamic_bitset
 #include <xstd/bits/ext/std/bitset.hpp>           // bitset
 #include <xstd/bits/ext/xstd/bitset.hpp>          // bitset
+#include <bitset>                                 // bitset
 #include <cstdint>                                // uint8_t, uint16_t, uint32_t, uint64_t
 #include <tuple>                                  // tuple
 
@@ -28,7 +30,7 @@ using Types = std::tuple
 ,        xstd::bitset<17, uint16_t>
 ,        xstd::bitset<17, uint32_t>
 ,        xstd::bitset<17, uint64_t>
-#if defined(__GNUG__)
+#ifdef __GNUG__
 ,        xstd::bitset<17, __uint128_t>
 #endif
 >;

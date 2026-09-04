@@ -3,11 +3,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/test/unit_test.hpp> // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
-#include <xstd/bits/ext/std.hpp>    // the std adaptors, asked for by name
-#include <bitset>                   // bitset
-#include <cstddef>                  // size_t
-#include <span>                     // dynamic_extent
+#include <boost/test/unit_test.hpp>        // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <xstd/bits/ext/std.hpp>           // the std adaptors, asked for by name
+#include <xstd/bits/ranges/array_view.hpp> // array_range
+#include <xstd/bits/ranges/set_view.hpp>   // set_range
+#include <bitset>                          // bitset
+#include <span>                            // dynamic_extent
 
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Std)

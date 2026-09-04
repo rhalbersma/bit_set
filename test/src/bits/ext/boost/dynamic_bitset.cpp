@@ -5,12 +5,13 @@
 
 #include <boost/test/unit_test.hpp>               // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <test/dynamic.hpp>                       // dynamic
-#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // bit_extent, set_find, set_compare, array_find
+#include <xstd/bits/ext/boost/dynamic_bitset.hpp> // the hooks that make dynamic_bitset a bit range
+#include <xstd/bits/ranges/array_view.hpp>        // array_range
+#include <xstd/bits/ranges/set_view.hpp>          // set_range, set_view
 #include <algorithm>                              // lexicographical_compare
 #include <compare>                                // strong_ordering
 #include <concepts>                               // regular, totally_ordered
 #include <cstddef>                                // size_t
-#include <ranges>                                 // range
 #include <set>                                    // set
 #include <type_traits>                            // is_trivially_copyable_v
 
@@ -35,18 +36,20 @@ BOOST_AUTO_TEST_CASE(TheViewReplacesItsOrderingRatherThanTrustingIt)
         auto disagreements = 0;
         for (auto i = 0UZ; i < (1UZ << N); ++i) {
                 for (auto j = 0UZ; j < (1UZ << N); ++j) {
-                        auto x = T(N), y = T(N);
-                        auto kx = std::set<std::size_t>(), ky = std::set<std::size_t>();
+                        auto x = T(N);
+                        auto y = T(N);
+                        auto kx = std::set<std::size_t>();
+                        auto ky = std::set<std::size_t>();
                         for (auto k = 0UZ; k < N; ++k) {
-                                if (i >> k & 1UZ) { x.set(k); kx.insert(k); }
-                                if (j >> k & 1UZ) { y.set(k); ky.insert(k); }
+                                if ((i >> k & 1UZ) != 0UZ) { x.set(k); kx.insert(k); }
+                                if ((j >> k & 1UZ) != 0UZ) { y.set(k); ky.insert(k); }
                         }
 
                         // What the keys themselves say, which is what the set reading means.
-                        auto const expected = std::lexicographical_compare(kx.begin(), kx.end(), ky.begin(), ky.end());
+                        auto const expected = std::ranges::lexicographical_compare(kx, ky);
 
                         BOOST_CHECK_EQUAL((xstd::set_view(x) <=> xstd::set_view(y)) < 0, expected);
-                        disagreements += (x < y) != expected;
+                        disagreements += static_cast<int>((x < y) != expected);
                 }
         }
 

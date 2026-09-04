@@ -14,7 +14,6 @@
 #include <algorithm>                              // equal
 #include <array>                                  // array
 #include <bitset>                                 // bitset
-#include <cstddef>                                // size_t
 #include <ranges>                                 // random_access_range
 
 BOOST_AUTO_TEST_SUITE(Ranges)
@@ -41,7 +40,7 @@ BOOST_AUTO_TEST_CASE(TheSequenceReadingIsTheArrayOfBools)
                 auto packed = xstd::bitset<N>();
                 auto plain  = std::array<bool, N>{};
                 for (auto k = 0UZ; k < N; ++k) {
-                        if (i >> k & 1UZ) { packed.set(k); plain[k] = true; }
+                        if ((i >> k & 1UZ) != 0UZ) { packed.set(k); plain[k] = true; }
                 }
 
                 auto const view = xstd::array_view(packed);
@@ -54,7 +53,7 @@ BOOST_AUTO_TEST_CASE(TheSequenceReadingIsTheArrayOfBools)
 BOOST_AUTO_TEST_CASE(WritingThroughTheViewWritesTheBits)
 {
         auto packed = xstd::bitset<8>();
-        auto view = xstd::array_view(packed);
+        auto const view = xstd::array_view(packed);
 
         view[3] = true;
         BOOST_CHECK(packed.test(3));

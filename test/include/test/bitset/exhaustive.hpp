@@ -10,10 +10,9 @@
 #include <test/dynamic.hpp>        // dynamic
 #include <algorithm>               // max
 #include <cassert>                 // assert
-#include <cstddef>                 // size_t
 #include <ranges>                  // iota
 
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
         // std::bitset<0> and xstd::bit_finite_set<0> give bogus "unreachable code" warnings
         __pragma(warning(disable: 4702))
 #endif
