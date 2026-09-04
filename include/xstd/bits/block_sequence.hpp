@@ -230,17 +230,17 @@ public:
                 }
         }
 
-        // Its own 0. Now that lower_bound carries the 2-block case too, this emits the same
+        // Its own 0. Now that find_next_inclusive carries the 2-block case too, this emits the same
         // instruction sequence the hand-written version did -- verified, not assumed -- so the
         // duplication goes without costing the unrolling. libstdc++ writes both scans out and
         // repeats the word loop and the ctz-plus-index arithmetic between them; boost factors
-        // the shared tail into m_do_find_from, but only at block granularity, so find_next still
+        // the shared tail into m_do_find_from, but only at block granularity, so find_next_exclusive still
         // needs its own prologue for a mid-block start. Factoring at bit granularity subsumes
         // both: a block-aligned start is just offset == 0.
         [[nodiscard]] constexpr auto find_first() const noexcept
                 -> std::size_t
         {
-                return lower_bound(0UZ);
+                return find_next_inclusive(0UZ);
         }
 
         [[nodiscard]] constexpr auto find_last() const noexcept
@@ -249,17 +249,30 @@ public:
                 return size();
         }
 
-        // The first set position at or above n, or size() if there is none. This is the whole
-        // scan: find_first is lower_bound(0) and find_next is lower_bound(n + 1). Expressed the
-        // other way round -- as a strictly-greater scan, which is what boost::dynamic_bitset and
-        // libstdc++'s _M_do_find_next expose -- find_first would have to be find_next(-1), and
-        // size_t has no such value. That is why the container had to branch on x == 0.
+        // The first set position at or above n, or size() if there is none.
+        //
+        // Inclusive and exclusive name the only thing that separates the two scans: whether n
+        // itself is a candidate. That is a property of the scan, not of a reading, which is why
+        // this is not called lower_bound -- that is the set reading's word for it, and this layer
+        // serves the sequence reading equally. bit_finite_set::lower_bound is where the set name
+        // belongs, and it maps here one for one.
+        //
+        // The inclusive form is the primitive and the exclusive one is derived, because the
+        // reverse does not close:
+        //
+        //     find_next_exclusive(n) == find_next_inclusive(n + 1)     for every n
+        //     find_first()           == find_next_inclusive(0)
+        //
+        // Exclusive-first would need find_first() == find_next_exclusive(-1), and size_t has no
+        // such value -- which is exactly why the container used to branch on x == 0. boost's
+        // find_next and libstdc++'s _M_do_find_next are both the exclusive form, correctly: their
+        // iteration idiom is find_first() then find_next(i), which never needs the inclusive one.
         //
         // n == size() rather than n >= size(): the precondition is n <= size(), asserted just
         // below, so size() is the only value the scan cannot start from. is_valid does not say
         // this -- it is n < size() -- and size() is a legitimate argument here, meaning "no such
-        // position", exactly as it is for find_prev.
-        [[nodiscard]] constexpr auto lower_bound(std::size_t n) const noexcept
+        // position", exactly as it is for find_prev_exclusive.
+        [[nodiscard]] constexpr auto find_next_inclusive(std::size_t n) const noexcept
                 -> std::size_t
         {
                 assert(n <= size());
@@ -314,17 +327,17 @@ public:
                 return size();
         }
 
-        [[nodiscard]] constexpr auto find_next(std::size_t n) const noexcept
+        [[nodiscard]] constexpr auto find_next_exclusive(std::size_t n) const noexcept
                 -> std::size_t
         {
                 assert(is_valid(n));
-                return lower_bound(n + 1);
+                return find_next_inclusive(n + 1);
         }
 
-        [[nodiscard]] constexpr auto find_prev(std::size_t n) const noexcept
+        [[nodiscard]] constexpr auto find_prev_exclusive(std::size_t n) const noexcept
                 -> std::size_t
         {
-                // The mirror of find_next's assert(is_valid(n)): each says the position actually
+                // The mirror of find_next_exclusive's assert(is_valid(n)): each says the position actually
                 // scanned from is one this container has. n - 1 is that position here, and the
                 // wraparound does the work at the bottom -- 0 - 1 is SIZE_MAX, which no width
                 // admits -- so this states 1 <= n <= size() without a second predicate. is_valid
@@ -335,7 +348,7 @@ public:
                 if constexpr (has_static_size and static_num_blocks == 1) {
                         return n - detail::bits::countl_zero(static_cast<block_type>(m_blocks[0] << (left_bit - n)));
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
-                        // The mirror of lower_bound's two-block case, and simpler than the general
+                        // The mirror of find_next_inclusive's two-block case, and simpler than the general
                         // path below because the fallback is one named block rather than a scan.
                         //
                         // No reverse_offset != 0 guard is needed here. Below, that guard is not
@@ -761,7 +774,7 @@ private:
                 return std::ranges::all_of(first, first + static_cast<std::ptrdiff_t>(last_block()), [](auto block) { return block == ones; });
         }
 
-        // The top bit of the last block, padding included. find_back and find_prev count
+        // The top bit of the last block, padding included. find_back and find_prev_exclusive count
         // down from it and both assert any(), so the zero-width case never reaches here.
         [[nodiscard]] constexpr auto last_bit() const noexcept
                 -> std::size_t
