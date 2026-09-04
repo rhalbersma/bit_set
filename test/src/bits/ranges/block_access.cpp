@@ -10,8 +10,8 @@
 #include <xstd/bits/bitset.hpp>                   // bitset
 #include <xstd/bits/ext/boost/dynamic_bitset.hpp> // the one that stays element-wise
 #include <xstd/bits/ext/std/bitset.hpp>           // block_access over std::bitset, where the words are reachable
-#include <xstd/bits/ranges/array_view.hpp>        // array_view
 #include <xstd/bits/ranges/block_access.hpp>      // block_range
+#include <xstd/bits/ranges/sequence_view.hpp>     // sequence_view
 #include <xstd/bits/ranges/set_view.hpp>          // set_view
 #include <algorithm>                              // lexicographical_compare, lexicographical_compare_three_way
 #include <bitset>                                 // bitset
@@ -30,7 +30,7 @@ template<std::size_t N, class Block>
 auto sweep() -> void
 {
         auto set_disagreements    = 0;
-        auto array_disagreements  = 0;
+        auto sequence_disagreements  = 0;
         auto opaque_disagreements = 0;
 
         for (auto i = 0UZ; i < (1UZ << N); ++i) {
@@ -50,7 +50,7 @@ auto sweep() -> void
                         }
 
                         set_disagreements   += ((sx <=> sy) < 0) != std::ranges::lexicographical_compare(kx, ky);
-                        array_disagreements += ((ax <=> ay) < 0) != std::ranges::lexicographical_compare(vx, vy);
+                        sequence_disagreements += ((ax <=> ay) < 0) != std::ranges::lexicographical_compare(vx, vy);
 
                         // The invariant proper: these two stream blocks and never iterate, and must still mean what iterating would.
                         opaque_disagreements += (sx <=> sy) != std::lexicographical_compare_three_way(sx.begin(), sx.end(), sy.begin(), sy.end());
@@ -60,7 +60,7 @@ auto sweep() -> void
 
         // Checked once rather than per pair: a million passing assertions say no more than one, and drown the log if any fails.
         BOOST_CHECK_EQUAL(set_disagreements, 0);
-        BOOST_CHECK_EQUAL(array_disagreements, 0);
+        BOOST_CHECK_EQUAL(sequence_disagreements, 0);
         BOOST_CHECK_EQUAL(opaque_disagreements, 0);
 }
 
@@ -86,8 +86,8 @@ auto views_agree_with_iteration(std::size_t universe) -> void
 
                         auto const sx = xstd::set_view(x);
                         auto const sy = xstd::set_view(y);
-                        auto const ax = xstd::array_view(x);
-                        auto const ay = xstd::array_view(y);
+                        auto const ax = xstd::sequence_view(x);
+                        auto const ay = xstd::sequence_view(y);
 
                         disagreements += (sx <=> sy) != std::lexicographical_compare_three_way(sx.begin(), sx.end(), sy.begin(), sy.end());
                         disagreements += (ax <=> ay) != std::lexicographical_compare_three_way(ax.begin(), ax.end(), ay.begin(), ay.end());
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(OursSayWhereTheirBlocksAre)
         static_assert(xstd::ranges::block_range<xstd::bitset<9, Block>>);
 
         static_assert(xstd::ranges::block_range<xstd::set_view<xstd::bitset<9, Block>>>);
-        static_assert(xstd::ranges::block_range<xstd::array_view<xstd::bitset<9, Block>>>);
+        static_assert(xstd::ranges::block_range<xstd::sequence_view<xstd::bitset<9, Block>>>);
 }
 
 // dynamic_bitset has blocks and will not hand them over, so it keeps the element-wise path -- which must still be right.

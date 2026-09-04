@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(EveryContainerArrivesThroughTheOneDoor)
         static_assert(std::ranges::bidirectional_range<decltype(xstd::set_view(legacy))>);
 
         auto const packed = xstd::bit_array<8>();
-        static_assert(std::ranges::random_access_range<decltype(xstd::array_view(packed))>);
+        static_assert(std::ranges::random_access_range<decltype(xstd::sequence_view(packed))>);
 }
 
 // A packed container satisfies the same interface as the one it packs, which means something only because std::array answers to it too.

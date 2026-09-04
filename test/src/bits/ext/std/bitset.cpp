@@ -3,16 +3,16 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/test/unit_test.hpp>        // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
-#include <xstd/bits/bitset.hpp>            // bitset
-#include <xstd/bits/ext/std/bitset.hpp>    // bit_extent, set_find, array_find
-#include <xstd/bits/ranges/array_view.hpp> // array_range
-#include <xstd/bits/ranges/set_view.hpp>   // set_range, set_view
-#include <bitset>                          // bitset
-#include <concepts>                        // regular, totally_ordered
-#include <ranges>                          // range
-#include <tuple>                           // tuple
-#include <type_traits>                     // is_nothrow_*, is_trivially_*
+#include <boost/test/unit_test.hpp>           // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <xstd/bits/bitset.hpp>               // bitset
+#include <xstd/bits/ext/std/bitset.hpp>       // bit_extent, set_find, sequence_find
+#include <xstd/bits/ranges/sequence_view.hpp> // sequence_range
+#include <xstd/bits/ranges/set_view.hpp>      // set_range, set_view
+#include <bitset>                             // bitset
+#include <concepts>                           // regular, totally_ordered
+#include <ranges>                             // range
+#include <tuple>                              // tuple
+#include <type_traits>                        // is_nothrow_*, is_trivially_*
 
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Std)
@@ -40,12 +40,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(OrderedThroughTheViewRatherThanInfix, T, Types)
         static_assert(    std::totally_ordered<xstd::set_view<T>>);
 }
 
-// Both readings are reachable, which is what bit_extent, set_find and array_find are specialized here for.
+// Both readings are reachable, which is what bit_extent, set_find and sequence_find are specialized here for.
 BOOST_AUTO_TEST_CASE_TEMPLATE(BothReadingsAreReachable, T, Types)
 {
         static_assert(not std::ranges::range<T>);
         static_assert(xstd::ranges::set_range<T>);
-        static_assert(xstd::ranges::array_range<T>);
+        static_assert(xstd::ranges::sequence_range<T>);
 }
 
 // Ours answers the same type-trait battery at the same widths, so nothing is given up by building it over the packed array.

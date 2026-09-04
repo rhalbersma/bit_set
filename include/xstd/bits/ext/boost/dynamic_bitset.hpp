@@ -9,7 +9,7 @@
 // IWYU pragma: always_keep
 
 #include <boost/dynamic_bitset.hpp>                // IWYU pragma: export; dynamic_bitset
-#include <xstd/bits/ranges/array_view.hpp>         // array_find
+#include <xstd/bits/ranges/sequence_view.hpp>      // sequence_find
 #include <xstd/bits/ranges/set_view.hpp>           // set_find, set_view
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
 #include <algorithm>                               // find_if, min
@@ -70,7 +70,7 @@ struct set_compare<boost::dynamic_bitset<Block, Allocator>>
 namespace xstd::ranges {
 
 template<xstd::unsigned_integer Block, class Allocator>
-struct array_find<boost::dynamic_bitset<Block, Allocator>>
+struct sequence_find<boost::dynamic_bitset<Block, Allocator>>
 {
         [[nodiscard]] static constexpr auto first(boost::dynamic_bitset<Block, Allocator> const&) noexcept -> std::size_t { return 0UZ; }
         [[nodiscard]] static constexpr auto last (boost::dynamic_bitset<Block, Allocator> const& c) noexcept -> std::size_t { return c.size(); }

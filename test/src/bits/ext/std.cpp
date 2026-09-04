@@ -3,12 +3,12 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/test/unit_test.hpp>        // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
-#include <xstd/bits/ext/std.hpp>           // the std adaptors, asked for by name
-#include <xstd/bits/ranges/array_view.hpp> // array_range
-#include <xstd/bits/ranges/set_view.hpp>   // set_range
-#include <bitset>                          // bitset
-#include <span>                            // dynamic_extent
+#include <boost/test/unit_test.hpp>           // BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
+#include <xstd/bits/ext/std.hpp>              // the std adaptors, asked for by name
+#include <xstd/bits/ranges/sequence_view.hpp> // sequence_range
+#include <xstd/bits/ranges/set_view.hpp>      // set_range
+#include <bitset>                             // bitset
+#include <span>                               // dynamic_extent
 
 BOOST_AUTO_TEST_SUITE(Ext)
 BOOST_AUTO_TEST_SUITE(Std)
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_SUITE(Std)
 BOOST_AUTO_TEST_CASE(AskingForItByNameIsEnough)
 {
         static_assert(xstd::ranges::set_range<std::bitset<8>>);
-        static_assert(xstd::ranges::array_range<std::bitset<8>>);
+        static_assert(xstd::ranges::sequence_range<std::bitset<8>>);
         static_assert(xstd::ranges::bit_extent<std::bitset<8>> == 8);
         static_assert(xstd::ranges::bit_extent<std::bitset<8>> != std::dynamic_extent);
 }

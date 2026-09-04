@@ -56,7 +56,7 @@ xstd/bits/bit_array.hpp       one header per container, named for the type
 xstd/bits/bitset.hpp
 xstd/bits/bit_finite_set.hpp
 xstd/bits/detail/             the vehicles and the block operations, namespace xstd::detail::bits
-xstd/bits/ranges/             set_view, array_view, bit_extent
+xstd/bits/ranges/             set_view, sequence_view, bit_extent
 xstd/bits/ext/                the adaptors, asked for by name
 ```
 
@@ -118,11 +118,11 @@ container typedefs, bidirectional iterators, `empty`/`size`/`max_size`,
 `insert`/`erase`/`clear`, `find`/`count`/`contains`/`lower_bound`/`upper_bound`/
 `equal_range`, and `==`/`<=>`.
 
-`xstd::array_view<Bits, Extent>(b)` presents the same storage as a sequence of
+`xstd::sequence_view<Bits, Extent>(b)` presents the same storage as a sequence of
 `bool`, span-shaped with a `dynamic_extent` default: `operator[]`, `at`, `front`,
-`back`, `size`, `empty`, `fill`, and `==`/`<=>`. One template rather than an
-`array_view`/`vector_view` pair, for the reason `std::span` is one template: the
-two differ only in whether `size()` is a constant expression.
+`back`, `size`, `empty`, `fill`, and `==`/`<=>`. One template rather than a
+static/dynamic pair, for the reason `std::span` is one template: the two differ
+only in whether `size()` is a constant expression.
 
 The proxies are a closed pair: `*it` yields a proxy reference, `&ref` yields the
 iterator back, and the value -- a key or a `bool` -- is reached only by converting
@@ -140,12 +140,12 @@ opinion here and its implementations disagree about all of it:
 | `bitset`'s const `operator[]` gives `bool`| yes       | no     |
 
 libc++ already builds its bit references this way and libstdc++ does neither half
--- but that is a statement about `array_view` alone, and it is worth being exact
+-- but that is a statement about `sequence_view` alone, and it is worth being exact
 about which of the two views the standard library prefigures.
 
 `std::bitset::reference`, and libc++'s `__bit_reference` behind `vector<bool>`,
 have `value_type = bool` and `iterator_category = random_access_iterator_tag`.
-That is the sequence reading, and `array_view` recapitulates it -- the proxy pair,
+That is the sequence reading, and `sequence_view` recapitulates it -- the proxy pair,
 the extent, the writing through. Nothing here is new.
 
 The set reading is absent from both. Neither offers `value_type = size_t`, and
@@ -156,7 +156,7 @@ this needs, quickly -- `__find_bool` and `__count_bool` specialize `find` and
 comes from -- but exposes it only as a search returning a bool-sequence iterator.
 
 `set_find<Bits>::next` is that same operation surfaced as iteration, with
-`operator*` yielding the position rather than `true`. So `array_view` is libc++'s
+`operator*` yielding the position rather than `true`. So `sequence_view` is libc++'s
 design made a guarantee, and `set_view` is the reading it does not offer, built on
 the primitive it already has. The two together are why a bit sequence needs no
 third vocabulary.
@@ -241,7 +241,7 @@ source, the way `exact_width_types.hpp` does it in xstd:
 - set-like: `std::set<size_t>`, `std::flat_set<size_t>`, `bit_finite_set<N, Block>`,
   `bit_set<Block, Alloc>`, and `set_view` over each legacy bitset.
 - sequence-like: `std::array<bool, N>`, `bit_array<N, Block>`, `std::vector<bool>`,
-  `bit_vector<Block, Alloc>`, and `array_view` over each legacy bitset.
+  `bit_vector<Block, Alloc>`, and `sequence_view` over each legacy bitset.
 - `[bitset]` members: `std::bitset<N>`, `xstd::bitset<N, Block>`,
   `boost::dynamic_bitset<>`, `xstd::dynamic_bitset<Block, Alloc>`.
 
