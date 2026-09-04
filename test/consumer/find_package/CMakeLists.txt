@@ -10,4 +10,4 @@ project(consumer_find_package LANGUAGES CXX)
 find_package(xstd-bits 0.1.0 CONFIG REQUIRED)
 
 add_executable(main ../main.cpp)
-target_link_libraries(main PRIVATE xstd-bits::xstd-bits)
+target_link_libraries(main PRIVATE xstd::bits)

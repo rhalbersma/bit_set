@@ -12,4 +12,4 @@ get_filename_component(xstd_bits_root "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABS
 add_subdirectory("${xstd_bits_root}" xstd-bits-build)
 
 add_executable(main ../main.cpp)
-target_link_libraries(main PRIVATE xstd-bits::xstd-bits)
+target_link_libraries(main PRIVATE xstd::bits)

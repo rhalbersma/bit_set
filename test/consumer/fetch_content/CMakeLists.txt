@@ -15,4 +15,4 @@ FetchContent_Declare(xstd-bits SOURCE_DIR "${xstd_bits_root}")
 FetchContent_MakeAvailable(xstd-bits)
 
 add_executable(main ../main.cpp)
-target_link_libraries(main PRIVATE xstd-bits::xstd-bits)
+target_link_libraries(main PRIVATE xstd::bits)

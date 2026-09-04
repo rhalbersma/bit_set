@@ -39,7 +39,15 @@ find_package(boost_hash2 CONFIG REQUIRED)
 add_library(
     ${PROJECT_NAME} INTERFACE
 )
-add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+# Consumed as xstd::bits, following Boost: the package keeps the repository's name
+# (find_package(xstd-bits)) while the target is a component of one umbrella namespace,
+# so xstd::bits sits beside xstd::ints the way Boost::hash2 sits beside Boost::mp11.
+# EXPORT_NAME is what lets the exported name differ from the target name; the alias
+# below must spell the same thing, or an add_subdirectory consumer and a find_package
+# consumer would end up with two different names for one library.
+set_target_properties(${PROJECT_NAME} PROPERTIES EXPORT_NAME bits)
+add_library(xstd::bits ALIAS ${PROJECT_NAME})
 
 # No target_include_directories: the HEADERS file set supplies both the build and the install interface.
 target_sources(
@@ -94,7 +102,7 @@ install(
 )
 install(
     EXPORT ${PROJECT_NAME}Targets
-    NAMESPACE ${PROJECT_NAME}::
+    NAMESPACE xstd::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
