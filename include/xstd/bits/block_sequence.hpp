@@ -20,6 +20,7 @@
 #include <concepts>                                            // swap
 #include <cstddef>                                             // ptrdiff_t, size_t
 #include <functional>                                          // plus
+#include <iterator>                                            // prev
 #include <memory>                                              // allocator
 #include <ranges>                                              // begin, drop, iota, size, swap, transform, zip
                                                                // (views::drop_last when P22014R2 is accepted)
