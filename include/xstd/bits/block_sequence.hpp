@@ -334,6 +334,17 @@ public:
                 return find_next_inclusive(n + 1);
         }
 
+        // The last set position below n. Deliberately NOT total: where find_next_inclusive
+        // answers size() for "nothing at or above", this one has a precondition instead, and
+        // that is the whole of why it is three instructions cheaper at every width -- it never
+        // materializes a not-found value.
+        //
+        // Safe because reverse iteration supplies the guard the function does not.
+        // rend() is make_reverse_iterator(begin()), and std::reverse_iterator stops there, so
+        // operator-- is never applied at begin(). A hand-written loop gets no such help:
+        // the forward idiom terminates itself against size(), the reverse one runs off the
+        // bottom. Totality is the container's contract to keep, per #86 -- not this layer's to
+        // absorb.
         [[nodiscard]] constexpr auto find_prev_exclusive(std::size_t n) const noexcept
                 -> std::size_t
         {
