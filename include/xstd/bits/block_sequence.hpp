@@ -725,7 +725,7 @@ private:
         [[nodiscard]] constexpr auto any_above(std::size_t index, std::size_t offset) const noexcept
                 -> bool
         {
-                assert(not detail::bits::intersects(m_blocks[index], static_cast<block_type>(unit << offset)));
+                assert(not test((index * bits_per_block) + offset));
                 if (static_cast<block_type>(m_blocks[index] >> offset) != zero) {
                         return true;
                 }
