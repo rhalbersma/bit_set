@@ -64,13 +64,7 @@ struct sequence_ops
                 }
         }
 
-        // The operator[] fallback this class refuses is the one below, for a type without
-        // set(n, value): were its operator[] to return our own proxy, that proxy's assignment
-        // would land back here and recurse until the stack is gone. Where set(n, value) does
-        // exist the type is a concrete bitset, and its subscript is the unchecked way in --
-        // which is the one to take, the position being a precondition asserted just below,
-        // where std::bitset::set and xstd::bitset::set check it again and throw out of this
-        // noexcept.
+        // Refused for a type without set(n, value): its proxy's assignment would recurse to death here. [design.md#the-proxy-recursion-trap]
         static constexpr void assign(Bits& c, std::size_t n, bool value) noexcept
                 requires requires { c.set(n, value); }
         {

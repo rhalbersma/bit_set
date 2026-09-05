@@ -72,14 +72,10 @@ class bitset
 public:
         using block_type = Block;
 
-        // sequence_view's proxy, ported to the member [bitset.refs] asks for: the bits and a position,
-        // handed out by operator[] and reaching them only when read or written. Every such reach
-        // goes through xstd::block_sequence, whose set, reset, flip and operator[] are noexcept and
-        // asserted, so the proxy never takes the checked set(pos, val) beside it that throws.
+        // sequence_view's proxy as [bitset.refs] asks for it, reaching the bits only through the unchecked way in. [design.md#unchecked-writes-in-views]
         class reference
         {
-                // A pointer, not the reference sequence_view's proxy holds, so that the copy
-                // constructor below can stay defaulted as [bitset.refs] declares it.
+                // A pointer, not a reference, so the copy constructor stays defaulted as [bitset.refs] declares it.
                 bitset* m_ptr{};
                 std::size_t m_idx{};
 
@@ -101,12 +97,7 @@ public:
                         return *this;
                 }
 
-                // Assigns the bit and not the proxy: b[i] = b[j] is what [bitset.refs] gives this
-                // signature, and the swap below reads b[i] = b[j] too, so rebinding would leave
-                // both positions holding whatever the second one did.
-                //
-                // bugprone-unhandled-self-assignment wants the &other == this guard a class owning
-                // storage needs. This one owns none: b[i] = b[i] reads the bit and writes it back.
+                // Assigns the bit, not the proxy: rebinding would break the swap below. [design.md#clang-tidy-false-positives]
                 constexpr auto operator=(const reference& x) noexcept -> reference&  // NOLINT(bugprone-unhandled-self-assignment)
                 {
                         return *this = static_cast<bool>(x);
@@ -293,8 +284,7 @@ public:
         [[nodiscard]] constexpr auto to_string(charT zero = charT('0'), charT one = charT('1')) const
                 -> std::basic_string<charT, traits, Allocator>
         {
-                // bugprone-string-constructor sees the N == 0 instantiation, where this is empty --
-                // which is what bitset<0>::to_string() returns.
+                // The finding is the N == 0 instantiation, where empty is the answer. [design.md#clang-tidy-false-positives]
                 auto str = std::basic_string<charT, traits, Allocator>(N, zero);  // NOLINT(bugprone-string-constructor)
                 for (auto const i : std::views::iota(0UZ, N)) {
                         if (m_bits.test(N - 1 - i)) {
@@ -457,9 +447,7 @@ auto operator>>(std::basic_istream<charT, traits>& is, bitset<N, Block>& x)
         -> std::basic_istream<charT, traits>&
 {
         auto str = std::basic_string<charT, traits>(N, is.widen('0'));  // NOLINT(bugprone-string-constructor)
-        // state is assigned below, inside an if constexpr (N > 0) that the N == 0 instantiation
-        // discards; misc-const-correctness sees only that one and asks for a const that would
-        // stop every other instantiation from compiling.
+        // Assigned inside an if constexpr the N == 0 instantiation discards. [design.md#clang-tidy-false-positives]
         auto state = std::ios_base::goodbit;  // NOLINT(misc-const-correctness)
         charT ch;
         auto i = 0UZ;

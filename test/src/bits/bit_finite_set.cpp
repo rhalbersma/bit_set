@@ -50,19 +50,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsABitSet, T, Types)
         static_assert(test::set::bit_set<T>);
 }
 
-// std::set's lookups are total over key_type, and so are these: a key naming no possible
-// element answers "absent" rather than reaching into the blocks. Kept out of the exhaustive
-// suite because that suite draws every key from [0, N), which is exactly why this went
-// unseen.
-//
-// Two findings from running this against the unguarded header are worth recording, because
-// they are why it sweeps the whole of Types rather than one convenient width. No single
-// width exposed all six operations and no single key did either -- at N = 8 over uint8_t
-// every one of them was clean for key == N, so a narrow single-block set proves nothing on
-// its own. And erase was an out-of-bounds *write*, while upper_bound failed on its returned
-// value rather than on memory at all: find_next's ++n wrapped before it could test the
-// bound, so it answered with a real element where end() was due. That second one is what
-// keeps this a gate on the jobs that build without sanitizers.
+// Total lookups, swept over every width because no single one exposed all six operations. [design.md#total-lookups-on-the-container]
 template<class X>
 auto check_key_outside_the_domain(X a, std::size_t x) -> void
 {

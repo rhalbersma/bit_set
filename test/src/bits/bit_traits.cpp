@@ -10,10 +10,7 @@
 #include <cstddef>                       // size_t
 #include <set>                           // set
 
-// Two adapters over identical storage, differing only in whether they hand their blocks over.
-// That is the whole design of this file: the walks pick their tier on block_readable, so the only
-// way to test the choice is to hold the bits fixed and vary nothing else. Every check below then
-// runs twice, and the two answers must agree with each other as well as with std::set.
+// Two adapters over identical storage, differing only in whether they hand their blocks over. [design.md#detection-by-absence]
 namespace {
 
 // The floor and nothing more: a width and an indexed read.
@@ -89,8 +86,7 @@ auto check_scans(std::set<std::size_t> const& model) -> void
         BOOST_CHECK_EQUAL(bits::scan_last<traits_of<T>>(c), N);
         BOOST_CHECK_EQUAL(bits::scan_first<traits_of<T>>(c), model.empty() ? N : *model.begin());
 
-        // One past the width too: every scan here is total, so the argument past the end is a
-        // question with an answer rather than a precondition violation.
+        // One past the width too, every scan here being total. [design.md#total-versus-precondition]
         for (auto n = 0UZ; n <= N + 1UZ; ++n) {
                 auto const above = model.upper_bound(n);
                 BOOST_CHECK_EQUAL(bits::scan_next<traits_of<T>>(c, n), above == model.end() ? N : *above);
@@ -103,9 +99,7 @@ auto check_scans(std::set<std::size_t> const& model) -> void
         }
 }
 
-// Patterns rather than every subset, since the graded extents run to 128 positions: the empty
-// and full sets, every singleton, and every adjacent pair, which is what puts a set bit on both
-// sides of every block boundary the width has.
+// Patterns rather than every subset: adjacent pairs put a set bit on both sides of every block boundary.
 template<class T>
 auto check_every_pattern() -> void
 {
@@ -141,8 +135,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheFloorIsAWidthAndAnIndexedRead, T, ElementTypes)
         static_assert(xstd::static_bit_extent<T>);
 }
 
-// The tier split is what the two adapters exist to pin down: identical storage, one answering
-// block_readable and one not, so neither branch of the if constexpr can go unexercised.
+// The tier split pinned down: one adapter answers block_readable, one does not. [design.md#detection-by-absence]
 BOOST_AUTO_TEST_CASE_TEMPLATE(BlockAccessIsWhatSeparatesTheTiers, T, ElementTypes)
 {
         static_assert(not xstd::block_readable<xstd::bit_traits<T>, T>);
@@ -163,10 +156,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BlockWiseScansAgreeWithStdSet, T, BlockTypes)
         check_every_pattern<T>();
 }
 
-// No ordering case here any more. The door carries no ordering: "lexicographic" names two
-// different comparisons at this layer -- ascending positions for the set reading, bools from
-// index 0 for the sequence reading -- and they disagree on {0,1} against {1}. Each ordering is
-// tested where it is defined, against std::lexicographical_compare_three_way over that reading's
-// own iterators.
+// No ordering case: the door carries none, the two readings disagreeing. [design.md#two-readings-disagree]
 
 BOOST_AUTO_TEST_SUITE_END()

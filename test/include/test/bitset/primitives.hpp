@@ -19,13 +19,7 @@
 
 namespace test::bitset {
 
-// Nine of the primitives below carry NOLINT(bugprone-exception-escape) on a noexcept operator().
-// Each guards on pos < self.size() and calls a member the standard specifies as throwing outside
-// that width -- set, reset, flip, test, at -- checking in the other arm that it does throw. The
-// check reads the callee's signature and cannot read the guard, so it reports every instantiation:
-// 104 of them across the two std_bitset units. The noexcept is the claim being made, that a
-// primitive answering about a position inside the bitset never throws, and it is what would fail
-// the suite loudly were the guard ever wrong.
+// Nine primitives below NOLINT bugprone-exception-escape: the check reads the callee, not the guard. [design.md#exception-escape-nolints]
 
 // These checks are on xstd::bitset's basic_string_view overload: std::bitset has none, and dynamic_bitset answers to its own contract.
 template<class X>

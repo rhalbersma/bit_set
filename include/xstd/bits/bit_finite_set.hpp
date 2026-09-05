@@ -213,8 +213,7 @@ public:
         constexpr auto erase(const key_type& x) noexcept
                 -> size_type
         {
-                // The one guard here that stops a write rather than a read: without it an
-                // out-of-range key clears a bit in whatever follows the blocks.
+                // The one guard stopping a write: without it an out-of-range key clears a foreign bit. [design.md#total-lookups-on-the-container]
                 return x < N and m_bits.erase(x);
         }
 
@@ -259,12 +258,7 @@ public:
         [[nodiscard]] constexpr auto   key_comp() const noexcept -> key_compare   { return {}; }
         [[nodiscard]] constexpr auto value_comp() const noexcept -> value_compare { return {}; }
 
-        // set operations
-        // Every lookup below is total over key_type, because std::set's is: a key outside
-        // [0, N) names no element, so it answers "absent" rather than reaching the bit.
-        // block_sequence asserts is_valid on every position it accepts and offers no total
-        // spelling of any of these -- that is the layering working, not a gap in it. The
-        // precondition is the sequence's, the guard is the container's.
+        // set operations, every one total over key_type as std::set's are. [design.md#total-lookups-on-the-container]
         [[nodiscard]] constexpr auto contains(const key_type& x) const noexcept -> bool      { return x < N and m_bits.test(x); }
         [[nodiscard]] constexpr auto count   (const key_type& x) const noexcept -> size_type { return contains(x);         }
 
@@ -275,10 +269,7 @@ public:
                 }
                 return self.end();
         }
-        // The bound is inclusive_find_next at x, and its exclusive twin one past it. The x ? :
-        // that used to stand here was find_next's exclusivity showing through: x - 1 wraps at
-        // 0, so the 0 case had to be spelled separately. An inclusive primitive has no such
-        // seam, so the two bounds now differ by the + 1 that actually separates them.
+        // The two bounds differ by the + 1 that separates them, an inclusive primitive having no seam at 0.
         [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, x < N ? self.m_bits.inclusive_find_next(x    ) : N }; }
         [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, x < N ? self.m_bits.inclusive_find_next(x + 1) : N }; }
         [[nodiscard]] constexpr auto equal_range(this auto&& self, const key_type& x) noexcept -> std::pair<iterator, iterator> { return { self.lower_bound(x), self.upper_bound(x) };               }

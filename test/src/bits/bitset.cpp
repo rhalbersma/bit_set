@@ -48,9 +48,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(IsTrivial, T, Types)
         static_assert(    std::is_trivially_move_assignable_v<T>);
 }
 
-// The proxy operator[] hands out, ported from sequence_view: assignment either way round, the
-// flipped reading, flip itself, and the three swaps. b[i] = b[j] is checked to move the bit
-// rather than the proxy, which is also what makes swap work.
+// The proxy from sequence_view: b[i] = b[j] must move the bit, not the proxy, or swap breaks.
 BOOST_AUTO_TEST_CASE(TheMutableSubscriptHandsOutAnAssignableProxy)
 {
         auto b = xstd::bitset<8>{};

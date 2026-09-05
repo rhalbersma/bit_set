@@ -210,11 +210,19 @@ std::lexicographical_compare_three_way(a.begin(), a.end(), b.begin(), b.end()) =
 which is stated on the **reading**, never on the storage: `block_sequence` has no `begin()`/`end()`, and
 `boost::dynamic_bitset` has no public iterators, so it cannot be written against a backend at all.
 
-Two things follow. `basic_bitset` has no `operator<=>` because it does not iterate — the existing "no
-iteration and no `<=>` here by design" is a consequence rather than a separate rule. And magnitude ordering
-(boost's `operator<`, a top-down block walk) is the lexicographic order of *reverse* iteration, so no
-forward-iterating container obeying the invariant can have it; boost escapes only by having no iterators to
-be constrained by.
+`basic_bitset` therefore has no `operator<=>`, because it does not iterate — the existing "no iteration and
+no `<=>` here by design" is a consequence rather than a separate rule.
+
+`boost::dynamic_bitset::operator<` is a **third** reading, not an unreachable one. It pairs *a*'s highest bit
+with *b*'s highest, second with second, then breaks a tie on width — which is that same standard algorithm
+over **reverse** iterators. Verified over 1,046,529 pairs spanning every width 0-9 against every other: zero
+mismatches against reverse-lex, 223,893 against numeric order. It is *not* magnitude ordering, though it
+coincides with one at equal width, which is the only case our operators admit: `"1"` and `"01"` are both the
+number 1, and boost orders them strictly.
+
+So it stays out of `operator<=>` because that is defined by *forward* iteration, not because nothing could
+reach it — and should a dynamic bitset ever want boost's exact ordering, it costs no new algorithm, being
+`sequence_three_way` over `rbegin`/`rend`.
 
 Where a specialization offers nothing faster, the default is that standard algorithm over the reading's own
 iterators — so the default cannot disagree with the specification, and only an optimization can.
@@ -296,3 +304,145 @@ one this name should try to carry.
 Contract qualifiers are prefixes, not suffixes — `inclusive_find_next`, `exclusive_find_prev`,
 `unchecked_test`, `checked_shift_left` — so that the contract reads before the operation and the cheaper
 form cannot be called by mistake.
+
+## Test harness
+
+### scratch-objects
+
+`checker` holds two scratch objects, reset before each mutating check, rather than taking a fresh copy per
+check. Same-width assignment reuses the storage, so this is two allocations for the whole checker instead of
+one per operation — of which `positions()` alone did five per bit.
+
+It is faster, and it leaves the optimizer one object to follow rather than thousands of construct/destroy
+pairs. **Three GCC versions have each mis-analysed the copying shape in a different way** —
+`-Wfree-nonheap-object` on 15, `-Wrestrict` on 17-SVN — and moving the copies around only moved the
+diagnostic. The whole-container mutators get one method apiece for the same reason: at `-O3` GCC 15 inlines
+a combined sweep into a single function and then reports `-Wfree-nonheap-object` on the vector copies, which
+ASan, LSan and UBSan all say is not there.
+
+The scratch objects are held **by reference**, owned by `check_ops`: by value they would be the only members
+narrower than a pointer, and `-Wpadded` reports the tail padding that leaves.
+
+### counted-not-asserted
+
+Disagreements are counted rather than asserted per bit. A passing assertion per bit says no more than one,
+and a failing one drowns the log. Two helpers turn the comparison into a count, so the cast
+`readability-implicit-bool-conversion` asks for has two sites rather than thirty.
+
+### seven-patterns
+
+The sweep uses seven patterns, chosen so every pair lands on both sides of each branch: all clear and all set
+for the whole-container shortcuts, the strided ones for partial blocks, and the endpoint ones for the first
+and last block specifically.
+
+The last pattern fills every block but the last, which is the only way to reach the right operand of `all()`'s
+short circuit with a `false`: every other pattern either fails a block below the last, or fills the last one
+too. It compares block indices rather than a precomputed bit count, so that a single-block width — for which
+it selects nothing — does not fold into an unsigned comparison against zero.
+
+### width-zero-comparisons
+
+An unsigned comparison against zero is a diagnostic on both major compilers: `-Wtype-limits` on GCC, and C4296
+on MSVC, which is what `is_valid()` carries its own note about. At a width of zero, `i < n` with `n` folding to
+a constant is exactly that, so the sweeps use `views::iota` instead.
+
+The same folding is why lambdas capture by reference throughout rather than naming what they use: under a
+static width the compiler folds those to constants, and naming something usable in a constant expression is
+what `-Wunused-lambda-capture` reports.
+
+## Views and containers
+
+### asking-is-total
+
+Asking is total whatever the extent: a position past the width is a key the set does not hold, which is an
+answer and not a precondition violation. That is what `[set]` gives `contains` and `find` — `s.find(k)`
+returns `end()` for any `k` it does not hold, never refuses the question — and it is the difference between
+the set reading and the sequence reading, where `sequence_view::operator[]` indexes and out of range is out
+of bounds.
+
+`insert` carries no `noexcept`, for the reason `std::set::insert` carries none: growing a dynamic extent
+allocates. It is the one operation a set can be unable to satisfy, and only a **static** extent ever is — a
+fixed capacity cannot come to hold a position outside it, so that is the precondition violation. A dynamic
+extent grows to hold it, `[set]` giving `insert` no way to fail. Growing has a limit of its own: `n + 1` must
+be a width the container can address, and `dynamic_bitset::max_size()` being `SIZE_MAX`, the one position
+ruled out is the one whose successor wraps to zero.
+
+Erasing stays total like `contains`: removing what is not there is the no-op returning zero that
+`std::set::erase` is.
+
+### unchecked-writes-in-views
+
+Reads and writes inside a view go through the **subscript**, not through `test()`, `set(n)` or `reset(n)`.
+The position is already in range by then, and those are the checked accessors whose throw would escape a
+`noexcept` — which `bugprone-exception-escape` is right to report. Every type in the vocabulary hands out a
+proxy that writes without checking.
+
+### the-proxy-recursion-trap
+
+`sequence_view` refuses the `operator[]` fallback for a type without `set(n, value)`. Were such a type's
+`operator[]` to return our own proxy, that proxy's assignment would land back in the fallback and **recurse
+until the stack is gone**.
+
+Where `set(n, value)` does exist the type is a concrete bitset, and its subscript is the unchecked way in —
+which is the one to take, the position being a precondition asserted just below, where `std::bitset::set` and
+`xstd::bitset::set` would check it again and throw out of a `noexcept`.
+
+### total-lookups-on-the-container
+
+Every `bit_finite_set` lookup is total over `key_type`, because `std::set`'s is: a key outside `[0, N)` names
+no element, so it answers *absent* rather than reaching the bit. `block_sequence` asserts `is_valid` on every
+position it accepts and offers no total spelling of any of these — that is the layering working, not a gap in
+it. **The precondition is the sequence's; the guard is the container's.**
+
+One of those guards stops a *write* rather than a read: without it an out-of-range key clears a bit in
+whatever follows the blocks.
+
+Two findings from running the suite against the unguarded header are worth keeping, because they are why it
+sweeps every width rather than one convenient one. **No single width exposed all six operations and no single
+key did either** — at N = 8 over `uint8_t` every one of them was clean for `key == N`, so a narrow
+single-block set proves nothing on its own. And `erase` was an out-of-bounds *write*, while `upper_bound`
+failed on its returned value rather than on memory at all: `find_next`'s `++n` wrapped before it could test
+the bound, so it answered with a real element where `end()` was due. That second one is why this stays a gate
+on the jobs that build without sanitizers.
+
+## Platform and tooling, continued
+
+### uint128-support
+
+`xstd::uint128` names a type on every compiler the matrix runs, but the library can only carry it where
+`<bit>` will: `detail::bits::intrin` forwards `countl_zero`, `countr_zero` and `popcount` straight through,
+and those take `std::unsigned_integral` alone. That is three separate facts.
+
+GCC and Clang have the built-in. libstdc++ and libc++ hand it the `numeric_limits` specialization that carries
+it into the concept **only outside `__STRICT_ANSI__`**, which is why the matrix compiles as `gnu++23`. And the
+Microsoft STL's `std::_Unsigned128` is a class type, so `<bit>` declines it whatever the mode — that block
+waits on an `xstd::countl_zero`, not on anything here.
+
+The condition worth testing is the concept, which no `#if` can spell, so the assert holds the macro to it in
+both directions. The day that seam grows its own implementation, or a new pairing lands on the matrix, the
+build says so there rather than at fifteen instantiation lists or, worse, nowhere.
+
+### exception-escape-nolints
+
+Nine primitives in `test/include/test/bitset/primitives.hpp` carry `NOLINT(bugprone-exception-escape)` on a
+`noexcept operator()`. Each guards on `pos < self.size()` and calls a member the standard specifies as
+throwing outside that width — `set`, `reset`, `flip`, `test`, `at` — checking in the other arm that it does
+throw.
+
+The check reads the callee's signature and cannot read the guard, so it reports every instantiation: 104 of
+them across the two `std_bitset` units. The `noexcept` is the claim being made — that a primitive answering
+about a position inside the bitset never throws — and it is what would fail the suite loudly were the guard
+ever wrong.
+
+### clang-tidy-false-positives
+
+Four findings are suppressed because the checker cannot see what makes them right:
+
+- `bugprone-unhandled-self-assignment` on the bitset proxy's `operator=`, which owns no storage: `b[i] = b[i]`
+  reads the bit and writes it back.
+- `bugprone-string-constructor` on `to_string`, which sees the `N == 0` instantiation where the string is
+  empty — which is what `bitset<0>::to_string()` returns.
+- `misc-const-correctness` on a variable assigned inside an `if constexpr (N > 0)` that the `N == 0`
+  instantiation discards; it sees only that one and asks for a `const` that would stop every other
+  instantiation compiling.
+- `misc-redundant-expression` on a reflexivity check, which cannot be written without naming the object twice.

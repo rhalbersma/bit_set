@@ -52,8 +52,7 @@ BOOST_AUTO_TEST_CASE(TheViewedTypesAreTheOnesHoldingASetWithoutOfferingIt)
         static_assert(std::ranges::bidirectional_range<xstd::set_view<boost::dynamic_bitset<>>>);
 }
 
-// Asking is total whatever the extent: a position past the width is a key the set does not hold,
-// which every one of these answers rather than refuses, exactly as [set] has it.
+// Asking is total whatever the extent, exactly as [set] has it. [design.md#asking-is-total]
 BOOST_AUTO_TEST_CASE_TEMPLATE(EveryExtentAnswersForPositionsPastItsWidth, T, ViewedTypes)
 {
         auto bits = eight_bits_with_three_set<T>();
@@ -63,8 +62,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(EveryExtentAnswersForPositionsPastItsWidth, T, Vie
         // Both ways round, so that find and lower_bound are each seen taking either arm.
         BOOST_CHECK(v.contains(3));
         BOOST_CHECK_EQUAL(v.count(3), 1);
-        // contains is checked just above; find is the subject here, so readability-container-contains
-        // is asking for the one call this case exists to make.
+        // find is the subject here, which is the one call readability-container-contains would remove.
         BOOST_CHECK(v.find(3) != v.end());  // NOLINT(readability-container-contains)
         BOOST_CHECK(v.lower_bound(3) == v.find(3));
 
@@ -77,16 +75,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(EveryExtentAnswersForPositionsPastItsWidth, T, Vie
         BOOST_CHECK(v.upper_bound(3) == v.end());
         BOOST_CHECK(v.upper_bound(99) == v.end());
 
-        // Erasing what is not there is the no-op returning zero that std::set::erase is, and it
-        // neither shrinks the width nor disturbs what is held.
+        // Erasing what is not there is std::set::erase's no-op returning zero. [design.md#asking-is-total]
         BOOST_CHECK_EQUAL(v.erase(99), 0);
         BOOST_CHECK(v.contains(3));
         BOOST_CHECK_EQUAL(v.size(), 1);
         BOOST_CHECK_EQUAL(v.max_size(), width);
 }
 
-// The other half of the std::set reading: [set] gives insert no way to fail, so a dynamic
-// extent grows to hold a position past its current size rather than asserting on it.
+// [set] gives insert no way to fail, so a dynamic extent grows rather than asserting. [design.md#asking-is-total]
 BOOST_AUTO_TEST_CASE(ADynamicExtentGrowsToHoldAPositionPastItsCurrentSize)
 {
         auto bits = boost::dynamic_bitset<>(8);
