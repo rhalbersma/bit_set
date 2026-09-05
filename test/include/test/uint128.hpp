@@ -14,19 +14,7 @@
 #define TEST_HAS_UINT128
 #endif
 
-// xstd::uint128 names a type on every compiler the matrix runs, but the library can only
-// carry it where <bit> will: detail::bits::intrin forwards countl_zero, countr_zero and
-// popcount straight through, and those take std::unsigned_integral alone. That is three
-// separate facts, and the three terms above are them in order. GCC and Clang have the
-// built-in; libstdc++ and libc++ hand it the numeric_limits specialization that carries
-// it into the concept only outside __STRICT_ANSI__, which is why the matrix compiles as
-// gnu++23; and the Microsoft STL's std::_Unsigned128 is a class type, so <bit> declines
-// it whatever the mode -- that block waits on an xstd::countl_zero, not on anything here.
-//
-// The condition worth testing is the concept, which no #if can spell, so the assert below
-// holds the macro to it in both directions. The day that seam grows its own implementation,
-// or a new pairing lands on the matrix, the build says so here rather than at fifteen
-// instantiation lists or, worse, nowhere.
+// Three terms for three facts, and the assert below holds the macro to the concept no #if can spell. [design.md#uint128-support]
 namespace test {
 
 #ifdef TEST_HAS_UINT128

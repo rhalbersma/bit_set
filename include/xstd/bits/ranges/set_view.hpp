@@ -92,15 +92,7 @@ struct set_ops
                 }
         }
 
-        // Asking is total, whatever the extent: a position past the width is a key the set does not
-        // hold, which is an answer and not a precondition violation. That is what [set] gives
-        // contains and find -- s.find(k) returns end() for any k it does not hold, never refuses the
-        // question -- and it is the difference between the set reading and the sequence reading,
-        // where sequence_view's operator[] indexes and out of range is out of bounds.
-        //
-        // The position is in range by the time the bitset is read, so the read goes through
-        // operator[] and not test(): the latter is the checked accessor whose throw would escape this
-        // noexcept, and bugprone-exception-escape is right to say so.
+        // Asking is total whatever the extent, and reads go through the subscript. [design.md#asking-is-total]
         [[nodiscard]] static constexpr auto contains(Bits const& c, std::size_t n) noexcept
                 -> bool
         {
@@ -114,17 +106,7 @@ struct set_ops
                 }
         }
 
-        // insert carries no noexcept, for the reason std::set::insert carries none: growing a
-        // dynamic extent allocates. It is the one operation a set can be unable to satisfy, and
-        // only a static extent ever is: a fixed capacity cannot come to hold a position outside it, so that is the
-        // precondition violation. A dynamic extent grows to hold it, [set] giving insert no way
-        // to fail. Erasing stays total like contains -- a position past the width is a key the
-        // set does not hold, and removing what is not there is the no-op returning zero that
-        // std::set::erase is.
-        //
-        // The write goes through the subscript rather than set(n) and reset(n), which check the
-        // position a second time and throw. Every type in the vocabulary hands out a proxy that
-        // writes without checking -- xstd::bitset's since its operator[] stopped being a TODO.
+        // insert alone can fail, and only at a static extent; writes go through the subscript. [design.md#asking-is-total]
         static constexpr void insert(Bits& c, std::size_t n)
         {
                 if constexpr (bitset_vocabulary<Bits>) {
@@ -132,11 +114,7 @@ struct set_ops
                                 // The assert is on its own line: the coverage job drops assert branches by matching the start of the line.
                                 assert(n < max_size(c));
                         } else if (n >= max_size(c)) {
-                                // Growing has a limit of its own, and n + 1 must be a width the
-                                // container can address: dynamic_bitset's max_size() is SIZE_MAX,
-                                // so the one position this rules out is the one whose successor
-                                // wraps to zero -- where resize would grow nothing and the write
-                                // below would land SIZE_MAX bits past the end.
+                                // n + 1 must be addressable: the ruled-out position is the one whose successor wraps to zero.
                                 assert(n < c.max_size());
                                 c.resize(n + 1UZ);
                         }
@@ -492,9 +470,7 @@ public:
         [[nodiscard]] constexpr auto upper_bound(key_type x) const noexcept
                 -> const_iterator
         {
-                // Total like the rest of the asking: past the width there is nothing above x
-                // either. set_find::next is the primitive that scans from a position the set
-                // has, and x + 1 is not one of those once x reaches the width.
+                // Total like the rest of the asking: past the width there is nothing above x either.
                 if (x >= max_size()) {
                         return end();
                 }

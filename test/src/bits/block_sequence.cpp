@@ -12,15 +12,13 @@
 #include <cstddef>                     // size_t
 #include <cstdint>                     // uint8_t, uint64_t
 #include <ranges>                      // iota
-#include <set>                         // set
 #include <vector>                      // vector
 
 BOOST_AUTO_TEST_SUITE(BitBlocks)
 
 namespace {
 
-// std::vector<bool> is the reference reading: one bool per bit, no packing, no invariant
-// to get wrong. Every answer block_sequence gives is checked against what it says.
+// std::vector<bool> is the reference reading: one bool per bit, no packing, no invariant to get wrong.
 using model = std::vector<bool>;
 
 template<class BB>
@@ -33,13 +31,7 @@ auto reference(BB const& b) -> model
         return m;
 }
 
-// The pair under test, its model, and the running disagreement count, held together so
-// that each family of checks below reads as what it compares rather than as a parameter
-// list. One family per member, because all of them in one function is a cognitive
-// complexity clang-tidy rightly objects to.
-//
-// Disagreements are counted rather than asserted per bit: a passing assertion per bit
-// says no more than one, and a failing one drowns the log.
+// One family of checks per member, disagreements counted rather than asserted. [design.md#counted-not-asserted]
 template<class BB>
 class checker
 {
@@ -51,16 +43,7 @@ class checker
         std::size_t m_cardinality = static_cast<std::size_t>(std::ranges::count(m_mx, true));
         int& m_disagreements;
 
-        // Two scratch objects, reset before each mutating check, rather than a fresh copy
-        // per check. Same-width assignment reuses the storage, so this is two allocations
-        // for the whole checker instead of one per operation -- of which positions() alone
-        // did five per bit. It is faster, and it leaves the optimizer one object to follow
-        // rather than thousands of construct/destroy pairs: three GCC versions have each
-        // mis-analysed that shape in a different way (-Wfree-nonheap-object on 15,
-        // -Wrestrict on 17-SVN), and moving the copies around only moved the diagnostic.
-        //
-        // Held by reference, owned by check_ops: by value they would be the only members
-        // narrower than a pointer, and -Wpadded reports the tail padding that leaves.
+        // Two scratch objects by reference: copies per check trip three GCC diagnostics. [design.md#scratch-objects]
         BB& m_a;
         BB& m_b;
 
@@ -76,8 +59,7 @@ class checker
                 return m_b;
         }
 
-        // The two places a comparison becomes a count, so the cast that
-        // readability-implicit-bool-conversion asks for has two sites and not thirty.
+        // The two sites where a comparison becomes a count, so the cast is not thirty. [design.md#counted-not-asserted]
         auto disagree(bool ours, bool theirs) -> void
         {
                 m_disagreements += static_cast<int>(ours != theirs);
@@ -115,8 +97,7 @@ public:
                 disagree(m_x == m_y, m_mx == m_my);
         }
 
-        // find_front and find_back assert any(), so they answer only for a non-empty x;
-        // find_first and find_last are total and answer size() for an empty one.
+        // find_front/find_back assert any(); find_first/find_last are total and answer size().
         auto scans() -> void
         {
                 if (m_cardinality != 0) {
@@ -140,9 +121,7 @@ public:
                         unequal(m_x.exclusive_find_next(i), next);
                 }
 
-                // inclusive_find_next is the primitive; find_first is its 0 and exclusive_find_next its n + 1. Check
-                // it directly over its whole precondition domain -- n == size() included, which is
-                // the one value the scan cannot start from and the reason the guard is == at all.
+                // The primitive, checked over its whole domain, n == size() included. [design.md#inclusive-is-the-primitive]
                 for (auto i = 0UZ; i <= m_n; ++i) {
                         auto bound = i;
                         while (bound < m_n and not m_mx[bound]) { ++bound; }
@@ -175,8 +154,7 @@ public:
                 disagree(m_x.intersects(m_y),          meets);
         }
 
-        // On packed bits the set operation and the pointwise sequence operation are the
-        // same instruction, so one model answers for both readings.
+        // On packed bits the set and pointwise sequence operations are one instruction, so one model answers both.
         auto bitwise() -> void
         {
                 { auto& a = fresh_x(); a &= m_y; auto m = model(m_n); for (auto i = 0UZ; i < m_n; ++i) { m[i] = m_mx[i] and     m_my[i]; } same(m, a); }
@@ -193,10 +171,7 @@ public:
                 }
         }
 
-        // Each of these has to leave the unused tail zero. One method apiece rather than
-        // four scopes in one: at -O3 GCC 15 inlines the whole sweep into a single function
-        // and then reports -Wfree-nonheap-object on the vector copies, which ASan, LSan and
-        // UBSan all say is not there.
+        // One method apiece: combined, GCC 15 at -O3 reports a free-nonheap-object that is not there. [design.md#scratch-objects]
         auto whole_set() -> void
         {
                 auto& a = fresh_x();
@@ -244,8 +219,7 @@ public:
                 }
         }
 
-        // Writing every block back must be the identity, and writing all-ones must stop at
-        // size(), which is the unused-tail invariant itself.
+        // Writing blocks back is the identity, and all-ones must stop at size(): the unused-tail invariant.
         auto blocks() -> void
         {
                 disagree(m_x.num_blocks() * BB::bits_per_block >= m_n, true);
@@ -287,16 +261,7 @@ auto check_ops(BB const& x, BB const& y, int& disagreements) -> void
         c.blocks();
 }
 
-// Seven patterns, chosen so that every pair of them lands on both sides of each branch:
-// all clear and all set for the whole-container shortcuts, the strided ones for partial
-// blocks, and the endpoint ones for the first and last block specifically. The last one
-// fills every block but the last, which is the only way to reach the right operand of
-// all()'s short circuit with a false: every other pattern either fails a block below the
-// last, or fills the last one too. It compares block indices rather than a precomputed
-// bit count, so that a single-block width -- for which it selects nothing -- does not fold
-// into an unsigned comparison against zero, which -Wtype-limits reports.
-// graded_extents parameterizes on <N, Block>, as the three containers do; block_array is
-// <Block, N>, after std::array. Adapting here keeps the alias ordered by what it holds.
+// Seven patterns, every pair landing on both sides of each branch. [design.md#seven-patterns]
 template<std::size_t N, class Block>
 using graded_block_array = xstd::block_array<Block, N>;
 
@@ -306,9 +271,7 @@ auto sweep(BB const& empty) -> int
         auto const n = empty.size();
 
         auto values = std::vector<BB>();
-        // views::iota rather than i < n: n is empty.size(), which folds to a constant, and
-        // at a width of zero that leaves an unsigned comparison against zero -- -Wtype-limits
-        // on GCC, and the same C4296 the header's is_valid() carries a comment about.
+        // views::iota, not i < n: at width zero that folds to a comparison against zero. [design.md#width-zero-comparisons]
         auto const push = [&](auto fill) -> void {
                 auto b = empty;
                 for (auto const i : std::views::iota(0UZ, n)) {
@@ -316,9 +279,7 @@ auto sweep(BB const& empty) -> int
                 }
                 values.push_back(b);
         };
-        // Captured by reference throughout rather than by name: under a static width the
-        // compiler folds these to constants, and naming something usable in a constant
-        // expression is exactly what -Wunused-lambda-capture reports.
+        // Captured by reference: a static width folds these to constants. [design.md#width-zero-comparisons]
         push([&](std::size_t  ) -> bool { return false;                });
         push([&](std::size_t  ) -> bool { return true;                 });
         push([&](std::size_t i) -> bool { return i % 2 == 0;           });
@@ -336,8 +297,7 @@ auto sweep(BB const& empty) -> int
         return disagreements;
 }
 
-// Named rather than immediately-invoked lambdas: an empty parameter list before a trailing
-// return type is redundant, and dropping it would lean on P1102 for no reason.
+// Named rather than immediately-invoked lambdas, so nothing leans on P1102 for no reason.
 constexpr auto a_static_width_is_constexpr() -> bool
 {
         auto b = xstd::block_array<std::uint8_t, 9>();
@@ -354,8 +314,7 @@ constexpr auto a_run_time_width_is_constexpr() -> bool
 
 } // namespace
 
-// Both vehicles the library ships satisfy what block_sequence asks of its storage; growth is
-// detected where it exists rather than required, so a fixed one qualifies just as well.
+// Both shipped vehicles satisfy block_storage: growth is detected where it exists, never required.
 BOOST_AUTO_TEST_CASE(ItsStorageIsAContiguousSizedRangeOfUnsignedIntegers)
 {
         static_assert(xstd::block_storage<std::array<std::uint8_t, 4>>);
@@ -365,8 +324,7 @@ BOOST_AUTO_TEST_CASE(ItsStorageIsAContiguousSizedRangeOfUnsignedIntegers)
         static_assert(not xstd::block_storage<std::vector<int>>);       // nor unsigned integers
 }
 
-// A compile-time width costs nothing: the absent size member takes no storage, which is
-// the whole point of conditional_data_member_t over a plain size_t.
+// A compile-time width costs nothing: the absent size member takes no storage.
 BOOST_AUTO_TEST_CASE(AStaticWidthAddsNothingToItsBlocks)
 {
         static_assert(sizeof(xstd::block_array<std::uint64_t,  64>) == sizeof(std::array<std::uint64_t,  1>));
@@ -384,8 +342,7 @@ BOOST_AUTO_TEST_CASE(BothWidthsAreUsableAtCompileTime)
         static_assert(a_run_time_width_is_constexpr());
 }
 
-// The static width, at every extent the library instantiates. This is the same storage the
-// three owners hold, so a disagreement here is a disagreement in all of them.
+// The static width at every extent instantiated; the three owners hold this same storage.
 BOOST_AUTO_TEST_CASE_TEMPLATE(AStaticWidthAgreesWithTheModel, T, test::graded_extents<graded_block_array>)
 {
         BOOST_CHECK_EQUAL(sweep(T()), 0);
@@ -404,8 +361,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ARunTimeWidthAgreesWithTheModel, Block, test::word
         BOOST_CHECK_EQUAL(disagreements, 0);
 }
 
-// Two run-time widths are the same type, so == has to answer for a pair that a static
-// width can never form. The widths decide it before the blocks are looked at.
+// Two run-time widths share a type, so == must answer a pair a static width can never form.
 BOOST_AUTO_TEST_CASE(RunTimeWidthsOfDifferentSizeAreNotEqual)
 {
         using T = xstd::block_vector<std::uint8_t>;
@@ -421,8 +377,7 @@ BOOST_AUTO_TEST_CASE(RunTimeWidthsOfDifferentSizeAreNotEqual)
         BOOST_CHECK(x == y);
 }
 
-// A width of zero still owns one block, so that last_block() names something; every
-// operation on it has to see through that block to the width, which is what says empty.
+// A zero width still owns one block, and every operation must see through it to the width.
 BOOST_AUTO_TEST_CASE(AZeroWidthOwnsOneBlockAndReadsEmpty)
 {
         auto const b = xstd::block_vector<std::uint8_t>(0);
@@ -435,8 +390,7 @@ BOOST_AUTO_TEST_CASE(AZeroWidthOwnsOneBlockAndReadsEmpty)
         BOOST_CHECK(not b.any());
 }
 
-// The other half of it: that sole block is entirely padding, so the whole-container
-// mutators must not reach into it. This is what the last-block mask exists to say.
+// That sole block is entirely padding, which is what the last-block mask exists to say. [design.md#padding]
 BOOST_AUTO_TEST_CASE(AZeroWidthsOneBlockIsAllPaddingAndStaysZero)
 {
         auto b = xstd::block_vector<std::uint8_t>(0);
@@ -448,8 +402,7 @@ BOOST_AUTO_TEST_CASE(AZeroWidthsOneBlockIsAllPaddingAndStaysZero)
         BOOST_CHECK_EQUAL(b.block(0), 0U);
 }
 
-// A default-constructed run-time width is the zero-width one, not a block-less one: the
-// at-least-one-block invariant has to hold before any constructor of ours runs.
+// Default-constructed is zero-width, not block-less. [design.md#default-construction]
 BOOST_AUTO_TEST_CASE(ADefaultConstructedRunTimeWidthIsZeroWidthWithOneBlock)
 {
         auto const b = xstd::block_vector<std::uint8_t>();
@@ -459,11 +412,7 @@ BOOST_AUTO_TEST_CASE(ADefaultConstructedRunTimeWidthIsZeroWidthWithOneBlock)
         BOOST_CHECK(b == xstd::block_vector<std::uint8_t>(0));
 }
 
-// bit_traits over our own storage forwards and nothing more, so what these check is that each
-// entry reaches the member it names and that the contracts survive the trip. The scans keep
-// block_sequence's own preconditions rather than widening to the total ones bit_scan's fallbacks
-// happen to provide -- find_next wants a valid position, find_prev a set position strictly below
-// n -- so every call below stays inside them.
+// Each entry reaches the member it names, and every call stays inside the kept contracts. [design.md#the-ceiling-principle]
 BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_extents<graded_block_array>)
 {
         using traits = xstd::bit_traits<T>;
@@ -481,15 +430,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_exten
         BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
         BOOST_CHECK_EQUAL(traits::num_blocks(c), c.num_blocks());
 
-        // BOOST_CHECK rather than BOOST_CHECK_EQUAL: the latter prints its operands on
-        // failure, and graded_extents includes xstd::uint128, for which libc++ has no
-        // operator<< -- an ambiguity libstdc++ does not have and so does not report.
+        // BOOST_CHECK, not BOOST_CHECK_EQUAL: uint128 has no operator<<. [design.md#uint128-printing]
         for (auto k = 0UZ; k < c.num_blocks(); ++k) {
                 BOOST_CHECK(traits::block(c, k) == c.block(k));
         }
 
-        // One position at a time, set and then cleared again: assign's two arms are the point,
-        // and a single set position makes every scan's answer something the loop already knows.
+        // One position at a time, set then cleared: assign's two arms are the point.
         for (auto i = 0UZ; i < N; ++i) {
                 traits::assign(c, i, true);
                 BOOST_CHECK(traits::at(c, i));
@@ -504,34 +450,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_exten
         }
 }
 
-// The ordering is the one entry with no native spelling to forward to: block_sequence compares as
-// storage, while this is the set reading of it. Checked against std::set, which is the definition.
-BOOST_AUTO_TEST_CASE(TheDoorOrdersAsStdSetDoes)
-{
-        using T = xstd::block_array<std::uint8_t, 8>;
-        using traits = xstd::bit_traits<T>;
-
-        for (auto a = 0UZ; a < 256UZ; ++a) {
-                for (auto b = 0UZ; b < 256UZ; ++b) {
-                        auto x = T();
-                        auto y = T();
-                        auto sx = std::set<std::size_t>();
-                        auto sy = std::set<std::size_t>();
-                        for (auto i = 0UZ; i < 8UZ; ++i) {
-                                if ((a >> i & 1UZ) != 0UZ) { x.set(i); sx.insert(i); }
-                                if ((b >> i & 1UZ) != 0UZ) { y.set(i); sy.insert(i); }
-                        }
-                        BOOST_CHECK((traits::lexicographical_three_way(x, y) == (sx <=> sy)));
-                }
-        }
-
-        // The ordering reaches bit_scan's forward scan only from inside its loop, where the
-        // position is always below the width, so the past-the-end arm has to be asked for
-        // directly. Each instantiation carries its own branch slots and covers them or does not:
-        // that another Traits exercises this one elsewhere does not count for this one.
-        auto const empty = T();
-        BOOST_CHECK_EQUAL(xstd::bit_scan<traits>::next(empty, traits::extent), traits::extent);
-        BOOST_CHECK_EQUAL(xstd::bit_scan<traits>::first(empty), traits::extent);
-}
+// No ordering case, and no walk instantiated here: both belong elsewhere. [design.md#two-readings-disagree]
 
 BOOST_AUTO_TEST_SUITE_END()

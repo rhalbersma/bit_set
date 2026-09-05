@@ -52,8 +52,7 @@ class Implicit
 
 public:
         [[nodiscard]] constexpr explicit(false) Implicit(std::size_t v) noexcept : m_value(v) {}
-        // Implicit is the point: this class exists to be converted from and to without a cast,
-        // which is what the case below checks.
+        // Implicit is the point: this class exists to convert both ways without a cast.
         [[nodiscard]] constexpr explicit(false) operator std::size_t() const noexcept { return m_value; }  // NOLINT(misc-explicit-constructor)
 };
 

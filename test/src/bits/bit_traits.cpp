@@ -5,16 +5,12 @@
 
 #include <boost/test/unit_test.hpp>      // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_CHECK, BOOST_CHECK_EQUAL
 #include <test/block_types.hpp>          // graded_extents
-#include <xstd/bits/bit_traits.hpp>      // bit_scan, bit_storage, bit_traits, block_readable, static_bit_extent
+#include <xstd/bits/bit_traits.hpp>      // bit_storage, bit_traits, block_readable, scan_*, static_bit_extent
 #include <xstd/bits/block_sequence.hpp>  // block_array
-#include <compare>                       // strong_ordering
 #include <cstddef>                       // size_t
 #include <set>                           // set
 
-// Two adapters over identical storage, differing only in whether they hand their blocks over.
-// That is the whole design of this file: bit_scan picks its tier on block_readable, so the only
-// way to test the choice is to hold the bits fixed and vary nothing else. Every check below then
-// runs twice, and the two answers must agree with each other as well as with std::set.
+// Two adapters over identical storage, differing only in whether they hand their blocks over. [design.md#detection-by-absence]
 namespace {
 
 // The floor and nothing more: a width and an indexed read.
@@ -60,8 +56,10 @@ struct bit_traits<block_bits<N, Block>>
 
 namespace {
 
+namespace bits = xstd::detail::bits;
+
 template<class T>
-using scan = xstd::bit_scan<xstd::bit_traits<T>>;
+using traits_of = xstd::bit_traits<T>;
 
 template<class T>
 inline constexpr auto extent_of = xstd::bit_traits<T>::extent;
@@ -84,27 +82,24 @@ auto check_scans(std::set<std::size_t> const& model) -> void
         auto const c = make<T>(model);
         constexpr auto N = extent_of<T>;
 
-        BOOST_CHECK_EQUAL(scan<T>::count(c), model.size());
-        BOOST_CHECK_EQUAL(scan<T>::last(c), N);
-        BOOST_CHECK_EQUAL(scan<T>::first(c), model.empty() ? N : *model.begin());
+        BOOST_CHECK_EQUAL(bits::scan_count<traits_of<T>>(c), model.size());
+        BOOST_CHECK_EQUAL(bits::scan_last<traits_of<T>>(c), N);
+        BOOST_CHECK_EQUAL(bits::scan_first<traits_of<T>>(c), model.empty() ? N : *model.begin());
 
-        // One past the width too: every scan here is total, so the argument past the end is a
-        // question with an answer rather than a precondition violation.
+        // One past the width too, every scan here being total. [design.md#total-versus-precondition]
         for (auto n = 0UZ; n <= N + 1UZ; ++n) {
                 auto const above = model.upper_bound(n);
-                BOOST_CHECK_EQUAL(scan<T>::next(c, n), above == model.end() ? N : *above);
+                BOOST_CHECK_EQUAL(bits::scan_next<traits_of<T>>(c, n), above == model.end() ? N : *above);
 
                 auto const at_or_above = model.lower_bound(n);
-                BOOST_CHECK_EQUAL(scan<T>::inclusive_next(c, n), at_or_above == model.end() ? N : *at_or_above);
+                BOOST_CHECK_EQUAL(bits::scan_inclusive_next<traits_of<T>>(c, n), at_or_above == model.end() ? N : *at_or_above);
 
                 auto const below = model.lower_bound(n < N ? n : N);
-                BOOST_CHECK_EQUAL(scan<T>::prev(c, n), below == model.begin() ? N : *std::prev(below));
+                BOOST_CHECK_EQUAL(bits::scan_prev<traits_of<T>>(c, n), below == model.begin() ? N : *std::prev(below));
         }
 }
 
-// Patterns rather than every subset, since the graded extents run to 128 positions: the empty
-// and full sets, every singleton, and every adjacent pair, which is what puts a set bit on both
-// sides of every block boundary the width has.
+// Patterns rather than every subset: adjacent pairs put a set bit on both sides of every block boundary.
 template<class T>
 auto check_every_pattern() -> void
 {
@@ -140,8 +135,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheFloorIsAWidthAndAnIndexedRead, T, ElementTypes)
         static_assert(xstd::static_bit_extent<T>);
 }
 
-// The tier split is what the two adapters exist to pin down: identical storage, one answering
-// block_readable and one not, so neither branch of the if constexpr can go unexercised.
+// The tier split pinned down: one adapter answers block_readable, one does not. [design.md#detection-by-absence]
 BOOST_AUTO_TEST_CASE_TEMPLATE(BlockAccessIsWhatSeparatesTheTiers, T, ElementTypes)
 {
         static_assert(not xstd::block_readable<xstd::bit_traits<T>, T>);
@@ -162,25 +156,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BlockWiseScansAgreeWithStdSet, T, BlockTypes)
         check_every_pattern<T>();
 }
 
-// The set ordering: positions ascending, compared lexicographically, which is what std::set's
-// own <=> means. Exhaustive over every pair of subsets at the narrowest width, so the answer is
-// checked against the standard library rather than against a reading of it.
-BOOST_AUTO_TEST_CASE(OrderingAgreesWithStdSet)
-{
-        using T = element_bits<test::digits_v<unsigned char>, unsigned char>;
-        constexpr auto N = extent_of<T>;
-
-        for (auto a = 0UZ; a < (1UZ << N); ++a) {
-                for (auto b = 0UZ; b < (1UZ << N); ++b) {
-                        auto x = std::set<std::size_t>();
-                        auto y = std::set<std::size_t>();
-                        for (auto i = 0UZ; i < N; ++i) {
-                                if ((a >> i & 1UZ) != 0UZ) { x.insert(i); }
-                                if ((b >> i & 1UZ) != 0UZ) { y.insert(i); }
-                        }
-                        BOOST_CHECK((scan<T>::lexicographical_three_way(make<T>(x), make<T>(y)) == (x <=> y)));
-                }
-        }
-}
+// No ordering case: the door carries none, the two readings disagreeing. [design.md#two-readings-disagree]
 
 BOOST_AUTO_TEST_SUITE_END()
