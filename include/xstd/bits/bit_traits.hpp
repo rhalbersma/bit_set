@@ -14,26 +14,14 @@
 #include <span>                                    // dynamic_extent
 #include <type_traits>                             // remove_cvref_t
 
-// The one door between a bit container and the readings built on it. Everything above this
-// header asks bit_traits<Bits> and never the type itself, which is what lets a std::bitset, a
-// boost::dynamic_bitset and our own block_sequence wear the same three readings without any of
-// them knowing the others exist.
+// The one door: everything above asks bit_traits<Bits> and never the type itself. [design.md#the-door]
 namespace xstd {
 
-// Declared, never defined: adaptation is opt-in, never guessed. A type nobody has adapted is a
-// compile error naming an incomplete type rather than a silent fallback onto whatever members
-// happened to answer -- which is the failure that per-operation member probing walks into, and
-// this file's reason for existing. See bit_storage below for the error that reads better.
+// Declared, never defined: an unadapted type is an error, not a silent fallback. [design.md#opt-in]
 template<class Bits>
 struct bit_traits;
 
-// Whether a trait offers block access at all. std::bitset on libc++ and boost::dynamic_bitset
-// do not, so their scans take the element-wise tier; ours and libstdc++'s std::bitset do.
-//
-// Meaningful only because nothing supplies a default: a specialization that does not spell
-// block() genuinely has no block access, so absence is an answer rather than an oversight. That
-// is why the fallbacks below are free functions and not a base class -- a base would satisfy
-// this concept for every type, and the tier choice would collapse.
+// Whether the trait offers block access; libc++'s std::bitset and boost do not. [design.md#detection-by-absence]
 template<class Traits, class Bits>
 concept block_readable =
         requires (Bits const& c, std::size_t i)
@@ -45,29 +33,10 @@ concept block_readable =
 
 } // namespace xstd
 
-// The walks a specialization calls for whatever it has no native spelling of, so adapting a type
-// is never all-or-nothing. Free functions in the namespace that already holds countl_zero,
-// countr_zero and popcount -- the intrinsics these are written in terms of -- rather than members
-// of a scan class or a base to inherit from. Flat, and one public name above: bit_traits.
-//
-// The nesting is load-bearing rather than decorative. Since C++20 an unqualified
-// scan_first<Traits>(c) parses its '<' as a template argument list and then goes through ADL,
-// explicit arguments included -- so std and boost, the associated namespaces of the very types
-// being adapted, would join the overload set. [namespace.std] bars users from adding to std but
-// not implementations, and boost is under no such constraint. Down here that cannot arise: these
-// names are not visible unqualified from xstd, so every call site must write the qualification
-// out and the hazard is closed by scoping rather than by remembering a prefix.
+// Free functions so block_readable stays answerable, nested so no unqualified call reaches ADL. [design.md#why-nested]
 namespace xstd::detail::bits {
 
-// How many blocks a trait's storage has, when the type settles it. Derived rather than declared:
-// extent is already in the floor, and block access's contract fixes the layout -- block i holds
-// [i * digits, (i + 1) * digits) -- so nothing new has to be supplied to know this.
-//
-// It exists for the coverage gate rather than for speed. gcovr counts branch slots per template
-// instantiation and does not merge them, so a loop that a one-block instantiation can never enter
-// is a branch never taken, whatever every other instantiation does. block_sequence answers the
-// same gate the same way, with if constexpr on static_num_blocks == 1 and == 2: the degenerate
-// case does not get an unreachable loop, it gets different code.
+// Derived, not declared; here so a degenerate width gets different code. [design.md#per-instantiation-slots]
 template<class Traits, class Block>
 [[nodiscard]] consteval auto static_block_count() noexcept
         -> std::size_t
@@ -80,10 +49,7 @@ template<class Traits, class Block>
         }
 }
 
-// Each tier of each scan gets its own function. Not decomposition for its own sake:
-// readability-function-cognitive-complexity counts if constexpr like any other branch, and the
-// guards that satisfy the coverage gate put both scans over the threshold when the tier choice
-// sits in the same body. The tier is where the seam was anyway.
+// One function per tier: a shared body exceeds the complexity threshold. [design.md#one-function-per-tier]
 
 // The last set position at or below i, block at a time.
 template<class Traits, class Bits>
@@ -97,18 +63,11 @@ template<class Traits, class Bits>
         auto const start = i / digits;
         auto const offset = i % digits;
 
-        // Shifted up rather than masked, so the bit at offset lands on the top one and
-        // countl_zero measures the distance back down. At offset == left_bit that is a
-        // shift by zero, the identity, so the boundary needs no arm of its own -- the
-        // mirror of scan_next_by_block's missing offset guard.
+        // Shifted up rather than masked so countl_zero measures back down; at left_bit that shift is zero.
         if (auto const block = static_cast<block_type>(Traits::block(c, start) << (left_bit - offset)); block != block_type{}) {
                 return i - detail::bits::countl_zero(block);
         }
-        // Only where a lower block can exist: at one block this walk is unreachable code
-        // carrying a branch no instantiation could take. The cursor lives in here rather
-        // than beside start, because at one block the walk is discarded and a cursor
-        // declared outside would never be written -- which misc-const-correctness reads,
-        // correctly, as a variable that should have been const.
+        // Guarded, cursor inside: one block makes both unreachable. [design.md#per-instantiation-slots]
         if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
                 auto index = start;
                 while (index-- != 0UZ) {
@@ -125,10 +84,8 @@ template<class Traits, class Bits>
 [[nodiscard]] constexpr auto scan_prev_by_element(Bits const& c, std::size_t i) noexcept
         -> std::size_t
 {
+        // One test, not a loop: a loop's exit arm is untakeable here. [design.md#per-instantiation-slots]
         if constexpr (Traits::extent == 1UZ) {
-                // A single position: the descent below would have nowhere to step from,
-                // so it is written as the one test it reduces to rather than as a loop
-                // whose exit arm no instantiation could take.
                 return Traits::at(c, i) ? i : Traits::size(c);
         } else {
                 for (;;) {
@@ -154,13 +111,11 @@ template<class Traits, class Bits>
         auto const start = n / digits;
         auto const offset = n % digits;
 
-        // No offset != 0 guard: >> 0 is the identity, so the boundary case needs no arm
-        // of its own. #88 measured the guard as pure cost.
+        // No offset != 0 guard: >> 0 is the identity, and #88 measured it as pure cost. [design.md#offset-guards]
         if (auto const block = static_cast<block_type>(Traits::block(c, start) >> offset); block != block_type{}) {
                 return n + detail::bits::countr_zero(block);
         }
-        // The mirror of scan_prev_by_block's guard: at one block there is no later block to
-        // walk to, and the cursor belongs to the walk for the same reason it does there.
+        // The mirror of scan_prev_by_block's guard, cursor included, for the same two reasons.
         if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
                 for (auto index = start + 1UZ, blocks = Traits::num_blocks(c); index < blocks; ++index) {
                         if (auto const block = Traits::block(c, index); block != block_type{}) {
@@ -185,9 +140,7 @@ template<class Traits, class Bits>
         return size;
 }
 
-// The first set position at or above n: the primitive the two forward scans derive from,
-// exactly as block_sequence's inclusive_find_next is. Both derivations are + 1 and never
-// - 1, which is what lets scan_first name its own extreme without size_t wrapping at zero.
+// The primitive both forward scans derive from, by + 1 and never - 1. [design.md#inclusive-is-the-primitive]
 template<class Traits, class Bits>
 [[nodiscard]] constexpr auto scan_inclusive_next(Bits const& c, std::size_t n) noexcept
         -> std::size_t
@@ -207,8 +160,7 @@ template<class Traits, class Bits>
         }
 }
 
-// The first set position, or size() if there is none. Total, like every scan here: this
-// is the layer that answers, not the layer with preconditions.
+// The first set position, or size(). Total, like every scan here. [design.md#total-versus-precondition]
 template<class Traits, class Bits>
 [[nodiscard]] constexpr auto scan_first(Bits const& c) noexcept
         -> std::size_t
@@ -216,9 +168,7 @@ template<class Traits, class Bits>
         return scan_inclusive_next<Traits>(c, 0UZ);
 }
 
-// One past the last position, which for every reading is the width: the end iterator's
-// position, not a scan at all. Named alongside the scans because callers ask for it in
-// the same breath.
+// One past the last position, which for every reading is the width: not a scan, but asked for alongside them.
 template<class Traits, class Bits>
 [[nodiscard]] constexpr auto scan_last(Bits const& c) noexcept
         -> std::size_t
@@ -226,8 +176,7 @@ template<class Traits, class Bits>
         return Traits::size(c);
 }
 
-// The first set position strictly above n, mirroring block_sequence::exclusive_find_next
-// and boost's find_next. Total in n: a position at or past the width has nothing above it.
+// Strictly above n, and total where block_sequence's twin is not. [design.md#total-versus-precondition]
 template<class Traits, class Bits>
 [[nodiscard]] constexpr auto scan_next(Bits const& c, std::size_t n) noexcept
         -> std::size_t
@@ -236,23 +185,13 @@ template<class Traits, class Bits>
         return n >= size ? size : scan_inclusive_next<Traits>(c, n + 1UZ);
 }
 
-// The last set position strictly below n, or size() if there is none.
-//
-// Unlike block_sequence::exclusive_find_prev this is total rather than precondition-guarded:
-// that one may demand any() because reverse iteration supplies the guard, and a fallback
-// synthesised for a foreign type has no such caller to lean on.
-//
-// The block tier is not an optimization here so much as a complexity fix. Element-wise, one
-// step is O(N) and a full reverse traversal is O(N^2) -- which is exactly what #80 measures
-// boost::dynamic_bitset's missing find_prev to cost. A type that hands over its blocks does
-// not pay it.
+// The last set position below n, total: a fallback has no reverse iteration to guard it. [design.md#total-versus-precondition]
 template<class Traits, class Bits>
 [[nodiscard]] constexpr auto scan_prev(Bits const& c, std::size_t n) noexcept
         -> std::size_t
 {
         auto const size = Traits::size(c);
-        // A width fixed at zero holds nothing below anything, and saying so here rather
-        // than at run time leaves the scans with no arm that cannot be reached.
+        // A zero width holds nothing below anything, said here to leave no unreachable arm. [design.md#per-instantiation-slots]
         if constexpr (Traits::extent == 0UZ) {
                 return size;
         } else {
@@ -260,6 +199,7 @@ template<class Traits, class Bits>
                 if (i == 0UZ) {
                         return size;
                 }
+                // The tier is a complexity fix, not an optimization: element-wise reverse traversal is O(N^2).
                 if constexpr (block_readable<Traits, Bits>) {
                         return scan_prev_by_block<Traits>(c, i - 1UZ);
                 } else {
@@ -268,8 +208,7 @@ template<class Traits, class Bits>
         }
 }
 
-// How many positions are set. The block tier is the whole point: popcount per word
-// rather than a test per bit.
+// How many positions are set; the block tier is the whole point, popcount per word rather than a test per bit.
 template<class Traits, class Bits>
 [[nodiscard]] constexpr auto scan_count(Bits const& c) noexcept
         -> std::size_t
@@ -295,27 +234,19 @@ template<class Traits, class Bits>
 
 namespace xstd {
 
-// The floor for wrappability: a width, and an indexed read. Everything else -- blocks, native
-// scans, a native ordering -- is an optimization tier a specialization may or may not supply.
-//
-// Gating the adaptors on this rather than on bit_traits<Bits> being complete is what turns
-// "incomplete type" into "constraint not satisfied", which names the actual problem.
+// The floor, gated as a concept so an unadapted type reads "constraint not satisfied". [design.md#opt-in]
 template<class Bits>
 concept bit_storage =
         requires (Bits const& c, std::size_t n)
         {
-                // extent is part of the floor rather than an extra: every adapter states its
-                // width policy, dynamic_extent included, which is what lets static_bit_extent
-                // below read it without first proving it exists.
+                // Inside the floor, not beside it, so static_bit_extent can read it without proving it exists.
                 { bit_traits<Bits>::extent   } -> std::convertible_to<std::size_t>;
                 { bit_traits<Bits>::size(c)  } -> std::convertible_to<std::size_t>;
                 { bit_traits<Bits>::at(c, n) } -> std::convertible_to<bool>;
         }
 ;
 
-// How many positions a bit sequence has when the type settles it, so a static width reaches the
-// readings as a constant expression. Replaces the bit_extent variable template: one door, and
-// the extent comes through it like everything else.
+// A static width reaching the readings as a constant expression; replaces the bit_extent variable template.
 template<class Bits>
 concept static_bit_extent = bit_storage<Bits> and bit_traits<Bits>::extent != std::dynamic_extent;
 

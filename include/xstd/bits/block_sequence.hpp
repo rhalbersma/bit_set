@@ -32,13 +32,7 @@
 
 namespace xstd {
 
-// What block_sequence packs bits into: a contiguous, sized range of unsigned integers.
-// std::array and std::vector both qualify, and so does std::inplace_vector -- runtime
-// width over static capacity, for free.
-//
-// Storage, not container: xstd::ranges::block_range is the other side of the same word,
-// and asks whether a bit container will hand its blocks over. This one asks whether a
-// range is blocks. Nothing models both, and no scope sees both unqualified.
+// Whether a range IS blocks; block_range asks if a container hands its blocks over. [design.md#block-storage]
 template<class R>
 concept block_storage =
         std::ranges::contiguous_range<R> and
@@ -46,9 +40,7 @@ concept block_storage =
         xstd::unsigned_integer<std::ranges::range_value_t<R>>
 ;
 
-// The block count a width of N bits needs, floored at one so that even a zero-width
-// block_sequence has a block to name. Free rather than a member, because block_array below
-// has to spell it inside block_sequence's own template argument list.
+// Floored at one so a zero width still names a block. [design.md#the-one-vehicle]
 template<xstd::unsigned_integer Block, std::size_t N>
 inline constexpr auto num_blocks_v = std::ranges::max(
         align_up(N, static_cast<std::size_t>(xstd::numeric_limits<Block>::digits)) /
@@ -56,19 +48,7 @@ inline constexpr auto num_blocks_v = std::ranges::max(
         1UZ
 );
 
-// The one storage vehicle. N is the width when that is a constant, and
-// std::dynamic_extent when the width is carried at run time instead.
-//
-// It owns the unused-tail invariant -- every bit at or above size() reads zero, which is
-// what makes whole-block comparison, popcount and the block-at-a-time scans mean
-// anything -- and the whole primitive vocabulary over it.
-//
-// No iterators and no proxies: those are readings, and a reading here would be picking
-// one. It would also make std::ranges see a sequence of blocks.
-//
-// The hand-unrolled one- and two-block cases below are where the static performance
-// lives, so they stay compile-time branches; the general path they fall through to is
-// written over m_blocks as a range and therefore serves the dynamic width unchanged.
+// The one vehicle: it owns the unused-tail invariant, and has no iterators. [design.md#the-one-vehicle]
 template<block_storage Blocks, std::size_t N = std::dynamic_extent>
 class block_sequence
 {
@@ -88,22 +68,13 @@ private:
         static constexpr auto zero     = static_cast<block_type>( 0);
         static constexpr auto ones     = static_cast<block_type>(-1);
 
-        // The padding above the width, and the mask of the last block that is not padding.
-        //
-        // num_bits is align_up(N), so num_bits - N is in [0, bits_per_block) and the shift
-        // is always in range. Width zero is the one case that form cannot express -- there
-        // is nothing to align up, so it reports no padding where in truth the sole block is
-        // all of it -- and it gets the selection instead. Naming zero rather than computing
-        // it matters on MSVC, which constant-folds both arms of a ?: and answers C4293,
-        // shift count too big, on the one it discards.
+        // Width zero named, not computed: MSVC folds both ?: arms and answers C4293. [design.md#padding]
         static constexpr auto static_num_unused_bits = has_static_size ? static_num_bits - N : 0UZ;
         static constexpr auto static_used_bits       = has_static_size and N == 0 ? zero : static_cast<block_type>(ones >> static_num_unused_bits);
         static constexpr auto static_unused_bits     = static_cast<block_type>(~static_used_bits);
         static constexpr auto static_has_unused_bits = has_static_size and static_used_bits != ones;
 
-        // A defaulted default constructor plus an NSDMI, rather than two constructors
-        // constrained on the extent: std::vector default-constructs empty, and the
-        // at-least-one-block invariant has to hold from the start.
+        // An NSDMI, not extent-constrained constructors: vector starts empty. [design.md#default-construction]
         [[nodiscard]] static constexpr auto make_blocks(std::size_t n) -> Blocks
         {
                 if constexpr (has_static_size) {
@@ -115,8 +86,7 @@ private:
 
         Blocks m_blocks = make_blocks(0UZ);
 
-        // Present only for a dynamic width; empty_type<size_tag> otherwise, and the tag is
-        // what keeps it distinct from any other absent member in an enclosing layout.
+        // Dynamic widths only; the tag keeps the absent member distinct from any other in an enclosing layout.
         [[XSTD_NO_UNIQUE_ADDRESS]]
         conditional_data_member_t<not has_static_size, std::size_t, struct size_tag> m_size{};
 
@@ -159,8 +129,7 @@ public:
                 return m_blocks[i];
         }
 
-        // The write side of block(). Not a bit_traits entry: block writes are only ever
-        // needed on storage we control, and the unused tail is this class's to keep.
+        // The write side of block(), and no trait entry. [design.md#block-writes]
         constexpr void set_block(std::size_t i, block_type value) noexcept
         {
                 assert(i < num_blocks());
@@ -197,11 +166,7 @@ public:
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
                         return m_blocks[0] != zero ? detail::bits::countr_zero(m_blocks[0]) : detail::bits::countr_zero(m_blocks[1]) + bits_per_block;
                 } else {
-                        // A while rather than a for: any() guarantees a non-empty block exists, so
-                        // a loop that could run out would carry an exit branch no test can take.
-                        // Both branches of this condition are exercised instead -- empty blocks are
-                        // skipped, a non-empty one ends it -- and the index is the block's position
-                        // rather than something distance() has to recover.
+                        // A while, not a for: any() makes a for's exit untestable. [design.md#while-not-for]
                         auto i = 0UZ;
                         while (m_blocks[i] == zero) {
                                 assert(i != last_block());
@@ -220,9 +185,7 @@ public:
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
                         return m_blocks[1] != zero ? last_bit() - detail::bits::countl_zero(m_blocks[1]) : left_bit - detail::bits::countl_zero(m_blocks[0]);
                 } else {
-                        // The mirror of find_front, and the last reverse view in the file. Counting
-                        // up from block i's own base rather than down from last_bit() drops the
-                        // last_block() - i term the reversed range needed.
+                        // The mirror of find_front, counting up from block i's base to drop the reversed range's term.
                         auto i = last_block();
                         while (m_blocks[i] == zero) {
                                 assert(i != 0);
@@ -232,13 +195,7 @@ public:
                 }
         }
 
-        // Its own 0. Now that inclusive_find_next carries the 2-block case too, this emits the same
-        // instruction sequence the hand-written version did -- verified, not assumed -- so the
-        // duplication goes without costing the unrolling. libstdc++ writes both scans out and
-        // repeats the word loop and the ctz-plus-index arithmetic between them; boost factors
-        // the shared tail into m_do_find_from, but only at block granularity, so exclusive_find_next still
-        // needs its own prologue for a mid-block start. Factoring at bit granularity subsumes
-        // both: a block-aligned start is just offset == 0.
+        // Its own 0, and the same instructions the hand-written version emitted. [design.md#inclusive-is-the-primitive]
         [[nodiscard]] constexpr auto find_first() const noexcept
                 -> std::size_t
         {
@@ -251,29 +208,7 @@ public:
                 return size();
         }
 
-        // The first set position at or above n, or size() if there is none.
-        //
-        // Inclusive and exclusive name the only thing that separates the two scans: whether n
-        // itself is a candidate. That is a property of the scan, not of a reading, which is why
-        // this is not called lower_bound -- that is the set reading's word for it, and this layer
-        // serves the sequence reading equally. bit_finite_set::lower_bound is where the set name
-        // belongs, and it maps here one for one.
-        //
-        // The inclusive form is the primitive and the exclusive one is derived, because the
-        // reverse does not close:
-        //
-        //     exclusive_find_next(n) == inclusive_find_next(n + 1)     for every n
-        //     find_first()           == inclusive_find_next(0)
-        //
-        // Exclusive-first would need find_first() == exclusive_find_next(-1), and size_t has no
-        // such value -- which is exactly why the container used to branch on x == 0. boost's
-        // find_next and libstdc++'s _M_do_find_next are both the exclusive form, correctly: their
-        // iteration idiom is find_first() then find_next(i), which never needs the inclusive one.
-        //
-        // n == size() rather than n >= size(): the precondition is n <= size(), asserted just
-        // below, so size() is the only value the scan cannot start from. is_valid does not say
-        // this -- it is n < size() -- and size() is a legitimate argument here, meaning "no such
-        // position", exactly as it is for exclusive_find_prev.
+        // The primitive: inclusive, so both derivations are + 1 and nothing wraps. [design.md#inclusive-is-the-primitive]
         [[nodiscard]] constexpr auto inclusive_find_next(std::size_t n) const noexcept
                 -> std::size_t
         {
@@ -286,16 +221,7 @@ public:
                                 return n + detail::bits::countr_zero(block);
                         }
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
-                        // Two blocks, so the tail is one named block rather than a range: the walk
-                        // below costs more than the whole scan is worth at this width. index is a
-                        // run-time value -- n is -- but the block count is not, so the second half
-                        // is a test and not a loop.
-                        //
-                        // Indexed rather than branched: m_blocks[index], not an if on index, so the
-                        // common path is one computed load. Only when the starting block comes up
-                        // empty does it matter which block we started in, and then only to decide
-                        // whether block 1 is still ahead of us. Writing this as a branch instead
-                        // cost 10 instructions at -O3 -march=native.
+                        // Indexed, not branched: an if cost 10 instructions at -O3. [design.md#two-block-case]
                         auto const [ index, offset ] = index_offset(n);
                         if (auto const block = static_cast<block_type>(m_blocks[index] >> offset); block != zero) {
                                 return n + detail::bits::countr_zero(block);
@@ -304,22 +230,14 @@ public:
                                 return bits_per_block + detail::bits::countr_zero(m_blocks[1]);
                         }
                 } else {
-                        // No offset != 0 guard: >> 0 is the identity, so the masked test is correct
-                        // at a block boundary too, and advancing past that block afterwards is
-                        // right either way. Neither reference implementation guards it -- boost
-                        // shifts by ind then falls to m_do_find_from(blk + 1), libstdc++ masks by
-                        // ~0 << whichbit then does __i++ -- and the guard skips no work: at offset
-                        // 0 it merely moves the same test into the loop's first iteration.
+                        // No offset != 0 guard: >> 0 is the identity. [design.md#offset-guards]
                         auto [ index, offset ] = index_offset(n);
                         if (auto const block = static_cast<block_type>(m_blocks[index] >> offset); block != zero) {
                                 return n + detail::bits::countr_zero(block);
                         }
                         ++index;
                         n += bits_per_block - offset;
-                        // A plain index walk rather than drop + find_if. The iterator form had to
-                        // recover the block's position with distance(); the index is that position,
-                        // so it never needed recovering. Both exits are exercised: falling out is
-                        // how "nothing at or above n" reaches the return below.
+                        // A plain index walk: drop + find_if made distance() recover the index. [design.md#index-walks]
                         for (auto i = index; i < num_blocks(); ++i) {
                                 if (auto const block = m_blocks[i]; block != zero) {
                                         return n + detail::bits::countr_zero(block) + (bits_per_block * (i - index));
@@ -336,46 +254,23 @@ public:
                 return inclusive_find_next(n + 1);
         }
 
-        // The last set position below n. Deliberately NOT total: where inclusive_find_next
-        // answers size() for "nothing at or above", this one has a precondition instead, and
-        // that is the whole of why it is three instructions cheaper at every width -- it never
-        // materializes a not-found value.
-        //
-        // Safe because reverse iteration supplies the guard the function does not.
-        // rend() is make_reverse_iterator(begin()), and std::reverse_iterator stops there, so
-        // operator-- is never applied at begin(). A hand-written loop gets no such help:
-        // the forward idiom terminates itself against size(), the reverse one runs off the
-        // bottom. Totality is the container's contract to keep, per #86 -- not this layer's to
-        // absorb.
+        // Deliberately NOT total: three instructions cheaper, and rend() supplies the guard. [design.md#total-versus-precondition]
         [[nodiscard]] constexpr auto exclusive_find_prev(std::size_t n) const noexcept
                 -> std::size_t
         {
-                // The mirror of exclusive_find_next's assert(is_valid(n)): each says the position actually
-                // scanned from is one this container has. n - 1 is that position here, and the
-                // wraparound does the work at the bottom -- 0 - 1 is SIZE_MAX, which no width
-                // admits -- so this states 1 <= n <= size() without a second predicate. is_valid
-                // alone would be wrong: size() is a legitimate argument, meaning "from the end".
+                // States 1 <= n <= size() in one predicate, 0 - 1 being SIZE_MAX. [design.md#the-wraparound-assert]
                 assert(is_valid(n - 1));
                 assert(any());
                 --n;
                 if constexpr (has_static_size and static_num_blocks == 1) {
                         return n - detail::bits::countl_zero(static_cast<block_type>(m_blocks[0] << (left_bit - n)));
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
-                        // The mirror of inclusive_find_next's two-block case, and simpler than the general
-                        // path below because the fallback is one named block rather than a scan.
-                        //
-                        // No reverse_offset != 0 guard is needed here. Below, that guard is not
-                        // about the shift -- left_bit - offset is in [0, left_bit], so shifting is
-                        // always in range and by zero is the identity -- it is about which block
-                        // the range scan must start at: at index when the whole block is in range,
-                        // below it when the masked block came up empty. Naming the fallback block
-                        // outright makes that distinction disappear.
+                        // Naming the fallback block removes the general path's start-index guard. [design.md#offset-guards]
                         auto const [ index, offset ] = index_offset(n);
                         if (auto const block = static_cast<block_type>(m_blocks[index] << (left_bit - offset)); block != zero) {
                                 return n - detail::bits::countl_zero(block);
                         }
-                        // Reaching here with index 0 means no set bit at or below the caller's n,
-                        // which is the precondition the general path asserts as prev != end(rg).
+                        // Reaching here at index 0 would break the precondition the general path asserts instead.
                         assert(index == 1);
                         assert(m_blocks[0] != zero);
                         return left_bit - detail::bits::countl_zero(m_blocks[0]);
@@ -388,15 +283,7 @@ public:
                                 --index;
                                 n -= bits_per_block - reverse_offset;
                         }
-                        // A descending index walk rather than reverse + drop + find_if, which
-                        // composed two adaptors only to have distance() undo them.
-                        //
-                        // Shaped as a while rather than a for with a fall-through, deliberately.
-                        // The precondition guarantees a set bit at or below, so a loop that could
-                        // run out would carry an exit branch no test can take -- which is exactly
-                        // what the coverage gate would catch, and what find_if hid by keeping that
-                        // branch inside the standard library. Here both branches of the condition
-                        // are exercised: empty blocks are skipped, a non-empty one ends it.
+                        // A while, not a for: the precondition makes a for's exit untestable. [design.md#while-not-for]
                         auto i = index;
                         while (m_blocks[i] == zero) {
                                 assert(i != 0);
@@ -478,12 +365,7 @@ public:
                         m_blocks[0] = static_cast<block_type>(m_blocks[0] << n);
                 } else {
                         auto const [ n_blocks, L_shift ] = xstd::div(n, bits_per_block);
-                        // Implied by is_valid(n) above, and stated again because GCC does not
-                        // carry the range through xstd::div's aggregate return: without it,
-                        // -Warray-bounds reports the memmove inside shift_right at -O1 and -O2
-                        // whenever asserts are live. No CMake build type is that combination --
-                        // Debug is -O0 and the optimized ones carry NDEBUG -- but -O2 -g is one
-                        // command away, and the bound is worth saying in any case.
+                        // Restated because GCC drops the range through xstd::div. [design.md#gcc-array-bounds]
                         assert(n_blocks <= last_block());
                         if (L_shift == 0) {
                                 std::shift_right(std::ranges::begin(m_blocks), std::ranges::end(m_blocks), static_cast<std::ptrdiff_t>(n_blocks));
@@ -532,8 +414,7 @@ public:
                 } else if constexpr (has_static_size and N > 0) {
                         std::ranges::fill(m_blocks, ones);
                 } else if constexpr (not has_static_size) {
-                        // Uniform, because used_bits() is the whole block when the width divides
-                        // evenly and none of it at width zero, where the sole block is all padding.
+                        // Uniform: used_bits() is the whole block on an even division, and none of it at width zero.
                         std::ranges::fill_n(std::ranges::begin(m_blocks), static_cast<std::ptrdiff_t>(last_block()), ones);
                         m_blocks[last_block()] = used_bits();
                 }
@@ -619,12 +500,7 @@ public:
                 return *this;
         }
 
-        // test rather than operator[], because this reads and cannot be written through:
-        // std::bitset's operator[] returns an assignable proxy and this returns bool, so the
-        // subscript spelling would promise an assignment that does not compile. The writable
-        // proxy belongs to the containers above, which is also where the checked reading lives
-        // -- std::bitset::test throws where this asserts, a difference the door states as
-        // unchecked_test rather than one this name should try to carry.
+        // test, not operator[]: this returns bool, std::bitset's a proxy. [design.md#test-not-subscript]
         [[nodiscard]] constexpr auto test(std::size_t n) const noexcept
                 -> bool
         {
@@ -672,9 +548,7 @@ public:
                                 return std::ranges::all_of(m_blocks, [](auto block) { return block == ones; });
                         }
                 } else {
-                        // One shape for both, because used_bits() names the full block when the
-                        // width divides evenly; the static arms keep the split only to stay
-                        // compile-time branches.
+                        // One shape for both; the static arms keep the split only to stay compile-time branches.
                         return all_but_last_are_ones() and m_blocks[last_block()] == used_bits();
                 }
         }
@@ -788,16 +662,7 @@ private:
                 return num_blocks() - 1UZ;
         }
 
-        // Every block but the last, which is the half of all() that padding cannot reach.
-        //
-        // An iterator pair rather than views::take: libc++ 18 -- Xcode 16.4 on the matrix --
-        // writes the return type of views::take's iota_view fast path as
-        // decltype(iota_view(*begin(rng), ...)), so forming the adaptor's operator| over a
-        // range of 128-bit blocks instantiates an iota_view over that block type, however
-        // unlike an iota_view a std::vector is. That trips libc++'s "bigger than integer-like
-        // type" static_assert, which is a hard error rather than a substitution failure.
-        // views::drop, views::reverse, views::transform and views::zip are all clear; only
-        // take carries it, and only until Xcode 16.4 leaves the matrix.
+        // An iterator pair, not views::take, which libc++ 18 cannot form here. [design.md#libcxx-views-take]
         [[nodiscard]] constexpr auto all_but_last_are_ones() const noexcept
                 -> bool
         {
@@ -805,18 +670,14 @@ private:
                 return std::ranges::all_of(first, first + static_cast<std::ptrdiff_t>(last_block()), [](auto block) { return block == ones; });
         }
 
-        // The top bit of the last block, padding included. find_back and exclusive_find_prev count
-        // down from it and both assert any(), so the zero-width case never reaches here.
+        // The top bit of the last block; both callers assert any(), so width zero never reaches here.
         [[nodiscard]] constexpr auto last_bit() const noexcept
                 -> std::size_t
         {
                 return (num_blocks() * bits_per_block) - 1UZ;
         }
 
-        // static_used_bits at a run-time width, and the same two cases. Above width zero the
-        // padding is num_blocks() * bits_per_block - size(), which is in [0, bits_per_block)
-        // and so always a shift in range; at width zero the sole block is entirely padding,
-        // which that expression would report as none, so the selection answers instead.
+        // static_used_bits at a run-time width, width zero selected rather than computed. [design.md#padding]
         [[nodiscard]] constexpr auto used_bits() const noexcept
                 -> block_type
         {
@@ -867,26 +728,14 @@ private:
         }
 };
 
-// The two storage vehicles the library ships, each named and ordered after what it holds.
-// std::inplace_vector needs no alias of its own: it satisfies block_storage, so
-// block_sequence<std::inplace_vector<Block, K>> already gives a runtime width over static
-// capacity.
-//
-// Block leads in both, as it does in std::array and std::vector. N cannot be defaulted
-// behind it, but nothing wants to: the three containers pass their own N and Block on.
+// The two vehicles shipped; std::inplace_vector needs no alias, already satisfying block_storage.
 template<xstd::unsigned_integer Block, std::size_t N>
 using block_array = block_sequence<std::array<Block, num_blocks_v<Block, N>>, N>;
 
 template<xstd::unsigned_integer Block = std::size_t, class Allocator = std::allocator<Block>>
 using block_vector = block_sequence<std::vector<Block, Allocator>>;
 
-// The one specialization that forwards and nothing more. block_sequence has every primitive
-// natively, which is the ceiling principle written as a trait: there is no tier to fall back to,
-// so not one of xstd::detail::bits' walks is reached from here.
-//
-// It needs no friendship. The 14 forwarding hidden friends this fold retires belong to the three
-// containers that hold a block_sequence privately; block_sequence's own vocabulary is public, so
-// the door reaches it directly.
+// Forwards and nothing more, reaching none of the walks. [design.md#the-ceiling-principle]
 template<class Blocks, std::size_t N>
 struct bit_traits<block_sequence<Blocks, N>>
 {
@@ -897,8 +746,7 @@ struct bit_traits<block_sequence<Blocks, N>>
         [[nodiscard]] static constexpr auto size(bits_type const& c) noexcept -> std::size_t { return c.size(); }
         [[nodiscard]] static constexpr auto at(bits_type const& c, std::size_t n) noexcept -> bool { return c.test(n); }
 
-        // set(n) and reset(n) rather than a set(n, value) block_sequence does not have. Both
-        // assert is_valid(n), so the position is a precondition here as it is everywhere below.
+        // set(n)/reset(n), there being no set(n, value) here; both assert, so the position is a precondition.
         static constexpr void assign(bits_type& c, std::size_t n, bool value) noexcept
         {
                 if (value) {
@@ -916,27 +764,11 @@ struct bit_traits<block_sequence<Blocks, N>>
         [[nodiscard]] static constexpr auto find_first(bits_type const& c) noexcept -> std::size_t { return c.find_first(); }
         [[nodiscard]] static constexpr auto find_last (bits_type const& c) noexcept -> std::size_t { return c.find_last();  }
 
-        // The two scans keep the contracts block_sequence gives them rather than widening to the
-        // total ones the walks below xstd::detail::bits happen to provide. That is the ceiling principle again:
-        // the door's contract is the most efficient form, and #88 measured exclusive_find_prev's
-        // non-totality as three instructions at every width. A fallback synthesised for a foreign
-        // type may be more generous than the contract; it may not be less.
-        //
-        // So find_next requires is_valid(n), and find_prev requires a set position strictly below
-        // n -- which any() does not establish, a container whose set positions all lie above n
-        // having none below it. Reverse iteration supplies exactly that guard, rend() being
-        // make_reverse_iterator(begin()), which is why block_sequence can omit it and why the
-        // guard belongs to the container above rather than here. #86 settled the same division
-        // one layer down: totality is the container's contract, not the sequence's.
+        // The door keeps the cheaper contracts. [design.md#the-ceiling-principle]
         [[nodiscard]] static constexpr auto find_next(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.exclusive_find_next(n); }
         [[nodiscard]] static constexpr auto find_prev(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.exclusive_find_prev(n); }
 
-        // No ordering entry. "Lexicographic" is underspecified at this layer: the set reading
-        // compares ascending positions and the sequence reading compares bools from index 0, and
-        // they disagree -- {0,1} < {1} as sets, {0,1} > {1} as sequences. Naming one of them here
-        // would make the door pick a reading for its callers. The orderings belong with the
-        // readings that define them, and each is std::lexicographical_compare_three_way over that
-        // reading's own iterators unless a specialization offers something faster.
+        // No ordering entry: the two readings disagree, so the door cannot pick one. [design.md#two-readings-disagree]
 };
 
 }       // namespace xstd
