@@ -7,11 +7,13 @@
 #include <test/block_types.hpp>        // graded_extents, word_types
 #include <xstd/bits/bit_traits.hpp>    // bit_storage, bit_traits, block_readable, static_bit_extent
 #include <xstd/bits/block_sequence.hpp> // block_array, block_sequence, block_storage, block_vector
-#include <algorithm>                   // count
+#include <algorithm>                   // count, lexicographical_compare_three_way, min
 #include <array>                       // array
+#include <compare>                     // strong_ordering
 #include <cstddef>                     // size_t
 #include <cstdint>                     // uint8_t, uint64_t
 #include <ranges>                      // iota
+#include <utility>                     // pair
 #include <vector>                      // vector
 
 BOOST_AUTO_TEST_SUITE(BitBlocks)
@@ -450,6 +452,153 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_exten
         }
 }
 
-// No ordering case, and no walk instantiated here: both belong elsewhere. [design.md#two-readings-disagree]
+namespace {
+
+// The set reading: the positions held, in increasing order. The sequence reading is reference() itself.
+template<class BB>
+auto set_reading(BB const& b) -> std::vector<std::size_t>
+{
+        auto v = std::vector<std::size_t>();
+        for (auto i = 0UZ; i < b.size(); ++i) {
+                if (b.test(i)) {
+                        v.push_back(i);
+                }
+        }
+        return v;
+}
+
+// The values worth pairing at a width: both extremes, the ends, and each block boundary either side of it.
+template<class BB>
+auto probes(BB const& empty) -> std::vector<BB>
+{
+        auto const n = empty.size();
+        auto out = std::vector<BB>{ empty };
+
+        auto full = empty;
+        full.set();
+        out.push_back(full);
+
+        auto const single = [&](std::size_t i) {
+                auto b = empty;
+                b.set(i);
+                out.push_back(b);
+        };
+
+        if (n > 0) {
+                single(0UZ);
+                single(n - 1UZ);
+                for (auto k = 0UZ; k < empty.num_blocks(); ++k) {
+                        auto const lo = k * BB::bits_per_block;
+                        if (lo < n) {
+                                single(lo);
+                                single(std::ranges::min(lo + BB::bits_per_block - 1UZ, n - 1UZ));
+                        }
+                }
+                auto ends = empty;
+                ends.set(0UZ);
+                ends.set(n - 1UZ);
+                out.push_back(ends);
+        }
+        if (n > 1) {
+                single(1UZ);
+        }
+        return out;
+}
+
+// The invariant on both readings: the block-wise answer is the standard algorithm's, or it is wrong. [design.md#the-ordering-invariant]
+template<class BB>
+auto disagreements(BB const& empty) -> int
+{
+        auto const values = probes(empty);
+        auto n = 0;
+        for (auto const& x : values) {
+                for (auto const& y : values) {
+                        auto const sx = set_reading(x), sy = set_reading(y);
+                        if (std::lexicographical_compare_three_way(sx.begin(), sx.end(), sy.begin(), sy.end()) != x.set_three_way(y)) {
+                                ++n;
+                        }
+                        // A comparator, std::vector<bool> yielding proxies rather than bools.
+                        auto const qx = reference(x), qy = reference(y);
+                        if (std::lexicographical_compare_three_way(qx.begin(), qx.end(), qy.begin(), qy.end(),
+                                [](bool a, bool b) static noexcept { return static_cast<int>(a) <=> static_cast<int>(b); }
+                        ) != x.sequence_three_way(y)) {
+                                ++n;
+                        }
+                }
+        }
+        return n;
+}
+
+}       // namespace
+
+// Both orderings, at every static extent, against the algorithms that define them. [design.md#the-ordering-invariant]
+BOOST_AUTO_TEST_CASE_TEMPLATE(BothOrderingsAgreeWithTheirReading, T, test::graded_extents<graded_block_array>)
+{
+        BOOST_CHECK_EQUAL(disagreements(T()), 0);
+}
+
+// The same at a run-time width, which shares no instantiation with the static one. [design.md#per-instantiation-slots]
+BOOST_AUTO_TEST_CASE_TEMPLATE(BothOrderingsAgreeAtARunTimeWidth, Block, test::word_types)
+{
+        using T = xstd::block_vector<Block>;
+        constexpr auto D = test::digits_v<Block>;
+
+        auto disagreed = 0;
+        for (auto const n : { 0UZ, 1UZ, D - 1, D, D + 1, (2 * D) - 1, 2 * D, (2 * D) + 1, 3 * D }) {
+                disagreed += disagreements(T(n));
+        }
+        BOOST_CHECK_EQUAL(disagreed, 0);
+}
+
+// The pair that separates the readings: {0,1} holds the lower position, and holds more. [design.md#two-readings-disagree]
+BOOST_AUTO_TEST_CASE(TheTwoOrderingsDisagree)
+{
+        using T = xstd::block_array<std::uint8_t, 9>;
+
+        constexpr auto disagreed = [] {
+                auto x = T();
+                x.set(0);
+                x.set(1);
+                auto y = T();
+                y.set(1);
+                return std::pair{ x.set_three_way(y), x.sequence_three_way(y) };
+        }();
+
+        static_assert(disagreed.first  == std::strong_ordering::less);
+        static_assert(disagreed.second == std::strong_ordering::greater);
+}
+
+// The prefix clause, which is the whole of what the set reading adds: {1} beats {} only by being longer.
+BOOST_AUTO_TEST_CASE(TheSetOrderingPutsAPrefixFirst)
+{
+        using T = xstd::block_array<std::uint8_t, 9>;
+
+        auto x = T();
+        x.set(1);
+        auto const y = T();
+
+        // {} is a prefix of {1}, so it sorts below -- the opposite of what holding the lower position would say.
+        BOOST_CHECK(x.set_three_way(y) == std::strong_ordering::greater);
+
+        // And with something above that position, the clause no longer applies.
+        auto z = T();
+        z.set(8);
+        BOOST_CHECK(x.set_three_way(z) == std::strong_ordering::less);
+}
+
+// Two named entries, so a caller says which reading it means rather than being handed one. [design.md#two-readings-disagree]
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorNamesBothOrderings, T, test::graded_extents<graded_block_array>)
+{
+        using traits = xstd::bit_traits<T>;
+
+        auto x = T();
+        auto const y = T();
+        if constexpr (traits::extent > 0) {
+                x.set(0);
+        }
+
+        BOOST_CHECK(traits::set_three_way(x, y)      == x.set_three_way(y));
+        BOOST_CHECK(traits::sequence_three_way(x, y) == x.sequence_three_way(y));
+}
 
 BOOST_AUTO_TEST_SUITE_END()
