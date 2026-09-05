@@ -28,7 +28,7 @@ auto reference(BB const& b) -> model
 {
         auto m = model(b.size());
         for (auto i = 0UZ; i < b.size(); ++i) {
-                m[i] = b[i];
+                m[i] = b.test(i);
         }
         return m;
 }
@@ -92,7 +92,7 @@ class checker
         auto same(model const& m, BB const& got) -> void
         {
                 for (auto i = 0UZ; i < m_n; ++i) {
-                        disagree(got[i], m[i]);
+                        disagree(got.test(i), m[i]);
                 }
         }
 
@@ -126,7 +126,7 @@ public:
                         while (not m_mx[back]) { --back; }
                         unequal(m_x.find_front(), front);
                         unequal(m_x.find_back(),  back);
-                        unequal(m_x.find_prev_exclusive(m_n), back);
+                        unequal(m_x.exclusive_find_prev(m_n), back);
                 }
 
                 auto first = 0UZ;
@@ -137,22 +137,22 @@ public:
                 for (auto i = 0UZ; i < m_n; ++i) {
                         auto next = i + 1;
                         while (next < m_n and not m_mx[next]) { ++next; }
-                        unequal(m_x.find_next_exclusive(i), next);
+                        unequal(m_x.exclusive_find_next(i), next);
                 }
 
-                // find_next_inclusive is the primitive; find_first is its 0 and find_next_exclusive its n + 1. Check
+                // inclusive_find_next is the primitive; find_first is its 0 and exclusive_find_next its n + 1. Check
                 // it directly over its whole precondition domain -- n == size() included, which is
                 // the one value the scan cannot start from and the reason the guard is == at all.
                 for (auto i = 0UZ; i <= m_n; ++i) {
                         auto bound = i;
                         while (bound < m_n and not m_mx[bound]) { ++bound; }
-                        unequal(m_x.find_next_inclusive(i), bound);
+                        unequal(m_x.inclusive_find_next(i), bound);
                 }
                 for (auto i = 1UZ; i <= m_n and m_cardinality != 0; ++i) {
                         auto j = i;
                         while (j-- > 0) {
                                 if (m_mx[j]) {
-                                        unequal(m_x.find_prev_exclusive(i), j);
+                                        unequal(m_x.exclusive_find_prev(i), j);
                                         break;
                                 }
                         }
@@ -219,7 +219,7 @@ public:
                 a.flip();
                 unequal(a.count(), m_n - m_cardinality);
                 for (auto const i : std::views::iota(0UZ, m_n)) {
-                        disagree(a[i], not m_mx[i]);
+                        disagree(a.test(i), not m_mx[i]);
                 }
         }
 
@@ -236,11 +236,11 @@ public:
         auto positions() -> void
         {
                 for (auto i = 0UZ; i < m_n; ++i) {
-                        { auto& a = fresh_x(); a.set(i);   disagree(a[i], true);  }
-                        { auto& a = fresh_x(); a.reset(i); disagree(a[i], false); }
-                        { auto& a = fresh_x(); a.flip(i);  disagree(a[i], not m_mx[i]); }
-                        { auto& a = fresh_x(); disagree(a.insert(i), not m_mx[i]); disagree(a[i], true);  }
-                        { auto& a = fresh_x(); disagree(a.erase(i),      m_mx[i]); disagree(a[i], false); }
+                        { auto& a = fresh_x(); a.set(i);   disagree(a.test(i), true);  }
+                        { auto& a = fresh_x(); a.reset(i); disagree(a.test(i), false); }
+                        { auto& a = fresh_x(); a.flip(i);  disagree(a.test(i), not m_mx[i]); }
+                        { auto& a = fresh_x(); disagree(a.insert(i), not m_mx[i]); disagree(a.test(i), true);  }
+                        { auto& a = fresh_x(); disagree(a.erase(i),      m_mx[i]); disagree(a.test(i), false); }
                 }
         }
 

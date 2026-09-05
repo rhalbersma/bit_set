@@ -72,8 +72,8 @@ class bit_finite_set
 
         [[nodiscard]] friend constexpr auto find_first(const bit_finite_set& c)                noexcept -> std::size_t { return c.m_bits.find_first(); }
         [[nodiscard]] friend constexpr auto find_last (const bit_finite_set& c)                noexcept -> std::size_t { return c.m_bits.find_last();  }
-        [[nodiscard]] friend constexpr auto find_next (const bit_finite_set& c, std::size_t n) noexcept -> std::size_t { return c.m_bits.find_next_exclusive(n); }
-        [[nodiscard]] friend constexpr auto find_prev (const bit_finite_set& c, std::size_t n) noexcept -> std::size_t { return c.m_bits.find_prev_exclusive(n); }
+        [[nodiscard]] friend constexpr auto find_next (const bit_finite_set& c, std::size_t n) noexcept -> std::size_t { return c.m_bits.exclusive_find_next(n); }
+        [[nodiscard]] friend constexpr auto find_prev (const bit_finite_set& c, std::size_t n) noexcept -> std::size_t { return c.m_bits.exclusive_find_prev(n); }
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, bit_finite_set const* v) noexcept
@@ -265,7 +265,7 @@ public:
         // block_sequence asserts is_valid on every position it accepts and offers no total
         // spelling of any of these -- that is the layering working, not a gap in it. The
         // precondition is the sequence's, the guard is the container's.
-        [[nodiscard]] constexpr auto contains(const key_type& x) const noexcept -> bool      { return x < N and m_bits[x]; }
+        [[nodiscard]] constexpr auto contains(const key_type& x) const noexcept -> bool      { return x < N and m_bits.test(x); }
         [[nodiscard]] constexpr auto count   (const key_type& x) const noexcept -> size_type { return contains(x);         }
 
         [[nodiscard]] constexpr auto find(this auto&& self, const key_type& x) noexcept -> iterator
@@ -275,12 +275,12 @@ public:
                 }
                 return self.end();
         }
-        // The bound is find_next_inclusive at x, and its exclusive twin one past it. The x ? :
+        // The bound is inclusive_find_next at x, and its exclusive twin one past it. The x ? :
         // that used to stand here was find_next's exclusivity showing through: x - 1 wraps at
         // 0, so the 0 case had to be spelled separately. An inclusive primitive has no such
         // seam, so the two bounds now differ by the + 1 that actually separates them.
-        [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, x < N ? self.m_bits.find_next_inclusive(x    ) : N }; }
-        [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, x < N ? self.m_bits.find_next_inclusive(x + 1) : N }; }
+        [[nodiscard]] constexpr auto lower_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, x < N ? self.m_bits.inclusive_find_next(x    ) : N }; }
+        [[nodiscard]] constexpr auto upper_bound(this auto&& self, const key_type& x) noexcept -> iterator                      { return { &self, x < N ? self.m_bits.inclusive_find_next(x + 1) : N }; }
         [[nodiscard]] constexpr auto equal_range(this auto&& self, const key_type& x) noexcept -> std::pair<iterator, iterator> { return { self.lower_bound(x), self.upper_bound(x) };               }
 
         [[nodiscard]] constexpr auto is_subset_of       (const bit_finite_set& other) const noexcept -> bool { return this->m_bits.is_subset_of       (other.m_bits); }

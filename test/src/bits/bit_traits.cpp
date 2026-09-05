@@ -41,7 +41,7 @@ struct bit_traits<element_bits<N, Block>>
         static constexpr std::size_t extent = N;
 
         [[nodiscard]] static constexpr auto size(element_bits<N, Block> const&) noexcept -> std::size_t { return N; }
-        [[nodiscard]] static constexpr auto at(element_bits<N, Block> const& c, std::size_t n) noexcept -> bool { return c.bits[n]; }
+        [[nodiscard]] static constexpr auto at(element_bits<N, Block> const& c, std::size_t n) noexcept -> bool { return c.bits.test(n); }
 };
 
 template<std::size_t N, class Block>
@@ -50,7 +50,7 @@ struct bit_traits<block_bits<N, Block>>
         static constexpr std::size_t extent = N;
 
         [[nodiscard]] static constexpr auto size(block_bits<N, Block> const&) noexcept -> std::size_t { return N; }
-        [[nodiscard]] static constexpr auto at(block_bits<N, Block> const& c, std::size_t n) noexcept -> bool { return c.bits[n]; }
+        [[nodiscard]] static constexpr auto at(block_bits<N, Block> const& c, std::size_t n) noexcept -> bool { return c.bits.test(n); }
 
         [[nodiscard]] static constexpr auto num_blocks(block_bits<N, Block> const& c) noexcept -> std::size_t { return c.bits.num_blocks(); }
         [[nodiscard]] static constexpr auto block(block_bits<N, Block> const& c, std::size_t i) noexcept -> Block { return c.bits.block(i); }
@@ -95,7 +95,7 @@ auto check_scans(std::set<std::size_t> const& model) -> void
                 BOOST_CHECK_EQUAL(scan<T>::next(c, n), above == model.end() ? N : *above);
 
                 auto const at_or_above = model.lower_bound(n);
-                BOOST_CHECK_EQUAL(scan<T>::next_inclusive(c, n), at_or_above == model.end() ? N : *at_or_above);
+                BOOST_CHECK_EQUAL(scan<T>::inclusive_next(c, n), at_or_above == model.end() ? N : *at_or_above);
 
                 auto const below = model.lower_bound(n < N ? n : N);
                 BOOST_CHECK_EQUAL(scan<T>::prev(c, n), below == model.begin() ? N : *std::prev(below));

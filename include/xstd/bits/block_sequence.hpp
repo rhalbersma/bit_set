@@ -233,17 +233,17 @@ public:
                 }
         }
 
-        // Its own 0. Now that find_next_inclusive carries the 2-block case too, this emits the same
+        // Its own 0. Now that inclusive_find_next carries the 2-block case too, this emits the same
         // instruction sequence the hand-written version did -- verified, not assumed -- so the
         // duplication goes without costing the unrolling. libstdc++ writes both scans out and
         // repeats the word loop and the ctz-plus-index arithmetic between them; boost factors
-        // the shared tail into m_do_find_from, but only at block granularity, so find_next_exclusive still
+        // the shared tail into m_do_find_from, but only at block granularity, so exclusive_find_next still
         // needs its own prologue for a mid-block start. Factoring at bit granularity subsumes
         // both: a block-aligned start is just offset == 0.
         [[nodiscard]] constexpr auto find_first() const noexcept
                 -> std::size_t
         {
-                return find_next_inclusive(0UZ);
+                return inclusive_find_next(0UZ);
         }
 
         [[nodiscard]] constexpr auto find_last() const noexcept
@@ -263,10 +263,10 @@ public:
         // The inclusive form is the primitive and the exclusive one is derived, because the
         // reverse does not close:
         //
-        //     find_next_exclusive(n) == find_next_inclusive(n + 1)     for every n
-        //     find_first()           == find_next_inclusive(0)
+        //     exclusive_find_next(n) == inclusive_find_next(n + 1)     for every n
+        //     find_first()           == inclusive_find_next(0)
         //
-        // Exclusive-first would need find_first() == find_next_exclusive(-1), and size_t has no
+        // Exclusive-first would need find_first() == exclusive_find_next(-1), and size_t has no
         // such value -- which is exactly why the container used to branch on x == 0. boost's
         // find_next and libstdc++'s _M_do_find_next are both the exclusive form, correctly: their
         // iteration idiom is find_first() then find_next(i), which never needs the inclusive one.
@@ -274,8 +274,8 @@ public:
         // n == size() rather than n >= size(): the precondition is n <= size(), asserted just
         // below, so size() is the only value the scan cannot start from. is_valid does not say
         // this -- it is n < size() -- and size() is a legitimate argument here, meaning "no such
-        // position", exactly as it is for find_prev_exclusive.
-        [[nodiscard]] constexpr auto find_next_inclusive(std::size_t n) const noexcept
+        // position", exactly as it is for exclusive_find_prev.
+        [[nodiscard]] constexpr auto inclusive_find_next(std::size_t n) const noexcept
                 -> std::size_t
         {
                 assert(n <= size());
@@ -330,14 +330,14 @@ public:
                 return size();
         }
 
-        [[nodiscard]] constexpr auto find_next_exclusive(std::size_t n) const noexcept
+        [[nodiscard]] constexpr auto exclusive_find_next(std::size_t n) const noexcept
                 -> std::size_t
         {
                 assert(is_valid(n));
-                return find_next_inclusive(n + 1);
+                return inclusive_find_next(n + 1);
         }
 
-        // The last set position below n. Deliberately NOT total: where find_next_inclusive
+        // The last set position below n. Deliberately NOT total: where inclusive_find_next
         // answers size() for "nothing at or above", this one has a precondition instead, and
         // that is the whole of why it is three instructions cheaper at every width -- it never
         // materializes a not-found value.
@@ -348,10 +348,10 @@ public:
         // the forward idiom terminates itself against size(), the reverse one runs off the
         // bottom. Totality is the container's contract to keep, per #86 -- not this layer's to
         // absorb.
-        [[nodiscard]] constexpr auto find_prev_exclusive(std::size_t n) const noexcept
+        [[nodiscard]] constexpr auto exclusive_find_prev(std::size_t n) const noexcept
                 -> std::size_t
         {
-                // The mirror of find_next_exclusive's assert(is_valid(n)): each says the position actually
+                // The mirror of exclusive_find_next's assert(is_valid(n)): each says the position actually
                 // scanned from is one this container has. n - 1 is that position here, and the
                 // wraparound does the work at the bottom -- 0 - 1 is SIZE_MAX, which no width
                 // admits -- so this states 1 <= n <= size() without a second predicate. is_valid
@@ -362,7 +362,7 @@ public:
                 if constexpr (has_static_size and static_num_blocks == 1) {
                         return n - detail::bits::countl_zero(static_cast<block_type>(m_blocks[0] << (left_bit - n)));
                 } else if constexpr (has_static_size and static_num_blocks == 2) {
-                        // The mirror of find_next_inclusive's two-block case, and simpler than the general
+                        // The mirror of inclusive_find_next's two-block case, and simpler than the general
                         // path below because the fallback is one named block rather than a scan.
                         //
                         // No reverse_offset != 0 guard is needed here. Below, that guard is not
@@ -407,7 +407,7 @@ public:
                 }
         }
 
-        constexpr void operator&=(block_sequence const& other [[maybe_unused]]) noexcept
+        constexpr auto operator&=(block_sequence const& other [[maybe_unused]]) noexcept -> block_sequence&
         {
                 assert(this->size() == other.size());
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
@@ -420,9 +420,10 @@ public:
                                 this->m_blocks[i] &= other.m_blocks[i];
                         }
                 }
+                return *this;
         }
 
-        constexpr void operator|=(block_sequence const& other [[maybe_unused]]) noexcept
+        constexpr auto operator|=(block_sequence const& other [[maybe_unused]]) noexcept -> block_sequence&
         {
                 assert(this->size() == other.size());
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
@@ -435,9 +436,10 @@ public:
                                 this->m_blocks[i] |= other.m_blocks[i];
                         }
                 }
+                return *this;
         }
 
-        constexpr void operator^=(block_sequence const& other [[maybe_unused]]) noexcept
+        constexpr auto operator^=(block_sequence const& other [[maybe_unused]]) noexcept -> block_sequence&
         {
                 assert(this->size() == other.size());
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
@@ -450,9 +452,10 @@ public:
                                 this->m_blocks[i] ^= other.m_blocks[i];
                         }
                 }
+                return *this;
         }
 
-        constexpr void operator-=(block_sequence const& other [[maybe_unused]]) noexcept
+        constexpr auto operator-=(block_sequence const& other [[maybe_unused]]) noexcept -> block_sequence&
         {
                 assert(this->size() == other.size());
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
@@ -465,9 +468,10 @@ public:
                                 this->m_blocks[i] &= static_cast<block_type>(~other.m_blocks[i]);
                         }
                 }
+                return *this;
         }
 
-        constexpr void operator<<=(std::size_t n [[maybe_unused]]) noexcept
+        constexpr auto operator<<=(std::size_t n [[maybe_unused]]) noexcept -> block_sequence&
         {
                 assert(is_valid(n));
                 if constexpr (has_static_size and static_num_blocks == 1) {
@@ -494,9 +498,10 @@ public:
                         std::ranges::fill_n(std::ranges::begin(m_blocks), static_cast<std::ptrdiff_t>(n_blocks), zero);
                 }
                 erase_unused();
+                return *this;
         }
 
-        constexpr void operator>>=(std::size_t n [[maybe_unused]]) noexcept
+        constexpr auto operator>>=(std::size_t n [[maybe_unused]]) noexcept -> block_sequence&
         {
                 assert(is_valid(n));
                 if constexpr (has_static_size and static_num_blocks == 1) {
@@ -517,9 +522,10 @@ public:
                         }
                         std::ranges::fill_n(std::ranges::prev(std::ranges::end(m_blocks), static_cast<std::ptrdiff_t>(n_blocks)), static_cast<std::ptrdiff_t>(n_blocks), zero);
                 }
+                return *this;
         }
 
-        constexpr void set() noexcept
+        constexpr auto set() noexcept -> block_sequence&
         {
                 if constexpr (has_static_size and static_has_unused_bits) {
                         std::ranges::fill_n(std::ranges::begin(m_blocks), static_cast<std::ptrdiff_t>(static_last_block), ones);
@@ -533,15 +539,17 @@ public:
                         m_blocks[last_block()] = used_bits();
                 }
                 assert(all());
+                return *this;
         }
 
-        constexpr void reset() noexcept
+        constexpr auto reset() noexcept -> block_sequence&
         {
                 std::ranges::fill(m_blocks, zero);
                 assert(none());
+                return *this;
         }
 
-        constexpr void flip() noexcept
+        constexpr auto flip() noexcept -> block_sequence&
         {
                 if constexpr (has_static_size and N > 0 and static_num_blocks == 1) {
                         m_blocks[0] = static_cast<block_type>(~m_blocks[0]);
@@ -554,6 +562,7 @@ public:
                         }
                 }
                 erase_unused();
+                return *this;
         }
 
         constexpr void swap(block_sequence& other) noexcept(std::is_nothrow_swappable_v<Blocks>)
@@ -563,12 +572,13 @@ public:
                 std::ranges::swap(this->m_size,   other.m_size);
         }
 
-        constexpr void set(std::size_t n) noexcept
+        constexpr auto set(std::size_t n) noexcept -> block_sequence&
         {
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
                 block |= mask;
-                assert((*this)[n]);
+                assert(test(n));
+                return *this;
         }
 
         [[nodiscard]] constexpr auto insert(std::size_t n) noexcept
@@ -578,16 +588,17 @@ public:
                 auto&& [ block, mask ] = block_mask(n);
                 auto const inserted = not detail::bits::intersects(block, mask);
                 block |= mask;
-                assert((*this)[n]);
+                assert(test(n));
                 return inserted;
         }
 
-        constexpr void reset(std::size_t n) noexcept
+        constexpr auto reset(std::size_t n) noexcept -> block_sequence&
         {
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
                 block &= static_cast<block_type>(~mask);
-                assert(not (*this)[n]);
+                assert(not test(n));
+                return *this;
         }
 
         [[nodiscard]] constexpr auto erase(std::size_t n) noexcept
@@ -597,18 +608,25 @@ public:
                 auto&& [ block, mask ] = block_mask(n);
                 auto const erased = detail::bits::intersects(block, mask);
                 block &= static_cast<block_type>(~mask);
-                assert(not (*this)[n]);
+                assert(not test(n));
                 return erased;
         }
 
-        constexpr void flip(std::size_t n) noexcept
+        constexpr auto flip(std::size_t n) noexcept -> block_sequence&
         {
                 assert(is_valid(n));
                 auto&& [ block, mask ] = block_mask(n);
                 block ^= mask;
+                return *this;
         }
 
-        [[nodiscard]] constexpr auto operator[](std::size_t n) const noexcept
+        // test rather than operator[], because this reads and cannot be written through:
+        // std::bitset's operator[] returns an assignable proxy and this returns bool, so the
+        // subscript spelling would promise an assignment that does not compile. The writable
+        // proxy belongs to the containers above, which is also where the checked reading lives
+        // -- std::bitset::test throws where this asserts, a difference the door states as
+        // unchecked_test rather than one this name should try to carry.
+        [[nodiscard]] constexpr auto test(std::size_t n) const noexcept
                 -> bool
         {
                 assert(is_valid(n));
@@ -788,7 +806,7 @@ private:
                 return std::ranges::all_of(first, first + static_cast<std::ptrdiff_t>(last_block()), [](auto block) { return block == ones; });
         }
 
-        // The top bit of the last block, padding included. find_back and find_prev_exclusive count
+        // The top bit of the last block, padding included. find_back and exclusive_find_prev count
         // down from it and both assert any(), so the zero-width case never reaches here.
         [[nodiscard]] constexpr auto last_bit() const noexcept
                 -> std::size_t
@@ -879,7 +897,7 @@ struct bit_traits<block_sequence<Blocks, N>>
         static constexpr std::size_t extent = N;
 
         [[nodiscard]] static constexpr auto size(bits_type const& c) noexcept -> std::size_t { return c.size(); }
-        [[nodiscard]] static constexpr auto at(bits_type const& c, std::size_t n) noexcept -> bool { return c[n]; }
+        [[nodiscard]] static constexpr auto at(bits_type const& c, std::size_t n) noexcept -> bool { return c.test(n); }
 
         // set(n) and reset(n) rather than a set(n, value) block_sequence does not have. Both
         // assert is_valid(n), so the position is a precondition here as it is everywhere below.
@@ -902,7 +920,7 @@ struct bit_traits<block_sequence<Blocks, N>>
 
         // The two scans keep the contracts block_sequence gives them rather than widening to the
         // total ones bit_scan's fallbacks happen to provide. That is the ceiling principle again:
-        // the door's contract is the most efficient form, and #88 measured find_prev_exclusive's
+        // the door's contract is the most efficient form, and #88 measured exclusive_find_prev's
         // non-totality as three instructions at every width. A fallback synthesised for a foreign
         // type may be more generous than the contract; it may not be less.
         //
@@ -912,8 +930,8 @@ struct bit_traits<block_sequence<Blocks, N>>
         // make_reverse_iterator(begin()), which is why block_sequence can omit it and why the
         // guard belongs to the container above rather than here. #86 settled the same division
         // one layer down: totality is the container's contract, not the sequence's.
-        [[nodiscard]] static constexpr auto find_next(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.find_next_exclusive(n); }
-        [[nodiscard]] static constexpr auto find_prev(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.find_prev_exclusive(n); }
+        [[nodiscard]] static constexpr auto find_next(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.exclusive_find_next(n); }
+        [[nodiscard]] static constexpr auto find_prev(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.exclusive_find_prev(n); }
 
         // The set ordering has no native spelling here to prefer: block_sequence compares as
         // storage, and ascending-positions-lexicographically is a reading of it. The fallback is
