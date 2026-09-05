@@ -558,7 +558,7 @@ BOOST_AUTO_TEST_CASE(TheTwoOrderingsDisagree)
         using T = xstd::block_array<std::uint8_t, 9>;
 
         using orderings = std::pair<std::strong_ordering, std::strong_ordering>;
-        constexpr auto disagreed = []() -> orderings {
+        constexpr auto disagreed = [] -> orderings {
                 auto x = T();
                 x.set(0);
                 x.set(1);
