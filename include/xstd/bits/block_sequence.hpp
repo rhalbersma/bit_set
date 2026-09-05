@@ -7,7 +7,7 @@
 #define XSTD_BITS_BLOCK_SEQUENCE_HPP
 
 #include <boost/hash2/hash_append_fwd.hpp>                     // hash_append, hash_append_tag
-#include <xstd/bits/bit_traits.hpp>                            // bit_scan, bit_traits
+#include <xstd/bits/bit_traits.hpp>                            // bit_traits
 #include <xstd/bits/detail/intrin.hpp>                         // countl_zero, countr_zero, popcount
 #include <xstd/bits/detail/pred.hpp>                           // intersects, is_subset_of, not_equal_to
 #include <xstd/ints/concepts/unsigned_integer.hpp>             // unsigned_integer
@@ -18,7 +18,6 @@
 #include <algorithm>                                           // all_of, any_of, equal, fill, fill_n, fold_left, max, shift_left, shift_right
 #include <array>                                               // array
 #include <cassert>                                             // assert
-#include <compare>                                             // strong_ordering
 #include <concepts>                                            // swap
 #include <cstddef>                                             // ptrdiff_t, size_t
 #include <functional>                                          // plus
@@ -883,8 +882,7 @@ using block_vector = block_sequence<std::vector<Block, Allocator>>;
 
 // The one specialization that forwards and nothing more. block_sequence has every primitive
 // natively, which is the ceiling principle written as a trait: there is no tier to fall back to,
-// so bit_scan is called nowhere below except for the ordering, which is a reading rather than a
-// primitive and has no native spelling here to prefer.
+// so not one of xstd::detail::bits' walks is reached from here.
 //
 // It needs no friendship. The 14 forwarding hidden friends this fold retires belong to the three
 // containers that hold a block_sequence privately; block_sequence's own vocabulary is public, so
@@ -919,7 +917,7 @@ struct bit_traits<block_sequence<Blocks, N>>
         [[nodiscard]] static constexpr auto find_last (bits_type const& c) noexcept -> std::size_t { return c.find_last();  }
 
         // The two scans keep the contracts block_sequence gives them rather than widening to the
-        // total ones bit_scan's fallbacks happen to provide. That is the ceiling principle again:
+        // total ones the walks below xstd::detail::bits happen to provide. That is the ceiling principle again:
         // the door's contract is the most efficient form, and #88 measured exclusive_find_prev's
         // non-totality as three instructions at every width. A fallback synthesised for a foreign
         // type may be more generous than the contract; it may not be less.
@@ -933,14 +931,12 @@ struct bit_traits<block_sequence<Blocks, N>>
         [[nodiscard]] static constexpr auto find_next(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.exclusive_find_next(n); }
         [[nodiscard]] static constexpr auto find_prev(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.exclusive_find_prev(n); }
 
-        // The set ordering has no native spelling here to prefer: block_sequence compares as
-        // storage, and ascending-positions-lexicographically is a reading of it. The fallback is
-        // the definition, so it is what this calls.
-        [[nodiscard]] static constexpr auto lexicographical_three_way(bits_type const& x, bits_type const& y) noexcept
-                -> std::strong_ordering
-        {
-                return bit_scan<bit_traits>::lexicographical_three_way(x, y);
-        }
+        // No ordering entry. "Lexicographic" is underspecified at this layer: the set reading
+        // compares ascending positions and the sequence reading compares bools from index 0, and
+        // they disagree -- {0,1} < {1} as sets, {0,1} > {1} as sequences. Naming one of them here
+        // would make the door pick a reading for its callers. The orderings belong with the
+        // readings that define them, and each is std::lexicographical_compare_three_way over that
+        // reading's own iterators unless a specialization offers something faster.
 };
 
 }       // namespace xstd

@@ -12,7 +12,6 @@
 #include <cstddef>                     // size_t
 #include <cstdint>                     // uint8_t, uint64_t
 #include <ranges>                      // iota
-#include <set>                         // set
 #include <vector>                      // vector
 
 BOOST_AUTO_TEST_SUITE(BitBlocks)
@@ -461,8 +460,8 @@ BOOST_AUTO_TEST_CASE(ADefaultConstructedRunTimeWidthIsZeroWidthWithOneBlock)
 
 // bit_traits over our own storage forwards and nothing more, so what these check is that each
 // entry reaches the member it names and that the contracts survive the trip. The scans keep
-// block_sequence's own preconditions rather than widening to the total ones bit_scan's fallbacks
-// happen to provide -- find_next wants a valid position, find_prev a set position strictly below
+// block_sequence's own preconditions rather than widening to the total ones the walks under
+// xstd::detail::bits provide -- find_next wants a valid position, find_prev a set position below
 // n -- so every call below stays inside them.
 BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_extents<graded_block_array>)
 {
@@ -504,34 +503,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_exten
         }
 }
 
-// The ordering is the one entry with no native spelling to forward to: block_sequence compares as
-// storage, while this is the set reading of it. Checked against std::set, which is the definition.
-BOOST_AUTO_TEST_CASE(TheDoorOrdersAsStdSetDoes)
-{
-        using T = xstd::block_array<std::uint8_t, 8>;
-        using traits = xstd::bit_traits<T>;
-
-        for (auto a = 0UZ; a < 256UZ; ++a) {
-                for (auto b = 0UZ; b < 256UZ; ++b) {
-                        auto x = T();
-                        auto y = T();
-                        auto sx = std::set<std::size_t>();
-                        auto sy = std::set<std::size_t>();
-                        for (auto i = 0UZ; i < 8UZ; ++i) {
-                                if ((a >> i & 1UZ) != 0UZ) { x.set(i); sx.insert(i); }
-                                if ((b >> i & 1UZ) != 0UZ) { y.set(i); sy.insert(i); }
-                        }
-                        BOOST_CHECK((traits::lexicographical_three_way(x, y) == (sx <=> sy)));
-                }
-        }
-
-        // The ordering reaches bit_scan's forward scan only from inside its loop, where the
-        // position is always below the width, so the past-the-end arm has to be asked for
-        // directly. Each instantiation carries its own branch slots and covers them or does not:
-        // that another Traits exercises this one elsewhere does not count for this one.
-        auto const empty = T();
-        BOOST_CHECK_EQUAL(xstd::bit_scan<traits>::next(empty, traits::extent), traits::extent);
-        BOOST_CHECK_EQUAL(xstd::bit_scan<traits>::first(empty), traits::extent);
-}
+// No ordering case here. The door carries no ordering entry: "lexicographic" names two different
+// comparisons at this layer, and each belongs to the reading that defines it. And because every
+// entry above forwards to a native member, not one of xstd::detail::bits' walks is instantiated
+// for this Traits -- exercising them here would create an instantiation nothing else uses, whose
+// branch slots this file would then owe the coverage gate. They are covered in bit_traits.cpp,
+// against the two adapters built to drive both tiers.
 
 BOOST_AUTO_TEST_SUITE_END()

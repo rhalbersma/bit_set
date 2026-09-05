@@ -5,14 +5,13 @@
 
 #include <boost/test/unit_test.hpp>      // BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END, BOOST_CHECK, BOOST_CHECK_EQUAL
 #include <test/block_types.hpp>          // graded_extents
-#include <xstd/bits/bit_traits.hpp>      // bit_scan, bit_storage, bit_traits, block_readable, static_bit_extent
+#include <xstd/bits/bit_traits.hpp>      // bit_storage, bit_traits, block_readable, scan_*, static_bit_extent
 #include <xstd/bits/block_sequence.hpp>  // block_array
-#include <compare>                       // strong_ordering
 #include <cstddef>                       // size_t
 #include <set>                           // set
 
 // Two adapters over identical storage, differing only in whether they hand their blocks over.
-// That is the whole design of this file: bit_scan picks its tier on block_readable, so the only
+// That is the whole design of this file: the walks pick their tier on block_readable, so the only
 // way to test the choice is to hold the bits fixed and vary nothing else. Every check below then
 // runs twice, and the two answers must agree with each other as well as with std::set.
 namespace {
@@ -60,8 +59,10 @@ struct bit_traits<block_bits<N, Block>>
 
 namespace {
 
+namespace bits = xstd::detail::bits;
+
 template<class T>
-using scan = xstd::bit_scan<xstd::bit_traits<T>>;
+using traits_of = xstd::bit_traits<T>;
 
 template<class T>
 inline constexpr auto extent_of = xstd::bit_traits<T>::extent;
@@ -84,21 +85,21 @@ auto check_scans(std::set<std::size_t> const& model) -> void
         auto const c = make<T>(model);
         constexpr auto N = extent_of<T>;
 
-        BOOST_CHECK_EQUAL(scan<T>::count(c), model.size());
-        BOOST_CHECK_EQUAL(scan<T>::last(c), N);
-        BOOST_CHECK_EQUAL(scan<T>::first(c), model.empty() ? N : *model.begin());
+        BOOST_CHECK_EQUAL(bits::scan_count<traits_of<T>>(c), model.size());
+        BOOST_CHECK_EQUAL(bits::scan_last<traits_of<T>>(c), N);
+        BOOST_CHECK_EQUAL(bits::scan_first<traits_of<T>>(c), model.empty() ? N : *model.begin());
 
         // One past the width too: every scan here is total, so the argument past the end is a
         // question with an answer rather than a precondition violation.
         for (auto n = 0UZ; n <= N + 1UZ; ++n) {
                 auto const above = model.upper_bound(n);
-                BOOST_CHECK_EQUAL(scan<T>::next(c, n), above == model.end() ? N : *above);
+                BOOST_CHECK_EQUAL(bits::scan_next<traits_of<T>>(c, n), above == model.end() ? N : *above);
 
                 auto const at_or_above = model.lower_bound(n);
-                BOOST_CHECK_EQUAL(scan<T>::inclusive_next(c, n), at_or_above == model.end() ? N : *at_or_above);
+                BOOST_CHECK_EQUAL(bits::scan_inclusive_next<traits_of<T>>(c, n), at_or_above == model.end() ? N : *at_or_above);
 
                 auto const below = model.lower_bound(n < N ? n : N);
-                BOOST_CHECK_EQUAL(scan<T>::prev(c, n), below == model.begin() ? N : *std::prev(below));
+                BOOST_CHECK_EQUAL(bits::scan_prev<traits_of<T>>(c, n), below == model.begin() ? N : *std::prev(below));
         }
 }
 
@@ -162,25 +163,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(BlockWiseScansAgreeWithStdSet, T, BlockTypes)
         check_every_pattern<T>();
 }
 
-// The set ordering: positions ascending, compared lexicographically, which is what std::set's
-// own <=> means. Exhaustive over every pair of subsets at the narrowest width, so the answer is
-// checked against the standard library rather than against a reading of it.
-BOOST_AUTO_TEST_CASE(OrderingAgreesWithStdSet)
-{
-        using T = element_bits<test::digits_v<unsigned char>, unsigned char>;
-        constexpr auto N = extent_of<T>;
-
-        for (auto a = 0UZ; a < (1UZ << N); ++a) {
-                for (auto b = 0UZ; b < (1UZ << N); ++b) {
-                        auto x = std::set<std::size_t>();
-                        auto y = std::set<std::size_t>();
-                        for (auto i = 0UZ; i < N; ++i) {
-                                if ((a >> i & 1UZ) != 0UZ) { x.insert(i); }
-                                if ((b >> i & 1UZ) != 0UZ) { y.insert(i); }
-                        }
-                        BOOST_CHECK((scan<T>::lexicographical_three_way(make<T>(x), make<T>(y)) == (x <=> y)));
-                }
-        }
-}
+// No ordering case here any more. The door carries no ordering: "lexicographic" names two
+// different comparisons at this layer -- ascending positions for the set reading, bools from
+// index 0 for the sequence reading -- and they disagree on {0,1} against {1}. Each ordering is
+// tested where it is defined, against std::lexicographical_compare_three_way over that reading's
+// own iterators.
 
 BOOST_AUTO_TEST_SUITE_END()
