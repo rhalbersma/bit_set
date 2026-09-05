@@ -68,7 +68,13 @@ BOOST_AUTO_TEST_CASE(TheDoorAdaptsIt)
         traits::fill(c, false);
         BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
 
-        // The element-wise tier's not-found and boundary arms, which only a type without block access reaches. [design.md#per-instantiation-slots]
+}
+
+// The element-wise tier's not-found and boundary arms, which only a type without block access reaches. [design.md#per-instantiation-slots]
+BOOST_AUTO_TEST_CASE(TheWalksAnswerAtTheBoundaries)
+{
+        using traits = xstd::bit_traits<T>;
+
         auto const empty = T(9);
         BOOST_CHECK_EQUAL(xstd::detail::bits::scan_count<traits>(empty), 0UZ);
         BOOST_CHECK_EQUAL(xstd::detail::bits::scan_last <traits>(empty), 9UZ);

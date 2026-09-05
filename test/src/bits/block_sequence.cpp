@@ -437,19 +437,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_exten
                 BOOST_CHECK(traits::block(c, k) == c.block(k));
         }
 
-        // The two entries the readings cannot synthesize: insert can grow where the storage allows, and fill is bulk. [design.md#what-the-door-reconciles]
-        traits::fill(c, true);
-        BOOST_CHECK_EQUAL(traits::count(c), N);
-        traits::fill(c, false);
-        BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
-
-        for (auto i = 0UZ; i < N; ++i) {
-                traits::insert(c, i);
-                BOOST_CHECK(traits::at(c, i));
-        }
-        BOOST_CHECK_EQUAL(traits::count(c), N);
-        traits::fill(c, false);
-
         // One position at a time, set then cleared: assign's two arms are the point.
         for (auto i = 0UZ; i < N; ++i) {
                 traits::assign(c, i, true);
@@ -463,6 +450,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_exten
                 BOOST_CHECK(not traits::at(c, i));
                 BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
         }
+}
+
+// The two entries the readings cannot synthesize, in their own case: insert can grow where the storage allows, and fill is bulk. [design.md#what-the-door-reconciles]
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorInsertsAndFills, T, test::graded_extents<graded_block_array>)
+{
+        using traits = xstd::bit_traits<T>;
+        constexpr auto N = traits::extent;
+
+        auto c = T();
+        traits::fill(c, true);
+        BOOST_CHECK_EQUAL(traits::count(c), N);
+        traits::fill(c, false);
+        BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
+
+        for (auto i = 0UZ; i < N; ++i) {
+                traits::insert(c, i);
+        }
+        BOOST_CHECK_EQUAL(traits::count(c), N);
 }
 
 namespace {
