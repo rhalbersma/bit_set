@@ -18,6 +18,7 @@
 #include <algorithm>                                           // all_of, any_of, equal, fill, fill_n, fold_left, max, shift_left, shift_right
 #include <array>                                               // array
 #include <cassert>                                             // assert
+#include <compare>                                             // strong_ordering
 #include <concepts>                                            // swap
 #include <cstddef>                                             // ptrdiff_t, size_t
 #include <functional>                                          // plus
@@ -149,7 +150,50 @@ public:
                 }
         }
 
-        // No operator<=>: block_sequence is pure storage with no opinion on set-of-indices versus sequence-of-bools order; == is unaffected.
+        // No operator<=>: block_sequence is pure storage with no opinion on which reading orders it, so it names both and picks neither. [design.md#two-readings-disagree]
+
+        // The set reading a word at a time: whoever HOLDS the lowest differing position is greater, unless the other holds nothing above it. [design.md#the-ordering-primitive]
+        [[nodiscard]] constexpr auto set_three_way(block_sequence const& other [[maybe_unused]]) const noexcept
+                -> std::strong_ordering
+        {
+                assert(this->size() == other.size());
+                if constexpr (has_static_size and N == 0) {
+                        return std::strong_ordering::equal;
+                } else if constexpr (has_static_size and N == 1) {
+                        // One position, so the loser is empty and any_above is constantly false. [design.md#degenerate-widths]
+                        return this->test(0UZ) <=> other.test(0UZ);
+                } else {
+                        auto const [ index, diff ] = first_difference(other);
+                        if (diff == zero) {
+                                return std::strong_ordering::equal;
+                        }
+                        auto const offset = detail::bits::countr_zero(diff);
+                        if (detail::bits::intersects(this->m_blocks[index], static_cast<block_type>(unit << offset))) {
+                                return other.any_above(index, offset) ? std::strong_ordering::less : std::strong_ordering::greater;
+                        }
+                        return this->any_above(index, offset) ? std::strong_ordering::greater : std::strong_ordering::less;
+                }
+        }
+
+        // The sequence reading a word at a time: whoever HOLDS the lowest differing position is greater, with no prefix clause, the widths being equal. [design.md#the-ordering-primitive]
+        [[nodiscard]] constexpr auto sequence_three_way(block_sequence const& other [[maybe_unused]]) const noexcept
+                -> std::strong_ordering
+        {
+                assert(this->size() == other.size());
+                if constexpr (has_static_size and N == 0) {
+                        return std::strong_ordering::equal;
+                } else {
+                        auto const [ index, diff ] = first_difference(other);
+                        if (diff == zero) {
+                                return std::strong_ordering::equal;
+                        }
+                        auto const offset = detail::bits::countr_zero(diff);
+                        return detail::bits::intersects(this->m_blocks[index], static_cast<block_type>(unit << offset))
+                                ? std::strong_ordering::greater
+                                : std::strong_ordering::less
+                        ;
+                }
+        }
 
         template<class Provider, class Hash, class Flavor>
         friend constexpr void tag_invoke(boost::hash2::hash_append_tag const&, Provider const&, Hash& h, Flavor const& f, block_sequence const* v) noexcept
@@ -656,6 +700,49 @@ public:
         }
 
 private:
+        // The lowest position at which two values differ, as its block and that block's xor; the index says nothing when the xor is zero. [design.md#the-ordering-primitive]
+        [[nodiscard]] constexpr auto first_difference(block_sequence const& other) const noexcept
+                -> std::pair<std::size_t, block_type>
+        {
+                if constexpr (has_static_size and static_num_blocks == 1) {
+                        return { 0UZ, static_cast<block_type>(this->m_blocks[0] ^ other.m_blocks[0]) };
+                } else if constexpr (has_static_size and static_num_blocks == 2) {
+                        if (auto const diff = static_cast<block_type>(this->m_blocks[0] ^ other.m_blocks[0]); diff != zero) {
+                                return { 0UZ, diff };
+                        }
+                        return { 1UZ, static_cast<block_type>(this->m_blocks[1] ^ other.m_blocks[1]) };
+                } else {
+                        for (auto i = 0UZ, n = num_blocks(); i < n; ++i) {
+                                if (auto const diff = static_cast<block_type>(this->m_blocks[i] ^ other.m_blocks[i]); diff != zero) {
+                                        return { i, diff };
+                                }
+                        }
+                        return { 0UZ, zero };
+                }
+        }
+
+        // Whether any position strictly above the given one is set; the bit there is clear, so one shift down leaves exactly what is above it. [design.md#the-ordering-primitive]
+        [[nodiscard]] constexpr auto any_above(std::size_t index, std::size_t offset) const noexcept
+                -> bool
+        {
+                assert(not test((index * bits_per_block) + offset));
+                if (static_cast<block_type>(m_blocks[index] >> offset) != zero) {
+                        return true;
+                }
+                if constexpr (has_static_size and static_num_blocks == 1) {
+                        return false;
+                } else if constexpr (has_static_size and static_num_blocks == 2) {
+                        return index == 0UZ and m_blocks[1] != zero;
+                } else {
+                        for (auto i = index + 1UZ, n = num_blocks(); i < n; ++i) {
+                                if (m_blocks[i] != zero) {
+                                        return true;
+                                }
+                        }
+                        return false;
+                }
+        }
+
         [[nodiscard]] constexpr auto last_block() const noexcept
                 -> std::size_t
         {
@@ -768,7 +855,9 @@ struct bit_traits<block_sequence<Blocks, N>>
         [[nodiscard]] static constexpr auto find_next(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.exclusive_find_next(n); }
         [[nodiscard]] static constexpr auto find_prev(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.exclusive_find_prev(n); }
 
-        // No ordering entry: the two readings disagree, so the door cannot pick one. [design.md#two-readings-disagree]
+        // Two named entries, never one "lexicographical_three_way": the readings disagree, so the caller names the one it means. [design.md#two-readings-disagree]
+        [[nodiscard]] static constexpr auto set_three_way     (bits_type const& x, bits_type const& y) noexcept -> std::strong_ordering { return x.set_three_way(y);      }
+        [[nodiscard]] static constexpr auto sequence_three_way(bits_type const& x, bits_type const& y) noexcept -> std::strong_ordering { return x.sequence_three_way(y); }
 };
 
 }       // namespace xstd

@@ -196,8 +196,66 @@ different sequences, and **they disagree**:
 | sequence reading | bools from index 0, `[1,1,0…]` against `[0,1,0…]` | `{0,1} > {1}` |
 
 A door serving three readings cannot hold one of their orderings without choosing for its callers, so it
-holds neither under that name. `set_three_way` and `sequence_three_way` are each owned by the view whose
-reading defines them.
+holds neither under that name. It holds **both, separately named**: `bit_traits` has a `set_three_way` entry
+and a `sequence_three_way` entry, never one `lexicographical_three_way`, so a caller says which reading it
+means rather than being handed whichever the door happened to pick.
+
+### the-ordering-primitive
+
+Both orderings are answered a word at a time, from two pieces:
+
+- **`first_difference`** returns the lowest block at which two values differ, together with that block's
+  `xor`. `countr_zero` of that `xor` is then the lowest position at which they differ.
+- **`any_above`** asks whether one value holds anything strictly above a given position. The value's bit
+  *at* that position is clear -- it is the one that lacked the differing bit -- so `block >> offset` leaves
+  exactly what it holds above, and the shift is always defined because `offset < digits`. No two-step shift,
+  and no guard against shifting by the width.
+
+From there the two readings differ by one clause and nothing else:
+
+| reading | at the lowest differing position |
+|---|---|
+| set | whoever HOLDS it is greater, **unless** the other holds nothing above it |
+| sequence | whoever HOLDS it is greater, full stop -- the widths are equal, so there is no prefix case |
+
+**Why this beats iterating.** The `lexicographical_compare_three_way` form walks *set bits*; this walks
+*words*, and a word step is an `xor` and a test rather than a load, a shift, a `countr_zero` and a branch.
+Equal values are the clearest case: iteration confirms every element, so a full 1024-bit set costs 1024
+bit-scans against 16 word `xor`s. Near-equal and dense values are the same story. Only an early difference
+makes the two comparable, both exiting at once.
+
+**It is one sweep, not two passes.** `first_difference` covers blocks `[0, i]`; `any_above` then covers
+`[i, n)` on **one** operand, the one that lacked the bit. Block `i` is the only one touched twice, so the
+pair costs `n + 1` block reads. And when the values are equal `any_above` is never reached at all, since
+`first_difference` already settles it.
+
+**The prefix clause is not removable.** Set order is not plain lexicographic over words under *any*
+comparator. At `digits = 4`, `A = {1}` and `B = {5}` differ in word 0, where `A₀ = {1}` and `B₀ = {}`; a
+prefix rule over words says `B < A`, but the sets truly compare `A < B`. `any_above` is exactly the repair,
+and is the whole of what separates the two readings.
+
+**The fallback is the specification.** A `Bits` that will not show its words -- `std::bitset` under libc++,
+`boost::dynamic_bitset` -- falls back to that standard algorithm over the reading's own iterators, which is
+[the invariant](#the-ordering-invariant) itself. So the door's contract stays the efficient form and the
+fallback can only be more generous, never less ([the ceiling principle](#the-ceiling-principle)), and the
+test is that the two paths agree.
+
+### degenerate-widths
+
+Two widths get their own `if constexpr` arm in the orderings, for the reason in
+[per-instantiation-slots](#per-instantiation-slots) -- an arm that no input of *this instantiation* can take
+is an uncovered branch, and gcovr scores instantiations separately:
+
+- **Width zero** never differs, so both orderings answer `equal` outright. Without the arm, the `diff == 0`
+  test would have an untakeable false branch, and `any_above` would be instantiated with no caller able to
+  reach it.
+- **Width one** has a single position, so the value lacking it is empty and `any_above` is constantly false.
+  The set ordering answers `test(0) <=> other.test(0)` instead, which also skips instantiating `any_above`.
+  The two readings happen to coincide here, the empty set being both the prefix and the smaller bool.
+
+Everything wider shares the general arms. A single block still needs the block-loop specialisations -- a
+one-block instantiation cannot take a loop's exit branch -- which is why `first_difference` and `any_above`
+each spell out the one- and two-block cases the way `find_front` and `intersects` do.
 
 ### the-ordering-invariant
 
