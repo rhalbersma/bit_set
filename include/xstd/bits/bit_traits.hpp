@@ -92,19 +92,23 @@ private:
                 constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
                 constexpr auto left_bit = digits - 1UZ;
 
-                auto index = i / digits;
+                auto const start = i / digits;
                 auto const offset = i % digits;
 
                 // Shifted up rather than masked, so the bit at offset lands on the top one and
                 // countl_zero measures the distance back down. At offset == left_bit that is a
                 // shift by zero, the identity, so the boundary needs no arm of its own -- the
                 // mirror of next_by_block's missing offset guard.
-                if (auto const block = static_cast<block_type>(Traits::block(c, index) << (left_bit - offset)); block != block_type{}) {
+                if (auto const block = static_cast<block_type>(Traits::block(c, start) << (left_bit - offset)); block != block_type{}) {
                         return i - detail::bits::countl_zero(block);
                 }
                 // Only where a lower block can exist: at one block this walk is unreachable code
-                // carrying a branch no instantiation could take.
+                // carrying a branch no instantiation could take. The cursor lives in here rather
+                // than beside start, because at one block the walk is discarded and a cursor
+                // declared outside would never be written -- which misc-const-correctness reads,
+                // correctly, as a variable that should have been const.
                 if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
+                        auto index = start;
                         while (index-- != 0UZ) {
                                 if (auto const block = Traits::block(c, index); block != block_type{}) {
                                         return (digits * index) + left_bit - detail::bits::countl_zero(block);
@@ -145,18 +149,18 @@ private:
                 using block_type = std::remove_cvref_t<decltype(Traits::block(c, 0UZ))>;
                 constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
 
-                auto index = n / digits;
+                auto const start = n / digits;
                 auto const offset = n % digits;
 
                 // No offset != 0 guard: >> 0 is the identity, so the boundary case needs no arm
                 // of its own. #88 measured the guard as pure cost.
-                if (auto const block = static_cast<block_type>(Traits::block(c, index) >> offset); block != block_type{}) {
+                if (auto const block = static_cast<block_type>(Traits::block(c, start) >> offset); block != block_type{}) {
                         return n + detail::bits::countr_zero(block);
                 }
                 // The mirror of prev_by_block's guard: at one block there is no later block to
-                // walk to.
+                // walk to, and the cursor belongs to the walk for the same reason it does there.
                 if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
-                        for (auto const blocks = Traits::num_blocks(c); ++index < blocks;) {
+                        for (auto index = start + 1UZ, blocks = Traits::num_blocks(c); index < blocks; ++index) {
                                 if (auto const block = Traits::block(c, index); block != block_type{}) {
                                         return (digits * index) + detail::bits::countr_zero(block);
                                 }
