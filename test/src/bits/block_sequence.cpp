@@ -5,12 +5,14 @@
 
 #include <boost/test/unit_test.hpp>    // BOOST_CHECK_EQUAL, BOOST_AUTO_TEST_CASE, BOOST_AUTO_TEST_CASE_TEMPLATE, BOOST_AUTO_TEST_SUITE, BOOST_AUTO_TEST_SUITE_END
 #include <test/block_types.hpp>        // graded_extents, word_types
+#include <xstd/bits/bit_traits.hpp>    // bit_storage, bit_traits, block_readable, static_bit_extent
 #include <xstd/bits/block_sequence.hpp> // block_array, block_sequence, block_storage, block_vector
 #include <algorithm>                   // count
 #include <array>                       // array
 #include <cstddef>                     // size_t
 #include <cstdint>                     // uint8_t, uint64_t
 #include <ranges>                      // iota
+#include <set>                         // set
 #include <vector>                      // vector
 
 BOOST_AUTO_TEST_SUITE(BitBlocks)
@@ -455,6 +457,70 @@ BOOST_AUTO_TEST_CASE(ADefaultConstructedRunTimeWidthIsZeroWidthWithOneBlock)
         BOOST_CHECK_EQUAL(b.size(), 0UZ);
         BOOST_CHECK_EQUAL(b.num_blocks(), 1UZ);
         BOOST_CHECK(b == xstd::block_vector<std::uint8_t>(0));
+}
+
+// bit_traits over our own storage forwards and nothing more, so what these check is that each
+// entry reaches the member it names and that the contracts survive the trip. The scans keep
+// block_sequence's own preconditions rather than widening to the total ones bit_scan's fallbacks
+// happen to provide -- find_next wants a valid position, find_prev a set position strictly below
+// n -- so every call below stays inside them.
+BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_extents<graded_block_array>)
+{
+        using traits = xstd::bit_traits<T>;
+        constexpr auto N = traits::extent;
+
+        static_assert(xstd::bit_storage<T>);
+        static_assert(xstd::static_bit_extent<T>);
+        static_assert(xstd::block_readable<traits, T>);
+
+        auto c = T();
+
+        BOOST_CHECK_EQUAL(traits::size(c), N);
+        BOOST_CHECK_EQUAL(traits::find_last(c), N);
+        BOOST_CHECK_EQUAL(traits::find_first(c), N);
+        BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
+        BOOST_CHECK_EQUAL(traits::num_blocks(c), c.num_blocks());
+
+        for (auto k = 0UZ; k < c.num_blocks(); ++k) {
+                BOOST_CHECK_EQUAL(traits::block(c, k), c.block(k));
+        }
+
+        // One position at a time, set and then cleared again: assign's two arms are the point,
+        // and a single set position makes every scan's answer something the loop already knows.
+        for (auto i = 0UZ; i < N; ++i) {
+                traits::assign(c, i, true);
+                BOOST_CHECK(traits::at(c, i));
+                BOOST_CHECK_EQUAL(traits::count(c), 1UZ);
+                BOOST_CHECK_EQUAL(traits::find_first(c), i);
+                BOOST_CHECK_EQUAL(traits::find_prev(c, i + 1UZ), i);
+                BOOST_CHECK_EQUAL(traits::find_next(c, i), N);
+
+                traits::assign(c, i, false);
+                BOOST_CHECK(not traits::at(c, i));
+                BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
+        }
+}
+
+// The ordering is the one entry with no native spelling to forward to: block_sequence compares as
+// storage, while this is the set reading of it. Checked against std::set, which is the definition.
+BOOST_AUTO_TEST_CASE(TheDoorOrdersAsStdSetDoes)
+{
+        using T = xstd::block_array<std::uint8_t, 8>;
+        using traits = xstd::bit_traits<T>;
+
+        for (auto a = 0UZ; a < 256UZ; ++a) {
+                for (auto b = 0UZ; b < 256UZ; ++b) {
+                        auto x = T();
+                        auto y = T();
+                        auto sx = std::set<std::size_t>();
+                        auto sy = std::set<std::size_t>();
+                        for (auto i = 0UZ; i < 8UZ; ++i) {
+                                if ((a >> i & 1UZ) != 0UZ) { x.set(i); sx.insert(i); }
+                                if ((b >> i & 1UZ) != 0UZ) { y.set(i); sy.insert(i); }
+                        }
+                        BOOST_CHECK((traits::lexicographical_three_way(x, y) == (sx <=> sy)));
+                }
+        }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
