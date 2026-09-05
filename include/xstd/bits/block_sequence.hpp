@@ -7,6 +7,7 @@
 #define XSTD_BITS_BLOCK_SEQUENCE_HPP
 
 #include <boost/hash2/hash_append_fwd.hpp>                     // hash_append, hash_append_tag
+#include <xstd/bits/bit_traits.hpp>                            // bit_scan, bit_traits
 #include <xstd/bits/detail/intrin.hpp>                         // countl_zero, countr_zero, popcount
 #include <xstd/bits/detail/pred.hpp>                           // intersects, is_subset_of, not_equal_to
 #include <xstd/ints/concepts/unsigned_integer.hpp>             // unsigned_integer
@@ -17,6 +18,7 @@
 #include <algorithm>                                           // all_of, any_of, equal, fill, fill_n, fold_left, max, shift_left, shift_right
 #include <array>                                               // array
 #include <cassert>                                             // assert
+#include <compare>                                             // strong_ordering
 #include <concepts>                                            // swap
 #include <cstddef>                                             // ptrdiff_t, size_t
 #include <functional>                                          // plus
@@ -860,6 +862,68 @@ using block_array = block_sequence<std::array<Block, num_blocks_v<Block, N>>, N>
 
 template<xstd::unsigned_integer Block = std::size_t, class Allocator = std::allocator<Block>>
 using block_vector = block_sequence<std::vector<Block, Allocator>>;
+
+// The one specialization that forwards and nothing more. block_sequence has every primitive
+// natively, which is the ceiling principle written as a trait: there is no tier to fall back to,
+// so bit_scan is called nowhere below except for the ordering, which is a reading rather than a
+// primitive and has no native spelling here to prefer.
+//
+// It needs no friendship. The 14 forwarding hidden friends this fold retires belong to the three
+// containers that hold a block_sequence privately; block_sequence's own vocabulary is public, so
+// the door reaches it directly.
+template<class Blocks, std::size_t N>
+struct bit_traits<block_sequence<Blocks, N>>
+{
+        using bits_type = block_sequence<Blocks, N>;
+
+        static constexpr std::size_t extent = N;
+
+        [[nodiscard]] static constexpr auto size(bits_type const& c) noexcept -> std::size_t { return c.size(); }
+        [[nodiscard]] static constexpr auto at(bits_type const& c, std::size_t n) noexcept -> bool { return c[n]; }
+
+        // set(n) and reset(n) rather than a set(n, value) block_sequence does not have. Both
+        // assert is_valid(n), so the position is a precondition here as it is everywhere below.
+        static constexpr void assign(bits_type& c, std::size_t n, bool value) noexcept
+        {
+                if (value) {
+                        c.set(n);
+                } else {
+                        c.reset(n);
+                }
+        }
+
+        [[nodiscard]] static constexpr auto count(bits_type const& c) noexcept -> std::size_t { return c.count(); }
+
+        [[nodiscard]] static constexpr auto num_blocks(bits_type const& c) noexcept -> std::size_t { return c.num_blocks(); }
+        [[nodiscard]] static constexpr auto block(bits_type const& c, std::size_t i) noexcept { return c.block(i); }
+
+        [[nodiscard]] static constexpr auto find_first(bits_type const& c) noexcept -> std::size_t { return c.find_first(); }
+        [[nodiscard]] static constexpr auto find_last (bits_type const& c) noexcept -> std::size_t { return c.find_last();  }
+
+        // The two scans keep the contracts block_sequence gives them rather than widening to the
+        // total ones bit_scan's fallbacks happen to provide. That is the ceiling principle again:
+        // the door's contract is the most efficient form, and #88 measured find_prev_exclusive's
+        // non-totality as three instructions at every width. A fallback synthesised for a foreign
+        // type may be more generous than the contract; it may not be less.
+        //
+        // So find_next requires is_valid(n), and find_prev requires a set position strictly below
+        // n -- which any() does not establish, a container whose set positions all lie above n
+        // having none below it. Reverse iteration supplies exactly that guard, rend() being
+        // make_reverse_iterator(begin()), which is why block_sequence can omit it and why the
+        // guard belongs to the container above rather than here. #86 settled the same division
+        // one layer down: totality is the container's contract, not the sequence's.
+        [[nodiscard]] static constexpr auto find_next(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.find_next_exclusive(n); }
+        [[nodiscard]] static constexpr auto find_prev(bits_type const& c, std::size_t n) noexcept -> std::size_t { return c.find_prev_exclusive(n); }
+
+        // The set ordering has no native spelling here to prefer: block_sequence compares as
+        // storage, and ascending-positions-lexicographically is a reading of it. The fallback is
+        // the definition, so it is what this calls.
+        [[nodiscard]] static constexpr auto lexicographical_three_way(bits_type const& x, bits_type const& y) noexcept
+                -> std::strong_ordering
+        {
+                return bit_scan<bit_traits>::lexicographical_three_way(x, y);
+        }
+};
 
 }       // namespace xstd
 
