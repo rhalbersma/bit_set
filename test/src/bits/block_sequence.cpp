@@ -524,6 +524,14 @@ BOOST_AUTO_TEST_CASE(TheDoorOrdersAsStdSetDoes)
                         BOOST_CHECK((traits::lexicographical_three_way(x, y) == (sx <=> sy)));
                 }
         }
+
+        // The ordering reaches bit_scan's forward scan only from inside its loop, where the
+        // position is always below the width, so the past-the-end arm has to be asked for
+        // directly. Each instantiation carries its own branch slots and covers them or does not:
+        // that another Traits exercises this one elsewhere does not count for this one.
+        auto const empty = T();
+        BOOST_CHECK_EQUAL(xstd::bit_scan<traits>::next(empty, traits::extent), traits::extent);
+        BOOST_CHECK_EQUAL(xstd::bit_scan<traits>::first(empty), traits::extent);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
