@@ -77,6 +77,109 @@ template<class Traits, class Block>
 template<class Traits>
 struct bit_scan
 {
+private:
+        // Each tier of each scan gets its own function. Not decomposition for its own sake:
+        // readability-function-cognitive-complexity counts if constexpr like any other branch,
+        // and the guards that satisfy the coverage gate put both scans over the threshold when
+        // the tier choice sits in the same body. The tier is where the seam was anyway.
+
+        // The last set position at or below i, block at a time.
+        template<class Bits>
+        [[nodiscard]] static constexpr auto prev_by_block(Bits const& c, std::size_t i) noexcept
+                -> std::size_t
+        {
+                using block_type = std::remove_cvref_t<decltype(Traits::block(c, 0UZ))>;
+                constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
+                constexpr auto left_bit = digits - 1UZ;
+
+                auto index = i / digits;
+                auto const offset = i % digits;
+
+                // Shifted up rather than masked, so the bit at offset lands on the top one and
+                // countl_zero measures the distance back down. At offset == left_bit that is a
+                // shift by zero, the identity, so the boundary needs no arm of its own -- the
+                // mirror of next_by_block's missing offset guard.
+                if (auto const block = static_cast<block_type>(Traits::block(c, index) << (left_bit - offset)); block != block_type{}) {
+                        return i - detail::bits::countl_zero(block);
+                }
+                // Only where a lower block can exist: at one block this walk is unreachable code
+                // carrying a branch no instantiation could take.
+                if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
+                        while (index-- != 0UZ) {
+                                if (auto const block = Traits::block(c, index); block != block_type{}) {
+                                        return (digits * index) + left_bit - detail::bits::countl_zero(block);
+                                }
+                        }
+                }
+                return Traits::size(c);
+        }
+
+        // The same, one position at a time, for a type that keeps its blocks to itself.
+        template<class Bits>
+        [[nodiscard]] static constexpr auto prev_by_element(Bits const& c, std::size_t i) noexcept
+                -> std::size_t
+        {
+                if constexpr (Traits::extent == 1UZ) {
+                        // A single position: the descent below would have nowhere to step from,
+                        // so it is written as the one test it reduces to rather than as a loop
+                        // whose exit arm no instantiation could take.
+                        return Traits::at(c, i) ? i : Traits::size(c);
+                } else {
+                        for (;;) {
+                                if (Traits::at(c, i)) {
+                                        return i;
+                                }
+                                if (i == 0UZ) {
+                                        return Traits::size(c);
+                                }
+                                --i;
+                        }
+                }
+        }
+
+        // The first set position at or above n, block at a time.
+        template<class Bits>
+        [[nodiscard]] static constexpr auto next_by_block(Bits const& c, std::size_t n) noexcept
+                -> std::size_t
+        {
+                using block_type = std::remove_cvref_t<decltype(Traits::block(c, 0UZ))>;
+                constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
+
+                auto index = n / digits;
+                auto const offset = n % digits;
+
+                // No offset != 0 guard: >> 0 is the identity, so the boundary case needs no arm
+                // of its own. #88 measured the guard as pure cost.
+                if (auto const block = static_cast<block_type>(Traits::block(c, index) >> offset); block != block_type{}) {
+                        return n + detail::bits::countr_zero(block);
+                }
+                // The mirror of prev_by_block's guard: at one block there is no later block to
+                // walk to.
+                if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
+                        for (auto const blocks = Traits::num_blocks(c); ++index < blocks;) {
+                                if (auto const block = Traits::block(c, index); block != block_type{}) {
+                                        return (digits * index) + detail::bits::countr_zero(block);
+                                }
+                        }
+                }
+                return Traits::size(c);
+        }
+
+        // The same, one position at a time.
+        template<class Bits>
+        [[nodiscard]] static constexpr auto next_by_element(Bits const& c, std::size_t n) noexcept
+                -> std::size_t
+        {
+                auto const size = Traits::size(c);
+                for (auto i = n; i < size; ++i) {
+                        if (Traits::at(c, i)) {
+                                return i;
+                        }
+                }
+                return size;
+        }
+
+public:
         // The first set position, or size() if there is none. Total, like every scan here: this
         // is the layer that answers, not the layer with preconditions.
         template<class Bits>
@@ -109,72 +212,32 @@ struct bit_scan
         // The last set position strictly below n, or size() if there is none.
         //
         // Unlike block_sequence::find_prev_exclusive this is total rather than
-        // precondition-guarded: that one may demand any() because reverse iteration supplies
-        // the guard, and a fallback synthesised for a foreign type has no such caller to lean
-        // on.
+        // precondition-guarded: that one may demand any() because reverse iteration supplies the
+        // guard, and a fallback synthesised for a foreign type has no such caller to lean on.
         //
         // The block tier is not an optimization here so much as a complexity fix. Element-wise,
-        // one step is O(N) and a full reverse traversal is O(N^2) -- which is exactly what
-        // #80 measures boost::dynamic_bitset's missing find_prev to cost. A type that hands
-        // over its blocks does not pay it.
+        // one step is O(N) and a full reverse traversal is O(N^2) -- which is exactly what #80
+        // measures boost::dynamic_bitset's missing find_prev to cost. A type that hands over its
+        // blocks does not pay it.
         template<class Bits>
         [[nodiscard]] static constexpr auto prev(Bits const& c, std::size_t n) noexcept
                 -> std::size_t
         {
                 auto const size = Traits::size(c);
                 // A width fixed at zero holds nothing below anything, and saying so here rather
-                // than at run time leaves the scan below with no arm that cannot be reached.
+                // than at run time leaves the scans with no arm that cannot be reached.
                 if constexpr (Traits::extent == 0UZ) {
                         return size;
                 } else {
-                auto i = n < size ? n : size;
-                if (i == 0UZ) {
-                        return size;
-                }
-                --i;
-                if constexpr (block_readable<Traits, Bits>) {
-                        using block_type = std::remove_cvref_t<decltype(Traits::block(c, 0UZ))>;
-                        constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
-                        constexpr auto left_bit = digits - 1UZ;
-
-                        auto index = i / digits;
-                        auto const offset = i % digits;
-
-                        // Shifted up rather than masked, so the bit at offset lands on the top
-                        // one and countl_zero measures the distance back down. At offset ==
-                        // left_bit that is a shift by zero, the identity, so the boundary needs
-                        // no arm of its own -- the mirror of next_inclusive's missing guard.
-                        if (auto const block = static_cast<block_type>(Traits::block(c, index) << (left_bit - offset)); block != block_type{}) {
-                                return i - detail::bits::countl_zero(block);
+                        auto const i = n < size ? n : size;
+                        if (i == 0UZ) {
+                                return size;
                         }
-                        // Only where a lower block can exist: at one block the walk is
-                        // unreachable code carrying an untakeable branch.
-                        if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
-                                while (index-- != 0UZ) {
-                                        if (auto const block = Traits::block(c, index); block != block_type{}) {
-                                                return (digits * index) + left_bit - detail::bits::countl_zero(block);
-                                        }
-                                }
+                        if constexpr (block_readable<Traits, Bits>) {
+                                return prev_by_block(c, i - 1UZ);
+                        } else {
+                                return prev_by_element(c, i - 1UZ);
                         }
-                } else if constexpr (Traits::extent == 1UZ) {
-                        // A single position: the descent below would have nowhere to step from,
-                        // so it is written as the one test it reduces to rather than as a loop
-                        // whose exit arm no instantiation could take.
-                        if (Traits::at(c, i)) {
-                                return i;
-                        }
-                } else {
-                        for (;;) {
-                                if (Traits::at(c, i)) {
-                                        return i;
-                                }
-                                if (i == 0UZ) {
-                                        break;
-                                }
-                                --i;
-                        }
-                }
-                return size;
                 }
         }
 
@@ -212,59 +275,37 @@ struct bit_scan
                 if constexpr (Traits::extent == 0UZ) {
                         return size;
                 } else {
-                if (n >= size) {
-                        return size;
-                }
-                if constexpr (block_readable<Traits, Bits>) {
-                        using block_type = std::remove_cvref_t<decltype(Traits::block(c, 0UZ))>;
-                        constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
-
-                        auto const blocks = Traits::num_blocks(c);
-                        auto index = n / digits;
-                        auto const offset = n % digits;
-
-                        // No offset != 0 guard: >> 0 is the identity, so the boundary case needs
-                        // no arm of its own. #88 measured the guard as pure cost.
-                        if (auto const block = static_cast<block_type>(Traits::block(c, index) >> offset); block != block_type{}) {
-                                return n + detail::bits::countr_zero(block);
+                        if (n >= size) {
+                                return size;
                         }
-                        // The mirror of prev's guard: at one block there is no later block to
-                        // walk to, so the loop would be an arm no instantiation can take.
-                        if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
-                                for (++index; index < blocks; ++index) {
-                                        if (auto const block = Traits::block(c, index); block != block_type{}) {
-                                                return (digits * index) + detail::bits::countr_zero(block);
-                                        }
-                                }
+                        if constexpr (block_readable<Traits, Bits>) {
+                                return next_by_block(c, n);
+                        } else {
+                                return next_by_element(c, n);
                         }
-                } else {
-                        for (auto i = n; i < size; ++i) {
-                                if (Traits::at(c, i)) {
-                                        return i;
-                                }
-                        }
-                }
-                return size;
                 }
         }
 
         // The set ordering: the positions in increasing order, compared lexicographically, which
-        // is what std::set's <=> means. Deliberately not the magnitude ordering boost::dynamic_bitset
-        // gives its own operator<, and that divergence is documented rather than reconciled.
+        // is what std::set's <=> means. Deliberately not the magnitude ordering
+        // boost::dynamic_bitset gives its own operator<, and that divergence is documented rather
+        // than reconciled.
         template<class Bits>
         [[nodiscard]] static constexpr auto lexicographical_three_way(Bits const& x, Bits const& y) noexcept
                 -> std::strong_ordering
         {
+                auto const nx = Traits::size(x);
+                auto const ny = Traits::size(y);
                 auto i = first(x);
                 auto j = first(y);
-                for (auto const nx = Traits::size(x), ny = Traits::size(y); i != nx and j != ny; i = next(x, i), j = next(y, j)) {
+                for (; i != nx and j != ny; i = next(x, i), j = next(y, j)) {
                         if (auto const cmp = i <=> j; cmp != 0) {
                                 return cmp;
                         }
                 }
                 // One ran out: the shorter sequence of positions is the smaller set, and both
                 // running out together makes them equal.
-                return (i != Traits::size(x)) <=> (j != Traits::size(y));
+                return (i != nx) <=> (j != ny);
         }
 };
 
