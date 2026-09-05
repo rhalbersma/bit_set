@@ -9,8 +9,9 @@
 #include <test/value_reference.hpp>     // value_reference
 #include <xstd/bits/bit_finite_set.hpp> // bit_finite_set
 #include <concepts>                     // regular, totally_ordered
+#include <cstddef>                      // size_t
 #include <iterator>                     // bidirectional_iterator
-#include <ranges>                       // bidirectional_range
+#include <ranges>                       // bidirectional_range, iota, to
 
 BOOST_AUTO_TEST_SUITE(BitFiniteSet)
 
@@ -47,6 +48,51 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ItsConstReferenceIsAValue, T, Types)
 BOOST_AUTO_TEST_CASE_TEMPLATE(IsABitSet, T, Types)
 {
         static_assert(test::set::bit_set<T>);
+}
+
+// std::set's lookups are total over key_type, and so are these: a key naming no possible
+// element answers "absent" rather than reaching into the blocks. Kept out of the exhaustive
+// suite because that suite draws every key from [0, N), which is exactly why this went
+// unseen.
+//
+// Two findings from running this against the unguarded header are worth recording, because
+// they are why it sweeps the whole of Types rather than one convenient width. No single
+// width exposed all six operations and no single key did either -- at N = 8 over uint8_t
+// every one of them was clean for key == N, so a narrow single-block set proves nothing on
+// its own. And erase was an out-of-bounds *write*, while upper_bound failed on its returned
+// value rather than on memory at all: find_next's ++n wrapped before it could test the
+// bound, so it answered with a real element where end() was due. That second one is what
+// keeps this a gate on the jobs that build without sanitizers.
+template<class X>
+auto check_key_outside_the_domain(X a, std::size_t x) -> void
+{
+        auto const original = a;
+
+        BOOST_CHECK(not a.contains(x));
+        BOOST_CHECK_EQUAL(a.count(x), 0UZ);
+        BOOST_CHECK(a.find(x)        == a.end());
+        BOOST_CHECK(a.lower_bound(x) == a.end());
+        BOOST_CHECK(a.upper_bound(x) == a.end());
+
+        auto const [ first, last ] = a.equal_range(x);
+        BOOST_CHECK(first == a.end());
+        BOOST_CHECK(last  == a.end());
+
+        // A no-op that must stay one: this is the write.
+        BOOST_CHECK_EQUAL(a.erase(x), 0UZ);
+        BOOST_CHECK(a == original);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(LookupIsTotalOverKeyType, T, Types)
+{
+        auto const N = T::max_size();
+        auto const full = std::views::iota(0UZ, N) | std::ranges::to<T>();
+
+        // Just past the end, past the last block, and the value that would wrap any n + 1.
+        for (auto const x : { N, N + 1, (2 * N) + 1, static_cast<std::size_t>(-1) }) {
+                check_key_outside_the_domain(T(), x);
+                check_key_outside_the_domain(full, x);
+        }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
