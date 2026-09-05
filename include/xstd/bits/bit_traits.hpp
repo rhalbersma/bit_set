@@ -39,6 +39,27 @@ concept block_readable =
         }
 ;
 
+// How many blocks a trait's storage has, when the type settles it. Derived rather than declared:
+// extent is already in the floor, and block_access's contract fixes the layout -- block i holds
+// [i * digits, (i + 1) * digits) -- so nothing new has to be supplied to know this.
+//
+// It exists for the coverage gate rather than for speed. gcovr counts branch slots per template
+// instantiation and does not merge them, so a loop that a one-block instantiation can never enter
+// is a branch never taken, whatever every other instantiation does. block_sequence answers the
+// same gate the same way, with if constexpr on static_num_blocks == 1 and == 2: the degenerate
+// case does not get an unreachable loop, it gets different code.
+template<class Traits, class Block>
+[[nodiscard]] consteval auto static_block_count() noexcept
+        -> std::size_t
+{
+        if constexpr (Traits::extent == std::dynamic_extent) {
+                return std::dynamic_extent;
+        } else {
+                constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<Block>::digits);
+                return Traits::extent == 0UZ ? 1UZ : ((Traits::extent + digits - 1UZ) / digits);
+        }
+}
+
 // The fallbacks a specialization calls for whatever it has no native spelling of, so adapting a
 // type is never all-or-nothing.
 //
@@ -101,6 +122,11 @@ struct bit_scan
                 -> std::size_t
         {
                 auto const size = Traits::size(c);
+                // A width fixed at zero holds nothing below anything, and saying so here rather
+                // than at run time leaves the scan below with no arm that cannot be reached.
+                if constexpr (Traits::extent == 0UZ) {
+                        return size;
+                } else {
                 auto i = n < size ? n : size;
                 if (i == 0UZ) {
                         return size;
@@ -121,10 +147,21 @@ struct bit_scan
                         if (auto const block = static_cast<block_type>(Traits::block(c, index) << (left_bit - offset)); block != block_type{}) {
                                 return i - detail::bits::countl_zero(block);
                         }
-                        while (index-- != 0UZ) {
-                                if (auto const block = Traits::block(c, index); block != block_type{}) {
-                                        return (digits * index) + left_bit - detail::bits::countl_zero(block);
+                        // Only where a lower block can exist: at one block the walk is
+                        // unreachable code carrying an untakeable branch.
+                        if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
+                                while (index-- != 0UZ) {
+                                        if (auto const block = Traits::block(c, index); block != block_type{}) {
+                                                return (digits * index) + left_bit - detail::bits::countl_zero(block);
+                                        }
                                 }
+                        }
+                } else if constexpr (Traits::extent == 1UZ) {
+                        // A single position: the descent below would have nowhere to step from,
+                        // so it is written as the one test it reduces to rather than as a loop
+                        // whose exit arm no instantiation could take.
+                        if (Traits::at(c, i)) {
+                                return i;
                         }
                 } else {
                         for (;;) {
@@ -138,6 +175,7 @@ struct bit_scan
                         }
                 }
                 return size;
+                }
         }
 
         // How many positions are set. The block tier is the whole point: popcount per word
@@ -146,7 +184,9 @@ struct bit_scan
         [[nodiscard]] static constexpr auto count(Bits const& c) noexcept
                 -> std::size_t
         {
-                if constexpr (block_readable<Traits, Bits>) {
+                if constexpr (Traits::extent == 0UZ) {
+                        return 0UZ;
+                } else if constexpr (block_readable<Traits, Bits>) {
                         auto n = 0UZ;
                         for (auto i = 0UZ, blocks = Traits::num_blocks(c); i < blocks; ++i) {
                                 n += detail::bits::popcount(Traits::block(c, i));
@@ -169,6 +209,9 @@ struct bit_scan
                 -> std::size_t
         {
                 auto const size = Traits::size(c);
+                if constexpr (Traits::extent == 0UZ) {
+                        return size;
+                } else {
                 if (n >= size) {
                         return size;
                 }
@@ -185,9 +228,13 @@ struct bit_scan
                         if (auto const block = static_cast<block_type>(Traits::block(c, index) >> offset); block != block_type{}) {
                                 return n + detail::bits::countr_zero(block);
                         }
-                        for (++index; index < blocks; ++index) {
-                                if (auto const block = Traits::block(c, index); block != block_type{}) {
-                                        return (digits * index) + detail::bits::countr_zero(block);
+                        // The mirror of prev's guard: at one block there is no later block to
+                        // walk to, so the loop would be an arm no instantiation can take.
+                        if constexpr (static_block_count<Traits, block_type>() != 1UZ) {
+                                for (++index; index < blocks; ++index) {
+                                        if (auto const block = Traits::block(c, index); block != block_type{}) {
+                                                return (digits * index) + detail::bits::countr_zero(block);
+                                        }
                                 }
                         }
                 } else {
@@ -198,6 +245,7 @@ struct bit_scan
                         }
                 }
                 return size;
+                }
         }
 
         // The set ordering: the positions in increasing order, compared lexicographically, which
