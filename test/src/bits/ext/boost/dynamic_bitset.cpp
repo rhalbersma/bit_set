@@ -67,6 +67,27 @@ BOOST_AUTO_TEST_CASE(TheDoorAdaptsIt)
         BOOST_CHECK_EQUAL(traits::count(c), 21UZ);
         traits::fill(c, false);
         BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
+
+        // The element-wise tier's not-found and boundary arms, which only a type without block access reaches. [design.md#per-instantiation-slots]
+        auto const empty = T(9);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_count<traits>(empty), 0UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_last <traits>(empty), 9UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_first<traits>(empty), 9UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_prev <traits>(empty, 9UZ), 9UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_prev <traits>(empty, 0UZ), 9UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_next <traits>(empty, 9UZ), 9UZ);
+
+        // And its found arms, which the empty case cannot reach; the walks are scored per instantiation. [design.md#per-instantiation-slots]
+        auto populated = T(9);
+        populated.set(1);
+        populated.set(5);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_count<traits>(populated), 2UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_first<traits>(populated), 1UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_next <traits>(populated, 1UZ), 5UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_next <traits>(populated, 5UZ), 9UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_next <traits>(populated, 8UZ), 9UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_prev <traits>(populated, 9UZ), 5UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_prev <traits>(populated, 1UZ), 9UZ);
 }
 
 // The one bitset that orders itself, and wrongly: over a 4-bit universe its own < disagrees with std::set on 88 of 256 pairs, the view's on none.

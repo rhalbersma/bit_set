@@ -52,6 +52,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorAdaptsIt, T, Types)
                 traits::insert(c, i);
                 BOOST_CHECK(traits::at(c, i));
                 BOOST_CHECK_EQUAL(traits::count(c), 1UZ);
+                // The synthesized count too, so its per-position ternary sees both a set and a clear one.
+                BOOST_CHECK_EQUAL(xstd::detail::bits::scan_count<traits>(c), 1UZ);
                 BOOST_CHECK_EQUAL(xstd::detail::bits::scan_first<traits>(c), i);
                 BOOST_CHECK_EQUAL(xstd::detail::bits::scan_prev<traits>(c, N), i);
                 BOOST_CHECK_EQUAL(xstd::detail::bits::scan_next<traits>(c, i), N);
@@ -65,6 +67,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorAdaptsIt, T, Types)
         BOOST_CHECK_EQUAL(traits::count(c), N);
         traits::fill(c, false);
         BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
+
+        // The element-wise tier's not-found and boundary arms, which only a type without block access reaches. [design.md#per-instantiation-slots]
+        auto const empty = T();
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_count<traits>(empty), 0UZ);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_last <traits>(empty), N);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_first<traits>(empty), N);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_prev <traits>(empty, N), N);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_prev <traits>(empty, 0UZ), N);
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_next <traits>(empty, N), N);
 }
 
 // The two reserved names are complementary: libstdc++ has _Find_first and no reachable _Getword, MSVC the reverse, libc++ neither. [design.md#the-two-reserved-names]
@@ -86,6 +97,9 @@ BOOST_AUTO_TEST_CASE(WhicheverTierThePlatformOffersIsTheOneTaken)
         BOOST_CHECK_EQUAL(xstd::detail::bits::scan_prev<traits>(c, 7UZ), 64UZ);
         BOOST_CHECK_EQUAL(xstd::detail::bits::scan_last<traits>(c), 64UZ);
         BOOST_CHECK_EQUAL(xstd::detail::bits::scan_count<traits>(c), 2UZ);
+
+        // From the last position, so the inclusive primitive is asked for one past the width. [design.md#inclusive-is-the-primitive]
+        BOOST_CHECK_EQUAL(xstd::detail::bits::scan_next<traits>(c, 63UZ), 64UZ);
 }
 
 // The adaptor's whole job: std::bitset has no ordering, and none can legally be added to namespace std, so the set reading supplies it.
