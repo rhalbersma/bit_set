@@ -8,9 +8,8 @@
 
 #include <xstd/bits/detail/intrin.hpp>             // countl_zero, countr_zero, popcount
 #include <xstd/ints/concepts/unsigned_integer.hpp> // unsigned_integer
-#include <cassert>                                 // assert
 #include <compare>                                 // strong_ordering
-#include <concepts>                                // convertible_to, same_as
+#include <concepts>                                // convertible_to
 #include <cstddef>                                 // size_t
 #include <limits>                                  // digits
 #include <span>                                    // dynamic_extent
@@ -86,22 +85,57 @@ struct bit_scan
                 return n >= size ? size : next_inclusive(c, n + 1UZ);
         }
 
-        // The last set position strictly below n. Unlike block_sequence::find_prev_exclusive
-        // this is total rather than precondition-guarded: that one can demand any() because
-        // reverse iteration supplies the guard, and a fallback synthesised for a foreign type
-        // has no such caller to lean on.
+        // The last set position strictly below n, or size() if there is none.
+        //
+        // Unlike block_sequence::find_prev_exclusive this is total rather than
+        // precondition-guarded: that one may demand any() because reverse iteration supplies
+        // the guard, and a fallback synthesised for a foreign type has no such caller to lean
+        // on.
+        //
+        // The block tier is not an optimization here so much as a complexity fix. Element-wise,
+        // one step is O(N) and a full reverse traversal is O(N^2) -- which is exactly what
+        // #80 measures boost::dynamic_bitset's missing find_prev to cost. A type that hands
+        // over its blocks does not pay it.
         template<class Bits>
         [[nodiscard]] static constexpr auto prev(Bits const& c, std::size_t n) noexcept
                 -> std::size_t
         {
                 auto const size = Traits::size(c);
-                if (auto i = n < size ? n : size; i != 0UZ) {
-                        do {
-                                --i;
+                auto i = n < size ? n : size;
+                if (i == 0UZ) {
+                        return size;
+                }
+                --i;
+                if constexpr (block_readable<Traits, Bits>) {
+                        using block_type = std::remove_cvref_t<decltype(Traits::block(c, 0UZ))>;
+                        constexpr auto digits = static_cast<std::size_t>(std::numeric_limits<block_type>::digits);
+                        constexpr auto left_bit = digits - 1UZ;
+
+                        auto index = i / digits;
+                        auto const offset = i % digits;
+
+                        // Shifted up rather than masked, so the bit at offset lands on the top
+                        // one and countl_zero measures the distance back down. At offset ==
+                        // left_bit that is a shift by zero, the identity, so the boundary needs
+                        // no arm of its own -- the mirror of next_inclusive's missing guard.
+                        if (auto const block = static_cast<block_type>(Traits::block(c, index) << (left_bit - offset)); block != block_type{}) {
+                                return i - detail::bits::countl_zero(block);
+                        }
+                        while (index-- != 0UZ) {
+                                if (auto const block = Traits::block(c, index); block != block_type{}) {
+                                        return (digits * index) + left_bit - detail::bits::countl_zero(block);
+                                }
+                        }
+                } else {
+                        for (;;) {
                                 if (Traits::at(c, i)) {
                                         return i;
                                 }
-                        } while (i != 0UZ);
+                                if (i == 0UZ) {
+                                        break;
+                                }
+                                --i;
+                        }
                 }
                 return size;
         }
