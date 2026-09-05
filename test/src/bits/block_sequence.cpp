@@ -478,7 +478,7 @@ auto probes(BB const& empty) -> std::vector<BB>
         full.set();
         out.push_back(full);
 
-        auto const single = [&](std::size_t i) {
+        auto const single = [&](std::size_t i) -> void {
                 auto b = empty;
                 b.set(i);
                 out.push_back(b);
@@ -513,14 +513,16 @@ auto disagreements(BB const& empty) -> int
         auto n = 0;
         for (auto const& x : values) {
                 for (auto const& y : values) {
-                        auto const sx = set_reading(x), sy = set_reading(y);
+                        auto const sx = set_reading(x);
+                        auto const sy = set_reading(y);
                         if (std::lexicographical_compare_three_way(sx.begin(), sx.end(), sy.begin(), sy.end()) != x.set_three_way(y)) {
                                 ++n;
                         }
                         // A comparator, std::vector<bool> yielding proxies rather than bools.
-                        auto const qx = reference(x), qy = reference(y);
+                        auto const qx = reference(x);
+                        auto const qy = reference(y);
                         if (std::lexicographical_compare_three_way(qx.begin(), qx.end(), qy.begin(), qy.end(),
-                                [](bool a, bool b) static noexcept { return static_cast<int>(a) <=> static_cast<int>(b); }
+                                [](bool a, bool b) static noexcept -> std::strong_ordering { return static_cast<int>(a) <=> static_cast<int>(b); }
                         ) != x.sequence_three_way(y)) {
                                 ++n;
                         }
@@ -555,7 +557,8 @@ BOOST_AUTO_TEST_CASE(TheTwoOrderingsDisagree)
 {
         using T = xstd::block_array<std::uint8_t, 9>;
 
-        constexpr auto disagreed = [] {
+        using orderings = std::pair<std::strong_ordering, std::strong_ordering>;
+        constexpr auto disagreed = []() -> orderings {
                 auto x = T();
                 x.set(0);
                 x.set(1);
