@@ -437,6 +437,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_exten
                 BOOST_CHECK(traits::block(c, k) == c.block(k));
         }
 
+        // The two entries the readings cannot synthesize: insert can grow where the storage allows, and fill is bulk. [design.md#what-the-door-reconciles]
+        traits::fill(c, true);
+        BOOST_CHECK_EQUAL(traits::count(c), N);
+        traits::fill(c, false);
+        BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
+
+        for (auto i = 0UZ; i < N; ++i) {
+                traits::insert(c, i);
+                BOOST_CHECK(traits::at(c, i));
+        }
+        BOOST_CHECK_EQUAL(traits::count(c), N);
+        traits::fill(c, false);
+
         // One position at a time, set then cleared: assign's two arms are the point.
         for (auto i = 0UZ; i < N; ++i) {
                 traits::assign(c, i, true);
@@ -518,12 +531,10 @@ auto disagreements(BB const& empty) -> int
                         if (std::lexicographical_compare_three_way(sx.begin(), sx.end(), sy.begin(), sy.end()) != x.set_three_way(y)) {
                                 ++n;
                         }
-                        // A comparator, std::vector<bool> yielding proxies rather than bools.
+                        // No comparator: vector<bool>'s proxy converts to bool, which is what makes it three_way_comparable.
                         auto const qx = reference(x);
                         auto const qy = reference(y);
-                        if (std::lexicographical_compare_three_way(qx.begin(), qx.end(), qy.begin(), qy.end(),
-                                [](bool a, bool b) static noexcept -> std::strong_ordering { return static_cast<int>(a) <=> static_cast<int>(b); }
-                        ) != x.sequence_three_way(y)) {
+                        if (std::lexicographical_compare_three_way(qx.begin(), qx.end(), qy.begin(), qy.end()) != x.sequence_three_way(y)) {
                                 ++n;
                         }
                 }
