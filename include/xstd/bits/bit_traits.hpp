@@ -190,7 +190,7 @@ public:
         [[nodiscard]] static constexpr auto first(Bits const& c) noexcept
                 -> std::size_t
         {
-                return next_inclusive(c, 0UZ);
+                return inclusive_next(c, 0UZ);
         }
 
         // One past the last position, which for every reading is the width: the end iterator's
@@ -203,19 +203,19 @@ public:
                 return Traits::size(c);
         }
 
-        // The first set position strictly above n, mirroring block_sequence::find_next_exclusive
+        // The first set position strictly above n, mirroring block_sequence::exclusive_find_next
         // and boost's find_next. Total in n: a position at or past the width has nothing above it.
         template<class Bits>
         [[nodiscard]] static constexpr auto next(Bits const& c, std::size_t n) noexcept
                 -> std::size_t
         {
                 auto const size = Traits::size(c);
-                return n >= size ? size : next_inclusive(c, n + 1UZ);
+                return n >= size ? size : inclusive_next(c, n + 1UZ);
         }
 
         // The last set position strictly below n, or size() if there is none.
         //
-        // Unlike block_sequence::find_prev_exclusive this is total rather than
+        // Unlike block_sequence::exclusive_find_prev this is total rather than
         // precondition-guarded: that one may demand any() because reverse iteration supplies the
         // guard, and a fallback synthesised for a foreign type has no such caller to lean on.
         //
@@ -269,10 +269,10 @@ public:
         }
 
         // The first set position at or above n: the primitive the two forward scans derive from,
-        // exactly as block_sequence's find_next_inclusive is. Both derivations are + 1 and never
+        // exactly as block_sequence's inclusive_find_next is. Both derivations are + 1 and never
         // - 1, which is what lets first() name its own extreme without size_t wrapping at zero.
         template<class Bits>
-        [[nodiscard]] static constexpr auto next_inclusive(Bits const& c, std::size_t n) noexcept
+        [[nodiscard]] static constexpr auto inclusive_next(Bits const& c, std::size_t n) noexcept
                 -> std::size_t
         {
                 auto const size = Traits::size(c);

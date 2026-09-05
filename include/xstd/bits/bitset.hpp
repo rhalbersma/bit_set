@@ -125,12 +125,12 @@ public:
 
                 [[nodiscard]] constexpr explicit(false) operator bool() const noexcept  // NOLINT(misc-explicit-constructor)
                 {
-                        return m_ptr->m_bits[m_idx];
+                        return m_ptr->m_bits.test(m_idx);
                 }
 
                 [[nodiscard]] constexpr auto operator~() const noexcept -> bool
                 {
-                        return not m_ptr->m_bits[m_idx];
+                        return not m_ptr->m_bits.test(m_idx);
                 }
 
                 friend constexpr void swap(reference x, reference y) noexcept { bool const t = x; x = y; y = t; }
@@ -273,7 +273,7 @@ public:
         [[nodiscard]] constexpr auto operator[](std::size_t pos) const noexcept
                 -> bool
         {
-                return m_bits[pos];
+                return m_bits.test(pos);
         }
 
         [[nodiscard]] constexpr auto operator[](std::size_t pos) noexcept
@@ -297,7 +297,7 @@ public:
                 // which is what bitset<0>::to_string() returns.
                 auto str = std::basic_string<charT, traits, Allocator>(N, zero);  // NOLINT(bugprone-string-constructor)
                 for (auto const i : std::views::iota(0UZ, N)) {
-                        if (m_bits[N - 1 - i]) {
+                        if (m_bits.test(N - 1 - i)) {
                                 str[i] = one;
                         }
                 }
@@ -314,7 +314,7 @@ public:
                 -> bool
         {
                 if (pos < N) {
-                        return m_bits[pos];
+                        return m_bits.test(pos);
                 }
                 throw out_of_range(pos);
         }
