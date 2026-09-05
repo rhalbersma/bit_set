@@ -594,14 +594,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorNamesBothOrderings, T, test::graded_extents
 {
         using traits = xstd::bit_traits<T>;
 
-        auto x = T();
-        auto const y = T();
-        if constexpr (traits::extent > 0) {
-                x.set(0);
+        // Over the same probes, so a width with nothing to differ at is covered by the same code as any other.
+        auto const values = probes(T());
+        for (auto const& x : values) {
+                for (auto const& y : values) {
+                        BOOST_CHECK(traits::set_three_way(x, y)      == x.set_three_way(y));
+                        BOOST_CHECK(traits::sequence_three_way(x, y) == x.sequence_three_way(y));
+                }
         }
-
-        BOOST_CHECK(traits::set_three_way(x, y)      == x.set_three_way(y));
-        BOOST_CHECK(traits::sequence_three_way(x, y) == x.sequence_three_way(y));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
