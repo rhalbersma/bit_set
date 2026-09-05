@@ -481,8 +481,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TheDoorForwardsToTheStorage, T, test::graded_exten
         BOOST_CHECK_EQUAL(traits::count(c), 0UZ);
         BOOST_CHECK_EQUAL(traits::num_blocks(c), c.num_blocks());
 
+        // BOOST_CHECK rather than BOOST_CHECK_EQUAL: the latter prints its operands on
+        // failure, and graded_extents includes xstd::uint128, for which libc++ has no
+        // operator<< -- an ambiguity libstdc++ does not have and so does not report.
         for (auto k = 0UZ; k < c.num_blocks(); ++k) {
-                BOOST_CHECK_EQUAL(traits::block(c, k), c.block(k));
+                BOOST_CHECK(traits::block(c, k) == c.block(k));
         }
 
         // One position at a time, set and then cleared again: assign's two arms are the point,
